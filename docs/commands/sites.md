@@ -1,13 +1,15 @@
 ---
 title: Netlify CLI sites command
-description: Manage Netlify sites via the command line
+sidebar:
+  label: sites
+description: Manage Netlify projects via the command line
 ---
 
 # `sites`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Handle various site operations
-The sites command will help you manage all your sites
+Handle various project operations
+The sites command will help you manage all your projects
 
 **Usage**
 
@@ -19,27 +21,28 @@ netlify sites
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
-| [`sites:create-template`](/commands/sites#sitescreate-template) | (Beta) Create a site from a starter template  |
-| [`sites:delete`](/commands/sites#sitesdelete) | Delete a site  |
-| [`sites:list`](/commands/sites#siteslist) | List all sites you have access to  |
+| [`sites:create`](/commands/sites#sitescreate) | Create an empty project (advanced)  |
+| [`sites:delete`](/commands/sites#sitesdelete) | Delete a project  |
+| [`sites:list`](/commands/sites#siteslist) | List all projects you have access to  |
+| [`sites:search`](/commands/sites#sitessearch) | Search for projects by name  |
 
 
 **Examples**
 
 ```bash
-netlify sites:create --name my-new-site
+netlify sites:create --name my-new-project
 netlify sites:list
 ```
 
 ---
 ## `sites:create`
 
-Create an empty site (advanced)
-Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.
+Create an empty project (advanced)
+Create a blank project that isn't associated with any git remote. Will link the project to the current working directory.
 
 **Usage**
 
@@ -49,52 +52,22 @@ netlify sites:create
 
 **Flags**
 
-- `account-slug` (*string*) - account slug to create the site under
-- `disable-linking` (*boolean*) - create the site without linking it to current directory
+- `account-slug` (*string*) - account slug to create the project under
+- `disable-linking` (*boolean*) - create the project without linking it to current directory
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output project data as JSON
 - `manual` (*boolean*) - force manual CI setup.  Used --with-ci flag
-- `name` (*string*) - name of site
-- `with-ci` (*boolean*) - initialize CI hooks during site creation
+- `name` (*string*) - name of project
 - `debug` (*boolean*) - Print debugging information
-
----
-## `sites:create-template`
-
-(Beta) Create a site from a starter template
-Create a site from a starter template.
-
-**Usage**
-
-```bash
-netlify sites:create-template
-```
-
-**Arguments**
-
-- repository - repository to use as starter template
-
-**Flags**
-
-- `account-slug` (*string*) - account slug to create the site under
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `name` (*string*) - name of site
-- `url` (*string*) - template url
-- `with-ci` (*boolean*) - initialize CI hooks during site creation
-- `debug` (*boolean*) - Print debugging information
-
-**Examples**
-
-```bash
-netlify sites:create-template
-netlify sites:create-template nextjs-blog-theme
-netlify sites:create-template my-github-profile/my-template
-```
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `prompt` (*string*) - description of the site to create (delegates to `netlify create`)
+- `with-ci` (*boolean*) - initialize CI hooks during project creation
 
 ---
 ## `sites:delete`
 
-Delete a site
-This command will permanently delete the site on Netlify. Use with caution.
+Delete a project
+This command will permanently delete the project on Netlify. Use with caution.
 
 **Usage**
 
@@ -104,13 +77,14 @@ netlify sites:delete
 
 **Arguments**
 
-- siteId - Site ID to delete.
+- id - Project ID to delete.
 
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `force` (*boolean*) - delete without prompting (useful for CI)
+- `force` (*boolean*) - Delete without prompting (useful for CI).
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -121,7 +95,7 @@ netlify sites:delete 1234-3262-1211
 ---
 ## `sites:list`
 
-List all sites you have access to
+List all projects you have access to
 
 **Usage**
 
@@ -132,8 +106,38 @@ netlify sites:list
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `json` (*boolean*) - Output site data as JSON
+- `json` (*boolean*) - Output project data as JSON
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+---
+## `sites:search`
+
+Search for projects by name
+
+**Usage**
+
+```bash
+netlify sites:search
+```
+
+**Arguments**
+
+- search-term - Full or partial project name to search for
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output project data as JSON
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify sites:search my-project
+netlify sites:search "partial name" --json
+```
 
 ---
 

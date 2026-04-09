@@ -1,54 +1,132 @@
+import { execFile as execFileCb } from 'child_process'
+import { createReadStream, createWriteStream } from 'fs'
+import { mkdir, unlink } from 'fs/promises'
 import path from 'path'
+import { pipeline } from 'stream/promises'
 import process from 'process'
+import { promisify } from 'util'
+import { createGunzip } from 'zlib'
 
-import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-release-fetch'
 import { isexe } from 'isexe'
+import { unpackTar } from 'modern-tar/fs'
+import semver from 'semver'
 
-import { NETLIFYDEVWARN, error, getTerminalLink, log } from '../utils/command-helpers.js'
-import execa from '../utils/execa.js'
+import { NETLIFYDEVWARN, logAndThrowError, getTerminalLink, log } from '../utils/command-helpers.js'
+
+const execFile = promisify(execFileCb)
 
 const isWindows = () => process.platform === 'win32'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'packageName' implicitly has an 'a... Remove this comment to see the full error message
-const getRepository = ({ packageName }) => `netlify/${packageName}`
+const getRepository = ({ packageName }: { packageName: string }) => `netlify/${packageName}`
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'execName' implicitly has an 'any'... Remove this comment to see the full error message
-export const getExecName = ({ execName }) => (isWindows() ? `${execName}.exe` : execName)
+export const getExecName = ({ execName }: { execName: string }) => (isWindows() ? `${execName}.exe` : execName)
 
-const getOptions = () => {
-  // this is used in out CI tests to avoid hitting GitHub API limit
-  // when calling gh-release-fetch
+const getGitHubHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = { Accept: 'application/vnd.github.v3+json' }
   if (process.env.NETLIFY_TEST_GITHUB_TOKEN) {
-    return {
-      headers: { Authorization: `token ${process.env.NETLIFY_TEST_GITHUB_TOKEN}` },
+    headers.Authorization = `token ${process.env.NETLIFY_TEST_GITHUB_TOKEN}`
+  }
+  return headers
+}
+
+const resolveLatestTag = async (repository: string): Promise<string> => {
+  const response = await fetch(`https://api.github.com/repos/${repository}/releases/latest`, {
+    headers: getGitHubHeaders(),
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch latest release for ${repository}: ${String(response.status)}`)
+  }
+  const data = (await response.json()) as { tag_name: string }
+  return data.tag_name
+}
+
+const newerVersion = (latestVersion: string, currentVersion: string): boolean => {
+  if (!latestVersion) return false
+  if (!currentVersion) return true
+  const latest = latestVersion.replace(/^v/, '')
+  const current = currentVersion.replace(/^v/, '')
+  return semver.gt(latest, current)
+}
+
+const updateAvailable = async (repository: string, currentVersion: string): Promise<boolean> => {
+  const latestTag = await resolveLatestTag(repository)
+  return newerVersion(latestTag, currentVersion)
+}
+
+const downloadAndExtract = async (url: string, destination: string): Promise<void> => {
+  const response = await fetch(url, {
+    headers: getGitHubHeaders(),
+    redirect: 'follow',
+  })
+  if (!response.ok) {
+    throw Object.assign(new Error(`Download failed: ${String(response.status)}`), { statusCode: response.status })
+  }
+  if (!response.body) {
+    throw new Error('Empty response body')
+  }
+
+  await mkdir(destination, { recursive: true })
+
+  if (url.endsWith('.zip')) {
+    const tmpFile = path.join(destination, '_download.zip')
+    const fileStream = createWriteStream(tmpFile)
+    await pipeline(response.body, fileStream)
+    try {
+      if (isWindows()) {
+        await execFile('powershell.exe', [
+          '-NoProfile',
+          '-Command',
+          `Expand-Archive -Force -LiteralPath '${tmpFile}' -DestinationPath '${destination}'`,
+        ])
+      } else {
+        await execFile('unzip', ['-o', tmpFile, '-d', destination])
+      }
+    } finally {
+      await unlink(tmpFile)
+    }
+  } else {
+    const tmpFile = path.join(destination, '_download.tar.gz')
+    const fileStream = createWriteStream(tmpFile)
+    await pipeline(response.body, fileStream)
+    try {
+      const extractStream = unpackTar(destination)
+      await pipeline(createReadStream(tmpFile), createGunzip(), extractStream)
+    } finally {
+      await unlink(tmpFile)
     }
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'currentVersion' implicitly has an... Remove this comment to see the full error message
-const isVersionOutdated = async ({ currentVersion, latestVersion, packageName }) => {
+const isVersionOutdated = async ({
+  currentVersion,
+  latestVersion,
+  packageName,
+}: {
+  currentVersion: string
+  latestVersion?: string | undefined
+  packageName: string
+}): Promise<boolean> => {
   if (latestVersion) {
     return newerVersion(latestVersion, currentVersion)
   }
-  const options = getOptions()
-  const outdated = await updateAvailable(getRepository({ packageName }), currentVersion, options)
-  return outdated
+  return await updateAvailable(getRepository({ packageName }), currentVersion)
 }
 
 export const shouldFetchLatestVersion = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'binPath' implicitly has an 'any' ... Remove this comment to see the full error message
   binPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'execArgs' implicitly has an 'any'... Remove this comment to see the full error message
   execArgs,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'execName' implicitly has an 'any'... Remove this comment to see the full error message
   execName,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'latestVersion' implicitly has an ... Remove this comment to see the full error message
   latestVersion,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'packageName' implicitly has an 'a... Remove this comment to see the full error message
   packageName,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
   pattern,
-}) => {
+}: {
+  binPath: string
+  execArgs: string[]
+  execName: string
+  latestVersion?: string | undefined
+  packageName: string
+  pattern: string
+}): Promise<boolean> => {
   const execPath = path.join(binPath, getExecName({ execName }))
 
   const exists = await isexe(execPath, { ignoreErrors: true })
@@ -56,7 +134,7 @@ export const shouldFetchLatestVersion = async ({
     return true
   }
 
-  const { stdout } = await execa(execPath, execArgs)
+  const { stdout } = await execFile(execPath, execArgs)
 
   if (!stdout) {
     return false
@@ -95,43 +173,32 @@ export const getArch = () => {
   }
 }
 
-/**
- * Tries to get the latest release from the github releases to download the binary.
- * Is throwing an error if there is no binary that matches the system os or arch
- * @param {object} config
- * @param {string} config.destination
- * @param {string} config.execName
- * @param {string} config.destination
- * @param {string} config.extension
- * @param {string} config.packageName
- * @param {string} [config.latestVersion ]
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'destination' implicitly has an 'a... Remove this comment to see the full error message
-export const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
+export const fetchLatestVersion = async ({
+  destination,
+  execName,
+  extension,
+  latestVersion,
+  packageName,
+}: {
+  destination: string
+  execName: string
+  extension: string
+  latestVersion?: string | undefined
+  packageName: string
+}): Promise<void> => {
   const win = isWindows()
   const arch = getArch()
   const platform = win ? 'windows' : process.platform
   const pkgName = `${execName}-${platform}-${arch}.${extension}`
+  const repository = getRepository({ packageName })
 
-  const release = {
-    repository: getRepository({ packageName }),
-    package: pkgName,
-    destination,
-    extract: true,
-  }
-
-  const options = getOptions()
-  const fetch = latestVersion
-    ? // @ts-expect-error TS(2345) FIXME: Argument of type '{ headers: { Authorization: stri... Remove this comment to see the full error message
-      fetchVersion({ ...release, version: latestVersion }, options)
-    : // @ts-expect-error TS(2345) FIXME: Argument of type '{ repository: string; package: s... Remove this comment to see the full error message
-      fetchLatest(release, options)
+  const version = latestVersion ?? (await resolveLatestTag(repository))
+  const url = `https://github.com/${repository}/releases/download/${version}/${pkgName}`
 
   try {
-    await fetch
+    await downloadAndExtract(url, destination)
   } catch (error_) {
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    if (typeof error_ === 'object' && 'statusCode' in error_ && error_.statusCode === 404) {
+    if (error_ != null && typeof error_ === 'object' && 'statusCode' in error_ && error_.statusCode === 404) {
       const createIssueLink = new URL('https://github.com/netlify/cli/issues/new')
       createIssueLink.searchParams.set('assignees', '')
       createIssueLink.searchParams.set('labels', 'type: bug')
@@ -143,11 +210,11 @@ export const fetchLatestVersion = async ({ destination, execName, extension, lat
 
       const issueLink = getTerminalLink('Create a new CLI issue', createIssueLink.href)
 
-      error(`The operating system ${platform} with the CPU architecture ${arch} is currently not supported!
+      return logAndThrowError(`The operating system ${platform} with the CPU architecture ${arch} is currently not supported!
 
 Please open up an issue on our CLI repository so that we can support it:
 ${issueLink}`)
     }
-    error(error_)
+    return logAndThrowError(error_)
   }
 }

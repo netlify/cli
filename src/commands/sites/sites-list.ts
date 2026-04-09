@@ -1,24 +1,22 @@
 import { OptionValues } from 'commander'
 
 import { listSites } from '../../lib/api.js'
-import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { startSpinner } from '../../lib/spinner.js'
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
 export const sitesList = async (options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
-  /** @type {import('ora').Ora} */
   let spinner
   if (!options.json) {
-    spinner = startSpinner({ text: 'Loading your sites' })
+    spinner = startSpinner({ text: 'Loading your projects' })
   }
   await command.authenticate()
 
   const sites = await listSites({ api, options: { filter: 'all' } })
-  if (!options.json) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: Ora | undefined; }' i... Remove this comment to see the full error message
-    stopSpinner({ spinner })
+  if (spinner) {
+    spinner.success()
   }
 
   if (sites && sites.length !== 0) {
@@ -51,7 +49,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
 
     log(`
 ────────────────────────────┐
- Current Netlify Sites    │
+ Current Netlify Projects │
 ────────────────────────────┘
 
 Count: ${logSites.length}

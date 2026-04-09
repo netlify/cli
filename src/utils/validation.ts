@@ -1,11 +1,20 @@
+import { InvalidArgumentError } from 'commander'
+
 import { BANG, chalk } from './command-helpers.js'
 
-/**
- * @param {string} exampleCommand
- * @returns {(value:string, previous: unknown) => unknown}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'exampleCommand' implicitly has an 'any'... Remove this comment to see the full error message
-export const getGeoCountryArgParser = (exampleCommand) => (arg) => {
+export const MAX_SITE_NAME_LENGTH = 63
+
+export const validateSiteName = (value: string): string => {
+  if (value.length > MAX_SITE_NAME_LENGTH) {
+    throw new InvalidArgumentError(`--name should be less than 64 characters, input length: ${value.length.toString()}`)
+  }
+  if (!/^[a-zA-Z\d-]+$/.test(value)) {
+    throw new InvalidArgumentError('--name can only contain alphanumeric characters and hyphens')
+  }
+  return value
+}
+
+export const getGeoCountryArgParser = (exampleCommand: string) => (arg: string) => {
   // Validate that the arg passed is two letters only for country
   // See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
   if (!/^[a-z]{2}$/i.test(arg)) {

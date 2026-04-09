@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI completion command
+sidebar:
+  label: completion
 description: Shell completion script for netlify CLI
 ---
 
@@ -18,6 +20,7 @@ netlify completion
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -45,6 +48,7 @@ netlify completion:install
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 

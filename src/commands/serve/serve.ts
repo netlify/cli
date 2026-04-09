@@ -1,6 +1,7 @@
 import process from 'process'
 
-import { OptionValues } from 'commander'
+import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
+import type { OptionValues } from 'commander'
 
 import {
   BLOBS_CONTEXT_VARIABLE,
@@ -10,7 +11,7 @@ import {
 } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
-import { printBanner } from '../../utils/banner.js'
+import { printBanner } from '../../utils/dev-server-banner.js'
 import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
@@ -23,30 +24,30 @@ import {
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
-import { getFrameworksAPIPaths, getFrameworksAPIConfig } from '../../utils/frameworks-api.js'
+import { getFrameworksAPIConfig } from '../../utils/frameworks-api.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import openBrowser from '../../utils/open-browser.js'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
 import { runBuildTimeline } from '../../utils/run-build.js'
 import type { ServerSettings } from '../../utils/types.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { type DevConfig } from '../dev/types.js'
 
 export const serve = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, frameworksAPIPaths, repositoryRoot, site, siteInfo, state } = command.netlify
-  config.dev = { ...config.dev }
+  config.dev = config.dev != null ? { ...config.dev } : undefined
   config.build = { ...config.build }
-  const devConfig = {
+  const devConfig: DevConfig = {
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
-    ...(config.build.publish && { publish: config.build.publish }),
+    ...('publish' in config.build && config.build.publish && { publish: config.build.publish }),
 
     ...config.dev,
     ...options,
     // Override the `framework` value so that we start a static server and not
     // the framework's development server.
     framework: '#static',
-  } as DevConfig
+  }
 
   let { env } = cachedConfig
 
@@ -56,8 +57,6 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   }
 
   env = await getDotEnvVariables({ devConfig, env, site })
-  injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
@@ -66,6 +65,34 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     site,
     siteInfo,
   })
+
+  if (!options.offline && !capabilities.aiGatewayDisabled) {
+    const resolvedAccountId = accountId ?? command.netlify.accounts[0]?.id
+    await setupAIGateway({
+      api,
+      env,
+      siteID: site.id,
+      siteURL: siteUrl,
+      accountID: resolvedAccountId,
+      siteHasDeploy: !!siteInfo.published_deploy,
+    })
+
+    const aiGatewayEnv = env.AI_GATEWAY as (typeof env)[string] | undefined
+    if (aiGatewayEnv) {
+      const aiGatewayContext = parseAIGatewayContext(aiGatewayEnv.value)
+      if (aiGatewayContext?.envVars) {
+        for (const envVar of aiGatewayContext.envVars) {
+          env[envVar.key] = { sources: ['internal'], value: aiGatewayContext.token }
+          env[envVar.url] = { sources: ['internal'], value: aiGatewayContext.url }
+        }
+      }
+    }
+  } else if (!options.offline && capabilities.aiGatewayDisabled) {
+    log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
+  }
+
+  injectEnvVariables(env)
+  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   if (!site.root) {
     throw new Error('Site root not found')
@@ -95,9 +122,9 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   command.setAnalyticsPayload({ live: options.live })
 
-  log(`${NETLIFYDEVLOG} Building site for production`)
+  log(`${NETLIFYDEVLOG} Building project for production`)
   log(
-    `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
+    `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your project you must exit and run 'netlify serve' again`,
   )
 
   const blobsOptions = {
@@ -110,7 +137,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   // which is what build plugins use.
   process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(await getBlobsContextWithAPIAccess(blobsOptions))
 
-  const { configPath: configPathOverride } = await runBuildTimeline({
+  const { configPath: configPathOverride, generatedFunctions } = await runBuildTimeline({
     command,
     settings,
     options,
@@ -130,6 +157,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     command,
     config: mergedConfig,
     debug: options.debug,
+    generatedFunctions,
     loadDistFunctions: true,
     settings,
     site,
@@ -142,6 +170,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     offline: options.offline,
     state,
     accountId,
+    deployEnvironment: [],
   })
 
   // Try to add `.netlify` to `.gitignore`.
@@ -181,6 +210,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
     state,
     accountId,
+    deployEnvironment: [],
   })
 
   if (devConfig.autoLaunch !== false) {

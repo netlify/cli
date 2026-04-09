@@ -3,6 +3,8 @@ import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
+import { watchDebounced } from '@netlify/dev-utils'
 
 import BaseCommand from '../../commands/base-command.js'
 import {
@@ -13,20 +15,19 @@ import {
   chalk,
   log,
   warn,
-  watchDebounced,
   isNodeError,
+  type NormalizedCachedConfigConfig,
 } from '../../utils/command-helpers.js'
 import type { FeatureFlags } from '../../utils/feature-flags.js'
 import { MultiMap } from '../../utils/multimap.js'
 import { getPathInProject } from '../settings.js'
 
-import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
-
-//  TODO: Replace with a proper type for the entire config object.
-export interface Config {
-  edge_functions?: Declaration[]
-  [key: string]: unknown
-}
+import { DIST_IMPORT_MAP_PATH } from './consts.js'
+import {
+  getFrameworkEdgeFunctionsDirectory,
+  getInternalEdgeFunctionsDirectory,
+  getUserEdgeFunctionsDirectory,
+} from './get-directories.js'
 
 type DependencyCache = Record<string, string[]>
 type EdgeFunctionEvent = 'buildError' | 'loaded' | 'reloaded' | 'reloading' | 'removed'
@@ -36,19 +37,20 @@ type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serv
 type ModuleJson = ModuleGraph['modules'][number]
 
 interface EdgeFunctionsRegistryOptions {
-  command: BaseCommand
+  aiGatewayContext?: AIGatewayContext | null
   bundler: typeof import('@netlify/edge-bundler')
-  config: Config
+  command: BaseCommand
+  config: NormalizedCachedConfigConfig
   configPath: string
   debug: boolean
-  directories: string[]
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
-  getUpdatedConfig: () => Promise<Config>
+  getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
+  importMapFromTOML?: string
   projectDir: string
   runIsolate: RunIsolate
   servePath: string
-  importMapFromTOML?: string
+  deployEnvironment: { key: string; value: string; isSecret: boolean }[]
 }
 
 /**
@@ -94,10 +96,26 @@ function traverseLocalDependencies(
   })
 }
 
-export class EdgeFunctionsRegistry {
+/** Public contract for EdgeFunctionsRegistry - consumers should use this type */
+export interface EdgeFunctionsRegistry {
+  initialize(): Promise<void>
+  matchURLPath(
+    urlPath: string,
+    method: string,
+    headers: Record<string, string | string[] | undefined>,
+  ): { functionNames: string[]; invocationMetadata: unknown }
+}
+
+export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
   public importMapFromDeployConfig?: string
 
+  private aiGatewayContext?: AIGatewayContext | null
   private buildError: Error | null = null
+
+  /** @internal Exposed for testing - not part of the public EdgeFunctionsRegistry interface */
+  public buildPending = false
+  /** @internal Exposed for testing - not part of the public EdgeFunctionsRegistry interface */
+  public buildPromise: Promise<{ warnings: Record<string, string[]> }> | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
   private importMapFromTOML?: string
@@ -107,7 +125,6 @@ export class EdgeFunctionsRegistry {
   // Mapping file URLs to names of functions that use them as dependencies.
   private dependencyPaths = new MultiMap<string, string>()
 
-  private directories: string[]
   private directoryWatchers = new Map<string, import('chokidar').FSWatcher>()
   private env: Record<string, string>
   private featureFlags: FeatureFlags
@@ -120,7 +137,7 @@ export class EdgeFunctionsRegistry {
   // opposed to O(n).
   private functionPaths = new Map<string, string>()
 
-  private getUpdatedConfig: () => Promise<Config>
+  private getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   private initialScan: Promise<void>
   private manifest: Manifest | null = null
   private routes: Route[] = []
@@ -130,11 +147,11 @@ export class EdgeFunctionsRegistry {
   private command: BaseCommand
 
   constructor({
+    aiGatewayContext,
     bundler,
     command,
     config,
     configPath,
-    directories,
     env,
     featureFlags,
     getUpdatedConfig,
@@ -142,11 +159,12 @@ export class EdgeFunctionsRegistry {
     projectDir,
     runIsolate,
     servePath,
+    deployEnvironment,
   }: EdgeFunctionsRegistryOptions) {
+    this.aiGatewayContext = aiGatewayContext
     this.command = command
     this.bundler = bundler
     this.configPath = configPath
-    this.directories = directories
     this.featureFlags = featureFlags
     this.getUpdatedConfig = getUpdatedConfig
     this.runIsolate = runIsolate
@@ -154,8 +172,8 @@ export class EdgeFunctionsRegistry {
     this.projectDir = projectDir
 
     this.importMapFromTOML = importMapFromTOML
-    this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(config)
-    this.env = EdgeFunctionsRegistry.getEnvironmentVariables(env)
+    this.declarationsFromTOML = EdgeFunctionsRegistryImpl.getDeclarationsFromTOML(config)
+    this.env = EdgeFunctionsRegistryImpl.getEnvironmentVariables(env, deployEnvironment)
 
     this.initialScan = this.doInitialScan()
 
@@ -171,8 +189,8 @@ export class EdgeFunctionsRegistry {
       this.functions.forEach((func) => {
         this.logEvent('loaded', { functionName: func.name, warnings: warnings[func.name] })
       })
-    } catch {
-      // no-op
+    } catch (error) {
+      this.logEvent('buildError', { buildError: error as NodeJS.ErrnoException })
     }
   }
 
@@ -180,11 +198,55 @@ export class EdgeFunctionsRegistry {
     return [...this.internalFunctions, ...this.userFunctions]
   }
 
-  private async build() {
+  /**
+   * Triggers a build of edge functions with coalescing behavior.
+   *
+   * Note: We intentionally don't use @netlify/dev-utils memoize() here because
+   * it has a 300ms debounce and fire-and-forget logic. Edge function build
+   * needs callers to receive the latest build result.
+   *
+   * @internal Exposed for testing - not part of the public EdgeFunctionsRegistry interface
+   */
+  public async build(): Promise<{ warnings: Record<string, string[]> }> {
+    // If a build is already in progress, mark that we need another build
+    // and return the current build's promise. The running build will
+    // trigger a rebuild when it completes if buildPending is true.
+    if (this.buildPromise) {
+      this.buildPending = true
+      return this.buildPromise
+    }
+
+    this.buildPending = false
+    this.buildPromise = this.doBuild()
+
+    try {
+      const result = await this.buildPromise
+      this.buildPromise = null
+
+      // If another build was requested while we were building, run it now
+      if (this.buildPending) {
+        return await this.build()
+      }
+
+      return result
+    } catch (error) {
+      this.buildPromise = null
+
+      // If another build was requested while we were building, run it now
+      if (this.buildPending) {
+        return await this.build()
+      }
+
+      throw error
+    }
+  }
+
+  /** @internal Exposed for testing - not part of the public EdgeFunctionsRegistry interface */
+  public async doBuild(): Promise<{ warnings: Record<string, string[]> }> {
     const warnings: Record<string, string[]> = {}
 
     try {
-      const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.runBuild()
+      const { functionsConfig, graph, success } = await this.runBuild()
 
       if (!success) {
         throw new Error('Build error')
@@ -196,16 +258,14 @@ export class EdgeFunctionsRegistry {
       // functionsConfig therefore contains first all internal functionConfigs and then user functionConfigs
       let index = 0
 
-      const internalFunctionConfigs = this.internalFunctions.reduce(
-        // eslint-disable-next-line no-plusplus
+      const internalFunctionConfigs = this.internalFunctions.reduce<Record<string, FunctionConfig>>(
         (acc, func) => ({ ...acc, [func.name]: functionsConfig[index++] }),
-        {} as Record<string, FunctionConfig>,
+        {},
       )
 
-      const userFunctionConfigs = this.userFunctions.reduce(
-        // eslint-disable-next-line no-plusplus
+      const userFunctionConfigs = this.userFunctions.reduce<Record<string, FunctionConfig>>(
         (acc, func) => ({ ...acc, [func.name]: functionsConfig[index++] }),
-        {} as Record<string, FunctionConfig>,
+        {},
       )
 
       const { manifest, routes, unroutedFunctions } = this.buildRoutes(internalFunctionConfigs, userFunctionConfigs)
@@ -228,14 +288,6 @@ export class EdgeFunctionsRegistry {
       }
 
       this.processGraph(graph)
-
-      if (npmSpecifiersWithExtraneousFiles.length !== 0) {
-        const modules = npmSpecifiersWithExtraneousFiles.map((name) => chalk.yellow(name)).join(', ')
-
-        log(
-          `${NETLIFYDEVWARN} The following npm modules, which are directly or indirectly imported by an edge function, may not be supported: ${modules}. For more information, visit https://ntl.fyi/edge-functions-npm.`,
-        )
-      }
 
       return { warnings }
     } catch (error) {
@@ -301,7 +353,7 @@ export class EdgeFunctionsRegistry {
     }
   }
 
-  private static getDeclarationsFromTOML(config: Config) {
+  private static getDeclarationsFromTOML(config: NormalizedCachedConfigConfig) {
     const { edge_functions: edgeFunctions = [] } = config
 
     return edgeFunctions
@@ -313,7 +365,10 @@ export class EdgeFunctionsRegistry {
     return declarations.find((declaration) => declaration.function === func)?.name ?? func
   }
 
-  private static getEnvironmentVariables(envConfig: Record<string, { sources: string[]; value: string }>) {
+  private static getEnvironmentVariables(
+    envConfig: Record<string, { sources: string[]; value: string }>,
+    deployEnvironment: { key: string; value: string; isSecret: boolean }[],
+  ) {
     const env = Object.create(null)
 
     Object.entries(envConfig).forEach(([key, variable]) => {
@@ -327,6 +382,10 @@ export class EdgeFunctionsRegistry {
         env[key] = variable.value
       }
     })
+
+    for (const { key, value } of deployEnvironment) {
+      env[key] = value
+    }
 
     env.DENO_REGION = 'local'
 
@@ -370,7 +429,7 @@ export class EdgeFunctionsRegistry {
   }
 
   async initialize() {
-    return await this.initialScan
+    await this.initialScan
   }
 
   /**
@@ -423,7 +482,7 @@ export class EdgeFunctionsRegistry {
    * Returns the functions in the registry that should run for a given URL path
    * and HTTP method, based on the routes registered for each function.
    */
-  matchURLPath(urlPath: string, method: string) {
+  matchURLPath(urlPath: string, method: string, headers: Record<string, string | string[] | undefined>) {
     const functionNames: string[] = []
     const routeIndexes: number[] = []
 
@@ -434,6 +493,35 @@ export class EdgeFunctionsRegistry {
 
       if (!route.pattern.test(urlPath)) {
         return
+      }
+
+      if (route.headers) {
+        const headerMatches = Object.entries(route.headers).every(([rawHeaderName, headerMatch]) => {
+          const headerName = rawHeaderName.toLowerCase()
+          const headerValueString = Array.isArray(headers[headerName])
+            ? headers[headerName].filter(Boolean).join(',')
+            : headers[headerName]
+
+          if (headerMatch?.matcher === 'exists') {
+            return headers[headerName] !== undefined
+          }
+
+          if (headerMatch?.matcher === 'missing') {
+            return headers[headerName] === undefined
+          }
+
+          if (headerValueString && headerMatch?.matcher === 'regex') {
+            const pattern = new RegExp(headerMatch.pattern)
+
+            return pattern.test(headerValueString)
+          }
+
+          return false
+        })
+
+        if (!headerMatches) {
+          return
+        }
       }
 
       const isExcludedForFunction = this.manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
@@ -522,7 +610,6 @@ export class EdgeFunctionsRegistry {
     if (this.functions.length === 0) {
       return {
         functionsConfig: [],
-        npmSpecifiersWithExtraneousFiles: [],
         success: true,
       }
     }
@@ -537,24 +624,20 @@ export class EdgeFunctionsRegistry {
       }
     }
 
-    const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.runIsolate(
-      this.functions,
-      this.env,
-      {
-        getFunctionsConfig: true,
-        importMapPaths: importMapPaths.filter(nonNullable),
-      },
-    )
+    const { functionsConfig, graph, success } = await this.runIsolate(this.functions, this.env, {
+      getFunctionsConfig: true,
+      importMapPaths: importMapPaths.filter(nonNullable),
+    })
 
-    return { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success }
+    return { functionsConfig, graph, success }
   }
 
-  private get internalDirectory() {
-    return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
+  private get internalImportMapPath() {
+    return join(this.projectDir, getPathInProject([DIST_IMPORT_MAP_PATH]))
   }
 
   private async readDeployConfig() {
-    const manifestPath = join(this.internalDirectory, 'manifest.json')
+    const manifestPath = join(getInternalEdgeFunctionsDirectory(this.command), 'manifest.json')
     try {
       const contents = await readFile(manifestPath, 'utf8')
       const manifest = JSON.parse(contents)
@@ -574,15 +657,16 @@ export class EdgeFunctionsRegistry {
 
     this.declarationsFromDeployConfig = deployConfig.functions
     this.importMapFromDeployConfig = deployConfig.import_map
-      ? join(this.internalDirectory, deployConfig.import_map)
+      ? join(getInternalEdgeFunctionsDirectory(this.command), deployConfig.import_map)
       : undefined
   }
 
   private async scanForFunctions() {
+    const userFunctionDirectory = getUserEdgeFunctionsDirectory(this.command)
     const [frameworkFunctions, integrationFunctions, userFunctions] = await Promise.all([
-      this.usesFrameworksAPI ? this.bundler.find([this.command.netlify.frameworksAPIPaths.edgeFunctions.path]) : [],
-      this.bundler.find([this.internalDirectory]),
-      this.bundler.find(this.directories),
+      this.usesFrameworksAPI ? this.bundler.find([getFrameworkEdgeFunctionsDirectory(this.command)]) : [],
+      this.bundler.find([getInternalEdgeFunctionsDirectory(this.command)]),
+      userFunctionDirectory ? this.bundler.find([userFunctionDirectory]) : [],
       this.scanForDeployConfig(),
     ])
     const internalFunctions = [...frameworkFunctions, ...integrationFunctions]
@@ -605,7 +689,6 @@ export class EdgeFunctionsRegistry {
     this.internalFunctions = internalFunctions
     this.userFunctions = userFunctions
 
-    // eslint-disable-next-line unicorn/prefer-spread
     this.functionPaths = new Map(Array.from(this.functions, (func) => [func.path, func.name]))
 
     return { all: functions, new: newFunctions, deleted: deletedFunctions }
@@ -628,7 +711,7 @@ export class EdgeFunctionsRegistry {
       onChange: async () => {
         const newConfig = await this.getUpdatedConfig()
 
-        this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(newConfig)
+        this.declarationsFromTOML = EdgeFunctionsRegistryImpl.getDeclarationsFromTOML(newConfig)
 
         await this.checkForAddedOrDeletedFunctions()
       },
@@ -636,7 +719,7 @@ export class EdgeFunctionsRegistry {
   }
 
   private async setupWatcherForDirectory() {
-    const ignored = [`${this.servePath}/**`]
+    const ignored = [`${this.servePath}/**`, this.internalImportMapPath]
     const watcher = await watchDebounced(this.projectDir, {
       ignored,
       onAdd: () => this.checkForAddedOrDeletedFunctions(),

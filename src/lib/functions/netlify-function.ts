@@ -3,15 +3,34 @@ import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
 
 import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
+import type { MemoizeCache } from '@netlify/dev-utils'
 import CronParser from 'cron-parser'
 import semver from 'semver'
 
-import { error as errorExit } from '../../utils/command-helpers.js'
+import { logAndThrowError, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
-import { BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
+import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
+import type { ServerSettings } from '../../utils/types.js'
+
+import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'
+
+export interface InvocationError {
+  errorMessage: string
+  errorType: string
+  stackTrace: string[]
+}
+
+export type InvokeFunctionResultWithError = { error: Error | InvocationError; result: null }
+export type InvokeFunctionResultWithSuccess = { error: null; result: InvokeFunctionResult }
+export type InvokeResult = InvokeFunctionResultWithError | InvokeFunctionResultWithSuccess
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
-const V2_MIN_NODE_VERSION = '18.14.0'
+const V2_MIN_NODE_VERSION = '20.12.2'
+
+// See https://github.com/microsoft/TypeScript/issues/54451.
+// Omit<A | B> does not work as you'd expect. This does.
+type MappedOmit<T, K extends keyof T> = { [P in keyof T as P extends K ? never : P]: T[P] }
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
 const difference = (setA: Set<string>, setB: Set<string>) => new Set([...setA].filter((item) => !setB.has(item)))
@@ -23,61 +42,76 @@ const getNextRun = function (schedule: string) {
   return cron.next().toDate()
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type $FIXME = any
-
-export default class NetlifyFunction {
-  public readonly name: string
-  public readonly mainFile: string
-  public readonly displayName: string
-  public readonly schedule?: string
-  public readonly runtime: string
-
-  private readonly directory: string
-  private readonly projectRoot: string
+export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
+  private readonly aiGatewayContext?: AIGatewayContext | null
   private readonly blobsContext: BlobsContextWithEdgeAccess
-  private readonly timeoutBackground: number
-  private readonly timeoutSynchronous: number
+  private readonly config: NormalizedCachedConfigConfig
+  private readonly deployEnvironment: { key: string; value: string; isSecret: boolean }[]
+  private readonly directory?: string
+  private readonly projectRoot: string
+  private readonly timeoutBackground?: number
+  private readonly timeoutSynchronous?: number
+  private readonly settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
+
+  public readonly displayName: string
+  public mainFile: string
+  public readonly name: string
+  public readonly runtime: Runtime<BuildResult>
+  public schedule?: string
+
+  // The path to the function boundary: if the function is in a sub-directory,
+  // this will hold the path to the sub-directory; if not, it's the path to the
+  // main file.
+  public readonly srcPath: string
 
   // Determines whether this is a background function based on the function
   // name.
   public readonly isBackground: boolean
 
-  private buildQueue?: Promise<$FIXME>
-  private buildData?: $FIXME
+  private buildQueue?: Promise<BuildResult> | undefined
+  public buildData?: MappedOmit<BuildResult, 'includedFiles' | 'schedule' | 'srcFiles'> | undefined
   public buildError: Error | null = null
 
   // List of the function's source files. This starts out as an empty set
   // and will get populated on every build.
-  private readonly srcFiles = new Set<string>()
+  private srcFiles = new Set<string>()
 
   constructor({
-    // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
+    aiGatewayContext,
     blobsContext,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
     config,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'directory' implicitly has an 'any... Remove this comment to see the full error message
+    deployEnvironment,
     directory,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'displayName' implicitly has an 'a... Remove this comment to see the full error message
     displayName,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'mainFile' implicitly has an 'any'... Remove this comment to see the full error message
     mainFile,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     name,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'projectRoot' implicitly has an 'a... Remove this comment to see the full error message
     projectRoot,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'runtime' implicitly has an 'any' ... Remove this comment to see the full error message
     runtime,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
     settings,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'timeoutBackground' implicitly has... Remove this comment to see the full error message
+    srcPath,
     timeoutBackground,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'timeoutSynchronous' implicitly ha... Remove this comment to see the full error message
     timeoutSynchronous,
+  }: {
+    aiGatewayContext?: AIGatewayContext | null
+    blobsContext: BlobsContextWithEdgeAccess
+    config: NormalizedCachedConfigConfig
+    deployEnvironment: { key: string; value: string; isSecret: boolean }[]
+    directory?: string
+    displayName?: string
+    mainFile: string
+    name: string
+    projectRoot: string
+    runtime: Runtime<BuildResult>
+    // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
+    settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
+    srcPath: string
+    timeoutBackground?: number
+    timeoutSynchronous?: number
   }) {
+    this.aiGatewayContext = aiGatewayContext
     this.blobsContext = blobsContext
-    // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'NetlifyF... Remove this comment to see the full error message
     this.config = config
+    this.deployEnvironment = deployEnvironment ?? []
     this.directory = directory
     this.mainFile = mainFile
     this.name = name
@@ -86,12 +120,13 @@ export default class NetlifyFunction {
     this.runtime = runtime
     this.timeoutBackground = timeoutBackground
     this.timeoutSynchronous = timeoutSynchronous
-    // @ts-expect-error TS(2339) FIXME: Property 'settings' does not exist on type 'Netlif... Remove this comment to see the full error message
     this.settings = settings
+    this.srcPath = srcPath
 
     this.isBackground = name.endsWith(BACKGROUND)
 
-    const functionConfig = config.functions && config.functions[name]
+    const functionConfig = config.functions?.[name]
+    // @ts-expect-error -- XXX(serhalp): fixed in stack PR (bumps to https://github.com/netlify/build/pull/6165)
     this.schedule = functionConfig && functionConfig.schedule
 
     this.srcFiles = new Set()
@@ -110,8 +145,8 @@ export default class NetlifyFunction {
       return
     }
 
-    const extension = this.buildData?.mainFile ? extname(this.buildData.mainFile) : undefined
-    const moduleFormat = this.buildData?.outputModuleFormat
+    const extension = this.buildData.mainFile ? extname(this.buildData.mainFile) : undefined
+    const moduleFormat = this.buildData.outputModuleFormat
 
     if (moduleFormat === 'esm') {
       return
@@ -128,7 +163,6 @@ export default class NetlifyFunction {
 
   hasValidName() {
     // same as https://github.com/netlify/bitballoon/blob/fbd7881e6c8e8c48e7a0145da4ee26090c794108/app/models/deploy.rb#L482
-    // eslint-disable-next-line unicorn/better-regex
     return /^[A-Za-z0-9_-]+$/.test(this.name)
   }
 
@@ -164,14 +198,11 @@ export default class NetlifyFunction {
   //
   // - `srcFilesDiff`: Files that were added and removed since the last time
   //    the function was built.
-  // @ts-expect-error TS(7031) FIXME: Binding element 'cache' implicitly has an 'any' ty... Remove this comment to see the full error message
-  async build({ cache }) {
-    // @ts-expect-error TS(2339) FIXME: Property 'runtime' does not exist on type 'Netlify... Remove this comment to see the full error message
+  async build({ cache }: { cache?: MemoizeCache<Record<string, unknown>> }) {
     const buildFunction = await this.runtime.getBuildFunction({
-      // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'NetlifyF... Remove this comment to see the full error message
       config: this.config,
       directory: this.directory,
-      errorExit,
+      errorExit: logAndThrowError,
       func: this,
       projectRoot: this.projectRoot,
     })
@@ -183,12 +214,10 @@ export default class NetlifyFunction {
       const srcFilesSet = new Set<string>(srcFiles)
       const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
-      this.buildData = buildData
+      this.buildData = buildData as unknown as MappedOmit<BuildResult, 'includedFiles' | 'schedule' | 'srcFiles'>
       this.buildError = null
-      // @ts-expect-error TS(2339) FIXME: Property 'srcFiles' does not exist on type 'Netlif... Remove this comment to see the full error message
       this.srcFiles = srcFilesSet
-      // @ts-expect-error TS(2339) FIXME: Property 'schedule' does not exist on type 'Netlif... Remove this comment to see the full error message
-      this.schedule = schedule || this.schedule
+      this.schedule = schedule ?? this.schedule
 
       if (!this.isSupported()) {
         throw new Error(
@@ -208,7 +237,7 @@ export default class NetlifyFunction {
     }
   }
 
-  async getBuildData() {
+  async getBuildData(): Promise<typeof this.buildData> {
     await this.buildQueue
 
     return this.buildData
@@ -227,25 +256,50 @@ export default class NetlifyFunction {
   }
 
   // Invokes the function and returns its response object.
-  async invoke(event = {}, context = {}) {
+  async invoke(event: Record<string, unknown> = {}, context: Record<string, unknown> = {}): Promise<InvokeResult> {
     await this.buildQueue
 
     if (this.buildError) {
-      return { result: null, error: { errorMessage: this.buildError.message } }
+      // TODO(serhalp): I don't think this error handling works as expected. Investigate.
+      return { result: null, error: { errorType: '', stackTrace: [], errorMessage: this.buildError.message } }
     }
 
     const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
-    const environment = {}
+    if (timeout == null) {
+      throw new Error('Function timeout (`timeoutBackground` or `timeoutSynchronous`) not set')
+    }
+
+    // Get function environment variables from config.build.environment
+    // This allows build event handlers to add function-specific environment variables
+    // Only include config environment variables that are not already set in process.env
+    // to ensure process environment variables take precedence
+    const configEnvVars: Record<string, string> = {}
+    if (this.config.build?.environment) {
+      Object.entries(this.config.build.environment).forEach(([key, value]) => {
+        if (typeof value === 'string' && !(key in process.env)) {
+          configEnvVars[key] = value
+        }
+      })
+    }
+
+    const environment = {
+      // Include function-specific environment variables from config
+      ...configEnvVars,
+      ...Object.fromEntries(this.deployEnvironment.map(({ key, value }) => [key, value])),
+    }
 
     if (this.blobsContext) {
       const payload = JSON.stringify(getBlobsEventProperty(this.blobsContext))
 
-      // @ts-expect-error TS(2339) FIXME: Property 'blobs' does not exist on type '{}'.
       event.blobs = Buffer.from(payload).toString('base64')
     }
 
+    if (this.aiGatewayContext) {
+      const payload = JSON.stringify(this.aiGatewayContext)
+      event.aiGateway = Buffer.from(payload).toString('base64')
+    }
+
     try {
-      // @ts-expect-error TS(2339) FIXME: Property 'runtime' does not exist on type 'Netlify... Remove this comment to see the full error message
       const result = await this.runtime.invokeFunction({
         context,
         environment,
@@ -255,7 +309,7 @@ export default class NetlifyFunction {
       })
       return { result, error: null }
     } catch (error) {
-      return { result: null, error }
+      return { result: null, error: error as Error | InvocationError }
     }
   }
 
@@ -324,9 +378,9 @@ export default class NetlifyFunction {
     // This line fixes the issue here https://github.com/netlify/cli/issues/4116
     // Not sure why `settings.port` was used here nor does a valid reference exist.
     // However, it remains here to serve whatever purpose for which it was added.
-    // @ts-expect-error TS(2339) FIXME: Property 'settings' does not exist on type 'Netlif... Remove this comment to see the full error message
+    // @ts-expect-error(serhalp) -- Remove use of `port` here? Otherwise, pass it in from `functions:serve`.
     const port = this.settings.port || this.settings.functionsPort
-    // @ts-expect-error TS(2339) FIXME: Property 'settings' does not exist on type 'Netlif... Remove this comment to see the full error message
+    // @ts-expect-error(serhalp) -- Same as above for `https`
     const protocol = this.settings.https ? 'https' : 'http'
     const url = new URL(`/.netlify/functions/${this.name}`, `${protocol}://localhost:${port}`)
 

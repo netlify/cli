@@ -3,22 +3,28 @@ import util from 'util'
 
 import { findUp } from 'find-up'
 import gitRepoInfo from 'git-repo-info'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'gitc... Remove this comment to see the full error message
 import gitconfiglocal from 'gitconfiglocal'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
-import parseGitRemote from 'parse-github-url'
+import parseGithubUrl from 'parse-github-url'
 
 import { log } from './command-helpers.js'
 
-/**
- *
- * @param {object} config
- * @param {string} [config.remoteName]
- * @param {string} config.workingDir
- * @returns
- */
+export interface RepoData {
+  name: string | null
+  owner: string | null
+  repo: string | null
+  url: string
+  branch: string
+  provider: string | null
+  httpsUrl: string
+}
 
-const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: string; workingDir: string }) {
+const getRepoData = async ({
+  remoteName,
+  workingDir,
+}: {
+  remoteName?: string
+  workingDir: string
+}): Promise<RepoData | { error: string }> => {
   try {
     const [gitConfig, gitDirectory] = await Promise.all([
       util.promisify(gitconfiglocal)(workingDir),
@@ -51,7 +57,12 @@ const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: s
     }
 
     const { url } = gitConfig.remote[remoteName]
-    const { host, name, owner, repo } = parseGitRemote(url)
+    const parsedUrl = parseGithubUrl(url)
+    // TODO(serhalp): Validate more aggressively? We should probably require `owner`, `repo`, `host`?
+    if (parsedUrl == null) {
+      throw new Error(`The specified Git remote ${remoteName} is not a valid URL: ${url}`)
+    }
+    const { host, name, owner, repo } = parsedUrl
     const { branch } = gitRepoInfo()
     return {
       name,
@@ -59,19 +70,17 @@ const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: s
       repo,
       url,
       branch,
-      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      provider: PROVIDERS[host] || host,
+      provider: host != null ? PROVIDERS[host] ?? host : host,
       httpsUrl: `https://${host}/${repo}`,
     }
   } catch (error) {
     return {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error: error.message,
+      error: error instanceof Error ? error.message : error?.toString() ?? 'Failed to get repo data',
     }
   }
 }
 
-const PROVIDERS = {
+const PROVIDERS: Record<string, string> = {
   'github.com': 'github',
   'gitlab.com': 'gitlab',
 }

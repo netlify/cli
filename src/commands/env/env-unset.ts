@@ -1,15 +1,16 @@
 import { OptionValues } from 'commander'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import { SUPPORTED_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
 import BaseCommand from '../base-command.js'
-
+import { getSiteInfo } from './utils.js'
 /**
  * Deletes a given key from the env of a site configured with Envelope
  * @returns {Promise<object>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
+const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars
@@ -26,6 +27,10 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
     return env
   }
 
+  if (Boolean(force) === false) {
+    await promptOverwriteEnvVariable(key)
+  }
+
   const params = { accountId, siteId, key }
   try {
     if (context) {
@@ -39,7 +44,7 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
         await Promise.all(values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })))
         // if this was the `all` context, we need to create 3 values in the other contexts
         if (values.length === 1 && values[0].context === 'all') {
-          const newContexts = AVAILABLE_CONTEXTS.filter((ctx) => !context.includes(ctx))
+          const newContexts = SUPPORTED_CONTEXTS.filter((ctx) => !context.includes(ctx))
           const allValue = values[0].value
           await Promise.all(
             newContexts
@@ -64,18 +69,18 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
 }
 
 export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
-  const { context } = options
+  const { context, force } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
   if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
+    log('No project id found, please run inside a project folder or `netlify link`')
     return false
   }
 
-  const { siteInfo } = cachedConfig
+  const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
 
-  const finalEnv = await unsetInEnvelope({ api, context, siteInfo, key })
+  const finalEnv = await unsetInEnvelope({ api, context, force, siteInfo, key })
 
   // Return new environment variables of site if using json flag
   if (options.json) {
@@ -83,6 +88,7 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
     return false
   }
 
-  const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
+  const contextType = SUPPORTED_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
   log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
+  log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
 }

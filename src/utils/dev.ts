@@ -1,12 +1,14 @@
 import process from 'process'
 
+import type { NetlifyAPI } from '@netlify/api'
 import getPort from 'get-port'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 
-import { NETLIFYDEVLOG, chalk, error, log, warn, APIError } from './command-helpers.js'
+import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
+import type { EnvironmentVariables, SiteInfo } from './types.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
@@ -31,7 +33,7 @@ const ENV_VAR_SOURCES = {
     printFn: chalk.red,
   },
   ui: {
-    name: 'site settings',
+    name: 'project settings',
     printFn: chalk.blue,
   },
 }
@@ -42,17 +44,37 @@ const ERROR_CALL_TO_ACTION =
 // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
 const validateSiteInfo = ({ site, siteInfo }) => {
   if (isEmpty(siteInfo)) {
-    error(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
+    return logAndThrowError(
+      `Failed to retrieve project information for project ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`,
+    )
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const getAccounts = async ({ api }) => {
+type ApiAccount = Awaited<ReturnType<NetlifyAPI['listAccountsForUser']>>[number]
+type Capabilities = NonNullable<ApiAccount['capabilities']> & {
+  // FIXME(serhalp): `background_functions` is missing from Netlify API account capabilities type
+  background_functions?:
+    | {
+        included?: boolean | undefined
+      }
+    | undefined
+  ai_gateway_disabled?:
+    | {
+        included?: boolean | undefined
+      }
+    | undefined
+}
+export type Capability = keyof Capabilities
+export type Account = ApiAccount & {
+  capabilities?: Capabilities
+}
+
+const getAccounts = async ({ api }: { api: NetlifyAPI }) => {
   try {
     const accounts = await api.listAccountsForUser()
     return accounts
   } catch (error_) {
-    error(`Failed retrieving user account: ${(error_ as APIError).message}. ${ERROR_CALL_TO_ACTION}`)
+    return logAndThrowError(`Failed retrieving user account: ${(error_ as APIError).message}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
@@ -62,7 +84,7 @@ const getAddons = async ({ api, site }) => {
     const addons = await api.listServiceInstancesForSite({ siteId: site.id })
     return addons
   } catch (error_) {
-    error(
+    return logAndThrowError(
       `Failed retrieving addons for site ${chalk.yellow(site.id)}: ${
         (error_ as APIError).message
       }. ${ERROR_CALL_TO_ACTION}`,
@@ -81,13 +103,11 @@ const getAddonsInformation = ({ addons, siteInfo }) => {
   return { urls, env }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'accounts' implicitly has an 'any'... Remove this comment to see the full error message
-const getSiteAccount = ({ accounts, siteInfo }) => {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
+const getSiteAccount = ({ accounts, siteInfo }: { accounts: Account[]; siteInfo: SiteInfo }): Account | undefined => {
   const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
-    warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
-    return {}
+    warn(`Could not find account for project '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
+    return undefined
   }
   return siteAccount
 }
@@ -98,17 +118,33 @@ const SYNCHRONOUS_FUNCTION_TIMEOUT = 30
 // default 15 minutes for background functions
 const BACKGROUND_FUNCTION_TIMEOUT = 900
 
-/**
- *
- * @param {object} config
- * @param {boolean} config.offline
- * @param {*} config.api
- * @param {*} config.site
- * @param {*} config.siteInfo
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
+interface GetSiteInformationOptions {
+  api: NetlifyAPI
+  offline: boolean
+  site: { id?: string }
+  siteInfo: SiteInfo
+}
+
+export interface SiteInformationResult {
+  addonsUrls: Record<string, string>
+  siteUrl: string
+  accountId?: string
+  capabilities: {
+    backgroundFunctions?: boolean
+    aiGatewayDisabled: boolean
+  }
+  timeouts: {
+    syncFunctions: number
+    backgroundFunctions: number
+  }
+}
+
+export const getSiteInformation = async ({
+  api,
+  offline,
+  site,
+  siteInfo,
+}: GetSiteInformationOptions): Promise<SiteInformationResult> => {
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
@@ -119,9 +155,10 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
     return {
       addonsUrls,
       siteUrl: siteInfo.ssl_url,
-      accountId: account.id,
+      accountId: account?.id,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
+        aiGatewayDisabled: siteInfo.capabilities?.ai_gateway_disabled ?? false,
       },
       timeouts: {
         syncFunctions: siteInfo.functions_timeout ?? siteInfo.functions_config?.timeout ?? SYNCHRONOUS_FUNCTION_TIMEOUT,
@@ -134,7 +171,9 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   return {
     addonsUrls: {},
     siteUrl: '',
-    capabilities: {},
+    capabilities: {
+      aiGatewayDisabled: false,
+    },
     timeouts: {
       syncFunctions: SYNCHRONOUS_FUNCTION_TIMEOUT,
       backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,
@@ -152,10 +191,9 @@ const getEnvSourceName = (source) => {
 
 /**
  * @param {{devConfig: any, env: Record<string, { sources: string[], value: string}>, site: any}} param0
- * @returns {Promise<Record<string, { sources: string[], value: string}>>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-export const getDotEnvVariables = async ({ devConfig, env, site }) => {
+export const getDotEnvVariables = async ({ devConfig, env, site }): Promise<EnvironmentVariables> => {
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
   // @ts-expect-error TS(2339) FIXME: Property 'env' does not exist on type '{ warning: ... Remove this comment to see the full error message
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
@@ -180,20 +218,15 @@ export const getDotEnvVariables = async ({ devConfig, env, site }) => {
 
 /**
  * Takes a set of environment variables in the format provided by @netlify/config and injects them into `process.env`
- * @param {Record<string, { sources: string[], value: string}>} env
- * @return {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'env' implicitly has an 'any' type.
-export const injectEnvVariables = (env) => {
+export const injectEnvVariables = (env: EnvironmentVariables): void => {
+  const envVarsToLogByUsedSource: Record<string, string[]> = {}
   for (const [key, variable] of Object.entries(env)) {
     const existsInProcess = process.env[key] !== undefined
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...variable.sources] : variable.sources
     const usedSourceName = getEnvSourceName(usedSource)
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const isInternal = variable.sources.includes('internal')
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
     overriddenSources.forEach((source) => {
       const sourceName = getEnvSourceName(source)
 
@@ -209,12 +242,17 @@ export const injectEnvVariables = (env) => {
     if (!existsInProcess || isInternal) {
       // Omitting `general` and `internal` env vars to reduce noise in the logs.
       if (usedSource !== 'general' && !isInternal) {
-        log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
+        envVarsToLogByUsedSource[usedSource] ??= []
+        envVarsToLogByUsedSource[usedSource].push(key)
       }
 
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       process.env[key] = variable.value
     }
+  }
+
+  for (const [source, keys] of Object.entries(envVarsToLogByUsedSource)) {
+    const sourceName = getEnvSourceName(source)
+    log(`${NETLIFYDEVLOG} Injected ${sourceName} env vars: ${keys.map((key) => chalk.yellow(key)).join(', ')}`)
   }
 }
 

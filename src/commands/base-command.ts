@@ -1,29 +1,28 @@
-import { isCI } from 'ci-info'
-
 import { existsSync } from 'fs'
 import { join, relative, resolve } from 'path'
 import process from 'process'
 import { format } from 'util'
 
+import { NetlifyAPI } from '@netlify/api'
 import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
-import { Command, Help, Option } from 'commander'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
+import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
+import { isCI } from 'ci-info'
+import { Command, CommanderError, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'inqu... Remove this comment to see the full error message
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
-import { NetlifyAPI } from 'netlify'
+import pick from 'lodash/pick.js'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
   NETLIFY_CYAN,
   USER_AGENT,
   chalk,
-  error,
+  logAndThrowError,
   exit,
   getToken,
   log,
@@ -33,16 +32,18 @@ import {
   pollForToken,
   sortOptions,
   warn,
+  logError,
 } from '../utils/command-helpers.js'
-import { FeatureFlags } from '../utils/feature-flags.js'
+import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
-import getGlobalConfig from '../utils/get-global-config.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
-import StateConfig from '../utils/state-config.js'
+import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
-
-import { type NetlifyOptions } from './types.js'
+import type { NetlifyOptions } from './types.js'
+import type { CachedConfig } from '../lib/build.js'
+import type { MinimalAccount } from '../utils/types.js'
 
 type Analytics = {
   startTime: bigint
@@ -53,7 +54,7 @@ type Analytics = {
 inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 /** Netlify CLI client id. Lives in bot@netlify.com */
 // TODO: setup client for multiple environments
-const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
+export const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
 const NANO_SECS_TO_MSECS = 1e6
 /** The fallback width for the help terminal */
@@ -70,12 +71,37 @@ const HELP_SEPARATOR_WIDTH = 5
  * Those commands work with the system or are not writing any config files that need to be
  * workspace aware.
  */
-const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login', 'lm'])
+const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set([
+  'api',
+  'recipes',
+  'completion',
+  'status',
+  'switch',
+  'login',
+  'teams',
+])
 
 /**
  * A list of commands where we need to fetch featureflags for config resolution
  */
 const COMMANDS_WITH_FEATURE_FLAGS = new Set(['build', 'dev', 'deploy'])
+
+/**
+ * Names of options whose values should be scrubbed
+ */
+const SCRUBBED_OPTIONS = new Set(['auth'])
+
+const getScrubbedOptions = (command: BaseCommand): Record<string, { source: OptionValues['source']; value: unknown }> =>
+  Object.entries(command.optsWithGlobals()).reduce(
+    (acc: Record<string, { source: OptionValues['source']; value: unknown }>, [key, value]) => ({
+      ...acc,
+      [key]: {
+        source: command.getOptionValueSourceWithGlobals(key),
+        value: SCRUBBED_OPTIONS.has(key) ? '********' : value,
+      },
+    }),
+    {},
+  )
 
 /** Formats a help list correctly with the correct indent */
 const formatHelpList = (textArray: string[]) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
@@ -109,25 +135,25 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
 
   if (!selected) {
     log()
-    log(chalk.cyan(`We've detected multiple sites inside your repository`))
+    log(chalk.cyan(`We've detected multiple projects inside your repository`))
 
     if (isCI) {
       throw new Error(
-        `Sites detected: ${(project.workspace?.packages || [])
+        `Projects detected: ${(project.workspace?.packages || [])
           .map((pkg) => pkg.name || pkg.path)
           .join(
             ', ',
-          )}. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
+          )}. Configure the project you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
       )
     }
 
     const { result } = await inquirer.prompt({
       name: 'result',
-      // @ts-expect-error TS(2769) FIXME: No overload matches this call.
+      // @ts-expect-error(serhalp) -- I think this is because `inquirer-autocomplete-prompt` extends known
+      // `type`s but TS doesn't know about it
       type: 'autocomplete',
-      message: 'Select the site you want to work with',
-      // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-      source: (/** @type {string} */ _, input = '') =>
+      message: 'Select the project you want to work with',
+      source: (_unused: unknown, input = '') =>
         (project.workspace?.packages || [])
           .filter((pkg) => pkg.path.includes(input))
           .map((pkg) => ({
@@ -150,14 +176,44 @@ async function getRepositoryRoot(cwd?: string): Promise<string | undefined> {
   }
 }
 
+export type BaseOptionValues = {
+  auth?: string
+  cwd?: string
+  debug?: boolean
+  filter?: string
+  httpProxy?: string
+  silent?: string
+  verbose?: boolean
+}
+
+export function storeToken(
+  globalConfig: Awaited<ReturnType<typeof getGlobalConfigStore>>,
+  { userId, name, email, accessToken }: { userId: string; name?: string; email?: string; accessToken: string },
+) {
+  const userData = merge(globalConfig.get(`users.${userId}`), {
+    id: userId,
+    name,
+    email,
+    auth: {
+      token: accessToken,
+      github: {
+        user: undefined,
+        token: undefined,
+      },
+    },
+  })
+  globalConfig.set('userId', userId)
+  globalConfig.set(`users.${userId}`, userData)
+}
+
 /** Base command class that provides tracking and config initialization */
 export default class BaseCommand extends Command {
   /** The netlify object inside each command with the state */
-  // @ts-expect-error This will be set for each command, TypeScript is just not able to infer it
-  netlify: NetlifyOptions
+  netlify!: NetlifyOptions
+  // TODO(serhalp) We set `startTime` here and then overwrite it in a `preAction` hook. This is
+  // just asking for latent bugs. Remove this one?
   analytics: Analytics = { startTime: process.hrtime.bigint() }
-  // @ts-expect-error This will be set for each command, TypeScript is just not able to infer it
-  project: Project
+  project!: Project
 
   /**
    * The working directory that is used for reading the `netlify.toml` file and storing the state.
@@ -165,7 +221,7 @@ export default class BaseCommand extends Command {
    * Package/Site that should be worked in.
    */
   // here we actually want to disable the lint rule as its value is set
-  // eslint-disable-next-line workspace/no-process-cwd
+  // eslint-disable-next-line no-restricted-properties
   workingDir = process.cwd()
 
   /**
@@ -181,28 +237,21 @@ export default class BaseCommand extends Command {
   accountId?: string
 
   /**
-   * IMPORTANT this function will be called for each command!
-   * Don't do anything expensive in there.
+   * Override Commander's createCommand to return BaseCommand instances with our setup.
+   * This is called by .command() to create subcommands.
+   * IMPORTANT: This function is called for each command! Don't do anything expensive here.
    */
-  createCommand(name: string): BaseCommand {
-    const base = new BaseCommand(name)
-      // If  --silent or --json flag passed disable logger
-      .addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
+  createCommand(name?: string): BaseCommand {
+    const commandName = name || ''
+    const base = new BaseCommand(commandName)
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
       .addOption(new Option('--cwd <cwd>').hideHelp(true))
-      .addOption(new Option('-o, --offline').hideHelp(true))
-      .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
       .addOption(
-        new Option('--httpProxy [address]', 'Old, prefer --http-proxy. Proxy server address to route requests through.')
-          .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
-          .hideHelp(true),
+        new Option('--auth <token>', 'Netlify auth token - can be used to run this command without logging in'),
       )
       .addOption(
-        new Option(
-          '--httpProxyCertificateFilename [file]',
-          'Old, prefer --http-proxy-certificate-filename. Certificate file to use when connecting using a proxy server.',
-        )
-          .default(process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
+        new Option('--http-proxy [address]', 'Proxy server address to route requests through.')
+          .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
           .hideHelp(true),
       )
       .addOption(
@@ -213,27 +262,44 @@ export default class BaseCommand extends Command {
           .default(process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
           .hideHelp(true),
       )
-      .addOption(
-        new Option('--httpProxy [address]', 'Proxy server address to route requests through.')
-          .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
-          .hideHelp(true),
-      )
       .option('--debug', 'Print debugging information')
 
-    // only add the `--filter` option to commands that are workspace aware
-    if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(name)) {
+    if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(commandName)) {
       base.option('--filter <app>', 'For monorepos, specify the name of the application to run the command in')
     }
 
-    return base.hook('preAction', async (_parentCommand, actionCommand) => {
+    base.hook('preAction', async (_parentCommand, actionCommand) => {
       if (actionCommand.opts()?.debug) {
         process.env.DEBUG = '*'
       }
-      debug(`${name}:preAction`)('start')
-      this.analytics = { startTime: process.hrtime.bigint() }
+      debug(`${commandName}:preAction`)('start')
+      this.analytics.startTime = process.hrtime.bigint()
       await this.init(actionCommand as BaseCommand)
-      debug(`${name}:preAction`)('end')
+      debug(`${commandName}:preAction`)('end')
     })
+
+    // Wrap the command's action() to set exitOverride when action is registered.
+    // We set exitOverride here (rather than earlier) because Commander may clone
+    // or modify command instances during registration, so we need to set it on
+    // the final instance that will actually execute.
+    const originalAction = base.action.bind(base)
+    base.action = function (this: BaseCommand, fn: any) {
+      // Set exitOverride for option-related errors in non-interactive environments.
+      // In non-interactive mode, we show the full help output instead of just a
+      // brief error message, making it easier for users in CI/CD environments to
+      // understand what went wrong.
+      this.exitOverride((error: CommanderError) => {
+        if (isOptionError(error)) {
+          handleOptionError(this)
+        }
+
+        throw error
+      })
+
+      return originalAction(fn)
+    }
+
+    return base
   }
 
   #noBaseOptions = false
@@ -264,7 +330,6 @@ export default class BaseCommand extends Command {
       return padLeft(term, HELP_INDENT_WIDTH)
     }
 
-    // eslint-disable-next-line unicorn/consistent-function-scoping
     const getCommands = (command: BaseCommand) => {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
       return (
@@ -278,7 +343,6 @@ export default class BaseCommand extends Command {
             }
             return cmd.name().startsWith(`${command.name()}:`)
           })
-          // eslint-disable-next-line id-length
           .sort((a, b) => a.name().localeCompare(b.name())) || []
       )
     }
@@ -397,10 +461,14 @@ export default class BaseCommand extends Command {
         duration,
         status,
       })
-    } catch {}
+    } catch (err) {
+      debug(`${this.name()}:onEnd`)(
+        `Command: ${command}. Telemetry tracking failed: ${err instanceof Error ? err.message : err?.toString()}`,
+      )
+    }
 
     if (error_ !== undefined) {
-      error(error_ instanceof Error ? error_ : format(error_), { exit: false })
+      logError(error_ instanceof Error ? error_ : format(error_))
       exit(1)
     }
   }
@@ -410,7 +478,29 @@ export default class BaseCommand extends Command {
     if (token) {
       return token
     }
-    return this.expensivelyAuthenticate()
+    if (!isInteractive()) {
+      return logAndThrowError(
+        `Authentication required. NETLIFY_AUTH_TOKEN is not set and ${chalk.cyanBright(
+          '`netlify status`',
+        )} also informs us that you need to use ${chalk.cyanBright(
+          '`netlify login --request <message>`',
+        )} as a next step.`,
+      )
+    }
+    const accessToken = await this.expensivelyAuthenticate()
+    this.netlify.api.accessToken = accessToken
+    await this.refreshAccounts()
+    return accessToken
+  }
+
+  private async refreshAccounts() {
+    try {
+      const accounts = (await this.netlify.api.listAccountsForUser()) as MinimalAccount[]
+      this.netlify.accounts = accounts
+    } catch {
+      // If refresh fails, leave existing accounts in place.
+      // Commands will handle empty accounts with their own error messages.
+    }
   }
 
   async expensivelyAuthenticate() {
@@ -426,8 +516,10 @@ export default class BaseCommand extends Command {
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
     log(`Opening ${authLink}`)
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: string; }' is not assigna... Remove this comment to see the full error message
     await openBrowser({ url: authLink })
+    log()
+    log(`To request authorization from a human, run: ${chalk.cyanBright('netlify login --request "<msg>"')}`)
+    log()
 
     const accessToken = await pollForToken({
       api: this.netlify.api,
@@ -435,23 +527,11 @@ export default class BaseCommand extends Command {
     })
 
     const { email, full_name: name, id: userId } = await this.netlify.api.getCurrentUser()
+    if (!userId) {
+      return logAndThrowError('Could not retrieve user ID from Netlify API')
+    }
 
-    const userData = merge(this.netlify.globalConfig.get(`users.${userId}`), {
-      id: userId,
-      name,
-      email,
-      auth: {
-        token: accessToken,
-        github: {
-          user: undefined,
-          token: undefined,
-        },
-      },
-    })
-    // Set current userId
-    this.netlify.globalConfig.set('userId', userId)
-    // Set user data
-    this.netlify.globalConfig.set(`users.${userId}`, userData)
+    storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
 
     await identify({
       name,
@@ -464,7 +544,7 @@ export default class BaseCommand extends Command {
 
     // Log success
     log()
-    log(`${chalk.greenBright('You are now logged into your Netlify account!')}`)
+    log(chalk.greenBright('You are now logged into your Netlify account!'))
     log()
     log(`Run ${chalk.cyanBright('netlify status')} for account details`)
     log()
@@ -487,9 +567,21 @@ export default class BaseCommand extends Command {
   private async init(actionCommand: BaseCommand) {
     debug(`${actionCommand.name()}:init`)('start')
     const flags = actionCommand.opts()
+
     // here we actually want to use the process.cwd as we are setting the workingDir
-    // eslint-disable-next-line workspace/no-process-cwd
-    this.workingDir = flags.cwd ? resolve(flags.cwd) : process.cwd()
+    // eslint-disable-next-line no-restricted-properties
+    const processCwd = process.cwd()
+
+    if (flags.cwd) {
+      const resolvedCwd = resolve(flags.cwd)
+      this.workingDir = resolvedCwd
+
+      // if cwd matches process.cwd, act like cwd wasn't provided
+      if (resolvedCwd === processCwd) {
+        delete flags.cwd
+        this.workingDir = processCwd
+      }
+    }
 
     // ==================================================
     // Create a Project and run the Heuristics to detect
@@ -505,7 +597,6 @@ export default class BaseCommand extends Command {
     this.project = new Project(fs, this.workingDir, rootDir)
       .setEnvironment(process.env)
       .setNodeVersion(process.version)
-      // eslint-disable-next-line promise/prefer-await-to-callbacks
       .setReportFn((err, reportConfig) => {
         reportError(err, {
           severity: reportConfig?.severity || 'error',
@@ -542,7 +633,7 @@ export default class BaseCommand extends Command {
     // ==================================================
     // Retrieve Site id and build state from the state.json
     // ==================================================
-    const state = new StateConfig(this.workingDir)
+    const state = new LocalState(this.workingDir)
     const [token] = await getToken(flags.auth)
 
     const apiUrlOpts: {
@@ -567,15 +658,15 @@ export default class BaseCommand extends Command {
       certificateFile: flags.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }
-    // TODO: remove typecast once we have proper types for the API
-    const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
+    const api = new NetlifyAPI(token ?? '', apiOpts)
 
     actionCommand.siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
     if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
       try {
-        const site = await api.getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
+        // FIXME(serhalp): Remove `any` and fix errors. API types exist now.
+        const site = await (api as any).getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
         actionCommand.featureFlags = site.feature_flags
         actionCommand.accountId = site.account_id
       } catch {
@@ -596,11 +687,8 @@ export default class BaseCommand extends Command {
       token,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
-    let { env } = cachedConfig
-    if (flags.offlineEnv) {
-      env = {}
-    }
+    const { accounts = [], buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
+    const env = cachedConfig?.env ?? {}
     env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
 
@@ -612,10 +700,14 @@ export default class BaseCommand extends Command {
     // deploy by name along with by id
     let siteData = siteInfo
     if (!siteData.url && flags.site) {
-      siteData = await getSiteByName(api, flags.site)
+      const result = await getSiteByName(api, flags.site)
+      if (result == null) {
+        return logAndThrowError(`Project with name "${flags.site}" not found`)
+      }
+      siteData = result
     }
 
-    const globalConfig = await getGlobalConfig()
+    const globalConfig = await getGlobalConfigStore()
 
     // ==================================================
     // Perform analytics reporting
@@ -628,6 +720,8 @@ export default class BaseCommand extends Command {
       monorepo: Boolean(this.project.workspace),
       packageManager: this.project.packageManager?.name,
       buildSystem: this.project.buildSystems.map(({ id }) => id),
+      opts: getScrubbedOptions(actionCommand),
+      args: actionCommand.args,
     })
 
     // set the project and the netlify api object on the command,
@@ -642,6 +736,7 @@ export default class BaseCommand extends Command {
     const configFilePath = configPath || join(this.workingDir, 'netlify.toml')
 
     actionCommand.netlify = {
+      accounts,
       // api methods
       api,
       apiOpts,
@@ -670,8 +765,10 @@ export default class BaseCommand extends Command {
         env,
       },
       // global cli config
+      // TODO(serhalp): Rename to `globalConfigStore`
       globalConfig,
       // state of current site dir
+      // TODO(serhalp): Rename to `cliState`
       state,
       frameworksAPIPaths: getFrameworksAPIPaths(buildDir, this.workspacePackage),
     }
@@ -679,7 +776,7 @@ export default class BaseCommand extends Command {
   }
 
   /** Find and resolve the Netlify configuration */
-  async getConfig(config: {
+  async getConfig(opts: {
     cwd: string
     token?: string | null
     offline?: boolean
@@ -690,26 +787,28 @@ export default class BaseCommand extends Command {
     host?: string
     pathPrefix?: string
     scheme?: string
-  }): ReturnType<typeof resolveConfig> {
+  }): Promise<CachedConfig> {
+    const { configFilePath, cwd, host, offline, packagePath, pathPrefix, repositoryRoot, scheme, token } = opts
     // the flags that are passed to the command like `--debug` or `--offline`
     const flags = this.opts()
 
     try {
+      // FIXME(serhalp): Type this in `netlify/build`! This is blocking a ton of proper types across the CLI.
       return await resolveConfig({
         accountId: this.accountId,
-        config: config.configFilePath,
-        packagePath: config.packagePath,
-        repositoryRoot: config.repositoryRoot,
-        cwd: config.cwd,
+        config: configFilePath,
+        packagePath: packagePath,
+        repositoryRoot: repositoryRoot,
+        cwd: cwd,
         context: flags.context || process.env.CONTEXT || this.getDefaultContext(),
         debug: flags.debug,
         siteId: this.siteId,
-        token: config.token,
+        token: token,
         mode: 'cli',
-        host: config.host,
-        pathPrefix: config.pathPrefix,
-        scheme: config.scheme,
-        offline: config.offline ?? flags.offline,
+        host: host,
+        pathPrefix: pathPrefix,
+        scheme: scheme,
+        offline: offline ?? flags.offline,
         siteFeatureFlagPrefix: 'cli',
         featureFlags: this.featureFlags,
       })
@@ -723,18 +822,18 @@ export default class BaseCommand extends Command {
       //
       // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
       // the option to say that we don't need API data.)
-      if (isUserError && !config.offline && config.token) {
+      if (isUserError && !offline && token) {
         if (flags.debug) {
-          error(error_, { exit: false })
+          logError(error_)
           warn('Failed to resolve config, falling back to offline resolution')
         }
         // recursive call with trying to resolve offline
-        return this.getConfig({ ...config, offline: true })
+        return this.getConfig({ ...opts, offline: true })
       }
 
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       const message = isUserError ? error_.message : error_.stack
-      error(message, { exit: true })
+      return logAndThrowError(message)
     }
   }
 
@@ -757,7 +856,12 @@ export default class BaseCommand extends Command {
   /**
    * Retrieve feature flags for this site
    */
-  getFeatureFlag<T = null | boolean | string>(flagName: string): T {
+  getFeatureFlag<T extends null | boolean | string>(flagName: string): T {
+    // @ts-expect-error(serhalp) -- FIXME(serhalp): This probably isn't what we intend.
+    // We should return `false` feature flags as `false` and not `null`. Carefully fix.
     return this.netlify.siteInfo.feature_flags?.[flagName] || null
   }
 }
+
+export const getBaseOptionValues = (options: OptionValues): BaseOptionValues =>
+  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'silent', 'verbose'])

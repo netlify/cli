@@ -1,14 +1,11 @@
-// @ts-expect-error TS(7006) FIXME: Parameter 'configPlugins' implicitly has an 'any' ... Remove this comment to see the full error message
-const isPluginInstalled = (configPlugins, plugin) =>
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configPlugin' implicitly has an '... Remove this comment to see the full error message
-  configPlugins.some(({ package: configPlugin }) => configPlugin === plugin)
+import type { NormalizedCachedConfigConfig } from '../command-helpers.js'
+import type { Plugin } from '../types.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'frameworkPlugins' implicitly has an 'an... Remove this comment to see the full error message
-export const getRecommendPlugins = (frameworkPlugins, config) =>
-  // @ts-expect-error TS(7006) FIXME: Parameter 'plugin' implicitly has an 'any' type.
-  frameworkPlugins.filter((plugin) => !isPluginInstalled(config.plugins, plugin))
+const isPluginInstalled = (configPlugins: Plugin[], pluginName: string): boolean =>
+  configPlugins.some(({ package: configPlugin }) => configPlugin === pluginName)
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'configPlugins' implicitly has an 'any' ... Remove this comment to see the full error message
-export const getUIPlugins = (configPlugins) =>
-  // @ts-expect-error TS(7031) FIXME: Binding element 'origin' implicitly has an 'any' t... Remove this comment to see the full error message
+export const getRecommendPlugins = (frameworkPlugins: string[], config: NormalizedCachedConfigConfig): string[] =>
+  frameworkPlugins.filter((plugin) => !isPluginInstalled(config.plugins ?? [], plugin))
+
+export const getUIPlugins = (configPlugins: Plugin[]): { package: string }[] =>
   configPlugins.filter(({ origin }) => origin === 'ui').map(({ package: pkg }) => ({ package: pkg }))

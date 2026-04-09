@@ -2,20 +2,23 @@
 import fs from 'node:fs/promises'
 import { type AddressInfo } from 'node:net'
 import path from 'node:path'
+import process from 'process'
 
+import js from 'dedent'
+import getPort from 'get-port'
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.ts'
+import { withDevServer } from '../../utils/dev-server.js'
 import { startExternalServer } from '../../utils/external-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.js'
 
 type BlobFixture = {
   key: string
   content: string
-  metadata?: { [key: string]: unknown } | null | undefined
+  metadata?: Record<string, unknown> | null | undefined
 }
 
 const withServeBlobsFunction = (builder: SiteBuilder): SiteBuilder =>
@@ -38,7 +41,7 @@ const withServeBlobsFunction = (builder: SiteBuilder): SiteBuilder =>
       path: 'package.json',
       content: JSON.stringify({
         dependencies: {
-          '@netlify/blobs': '*',
+          '@netlify/blobs': '^8.0.0',
         },
       }),
     })
@@ -54,7 +57,7 @@ const withBlobs = (builder: SiteBuilder, fixtures: BlobFixture[]): SiteBuilder =
     if (metadata != null) {
       // Write a separate `<blob_path>/$<blob_name>.json` file
       const pathSegments = key.split(path.sep).slice(0, -1)
-      const name = `$${key.split(path.sep).at(-1)}.json`
+      const name = `$${key.split(path.sep).at(-1)!}.json`
       const metadataKey = path.join(...pathSegments, name)
 
       builder.withContentFile({
@@ -223,7 +226,7 @@ describe.concurrent('command/dev', () => {
       const externalServer = startExternalServer()
       const { port } = externalServer.address() as AddressInfo
       builder.withRedirectsFile({
-        redirects: [{ from: '/api/*', to: `http://localhost:${port}/:splat`, status: 200 }],
+        redirects: [{ from: '/api/*', to: `http://localhost:${port.toString()}/:splat`, status: 200 }],
       })
 
       await builder.build()
@@ -231,9 +234,8 @@ describe.concurrent('command/dev', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const getResponse = await fetch(`${server.url}/api/ping`)
         const jsonPingWithGet = await getResponse.json()
-        t.expect(jsonPingWithGet.body).toStrictEqual({})
-        t.expect(jsonPingWithGet.method).toEqual('GET')
-        t.expect(jsonPingWithGet.url).toEqual('/ping')
+        t.expect(jsonPingWithGet).toHaveProperty('method', 'GET')
+        t.expect(jsonPingWithGet).toHaveProperty('url', '/ping')
 
         const postResponse = await fetch(`${server.url}/api/ping`, {
           method: 'POST',
@@ -242,10 +244,11 @@ describe.concurrent('command/dev', () => {
           },
           body: 'param=value',
           follow: 0,
-        }).then((res) => res.json())
-        t.expect(postResponse.body).toStrictEqual({ param: 'value' })
-        t.expect(postResponse.method).toEqual('POST')
-        t.expect(postResponse.url).toEqual('/ping')
+        })
+        const postBody = await postResponse.json()
+        t.expect(postBody).toHaveProperty('body', { param: 'value' })
+        t.expect(postBody).toHaveProperty('method', 'POST')
+        t.expect(postBody).toHaveProperty('url', '/ping')
       })
 
       externalServer.close()
@@ -279,7 +282,7 @@ describe.concurrent('command/dev', () => {
             redirects: [
               {
                 from: '/sign/*',
-                to: `http://localhost:${port}/:splat`,
+                to: `http://localhost:${port.toString()}/:splat`,
                 signed: 'VAR_WITH_SIGNING_SECRET',
                 status: 200,
               },
@@ -301,7 +304,7 @@ describe.concurrent('command/dev', () => {
           },
           async (server) => {
             const [getResponse, postResponse] = await Promise.all([
-              fetch(`${server.url}/sign/ping`).then((res) => res.json()),
+              fetch(`${server.url}/sign/ping`),
               fetch(`${server.url}/sign/ping`, {
                 method: 'POST',
                 headers: {
@@ -309,11 +312,13 @@ describe.concurrent('command/dev', () => {
                 },
                 body: 'param=value',
                 follow: 0,
-              }).then((res) => res.json()),
+              }),
             ])
+            const getBody = await getResponse.json()
+            const postBody = await postResponse.json()
 
-            ;[getResponse, postResponse].forEach((response) => {
-              const signature = response.headers['x-nf-sign']
+            ;[getBody, postBody].forEach((response) => {
+              const signature = (response as { headers: Record<string, string> }).headers['x-nf-sign']
               const payload = jwt.verify(signature, mockSigningSecret) as JwtPayload
 
               t.expect(payload.deploy_context).toEqual('dev')
@@ -322,7 +327,7 @@ describe.concurrent('command/dev', () => {
               t.expect(payload.iss).toEqual('netlify')
             })
 
-            t.expect(postResponse.body).toStrictEqual({ param: 'value' })
+            t.expect(postBody).toHaveProperty('body', { param: 'value' })
           },
         )
       })
@@ -331,12 +336,12 @@ describe.concurrent('command/dev', () => {
     })
   })
 
-  test('should follow 301 redirect to an external server', async (t) => {
+  test('follows 301 redirect to an external server', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const externalServer = startExternalServer()
       const { port } = externalServer.address() as AddressInfo
       builder.withRedirectsFile({
-        redirects: [{ from: '/api/*', to: `http://localhost:${port}/:splat`, status: 301 }],
+        redirects: [{ from: '/api/*', to: `http://localhost:${port.toString()}/:splat`, status: 301 }],
       })
 
       await builder.build()
@@ -344,14 +349,53 @@ describe.concurrent('command/dev', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response1, response2] = await Promise.all([
           fetch(`${server.url}/api/ping`, { follow: 0, redirect: 'manual' }),
-          fetch(`${server.url}/api/ping`).then((res) => res.json()),
+          fetch(`${server.url}/api/ping`),
         ])
-        t.expect(response1.headers.get('location')).toEqual(`http://localhost:${port}/ping`)
+        const response2Body = await response2.json()
+        t.expect(response1.headers.get('location')).toEqual(`http://localhost:${port.toString()}/ping`)
 
-        t.expect(response2.body).toStrictEqual({})
-        t.expect(response2.method).toEqual('GET')
-        t.expect(response2.url).toEqual('/ping')
+        t.expect(response2Body).toHaveProperty('method', 'GET')
+        t.expect(response2Body).toHaveProperty('url', '/ping')
       })
+
+      externalServer.close()
+    })
+  })
+
+  test('should proxy server without waiting for port', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const externalServer = startExternalServer()
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory, skipWaitPort: true }, async (server) => {
+        const response = await fetch(`${server.url}/api/test`)
+        t.expect(response.status).toBe(404)
+      })
+
+      externalServer.close()
+    })
+  })
+
+  test('should detect ipVer when proxying without waiting for port', async (t) => {
+    // ipv6 is default from node 18
+    const nodeVer = Number.parseInt(process.versions.node.split('.')[0])
+    t.expect(nodeVer).toBeGreaterThanOrEqual(18)
+
+    await withSiteBuilder(t, async (builder) => {
+      const externalServer = startExternalServer({
+        host: '127.0.0.1',
+        port: 4567,
+      })
+      await builder.build()
+
+      await withDevServer(
+        { cwd: builder.directory, command: 'node', framework: '#custom', targetPort: 4567, skipWaitPort: true },
+        async (server) => {
+          const response = await fetch(`${server.url}/test`)
+          t.expect(response.status).toBe(200)
+          t.expect(String(server.output)).toContain('Switched host to 127.0.0.1')
+        },
+      )
 
       externalServer.close()
     })
@@ -457,14 +501,14 @@ describe.concurrent('command/dev', () => {
       await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const res1 = await fetch(`${server.url}`)
+        const res1 = await fetch(server.url)
         const etag = res1.headers.get('etag')
 
         t.expect(etag).toBeTruthy()
         t.expect(res1.status).toBe(200)
         t.expect(await res1.text()).toBeTruthy()
 
-        const res2 = await fetch(`${server.url}`, {
+        const res2 = await fetch(server.url, {
           headers: {
             'if-none-match': etag!,
           },
@@ -473,7 +517,7 @@ describe.concurrent('command/dev', () => {
         t.expect(res2.status).toBe(304)
         t.expect(await res2.text()).toBeFalsy()
 
-        const res3 = await fetch(`${server.url}`, {
+        const res3 = await fetch(server.url, {
           headers: {
             'if-none-match': 'stale-etag',
           },
@@ -528,68 +572,106 @@ describe.concurrent('command/dev', () => {
     })
   })
 
+  test('should not add `.netlify` to `.gitignore` when --skip-gitignore flag is used', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const existingGitIgnore = ['.vscode/', 'node_modules/', '!node_modules/cool_module']
+
+      await builder
+        .withContentFile({
+          path: '.gitignore',
+          content: existingGitIgnore.join('\n'),
+        })
+        .withContentFile({
+          path: 'index.html',
+          content: '<html><h1>Hi',
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory, args: ['--skip-gitignore'] }, async () => {
+        const gitignore = await fs.readFile(path.join(builder.directory, '.gitignore'), 'utf8')
+        const entries = gitignore.split('\n')
+
+        t.expect(entries.includes('.netlify')).toBe(false)
+        t.expect(entries).toEqual(existingGitIgnore)
+      })
+    })
+  })
+
+  test('should not create a `.gitignore` file when --skip-gitignore flag is used', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'index.html',
+          content: '<html><h1>Hi',
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory, args: ['--skip-gitignore'] }, async () => {
+        try {
+          await fs.access(path.join(builder.directory, '.gitignore'))
+          t.expect(false).toBe(true) // Should not reach here
+        } catch (error) {
+          // File should not exist, which is expected
+          t.expect((error as NodeJS.ErrnoException).code).toBe('ENOENT')
+        }
+      })
+    })
+  })
+
   describe.concurrent('blobs', () => {
     describe.concurrent('on startup', () => {
-      test.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')(
-        'seeds the blob server with files written to `.netlify/blobs/deploy` by the user',
-        async (t) => {
-          await withSiteBuilder(t, async (builder) => {
-            const blobFixtures = [
-              { key: 'test.txt', content: 'I am the first test blob', metadata: null },
-              { key: 'test2.txt', content: 'I am the second test blob', metadata: null },
-              { key: 'subdir/test3.txt', content: 'I am the third (nested) test blob', metadata: null },
-              {
-                key: 'subdir/deeper/test4.txt',
-                content: 'I am the fourth (more deeply nested) test blob',
-                metadata: null,
-              },
-            ]
-            withBlobs(builder, blobFixtures)
-            withServeBlobsFunction(builder)
+      test('seeds the blob server with files written to `.netlify/blobs/deploy` by the user', async (t) => {
+        await withSiteBuilder(t, async (builder) => {
+          const blobFixtures = [
+            { key: 'test.txt', content: 'I am the first test blob', metadata: null },
+            { key: 'test2.txt', content: 'I am the second test blob', metadata: null },
+            { key: 'subdir/test3.txt', content: 'I am the third (nested) test blob', metadata: null },
+            {
+              key: 'subdir/deeper/test4.txt',
+              content: 'I am the fourth (more deeply nested) test blob',
+              metadata: null,
+            },
+          ]
+          withBlobs(builder, blobFixtures)
+          withServeBlobsFunction(builder)
 
-            await builder.build()
+          await builder.build()
 
-            await withDevServer({ cwd: builder.directory }, async (server) => {
-              t.expect.hasAssertions()
-              t.expect.assertions(blobFixtures.length * 2)
-              for (const { content, key } of blobFixtures) {
-                const res = await fetch(new URL(`/${key}`, server.url))
-                t.expect(res.status).toBe(200)
+          await withDevServer({ cwd: builder.directory }, async (server) => {
+            t.expect.hasAssertions()
+            t.expect.assertions(blobFixtures.length * 2)
+            for (const { content, key } of blobFixtures) {
+              const res = await fetch(new URL(`/${key}`, server.url))
+              t.expect(res.status).toBe(200)
 
-                const body = await res.json()
-                t.expect(body).toHaveProperty('data', content)
-              }
-            })
+              const body = await res.json()
+              t.expect(body).toHaveProperty('data', content)
+            }
           })
-        },
-      )
+        })
+      })
 
-      test.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')(
-        'reads metadata files and attaches their contents to their corresponding blob',
-        async (t) => {
-          await withSiteBuilder(t, async (builder) => {
-            const blobFixtures = [
-              { key: 'test.txt', content: 'I am the first test blob', metadata: { type: 'my-junk' } },
-            ]
-            withBlobs(builder, blobFixtures)
-            withServeBlobsFunction(builder)
+      test('reads metadata files and attaches their contents to their corresponding blob', async (t) => {
+        await withSiteBuilder(t, async (builder) => {
+          const blobFixtures = [{ key: 'test.txt', content: 'I am the first test blob', metadata: { type: 'my-junk' } }]
+          withBlobs(builder, blobFixtures)
+          withServeBlobsFunction(builder)
 
-            await builder.build()
+          await builder.build()
 
-            await withDevServer({ cwd: builder.directory }, async (server) => {
-              t.expect.hasAssertions()
-              t.expect.assertions(blobFixtures.length * 2)
-              for (const { key, metadata } of blobFixtures) {
-                const res = await fetch(new URL(`/${key}`, server.url))
-                t.expect(res.status).toBe(200)
+          await withDevServer({ cwd: builder.directory }, async (server) => {
+            t.expect.hasAssertions()
+            t.expect.assertions(blobFixtures.length * 2)
+            for (const { key, metadata } of blobFixtures) {
+              const res = await fetch(new URL(`/${key}`, server.url))
+              t.expect(res.status).toBe(200)
 
-                const body = await res.json()
-                t.expect(body).toHaveProperty('metadata', metadata)
-              }
-            })
+              const body = await res.json()
+              t.expect(body).toHaveProperty('metadata', metadata)
+            }
           })
-        },
-      )
+        })
+      })
 
       test('does not write metadata files to the blob server', async (t) => {
         await withSiteBuilder(t, async (builder) => {
@@ -607,44 +689,40 @@ describe.concurrent('command/dev', () => {
         })
       })
 
-      test.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')(
-        'seeds the blob server with files written to `.netlify/blobs/deploy` by the onDev stage',
-        async (t) => {
-          t.expect.hasAssertions()
+      test('seeds the blob server with files written to `.netlify/blobs/deploy` by the onDev stage', async (t) => {
+        t.expect.hasAssertions()
 
-          await withSiteBuilder(t, async (builder) => {
-            withServeBlobsFunction(builder)
-            builder
-              .withBuildPlugin({
-                name: 'deploy-blobs',
-                plugin: {
-                  async onDev() {
-                    // eslint-disable-next-line @typescript-eslint/no-shadow, @typescript-eslint/no-var-requires, n/global-require
-                    const fs = require('node:fs/promises')
+        await withSiteBuilder(t, async (builder) => {
+          withServeBlobsFunction(builder)
+          builder
+            .withBuildPlugin({
+              name: 'deploy-blobs',
+              plugin: {
+                async onDev() {
+                  const fs = require('node:fs/promises') as typeof import('node:fs/promises')
 
-                    await fs.mkdir('.netlify/blobs/deploy', { recursive: true })
-                    await fs.writeFile(`.netlify/blobs/deploy/test.txt`, 'I am the first test blob')
-                  },
+                  await fs.mkdir('.netlify/blobs/deploy', { recursive: true })
+                  await fs.writeFile(`.netlify/blobs/deploy/test.txt`, 'I am the first test blob')
                 },
-              })
-              .withNetlifyToml({
-                config: {
-                  plugins: [{ package: './plugins/deploy-blobs' }],
-                },
-              })
-
-            await builder.build()
-
-            await withDevServer({ cwd: builder.directory, debug: true }, async (server) => {
-              const res = await fetch(new URL(`/test.txt`, server.url))
-              t.expect(res.status).toBe(200)
-
-              const body = await res.json()
-              t.expect(body).toEqual({ data: 'I am the first test blob', metadata: {} })
+              },
             })
+            .withNetlifyToml({
+              config: {
+                plugins: [{ package: './plugins/deploy-blobs' }],
+              },
+            })
+
+          await builder.build()
+
+          await withDevServer({ cwd: builder.directory, debug: true }, async (server) => {
+            const res = await fetch(new URL(`/test.txt`, server.url))
+            t.expect(res.status).toBe(200)
+
+            const body = await res.json()
+            t.expect(body).toEqual({ data: 'I am the first test blob', metadata: {} })
           })
-        },
-      )
+        })
+      })
 
       test('ensures installation of dev server plugins', async (t) => {
         await withSiteBuilder(t, async (builder) => {
@@ -680,12 +758,251 @@ describe.concurrent('command/dev', () => {
               },
             },
             async (server) => {
-              const output = server.outputBuffer.map((buff) => buff.toString()).join('\n')
-              t.expect(output).toContain('Server now ready')
-              t.expect(server.errorBuffer).toHaveLength(0)
+              const output = server.outputBuffer.map((buf: Buffer) => buf.toString()).join('\n')
+              t.expect(output).toContain('Local dev server ready')
+              // With node 23 we might be getting some warnings from one of our dependencies
+              // which should go away once this is merged: https://github.com/debug-js/debug/pull/977
+              const errorOutput = server.errorBuffer.map((buf: Buffer) => buf.toString()).join('\n')
+              t.expect(errorOutput).not.toContain('Error')
             },
           )
         })
+      })
+
+      test('ensures dev server plugins can mutate env', async (t) => {
+        await withSiteBuilder(t, async (builder) => {
+          const port = await getPort()
+
+          await builder
+            .withNetlifyToml({
+              config: {
+                plugins: [{ package: './plugins/plugin' }],
+                dev: {
+                  command: 'node index.mjs',
+                  targetPort: port,
+                },
+              },
+            })
+            .withBuildPlugin({
+              name: 'plugin',
+              plugin: {
+                onPreDev({ netlifyConfig }) {
+                  netlifyConfig.build.environment.SOME_ENV = 'value'
+                },
+              },
+            })
+            .withContentFile({
+              path: 'index.mjs',
+              content: `
+              import process from 'process';
+              import http from 'http';
+
+              const server = http.createServer((req, res) => {
+                res.write(process.env.SOME_ENV)
+                res.end();
+              })
+
+              server.listen(${port.toString()})
+              `,
+            })
+            .build()
+
+          await withDevServer(
+            {
+              cwd: builder.directory,
+            },
+            async (server) => {
+              const output = server.outputBuffer.map((buf: Buffer) => buf.toString()).join('\n')
+              t.expect(output).toContain('Netlify configuration property "build.environment.SOME_ENV" value changed.')
+              t.expect(output).toContain('Local dev server ready')
+
+              const res = await fetch(new URL('/', server.url))
+              t.expect(res.status).toBe(200)
+              t.expect(await res.text()).toBe('value')
+            },
+          )
+        })
+      })
+    })
+  })
+
+  test('deploy environment variables injected by onDev plugin hooks are injected into functions', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            plugins: [{ package: './plugins/plugin' }],
+            dev: {
+              command: 'node index.mjs',
+              targetPort: 4445,
+            },
+          },
+        })
+        .withBuildPlugin({
+          name: 'plugin',
+          plugin: {
+            onDev({ utils }) {
+              utils.deploy.env.add('DEPLOY_FUNCTION_ENV_VAR', 'function-only', {
+                scopes: ['functions'],
+              })
+              utils.deploy.env.add('DEPLOY_MULTI_ENV_VAR', 'multi', {
+                scopes: ['functions', 'post_processing'],
+              })
+              utils.deploy.env.add('DEPLOY_POSTPROCESSING_ENV_VAR', 'post_processing-only', {
+                scopes: ['post_processing'],
+              })
+            },
+          },
+        })
+        .withContentFile({
+          path: 'netlify/functions/test-function.mjs',
+          content: js`
+              export default async () => Response.json({
+                DEPLOY_FUNCTION_ENV_VAR: process.env.DEPLOY_FUNCTION_ENV_VAR ?? '',
+                DEPLOY_MULTI_ENV_VAR: process.env.DEPLOY_MULTI_ENV_VAR ?? '',
+                DEPLOY_POSTPROCESSING_ENV_VAR: process.env.DEPLOY_POSTPROCESSING_ENV_VAR ?? '',
+              })
+              `,
+        })
+        .withContentFile({
+          path: 'netlify/functions/test-edge-function.mjs',
+          content: js`
+              export const config = {
+                path: '/test-edge-function',
+              };
+
+              export default async () => Response.json({
+                DEPLOY_FUNCTION_ENV_VAR: process.env.DEPLOY_FUNCTION_ENV_VAR ?? '',
+                DEPLOY_MULTI_ENV_VAR: process.env.DEPLOY_MULTI_ENV_VAR ?? '',
+                DEPLOY_POSTPROCESSING_ENV_VAR: process.env.DEPLOY_POSTPROCESSING_ENV_VAR ?? '',
+              })
+              `,
+        })
+        .withContentFile({
+          path: 'index.mjs',
+          content: js`
+              import process from 'process';
+              import http from 'http';
+
+              const server = http.createServer((req, res) => {
+                res.write('Hello, world')
+                res.end();
+              })
+
+              server.listen(4445)
+              `,
+        })
+        .build()
+
+      await withDevServer(
+        {
+          cwd: builder.directory,
+        },
+        async (server) => {
+          const output = server.outputBuffer.map((buf: Buffer) => buf.toString()).join('\n')
+          t.expect(output).toContain('Local dev server ready')
+
+          const functionRes = await fetch(new URL('/.netlify/functions/test-function', server.url))
+          t.expect(functionRes.status).toBe(200)
+          t.expect(await functionRes.json()).toEqual({
+            DEPLOY_FUNCTION_ENV_VAR: 'function-only',
+            DEPLOY_MULTI_ENV_VAR: 'multi',
+            DEPLOY_POSTPROCESSING_ENV_VAR: '',
+          })
+
+          const edgeFunctionRes = await fetch(new URL('/test-edge-function', server.url))
+          t.expect(edgeFunctionRes.status).toBe(200)
+          t.expect(await edgeFunctionRes.json()).toEqual({
+            DEPLOY_FUNCTION_ENV_VAR: 'function-only',
+            DEPLOY_MULTI_ENV_VAR: 'multi',
+            DEPLOY_POSTPROCESSING_ENV_VAR: '',
+          })
+        },
+      )
+    })
+  })
+
+  test('should inject `branch-deploy` and `branch` context env vars when given context matches `branch:*`', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/get-foo.mjs',
+          content: js`
+            export default async () => Response.json({
+              WITH_BRANCH_OVERRIDE: process.env.WITH_BRANCH_OVERRIDE ?? "WITH_BRANCH_OVERRIDE not defined",
+              WITHOUT_OVERRIDE: process.env.WITHOUT_OVERRIDE ?? "WITHOUT_OVERRIDE not defined",
+            })`,
+        })
+        .build()
+
+      const siteInfo = {
+        id: 'site_id',
+        name: 'site-name',
+        account_slug: 'test-account',
+        build_settings: { env: {} },
+      }
+      const routes = [
+        { path: 'sites/site_id', response: siteInfo },
+        { path: 'sites/site_id/service-instances', response: [] },
+        {
+          path: 'accounts',
+          response: [{ slug: siteInfo.account_slug }],
+        },
+        {
+          path: 'accounts/test-account/env',
+          response: [
+            {
+              key: 'WITH_BRANCH_OVERRIDE',
+              scopes: ['builds', 'functions', 'runtime'],
+              values: [
+                { context: 'branch-deploy' as const, value: 'value from branch-deploy context' },
+                {
+                  context: 'branch' as const,
+                  context_parameter: 'feat/make-it-pop',
+                  value: 'value from branch context',
+                },
+                { context: 'dev' as const, value: 'value from dev context' },
+                { context: 'production' as const, value: 'value from production context' },
+                {
+                  context: 'deploy-preview' as const,
+                  context_parameter: '12345',
+                  value: 'value from deploy-preview context',
+                },
+                { context: 'all' as const, value: 'value from all context' },
+              ],
+            },
+            {
+              key: 'WITHOUT_OVERRIDE',
+              scopes: ['builds', 'functions', 'runtime'],
+              values: [
+                { context: 'branch-deploy' as const, value: 'value from branch-deploy context' },
+                { context: 'all' as const, value: 'value from all context' },
+              ],
+            },
+          ],
+        },
+      ]
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        await withDevServer(
+          {
+            cwd: builder.directory,
+            offline: false,
+            context: 'branch:feat/make-it-pop',
+            env: {
+              NETLIFY_API_URL: apiUrl,
+              NETLIFY_SITE_ID: siteInfo.id,
+            },
+          },
+          async (server) => {
+            const response = await fetch(`${server.url}/.netlify/functions/get-foo`)
+            const data = (await response.json()) as { WITH_BRANCH_OVERRIDE: string; WITHOUT_OVERRIDE: string }
+
+            t.expect(response).toHaveProperty('status', 200)
+            t.expect(data).toHaveProperty('WITH_BRANCH_OVERRIDE', 'value from branch context')
+            t.expect(data).toHaveProperty('WITHOUT_OVERRIDE', 'value from branch-deploy context')
+          },
+        )
       })
     })
   })

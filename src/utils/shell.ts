@@ -1,64 +1,78 @@
 import process from 'process'
+import { Transform } from 'stream'
+import { stripVTControlCharacters } from 'util'
 
 import execa from 'execa'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
-import stripAnsiCc from 'strip-ansi-control-characters'
+
+import { type Spinner } from '../lib/spinner.js'
 
 import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
 
-/**
- * @type {(() => Promise<void>)[]} - array of functions to run before the process exits
- */
-// @ts-expect-error TS(7034) FIXME: Variable 'cleanupWork' implicitly has type 'any[]'... Remove this comment to see the full error message
-const cleanupWork = []
+const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
+  value instanceof Error && Object.hasOwn(value, 'code')
+
+const createStripAnsiControlCharsStream = (): Transform =>
+  new Transform({
+    transform(chunk, _encoding, callback) {
+      callback(null, stripVTControlCharacters(typeof chunk === 'string' ? chunk : (chunk as unknown)?.toString() ?? ''))
+    },
+  })
+
+const cleanupWork: (() => Promise<void>)[] = []
 
 let cleanupStarted = false
+let cleanupRegistered = false
 
-/**
- * @param {() => Promise<void>} job
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'job' implicitly has an 'any' type.
-export const addCleanupJob = (job) => {
-  cleanupWork.push(job)
-}
-
-/**
- * @param {object} input
- * @param {number=} input.exitCode The exit code to return when exiting the process after cleanup
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'exitCode' implicitly has an 'any'... Remove this comment to see the full error message
-const cleanupBeforeExit = async ({ exitCode }) => {
+const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined } = {}) => {
   // If cleanup has started, then wherever started it will be responsible for exiting
   if (!cleanupStarted) {
     cleanupStarted = true
     try {
-      // @ts-expect-error TS(7005) FIXME: Variable 'cleanupWork' implicitly has an 'any[]' t... Remove this comment to see the full error message
       await Promise.all(cleanupWork.map((cleanup) => cleanup()))
     } finally {
+      // eslint-disable-next-line n/no-process-exit
       process.exit(exitCode)
     }
   }
 }
 
+const ensureCleanupOnExit = () => {
+  if (!cleanupRegistered) {
+    cleanupRegistered = true
+    processOnExit(async () => {
+      await cleanupBeforeExit({})
+    })
+  }
+}
+
 /**
- * Run a command and pipe stdout, stderr and stdin
- * @param {string} command
- * @param {object} options
- * @param {import('ora').Ora|null} [options.spinner]
- * @param {NodeJS.ProcessEnv} [options.env]
- * @param {string} [options.cwd]
- * @returns {execa.ExecaChildProcess<string>}
+ * Registers a cleanup function to run before the process exits. The process
+ * will call `process.exit()` after all registered cleanup functions complete.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-export const runCommand = (command, options = {}) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'cwd' does not exist on type '{}'.
-  const { cwd, env = {}, spinner = null } = options
+export const runBeforeProcessExit = (fn: () => Promise<void>) => {
+  cleanupWork.push(fn)
+  ensureCleanupOnExit()
+}
+
+// TODO(serhalp): Move (or at least rename). This sounds like a generic shell util but it's specific
+// to `netlify dev`...
+export const runCommand = (
+  command: string,
+  options: {
+    spinner?: Spinner
+    env?: NodeJS.ProcessEnv
+    cwd: string
+  },
+) => {
+  const { cwd, env = {}, spinner } = options
   const commandProcess = execa.command(command, {
     preferLocal: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
     env: {
+      // Include process.env so injected env vars are passed to child process
+      ...process.env,
       // we want always colorful terminal outputs
       FORCE_COLOR: 'true',
       ...env,
@@ -68,72 +82,63 @@ export const runCommand = (command, options = {}) => {
     cwd,
   })
 
-  // This ensures that an active spinner stays at the bottom of the commandline
+  // Ensure that an active spinner stays at the bottom of the commandline
   // even though the actual framework command might be outputting stuff
-  // @ts-expect-error TS(7006) FIXME: Parameter 'writeStream' implicitly has an 'any' ty... Remove this comment to see the full error message
-  const pipeDataWithSpinner = (writeStream, chunk) => {
-    if (spinner && spinner.isSpinning) {
+  const pipeDataWithSpinner = (writeStream: NodeJS.WriteStream, chunk: string | Uint8Array) => {
+    // Clear the spinner, write the framework command line, then resume spinning
+    if (spinner?.isSpinning()) {
       spinner.clear()
-      spinner.isSilent = true
     }
     writeStream.write(chunk, () => {
-      if (spinner && spinner.isSpinning) {
-        spinner.isSilent = false
-        spinner.render()
+      if (spinner?.isSpinning()) {
+        spinner.spin()
       }
     })
   }
 
-  // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-  commandProcess.stdout.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stdout))
-  // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-  commandProcess.stderr.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stderr))
-  // @ts-expect-error TS(2345) FIXME: Argument of type 'Writable | null' is not assignab... Remove this comment to see the full error message
-  process.stdin.pipe(commandProcess.stdin)
+  commandProcess.stdout
+    ?.pipe(createStripAnsiControlCharsStream())
+    .on('data', pipeDataWithSpinner.bind(null, process.stdout))
+  commandProcess.stderr
+    ?.pipe(createStripAnsiControlCharsStream())
+    .on('data', pipeDataWithSpinner.bind(null, process.stderr))
+  if (commandProcess.stdin != null) {
+    process.stdin.pipe(commandProcess.stdin)
+  }
 
   // we can't try->await->catch since we don't want to block on the framework server which
   // is a long running process
-  // eslint-disable-next-line promise/catch-or-return
-  commandProcess
-    // eslint-disable-next-line promise/prefer-await-to-then
-    .then(async () => {
-      const result = await commandProcess
-      const [commandWithoutArgs] = command.split(' ')
-      if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
-        log(
-          `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
-            `'${commandWithoutArgs}'`,
-          )} exists`,
-        )
-      } else {
-        const errorMessage = result.failed
-          ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
-            `${NETLIFYDEVERR} ${result.shortMessage}`
-          : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  commandProcess.then(async () => {
+    const result = await commandProcess
+    const [commandWithoutArgs] = command.split(' ')
+    if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
+      log(
+        `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
+          `'${commandWithoutArgs}'`,
+        )} exists`,
+      )
+    } else {
+      const errorMessage = result.failed
+        ? // @ts-expect-error FIXME(serhalp): We use `reject: false` which means the resolved value is either the resolved value
+          // or the rejected value, but the types aren't smart enough to know this.
+          `${NETLIFYDEVERR} ${result.shortMessage as string}`
+        : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode.toString()}`
 
-        log(`${errorMessage}. Shutting down Netlify Dev server`)
-      }
+      log(`${errorMessage}. Shutting down Netlify Dev server`)
+    }
 
-      return await cleanupBeforeExit({ exitCode: 1 })
-    })
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{}' is not assignable to paramet... Remove this comment to see the full error message
-  processOnExit(async () => await cleanupBeforeExit({}))
+    await cleanupBeforeExit({ exitCode: 1 })
+  })
+  ensureCleanupOnExit()
 
   return commandProcess
 }
 
-/**
- *
- * @param {object} config
- * @param {string} config.command
- * @param {*} config.error
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-const isNonExistingCommandError = ({ command, error: commandError }) => {
+const isNonExistingCommandError = ({ command, error: commandError }: { command: string; error: unknown }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
-  if (commandError.code === 'ENOENT') {
+  if (isErrnoException(commandError) && commandError.code === 'ENOENT') {
     return true
   }
 
@@ -144,6 +149,7 @@ const isNonExistingCommandError = ({ command, error: commandError }) => {
 
   // this only works on English versions of Windows
   return (
+    commandError instanceof Error &&
     typeof commandError.message === 'string' &&
     commandError.message.includes('is not recognized as an internal or external command')
   )

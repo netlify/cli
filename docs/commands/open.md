@@ -1,11 +1,13 @@
 ---
 title: Netlify CLI open command
+sidebar:
+  label: open
 ---
 
 # `open`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Open settings for the site linked to the current folder
+Open settings for the project linked to the current folder
 
 **Usage**
 
@@ -15,15 +17,16 @@ netlify open
 
 **Flags**
 
-- `admin` (*boolean*) - Open Netlify site
+- `admin` (*boolean*) - Open Netlify project
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `site` (*boolean*) - Open site
+- `site` (*boolean*) - Open project
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`open:admin`](/commands/open#openadmin) | Opens current site admin UI in Netlify  |
-| [`open:site`](/commands/open#opensite) | Opens current site url in browser  |
+| [`open:admin`](/commands/open#openadmin) | Opens current project admin UI in Netlify  |
+| [`open:site`](/commands/open#opensite) | Opens current project url in browser  |
 
 
 **Examples**
@@ -38,7 +41,7 @@ netlify open:site
 ---
 ## `open:admin`
 
-Opens current site admin UI in Netlify
+Opens current project admin UI in Netlify
 
 **Usage**
 
@@ -50,6 +53,7 @@ netlify open:admin
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -60,7 +64,7 @@ netlify open:admin
 ---
 ## `open:site`
 
-Opens current site url in browser
+Opens current project url in browser
 
 **Usage**
 
@@ -72,6 +76,7 @@ netlify open:site
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

@@ -11,7 +11,7 @@ import { getRecipe, listRecipes } from './common.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
-interface RunRecipeOptions {
+export interface RunRecipeOptions {
   args: string[]
   command?: BaseCommand
   config: unknown
@@ -65,8 +65,9 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
         resolve(false)
       }, SUGGESTION_TIMEOUT)
 
-      // eslint-disable-next-line promise/catch-or-return
-      prompt.then((value) => resolve(value.suggestion))
+      prompt.then((value) => {
+        resolve(value.suggestion)
+      })
     })
 
     if (applySuggestion) {

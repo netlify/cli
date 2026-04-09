@@ -1,10 +1,13 @@
+---
 name: E2E Tests
 
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches:
+      - '**'
+      - '!release-please--**'
   schedule:
     # check daily to notice potential package manager issues
     - cron: '0 1 * * *' # At 01:00 daily
@@ -13,35 +16,45 @@ jobs:
   e2e-windows:
     name: E2E Windows tests
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    env:
-      DEBUG: true
+    timeout-minutes: 30
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-2025]
         # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
-        node-version: ['18.14.0', '20.12.2', '22']
+        node-version: ['20.12.2', '22', '24']
       fail-fast: false
-
     steps:
+      # This improves Windows network performance. We need this since we open many ports in our tests.
+      - name: Increase Windows port limit and reduce time wait delay
+        run: |
+          netsh int ipv4 set dynamicport tcp start=1025 num=64511
+          REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
+
       - name: Git checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           check-latest: true
-      - name: Cache verdaccio storage
-        uses: actions/cache@v4
-        with:
-          path: ./.verdaccio-storage
-          key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
+
+      # Let corepack manage npm, pnpm, and yarn versions for E2E tests
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Install dependencies
         run: npm ci --no-audit
-      - run: npm run e2e
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
         if: ${{ github.event_name == 'schedule' && failure() }}
@@ -62,34 +75,38 @@ jobs:
   e2e-linux-based-os:
     name: E2E
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
-    env:
-      DEBUG: true
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest]
-        node-version: ['18.14.0', '*']
+        node-version: ['20.12.2', '22', '24']
       fail-fast: false
-
     steps:
       - name: Git checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           check-latest: true
-      - name: Cache verdaccio storage
-        uses: actions/cache@v4
+
+      - uses: pnpm/action-setup@v4
         with:
-          path: ./.verdaccio-storage
-          key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
+          version: 10
+
       - name: Install dependencies
         run: npm ci --no-audit
-      - run: npm run e2e
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
         if: ${{ github.event_name == 'schedule' && failure() }}

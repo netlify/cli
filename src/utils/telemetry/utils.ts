@@ -1,6 +1,6 @@
-import getPackageJson from '../get-package-json.js'
+import getCLIPackageJson from '../get-cli-package-json.js'
 
-export const { version: cliVersion } = await getPackageJson()
+export const { version: cliVersion } = await getCLIPackageJson()
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
 export const isTelemetryDisabled = function (config) {

@@ -1,6 +1,5 @@
 import fs from 'fs'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'back... Remove this comment to see the full error message
 import backoff from 'backoff'
 import pMap from 'p-map'
 
@@ -97,14 +96,16 @@ const retryUpload = (uploadFn, maxRetry) =>
       try {
         const results = await uploadFn(retryIndex + 1)
 
-        return resolve(results)
+        resolve(results)
+        return
       } catch (error) {
         lastError = error
 
         // We don't need to retry for 400 or 422 errors
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (error.status === 400 || error.status === 422) {
-          return reject(error)
+          reject(error)
+          return
         }
 
         // observed errors: 408, 401 (4** swallowed), 502
@@ -113,7 +114,8 @@ const retryUpload = (uploadFn, maxRetry) =>
           fibonacciBackoff.backoff()
           return
         }
-        return reject(error)
+        reject(error)
+        return
       }
     }
 
@@ -124,6 +126,7 @@ const retryUpload = (uploadFn, maxRetry) =>
       // user the delay before next reconnection attempt.
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     fibonacciBackoff.on('ready', tryUpload)
 
     fibonacciBackoff.on('fail', () => {

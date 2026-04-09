@@ -1,12 +1,14 @@
 ---
 title: Netlify CLI env command
-description: Control environment variables for the current site
+sidebar:
+  label: env
+description: Control environment variables for the current project
 ---
 
 # `env`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Control environment variables for the current site
+Control environment variables for the current project
 
 **Usage**
 
@@ -18,13 +20,14 @@ netlify env
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`env:clone`](/commands/env#envclone) | Clone environment variables from one site to another  |
+| [`env:clone`](/commands/env#envclone) | Clone environment variables from one project to another  |
 | [`env:get`](/commands/env#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
 | [`env:import`](/commands/env#envimport) | Import and set environment variables from .env file  |
-| [`env:list`](/commands/env#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
+| [`env:list`](/commands/env#envlist) | Lists resolved environment variables for project (includes netlify.toml)  |
 | [`env:set`](/commands/env#envset) | Set value of environment variable  |
 | [`env:unset`](/commands/env#envunset) | Unset an environment variable which removes it from the UI  |
 
@@ -37,13 +40,13 @@ netlify env:get VAR_NAME
 netlify env:set VAR_NAME value
 netlify env:unset VAR_NAME
 netlify env:import fileName
-netlify env:clone --to <to-site-id>
+netlify env:clone --to <to-project-id>
 ```
 
 ---
 ## `env:clone`
 
-Clone environment variables from one site to another
+Clone environment variables from one project to another
 
 **Usage**
 
@@ -54,15 +57,17 @@ netlify env:clone
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `from` (*string*) - Site ID (From)
-- `to` (*string*) - Site ID (To)
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
+- `from` (*string*) - Project ID (From)
+- `to` (*string*) - Project ID (To)
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
 ```bash
-netlify env:clone --to <to-site-id>
-netlify env:clone --to <to-site-id> --from <from-site-id>
+netlify env:clone --to <to-project-id>
+netlify env:clone --to <to-project-id> --from <from-project-id>
 ```
 
 ---
@@ -82,17 +87,20 @@ netlify env:get
 
 **Flags**
 
-- `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
+- `context` (*string*) - Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output environment variables as JSON
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `site` (*string*) - A project name or ID to target
 
 **Examples**
 
 ```bash
 netlify env:get MY_VAR # get value for MY_VAR in dev context
 netlify env:get MY_VAR --context production
-netlify env:get MY_VAR --context branch:staging
+netlify env:get MY_VAR --context branch:feat/make-it-pop # get value in the feat/make-it-pop branch context or branch-deploy context
 netlify env:get MY_VAR --scope functions
 ```
 
@@ -114,13 +122,16 @@ netlify env:import
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output environment variables as JSON
 - `replace-existing` (*boolean*) - Replace all existing variables instead of merging them with the current ones
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `site` (*string*) - A project name or ID to target
 
 ---
 ## `env:list`
 
-Lists resolved environment variables for site (includes netlify.toml)
+Lists resolved environment variables for project (includes netlify.toml)
 
 **Usage**
 
@@ -130,19 +141,21 @@ netlify env:list
 
 **Flags**
 
-- `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
+- `context` (*string*) - Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: all contexts)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output environment variables as JSON
 - `plain` (*boolean*) - Output environment variables as plaintext
-- `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
+- `site` (*string*) - A project name or ID to target
 
 **Examples**
 
 ```bash
 netlify env:list # list variables with values in the dev context and with any scope
 netlify env:list --context production
-netlify env:list --context branch:staging
+netlify env:list --context branch:feat/make-it-pop # list variables with values in the feat/make-it-pop branch context or branch-deploy context
 netlify env:list --scope functions
 netlify env:list --plain
 ```
@@ -165,18 +178,23 @@ netlify env:set
 
 **Flags**
 
-- `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
+- `context` (*string*) - Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: all contexts)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
+- `json` (*boolean*) - Output environment variables as JSON
 - `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
-- `secret` (*boolean*) - Indicate whether the environment variable value can be read again.
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `secret` (*boolean*) - Indicate whether the environment variable value can be read again.
+- `site` (*string*) - A project name or ID to target
 
 **Examples**
 
 ```bash
 netlify env:set VAR_NAME value # set in all contexts and scopes
 netlify env:set VAR_NAME value --context production
-netlify env:set VAR_NAME value --context production deploy-preview
+netlify env:set VAR_NAME value --context production deploy-preview # set in the production and deploy-preview contexts
+netlify env:set VAR_NAME value --context branch:feat/make-it-pop # set in the feat/make-it-pop branch context
 netlify env:set VAR_NAME value --context production --secret
 netlify env:set VAR_NAME value --scope builds
 netlify env:set VAR_NAME value --scope builds functions
@@ -200,9 +218,13 @@ netlify env:unset
 
 **Flags**
 
-- `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
+- `context` (*string*) - Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: all contexts)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
+- `json` (*boolean*) - Output environment variables as JSON
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `site` (*string*) - A project name or ID to target
 
 **Examples**
 
@@ -210,6 +232,7 @@ netlify env:unset
 netlify env:unset VAR_NAME # unset in all contexts
 netlify env:unset VAR_NAME --context production
 netlify env:unset VAR_NAME --context production deploy-preview
+netlify env:unset VAR_NAME --context branch:feat/make-it-pop # unset in the feat/make-it-pop branch context
 ```
 
 ---

@@ -1,14 +1,15 @@
 import ansiEscapes from 'ansi-escapes'
 import AsciiTable from 'ascii-table'
 import { isCI } from 'ci-info'
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import logUpdate from 'log-update'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
-import BaseCommand from '../base-command.js'
-import { EnvironmentVariables } from '../types.js'
+import { SUPPORTED_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
+import type BaseCommand from '../base-command.js'
+import { EnvironmentVariables } from '../../utils/types.js'
+import { getSiteInfo } from './utils.js'
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
@@ -46,11 +47,12 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   const siteId = site.id
 
   if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
+    log('No project id found, please run inside a project folder or `netlify link`')
     return false
   }
 
-  const { env, siteInfo } = cachedConfig
+  const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
+  const { env } = cachedConfig
   let environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
 
   // filter out general sources
@@ -80,8 +82,8 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
-  const forSite = `for site ${chalk.green(siteInfo.name)}`
-  const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
+  const forSite = `for project ${chalk.green(siteInfo.name)}`
+  const contextType = SUPPORTED_CONTEXTS.includes(context) ? 'context' : 'branch'
   const withContext = `in the ${chalk.magenta(options.context)} ${contextType}`
   const withScope = scope === 'any' ? '' : `and ${chalk.yellow(options.scope)} scope`
   if (Object.keys(environment).length === 0) {

@@ -6,9 +6,56 @@ import { describe, expect, test } from 'vitest'
 import { isFileAsync } from '../../../../src/lib/fs.js'
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 describe('link command', () => {
+  test.todo('should link to matching site given `--site-id`')
+  test.todo('should print an error and exit when no site with given `--site-id` is found')
+
+  test.todo('should link to matching site given `--site-name`')
+  test.todo('should print an error and exit when no site with given `--site-name` is found')
+
+  test('should link to matching project given `--git-remote-url`', async (t) => {
+    const siteInfo = {
+      id: 'site_id',
+      name: 'test-site',
+      ssl_url: 'https://test-site.netlify.app',
+      admin_url: 'https://app.netlify.com/projects/test-site',
+      build_settings: {
+        repo_url: 'https://github.com/vibecoder/my-unicorn',
+      },
+    }
+    const routes = [
+      {
+        path: 'sites',
+        response: [siteInfo],
+      },
+      {
+        path: 'sites/site_id',
+        response: siteInfo,
+      },
+    ]
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          const stdout = (await callCli(
+            ['link', '--git-remote-url', 'https://github.com/vibecoder/my-unicorn'],
+            getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+          )) as string
+
+          expect(stdout).toContain('Linked to test-site')
+        },
+        true,
+      )
+    })
+  })
+  test.todo('should print an error and exit when no project with given `--git-remote-url` is found')
+
+  test.todo("should prompt user when a project matching the local git repo's remote origin HTTPS URL is found")
+
   test('should create gitignore in repository root when is root', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withGit().build()
@@ -47,7 +94,7 @@ describe('link command', () => {
   )
 })
 
-describe('link command with multiple sites', () => {
+describe('link command with multiple projects', () => {
   const siteInfo1 = {
     id: 'site_id1',
     name: 'next-app-playground',
@@ -72,10 +119,10 @@ describe('link command with multiple sites', () => {
       await withMockApi(
         routes,
         async ({ apiUrl }) => {
-          const stdout = await callCli(
+          const stdout = (await callCli(
             ['link', '--name', 'app'],
             getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
-          )
+          )) as string
 
           expect(stdout).toContain('Linked to app')
         },
@@ -84,19 +131,106 @@ describe('link command with multiple sites', () => {
     })
   })
 
-  test('should use first site when name flag is not an exact match', async (t) => {
+  test('should use first project when name flag is not an exact match', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
       await withMockApi(
         routes,
         async ({ apiUrl }) => {
-          const stdout = await callCli(
+          const stdout = (await callCli(
             ['link', '--name', 'ap'],
             getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
-          )
+          )) as string
 
           expect(stdout).toContain('Linked to next-app-playground')
+        },
+        true,
+      )
+    })
+  })
+})
+
+describe('link command non-interactive mode', () => {
+  test('should error with helpful message when no options provided in non-interactive mode', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        [],
+        async ({ apiUrl }) => {
+          try {
+            await callCli(['link'], {
+              ...getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '', CI: 'true' } }),
+            })
+            expect.fail('Should have thrown an error')
+          } catch (error_) {
+            const errorMessage = (error_ as Error).message
+            expect(errorMessage).toContain('No project specified')
+            expect(errorMessage).toContain('link --id')
+            expect(errorMessage).toContain('link --name')
+            expect(errorMessage).toContain('sites:search')
+          }
+        },
+        true,
+      )
+    })
+  })
+
+  test('should error with helpful message when site not found by name', async (t) => {
+    const routes = [
+      {
+        path: 'sites',
+        response: [],
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          await expect(
+            callCli(
+              ['link', '--name', 'nonexistent-site'],
+              getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+            ),
+          ).rejects.toThrow(/No projects found|sites:search/)
+        },
+        true,
+      )
+    })
+  })
+
+  test('should error with helpful message when site not found by git remote', async (t) => {
+    const routes = [
+      {
+        path: 'sites',
+        response: [
+          {
+            id: 'different-site-id',
+            name: 'different-site',
+            build_settings: {
+              repo_url: 'https://github.com/other/repo',
+            },
+          },
+        ],
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          await expect(
+            callCli(
+              ['link', '--git-remote-url', 'https://github.com/test/repo'],
+              getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+            ),
+          ).rejects.toThrow(/No matching project found|sites:search/)
         },
         true,
       )

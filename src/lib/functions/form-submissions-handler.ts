@@ -1,9 +1,7 @@
 import { Readable } from 'stream'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cont... Remove this comment to see the full error message
 import { parse as parseContentType } from 'content-type'
 import type { RequestHandler } from 'express'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'mult... Remove this comment to see the full error message
 import multiparty from 'multiparty'
 import getRawBody from 'raw-body'
 
@@ -13,6 +11,7 @@ import { capitalize } from '../string.js'
 
 import type NetlifyFunction from './netlify-function.js'
 import type { FunctionsRegistry } from './registry.js'
+import type { BaseBuildResult } from './runtimes/index.js'
 
 export const getFormHandler = function ({
   functionsRegistry,
@@ -23,19 +22,22 @@ export const getFormHandler = function ({
 }) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]
     .map((name) => functionsRegistry.get(name))
-    .filter((func): func is NetlifyFunction => Boolean(func))
+    .filter((func): func is NetlifyFunction<BaseBuildResult> => func != null)
     .map(({ name }) => name)
 
   if (handlers.length === 0) {
-    logWarning && warn(`Missing form submission function handler`)
+    if (logWarning) {
+      warn(`Missing form submission function handler`)
+    }
     return
   }
 
   if (handlers.length === 2) {
-    logWarning &&
+    if (logWarning) {
       warn(
         `Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`,
       )
+    }
   }
 
   return handlers[0]
@@ -48,13 +50,15 @@ export const createFormSubmissionHandler = function ({
   functionsRegistry: FunctionsRegistry
   siteUrl: string
 }): RequestHandler {
-  return async function formSubmissionHandler(req, res, next) {
+  return async function formSubmissionHandler(req, _res, next) {
     if (
       req.url.startsWith('/.netlify/') ||
       req.method !== 'POST' ||
       (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () => Promise.resolve(false)))
-    )
-      return next()
+    ) {
+      next()
+      return
+    }
 
     const fakeRequest = new Readable({
       read() {
@@ -67,7 +71,8 @@ export const createFormSubmissionHandler = function ({
 
     const handlerName = getFormHandler({ functionsRegistry })
     if (!handlerName) {
-      return next()
+      next()
+      return
     }
 
     const originalUrl = new URL(req.url, 'http://localhost')
@@ -90,7 +95,10 @@ export const createFormSubmissionHandler = function ({
           const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
           // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
           form.parse(fakeRequest, (err, Fields, Files) => {
-            if (err) return reject(err)
+            if (err) {
+              reject(err)
+              return
+            }
             Files = Object.entries(Files).reduce(
               (prev, [name, values]) => ({
                 ...prev,
@@ -98,13 +106,13 @@ export const createFormSubmissionHandler = function ({
                 [name]: values.map((value) => ({
                   filename: value.originalFilename,
                   size: value.size,
-                  type: value.headers && value.headers['content-type'],
+                  type: value.headers?.['content-type'],
                   url: value.path,
                 })),
               }),
               {},
             )
-            return resolve([
+            resolve([
               Object.entries(Fields).reduce(
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
@@ -121,11 +129,13 @@ export const createFormSubmissionHandler = function ({
       } catch (error) {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         warn(error)
-        return next()
+        next()
+        return
       }
     } else {
       warn('Invalid Content-Type for Netlify Dev forms request')
-      return next()
+      next()
+      return
     }
     const data = JSON.stringify({
       payload: {

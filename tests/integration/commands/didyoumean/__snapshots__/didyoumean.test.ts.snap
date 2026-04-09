@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`suggests closest matching command on typo 1`] = `
+"›   Warning: sta is not a netlify command.
+
+Did you mean api?"
+`;
+
+exports[`suggests closest matching command on typo 2`] = `
+"›   Warning: opeen is not a netlify command.
+
+Did you mean open?"
+`;
+
+exports[`suggests closest matching command on typo 3`] = `
+"›   Warning: hel is not a netlify command.
+
+Did you mean dev?"
+`;
+
+exports[`suggests closest matching command on typo 4`] = `
+"›   Warning: versio is not a netlify command.
+
+Did you mean serve?"
+`;

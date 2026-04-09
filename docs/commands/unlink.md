@@ -1,12 +1,14 @@
 ---
 title: Netlify CLI unlink command
-description: Link an existing site to a local site directory
+sidebar:
+  label: unlink
+description: Unlink a local project directory from an existing project
 ---
 
 # `unlink`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Unlink a local folder from a Netlify site
+Unlink a local folder from a Netlify project
 
 **Usage**
 
@@ -18,6 +20,7 @@ netlify unlink
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

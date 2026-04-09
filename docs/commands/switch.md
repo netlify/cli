@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI switch command
+sidebar:
+  label: switch
 description: Switch your active Netlify account
 ---
 
@@ -16,7 +18,9 @@ netlify switch
 
 **Flags**
 
+- `email` (*string*) - Switch to the account matching this email address
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

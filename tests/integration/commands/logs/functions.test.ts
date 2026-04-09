@@ -1,11 +1,11 @@
-import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { Mock, afterAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createLogsFunctionCommand } from '../../../../src/commands/logs/index.js'
 import { LOG_LEVELS } from '../../../../src/commands/logs/log-levels.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { getWebSocket } from '../../../../src/utils/websockets/index.js'
-import { startMockApi } from '../../utils/mock-api-vitest.ts'
+import { startMockApi } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables } from '../../utils/mock-api.js'
 
 vi.mock('../../../../src/utils/websockets/index.js', () => ({
@@ -28,7 +28,7 @@ vi.mock('inquirer', () => ({
 }))
 
 const siteInfo = {
-  admin_url: 'https://app.netlify.com/sites/site-name/overview',
+  admin_url: 'https://app.netlify.com/projects/site-name/overview',
   ssl_url: 'https://site-name.netlify.app/',
   id: 'site_id',
   name: 'site-name',
@@ -65,10 +65,13 @@ const routes = [
 ]
 
 describe('logs:function command', () => {
+  const originalEnv = process.env
+
   let program: BaseCommand
 
   afterEach(() => {
     vi.clearAllMocks()
+    process.env = { ...originalEnv }
   })
 
   beforeEach(() => {
@@ -77,9 +80,16 @@ describe('logs:function command', () => {
     createLogsFunctionCommand(program)
   })
 
+  afterAll(() => {
+    vi.restoreAllMocks()
+    vi.resetModules()
+
+    process.env = { ...originalEnv }
+  })
+
   test('should setup the functions stream correctly', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
@@ -98,7 +108,7 @@ describe('logs:function command', () => {
 
   test('should send the correct payload to the websocket', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
@@ -114,8 +124,8 @@ describe('logs:function command', () => {
     const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
     expect(setupCall).toBeDefined()
 
-    const openCallback = setupCall[1]
-    openCallback()
+    const openCallback = setupCall?.[1]
+    openCallback?.()
 
     expect(spySend).toHaveBeenCalledOnce()
     const call = spySend.mock.calls[0]
@@ -130,21 +140,21 @@ describe('logs:function command', () => {
 
   test('should print only specified log levels', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
       on: spyOn,
       send: spySend,
     })
-    const spyLog = log as unknown as Mock<any, any>
+    const spyLog = log as unknown as Mock
 
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
     await program.parseAsync(['', '', 'logs:function', '--level', 'info'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
-    const messageCallbackFunc = messageCallback[1]
+    const messageCallbackFunc = messageCallback?.[1]
     const mockInfoData = {
       level: LOG_LEVELS.INFO,
       message: 'Hello World',
@@ -154,29 +164,29 @@ describe('logs:function command', () => {
       message: 'There was a warning',
     }
 
-    messageCallbackFunc(JSON.stringify(mockInfoData))
-    messageCallbackFunc(JSON.stringify(mockWarnData))
+    messageCallbackFunc?.(JSON.stringify(mockInfoData))
+    messageCallbackFunc?.(JSON.stringify(mockWarnData))
 
     expect(spyLog).toHaveBeenCalledTimes(1)
   })
 
   test('should print all the log levels', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
       on: spyOn,
       send: spySend,
     })
-    const spyLog = log as unknown as Mock<any, any>
+    const spyLog = log as unknown as Mock
 
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
     await program.parseAsync(['', '', 'logs:function'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
-    const messageCallbackFunc = messageCallback[1]
+    const messageCallbackFunc = messageCallback?.[1]
     const mockInfoData = {
       level: LOG_LEVELS.INFO,
       message: 'Hello World',
@@ -186,8 +196,8 @@ describe('logs:function command', () => {
       message: 'There was a warning',
     }
 
-    messageCallbackFunc(JSON.stringify(mockInfoData))
-    messageCallbackFunc(JSON.stringify(mockWarnData))
+    messageCallbackFunc?.(JSON.stringify(mockInfoData))
+    messageCallbackFunc?.(JSON.stringify(mockWarnData))
 
     expect(spyLog).toHaveBeenCalledTimes(2)
   })

@@ -1,25 +1,20 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
-import { getBuildOptions, runBuild } from '../../lib/build.js'
+import { type RunBuildOptions, getRunBuildOptions, runBuild } from '../../lib/build.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
-import { error, exit, getToken } from '../../utils/command-helpers.js'
+import { logAndThrowError, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
-/**
- * @param {import('../../lib/build.js').BuildConfig} options
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
+export const checkOptions = ({ cachedConfig: { siteInfo }, token }: RunBuildOptions) => {
   if (!siteInfo.id) {
-    error(
-      'Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
+    return logAndThrowError(
+      'Could not find the project ID. If your project is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
     )
   }
 
   if (!token) {
-    error('Could not find the access token. Please run netlify login.')
+    return logAndThrowError('Could not find the access token. Please run netlify login.')
   }
 }
 
@@ -30,13 +25,12 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
   const [token] = await getToken()
   const settings = await detectFrameworkSettings(command, 'build')
 
-  const buildOptions = await getBuildOptions({
+  const buildOptions = await getRunBuildOptions({
     cachedConfig,
     defaultConfig: getDefaultConfig(settings),
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
-    // @ts-expect-error TS(2740)
     options,
   })
 

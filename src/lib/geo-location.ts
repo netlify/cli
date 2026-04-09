@@ -1,4 +1,5 @@
 import fetch from 'node-fetch'
+import { type Geolocation, mockLocation } from '@netlify/dev-utils'
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
@@ -8,43 +9,29 @@ const CACHE_TTL = 8.64e7
 // 10 seconds
 const REQUEST_TIMEOUT = 1e4
 
-/**
- * @typedef GeoLocation
- * @type {object}
- * @property {string} city
- * @property {object} country
- * @property {string} country.code
- * @property {string} country.name
- * @property {object} subdivision
- * @property {string} subdivision.code
- * @property {string} subdivision.name
- * @property {number} longitude
- * @property {number} latitude
- * @property {string} timezone
- */
-export const mockLocation = {
-  city: 'San Francisco',
-  country: { code: 'US', name: 'United States' },
-  subdivision: { code: 'CA', name: 'California' },
-  longitude: 0,
-  latitude: 0,
-  timezone: 'UTC',
+export { Geolocation }
+
+interface State {
+  get(key: string): unknown
+  set(key: string, value: unknown): void
 }
 
 /**
- * Returns geolocation data from a remote API, the local cache, or a mock
- * location, depending on the mode selected.
- *
- * @param {object} params
- * @param {"cache"|"update"|"mock"} params.mode
- * @param {string} params.geoCountry
- * @param {boolean} params.offline
- * @param {import('../utils/state-config.js').default} params.state
- * @returns {Promise<GeoLocation>}
+ * Returns geolocation data from a remote API, the local cache, or a mock location, depending on the
+ * specified mode.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'geoCountry' implicitly has an 'an... Remove this comment to see the full error message
-export const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
-  const cacheObject = state.get(STATE_GEO_PROPERTY)
+export const getGeoLocation = async ({
+  geoCountry,
+  mode,
+  offline = false,
+  state,
+}: {
+  mode: 'cache' | 'update' | 'mock'
+  geoCountry?: string | undefined
+  offline?: boolean | undefined
+  state: State
+}): Promise<Geolocation> => {
+  const cacheObject = state.get(STATE_GEO_PROPERTY) as { data: Geolocation; timestamp: number } | undefined
 
   // If `--country` was used, we also set `--mode=mock`.
   if (geoCountry) {
@@ -55,7 +42,7 @@ export const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
   // `cache`, let's try to use it.
   // Or, if the country we're trying to mock is the same one as we have in the
   // cache, let's use the cache instead of the mock.
-  if (cacheObject !== undefined && (mode === 'cache' || cacheObject.data.country.code === geoCountry)) {
+  if (cacheObject !== undefined && (mode === 'cache' || cacheObject.data.country?.code === geoCountry)) {
     const age = Date.now() - cacheObject.timestamp
 
     // Let's use the cached data if it's not older than the TTL. Also, if the
@@ -103,17 +90,14 @@ export const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
 }
 
 /**
- * Returns geolocation data from a remote API
- *
- * @returns {Promise<GeoLocation>}
+ * Returns geolocation data from a remote API.
  */
-const getGeoLocationFromAPI = async () => {
+const getGeoLocationFromAPI = async (): Promise<Geolocation> => {
   const res = await fetch(API_URL, {
     method: 'GET',
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   })
-  // @ts-expect-error TS(2339) - Property 'geo' does not exist on type 'unknown'
-  const { geo } = await res.json()
+  const { geo } = (await res.json()) as { geo: Geolocation }
 
   return geo
 }

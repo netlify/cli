@@ -1,5 +1,5 @@
-import hasha from 'hasha'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'toml... Remove this comment to see the full error message
+import { createHash } from 'node:crypto'
+
 import tomlify from 'tomlify-j0.4'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
@@ -7,7 +7,7 @@ export const hashConfig = ({ config }) => {
   if (!config) throw new Error('Missing config option')
   const configString = serializeToml(config)
 
-  const hash = hasha(configString, { algorithm: 'sha1' })
+  const hash = createHash('sha1').update(configString).digest('hex')
 
   return {
     assetType: 'file',

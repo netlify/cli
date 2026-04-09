@@ -1,0 +1,181 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`frameworks/framework-detection > should default to process.cwd() and static server 1`] = `
+"⬥ No app server detected. Using simple static server
+⬥ Unable to determine public folder to serve files from. Using current working directory
+⬥ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+⬥ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
+⬥ Running static server from \\"should-default-to-process-cwd-and-static-server\\"
+⬥ Setting up local dev server
+
+⬥ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
+
+   ┌──────────────────────────────────────────────────────────────────────────┐
+   │                                                                          │
+   │     Local dev server ready: http://localhost:<SNAPSHOT_PORT_NORMALIZED>  │
+   │                                                                          │
+   └──────────────────────────────────────────────────────────────────────────┘"
+`;
+
+exports[`frameworks/framework-detection > should detect a known framework 1`] = `
+"⬥ Setting up local dev server
+
+⬥ Starting Create React App dev server
+
+> start
+> react-scripts start
+
+⬥ Command failed with exit code *: npm run start. Shutting down Netlify Dev server"
+`;
+
+exports[`frameworks/framework-detection > should filter frameworks with no dev command 1`] = `
+"⬥ No app server detected. Using simple static server
+⬥ Unable to determine public folder to serve files from. Using current working directory
+⬥ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+⬥ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
+⬥ Running static server from \\"should-filter-frameworks-with-no-dev-command\\"
+⬥ Setting up local dev server
+
+⬥ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
+
+   ┌──────────────────────────────────────────────────────────────────────────┐
+   │                                                                          │
+   │     Local dev server ready: http://localhost:<SNAPSHOT_PORT_NORMALIZED>  │
+   │                                                                          │
+   └──────────────────────────────────────────────────────────────────────────┘"
+`;
+
+exports[`frameworks/framework-detection > should force a specific framework when configured 1`] = `
+"⬥ Setting up local dev server
+
+⬥ Starting Create React App dev server
+⬥ Failed running command: react-scripts start. Please verify 'react-scripts' exists"
+`;
+
+exports[`frameworks/framework-detection > should not run framework detection if command and targetPort are configured 1`] = `
+"⬥ Unable to determine public folder to serve files from. Using current working directory
+⬥ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+⬥ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
+⬥ Setting up local dev server
+
+⬥ Starting framework dev server
+hello
+⬥ \\"echo hello\\" exited with code *. Shutting down Netlify Dev server"
+`;
+
+exports[`frameworks/framework-detection > should pass framework-info env to framework sub process 1`] = `
+"⬥ Setting up local dev server
+
+⬥ Starting RedwoodJS dev server
+
+> dev
+> node -p process.env.NODE_VERSION
+
+20
+⬥ \\"npm run dev\\" exited with code *. Shutting down Netlify Dev server"
+`;
+
+exports[`frameworks/framework-detection > should print specific error when command doesn't exist 1`] = `
+"⬥ Unable to determine public folder to serve files from. Using current working directory
+⬥ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+⬥ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
+⬥ Setting up local dev server
+
+⬥ Starting #custom dev server
+⬥ Failed running command: oops-i-did-it-again forgot-to-use-a-valid-command. Please verify 'oops-i-did-it-again' exists"
+`;
+
+exports[`frameworks/framework-detection > should prompt when multiple frameworks are detected 1`] = `
+"? Multiple possible dev commands found (Use arrow keys or type to search)
+> [Gatsby] 'npm run develop' 
+  [Create React App] 'npm run start' [2A[37D[73C[2B[2K[1A[2K[1A[2K[G? Multiple possible dev commands found 
+  [Gatsby] 'npm run develop' 
+> [Create React App] 'npm run start' [2A[37D[39C[2B[2K[1A[2K[1A[2K[G? Multiple possible dev commands found Create React App-npm run start[69D[69C
+
+Update your netlify.toml to avoid this selection prompt next time:
+
+[build]
+command = \\"react-scripts build\\"
+publish = \\"build\\"
+
+[dev]
+command = \\"npm run start\\"
+
+⬥ Setting up local dev server
+
+⬥ Starting Create React App dev server
+
+> start
+> react-scripts start
+
+⬥ Command failed with exit code *: npm run start. Shutting down Netlify Dev server"
+`;
+
+exports[`frameworks/framework-detection > should run \`command\` when both \`command\` and \`targetPort\` are configured 1`] = `
+"⬥ Setting up local dev server
+
+⬥ Starting framework dev server
+hello
+⬥ \\"echo hello\\" exited with code *. Shutting down Netlify Dev server"
+`;
+
+exports[`frameworks/framework-detection > should start custom command if framework=#custom, command and targetPort are configured 1`] = `
+"⬥ Setting up local dev server
+
+⬥ Starting #custom dev server
+hello
+⬥ \\"echo hello\\" exited with code *. Shutting down Netlify Dev server"
+`;
+
+exports[`frameworks/framework-detection > should throw if framework=#custom but command is missing 1`] = `"⬥ 'command' and 'targetPort' properties are required when 'framework' is set to '#custom'"`;
+
+exports[`frameworks/framework-detection > should throw if framework=#custom but targetPort is missing 1`] = `"⬥ 'command' and 'targetPort' properties are required when 'framework' is set to '#custom'"`;
+
+exports[`frameworks/framework-detection > should throw when forcing a non supported framework 1`] = `"⬥ Invalid framework \\"to-infinity-and-beyond-js\\". It should be one of: *"`;
+
+exports[`frameworks/framework-detection > should use static server when --dir flag is passed 1`] = `
+"⬥ Using simple static server because '--dir' flag was specified
+⬥ Running static server from \\"should-use-static-server-when-dir-flag-is-passed/public\\"
+⬥ Setting up local dev server
+
+⬥ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
+
+   ┌──────────────────────────────────────────────────────────────────────────┐
+   │                                                                          │
+   │     Local dev server ready: http://localhost:<SNAPSHOT_PORT_NORMALIZED>  │
+   │                                                                          │
+   └──────────────────────────────────────────────────────────────────────────┘"
+`;
+
+exports[`frameworks/framework-detection > should use static server when framework is set to #static 1`] = `
+"⬥ Using simple static server because '[dev.framework]' was set to '#static'
+⬥ Unable to determine public folder to serve files from. Using current working directory
+⬥ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+⬥ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
+⬥ Running static server from \\"should-use-static-server-when-framework-i-cabde4ea\\"
+⬥ Setting up local dev server
+
+⬥ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
+
+   ┌──────────────────────────────────────────────────────────────────────────┐
+   │                                                                          │
+   │     Local dev server ready: http://localhost:<SNAPSHOT_PORT_NORMALIZED>  │
+   │                                                                          │
+   └──────────────────────────────────────────────────────────────────────────┘"
+`;
+
+exports[`frameworks/framework-detection > should warn if using static server and \`targetPort\` is configured 1`] = `
+"⬥ Using simple static server because '--dir' flag was specified
+⬥ Ignoring 'targetPort' setting since using a simple static server.
+⬥ Use --staticServerPort or [dev.staticServerPort] to configure the static server port
+⬥ Running static server from \\"should-warn-if-using-static-server-and-ta-45f6af30/public\\"
+⬥ Setting up local dev server
+
+⬥ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
+
+   ┌──────────────────────────────────────────────────────────────────────────┐
+   │                                                                          │
+   │     Local dev server ready: http://localhost:<SNAPSHOT_PORT_NORMALIZED>  │
+   │                                                                          │
+   └──────────────────────────────────────────────────────────────────────────┘"
+`;

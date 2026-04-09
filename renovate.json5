@@ -1,0 +1,54 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>netlify/renovate-config:esm"],
+  "ignorePresets": [":prHourlyLimit2"],
+  "semanticCommits": "enabled",
+  "dependencyDashboard": true,
+  "constraints": {
+    // Use npm@10 due to https://github.com/npm/cli/issues/8489 and https://github.com/npm/cli/issues/8767
+    "npm": '^10.0.0',
+  },
+  "postUpdateOptions": ["npmDedupe"],
+  "packageRules": [
+    {
+      "matchFileNames": ["site/package.json"],
+      "semanticCommitType": "chore",
+      "addLabels": ["website"],
+      "semanticCommitScope": "website",
+      "additionalBranchPrefix": "website-"
+    },
+    // Reduce noise by grouping `site/package.json` non-major updates together
+    {
+      "matchFileNames": ["site/package.json"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "website non-major dependencies"
+    },
+    {
+      "matchFileNames": ["tests/**/package.json"],
+      "semanticCommitType": "chore",
+      "addLabels": ["tests"],
+      "semanticCommitScope": "tests",
+      "additionalBranchPrefix": "tests-"
+    },
+    {
+      "matchFileNames": ["src/**/package.json"],
+      "semanticCommitType": "fix",
+      "addLabels": ["templates"],
+      "semanticCommitScope": "templates",
+      "additionalBranchPrefix": "templates-"
+    },
+    {
+      "matchFileNames": ["tests/**/package.json"],
+      "extends": [":pinAllExceptPeerDependencies"]
+    },
+    {
+      "matchFileNames": ["package.json"],
+      "extends": [":pinAllExceptPeerDependencies"]
+    },
+    {
+      "description": "Pin get-port to v5 (https://github.com/netlify/cli/pull/6531)",
+      "matchPackageNames": ["get-port"],
+      "allowedVersions": "<6"
+    }
+  ]
+}

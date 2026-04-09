@@ -2,9 +2,12 @@ import { join } from 'path'
 
 import { OptionValues } from 'commander'
 
+import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
+
 import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
-import { printBanner } from '../../utils/banner.js'
+import { NETLIFYDEVLOG, log } from '../../utils/command-helpers.js'
+import { printBanner } from '../../utils/dev-server-banner.js'
 import {
   UNLINKED_SITE_MOCK_ID,
   acquirePort,
@@ -18,6 +21,7 @@ import BaseCommand from '../base-command.js'
 
 const DEFAULT_PORT = 9999
 
+// FIXME(serhalp): Replace `OptionValues` with more specific type. This is full of implicit `any`s.
 export const functionsServe = async (options: OptionValues, command: BaseCommand) => {
   const { api, config, site, siteInfo, state } = command.netlify
 
@@ -27,7 +31,6 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
-  injectEnvVariables(env)
 
   const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
     offline: options.offline,
@@ -36,8 +39,24 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteInfo,
   })
 
+  if (!options.offline && !capabilities.aiGatewayDisabled) {
+    const resolvedAccountId = accountId ?? command.netlify.accounts[0]?.id
+    await setupAIGateway({
+      api,
+      env,
+      siteID: site.id,
+      siteURL: siteUrl,
+      accountID: resolvedAccountId,
+      siteHasDeploy: !!siteInfo.published_deploy,
+    })
+  } else if (!options.offline && capabilities.aiGatewayDisabled) {
+    log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
+  }
+
+  injectEnvVariables(env)
+
   const functionsPort = await acquirePort({
-    configuredPort: options.port || (config.dev && config.dev.functionsPort),
+    configuredPort: options.port || config.dev?.functionsPort,
     defaultPort: DEFAULT_PORT,
     errorMessage: 'Could not acquire configured functions port',
   })
@@ -48,7 +67,11 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
 
+  const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY?.value)
+
   await startFunctionsServer({
+    loadDistFunctions: process.env.NETLIFY_FUNCTIONS_SERVE_LOAD_DIST_FUNCTIONS === 'true',
+    aiGatewayContext,
     blobsContext,
     config,
     debug: options.debug,
@@ -59,11 +82,13 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteUrl,
     capabilities,
     timeouts,
+    generatedFunctions: [],
     geolocationMode: options.geo,
     geoCountry: options.country,
     offline: options.offline,
     state,
     accountId,
+    deployEnvironment: [],
   })
 
   const url = getProxyUrl({ port: functionsPort })

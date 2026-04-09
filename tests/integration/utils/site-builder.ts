@@ -1,16 +1,20 @@
+import { createHash } from 'crypto'
 import { copyFile, mkdir, rm, unlink, writeFile } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import process from 'process'
 import { inspect } from 'util'
 
+import type { OnPreBuild, OnBuild, OnPostBuild, OnSuccess } from '@netlify/build'
+import type { Context, Handler } from '@netlify/functions'
+import type { EdgeFunction } from '@netlify/edge-functions'
 import slugify from '@sindresorhus/slugify'
 import execa from 'execa'
 import serializeJS from 'serialize-javascript'
 import tempDirectory from 'temp-dir'
 import tomlify from 'tomlify-j0.4'
 import { v4 as uuidv4 } from 'uuid'
-import type { TaskContext } from 'vitest'
+import type { TestContext } from 'vitest'
 
 const ensureDir = (directory: string) => mkdir(directory, { recursive: true })
 
@@ -19,7 +23,6 @@ type Task = () => Promise<unknown>
 export class SiteBuilder {
   tasks: Task[] = []
 
-  // eslint-disable-next-line no-useless-constructor
   constructor(public readonly directory: string) {}
 
   ensureDirectoryExists(directory: string) {
@@ -28,18 +31,17 @@ export class SiteBuilder {
     return this
   }
 
-  withNetlifyToml({ config, pathPrefix = '' }) {
+  withNetlifyToml({ config, pathPrefix = '' }: { config: unknown; pathPrefix?: string | undefined }) {
     const dest = path.join(this.directory, pathPrefix, 'netlify.toml')
     const content = tomlify.toToml(config, {
       replace: (_, val) => {
-        // Strip off `.0` from integers that tomlify normally generates
-
-        if (!Number.isInteger(val)) {
-          // Output normal value
-          return false
+        if (typeof val === 'number' && Number.isInteger(val)) {
+          // Strip off `.0` from integers that tomlify normally generates
+          return String(Math.round(val))
         }
 
-        return String(Math.round(val))
+        // Output normal value
+        return false
       },
       space: 2,
     })
@@ -83,7 +85,7 @@ export class SiteBuilder {
   }: {
     config?: object
     esm?: boolean
-    handler: any
+    handler: Handler | ((req: Request, context: Context) => Response | Promise<Response>) | string
     path: string
     pathPrefix?: string
     runtimeAPIVersion?: number
@@ -119,7 +121,7 @@ export class SiteBuilder {
     pathPrefix = '',
   }: {
     config?: any
-    handler: string | Function
+    handler: EdgeFunction | string
     imports?: string
     name?: string
     path?: string
@@ -167,7 +169,7 @@ export class SiteBuilder {
       const content = headers
         .map(
           ({ headers: headersValues, path: headerPath }) =>
-            `${headerPath}${os.EOL}${headersValues.map((header) => `  ${header}`).join(`${os.EOL}`)}`,
+            `${headerPath}${os.EOL}${headersValues.map((header) => `  ${header}`).join(os.EOL)}`,
         )
         .join(os.EOL)
       await ensureDir(path.dirname(dest))
@@ -177,7 +179,7 @@ export class SiteBuilder {
     return this
   }
 
-  withContentFile({ content, path: filePath }: { content: string; path: string }) {
+  withContentFile({ content, path: filePath }: { content: Buffer | string; path: string }) {
     const dest = path.join(this.directory, filePath)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
@@ -257,7 +259,22 @@ export class SiteBuilder {
     return this
   }
 
-  withBuildPlugin({ name, pathPrefix = 'plugins', plugin }: { name: string; pathPrefix?: string; plugin: any }) {
+  withBuildPlugin({
+    name,
+    pathPrefix = 'plugins',
+    plugin,
+  }: {
+    name: string
+    pathPrefix?: string
+    plugin: {
+      onBuild?: OnBuild | undefined
+      onDev?: OnBuild | undefined
+      onPostBuild?: OnPostBuild | undefined
+      onPreBuild?: OnPreBuild | undefined
+      onPreDev?: OnPreBuild | undefined
+      onSuccess?: OnSuccess | undefined
+    }
+  }) {
     const dest = path.join(this.directory, pathPrefix, `${name}.js`)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
@@ -301,13 +318,29 @@ export class SiteBuilder {
   }
 }
 
+// Windows has a MAX_PATH limit of 260 characters. Since test directories
+// include the temp dir, process version, PID, a UUID, and the site name,
+// long test names can push nested file paths over this limit. We cap the
+// site name and append a hash to avoid collisions.
+const MAX_SITE_NAME_LENGTH = 50
+
+const truncateSiteName = (siteName: string): string => {
+  if (siteName.length <= MAX_SITE_NAME_LENGTH) {
+    return siteName
+  }
+
+  const hash = createHash('sha256').update(siteName).digest('hex').slice(0, 8)
+
+  return `${siteName.slice(0, MAX_SITE_NAME_LENGTH - 9)}-${hash}`
+}
+
 export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
   const directory = path.join(
     tempDirectory,
     `netlify-cli-tests-${process.version}`,
     `${process.pid}`,
     uuidv4(),
-    siteName,
+    truncateSiteName(siteName),
   )
 
   return new SiteBuilder(directory).ensureDirectoryExists(directory)
@@ -317,7 +350,7 @@ export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
  * @param taskContext used to infer directory name from test name
  */
 export async function withSiteBuilder<T>(
-  taskContext: TaskContext,
+  taskContext: TestContext,
   testHandler: (builder: SiteBuilder) => Promise<T>,
 ): Promise<T> {
   let builder: SiteBuilder | undefined

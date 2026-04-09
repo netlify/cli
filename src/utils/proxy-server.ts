@@ -1,12 +1,14 @@
-import BaseCommand from '../commands/base-command.js'
-import { $TSFixMe, NetlifyOptions } from '../commands/types.js'
-import { BlobsContextWithEdgeAccess } from '../lib/blobs/blobs.js'
-import { FunctionsRegistry } from '../lib/functions/registry.js'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 
-import { exit, log, NETLIFYDEVERR } from './command-helpers.js'
+import type BaseCommand from '../commands/base-command.js'
+import type { $TSFixMe, NetlifyOptions } from '../commands/types.js'
+import type { BlobsContextWithEdgeAccess } from '../lib/blobs/blobs.js'
+import type { FunctionsRegistry } from '../lib/functions/registry.js'
+
+import { exit, log, NETLIFYDEVERR, type NormalizedCachedConfigConfig } from './command-helpers.js'
 import { startProxy } from './proxy.js'
-import type StateConfig from './state-config.js'
-import { ServerSettings } from './types.js'
+import type { LocalState } from './types.js'
+import type { ServerSettings } from './types.js'
 
 interface InspectSettings {
   // Inspect enabled
@@ -42,6 +44,7 @@ export const generateInspectSettings = (
 export const startProxyServer = async ({
   accountId,
   addonsUrls,
+  aiGatewayContext,
   api,
   blobsContext,
   command,
@@ -62,20 +65,22 @@ export const startProxyServer = async ({
   site,
   siteInfo,
   state,
+  deployEnvironment,
 }: {
-  accountId: string
+  accountId: string | undefined
   addonsUrls: $TSFixMe
+  aiGatewayContext?: AIGatewayContext | null
   api?: NetlifyOptions['api']
   blobsContext?: BlobsContextWithEdgeAccess
   command: BaseCommand
-  config: NetlifyOptions['config']
+  config: NormalizedCachedConfigConfig
   // An override for the Netlify config path
   configPath?: string
   debug: boolean
   disableEdgeFunctions: boolean
   env: NetlifyOptions['cachedConfig']['env']
   inspectSettings: InspectSettings
-  getUpdatedConfig: () => Promise<object>
+  getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   geolocationMode: string
   geoCountry: string
   settings: ServerSettings
@@ -84,11 +89,13 @@ export const startProxyServer = async ({
   siteInfo: $TSFixMe
   projectDir: string
   repositoryRoot?: string
-  state: StateConfig
+  state: LocalState
   functionsRegistry?: FunctionsRegistry
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   const url = await startProxy({
     addonsUrls,
+    aiGatewayContext,
     blobsContext,
     command,
     config,
@@ -109,6 +116,7 @@ export const startProxyServer = async ({
     accountId,
     repositoryRoot,
     api,
+    deployEnvironment,
   })
   if (!url) {
     log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)

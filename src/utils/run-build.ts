@@ -1,13 +1,15 @@
 import { promises as fs } from 'fs'
 import path, { join } from 'path'
 
+import { NetlifyConfig, type GeneratedFunction } from '@netlify/build'
+
 import BaseCommand from '../commands/base-command.js'
 import { $TSFixMe } from '../commands/types.js'
 import { getBootstrapURL } from '../lib/edge-functions/bootstrap.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.js'
 import { getPathInProject } from '../lib/settings.js'
 
-import { error } from './command-helpers.js'
+import { logAndThrowError } from './command-helpers.js'
 import { getFeatureFlagsFromSiteInfo } from './feature-flags.js'
 import { startFrameworkServer } from './framework-server.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from './functions/index.js'
@@ -18,11 +20,8 @@ const netlifyBuildPromise = import('@netlify/build')
 /**
  * Copies `netlify.toml`, if one is defined, into the `.netlify` internal
  * directory and returns the path to its new location.
- * @param {string} configPath
- * @param {string} destinationFolder The folder where it should be copied to. Either the root of the repo or a package inside a monorepo
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'configPath' implicitly has an 'any' typ... Remove this comment to see the full error message
-const copyConfig = async (configPath, destinationFolder) => {
+const copyConfig = async (configPath: string, destinationFolder: string): Promise<string> => {
   const newConfigPath = path.resolve(destinationFolder, getPathInProject(['netlify.toml']))
 
   try {
@@ -48,7 +47,26 @@ const cleanInternalDirectory = async (basePath?: string) => {
   await Promise.all(ops)
 }
 
-export const runNetlifyBuild = async ({
+type RunNetlifyBuildOptions = {
+  command: BaseCommand
+  // The flags of the command
+  options: $TSFixMe
+  settings: ServerSettings
+  env: NodeJS.ProcessEnv
+  timeline: 'dev' | 'build'
+}
+
+export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline: 'dev' }): Promise<{
+  configMutations: unknown
+  generatedFunctions: GeneratedFunction[]
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
+}>
+export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline: 'build' }): Promise<{
+  configPath: string
+  generatedFunctions: GeneratedFunction[]
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
+}>
+export async function runNetlifyBuild({
   command,
   env = {},
   options,
@@ -61,7 +79,7 @@ export const runNetlifyBuild = async ({
   settings: ServerSettings
   env: NodeJS.ProcessEnv
   timeline: 'build' | 'dev'
-}) => {
+}) {
   const { apiOpts, cachedConfig, site } = command.netlify
 
   const { default: buildSite, startDev } = await netlifyBuildPromise
@@ -87,10 +105,13 @@ export const runNetlifyBuild = async ({
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
 
-  const devCommand = async (settingsOverrides = {}) => {
+  const devCommand = async ({
+    netlifyConfig,
+    settingsOverrides,
+  }: { netlifyConfig?: NetlifyConfig; settingsOverrides?: Partial<ServerSettings> } = {}) => {
     let cwd = command.workingDir
 
-    if (!options.cwd && command.project.workspace?.packages.length) {
+    if (!options.cwd && command.project.workspace?.packages.length && command.project.workspace.isRoot) {
       cwd = join(command.project.jsWorkspaceRoot, settings.baseDirectory || '')
     }
 
@@ -99,11 +120,17 @@ export const runNetlifyBuild = async ({
         ...settings,
         ...settingsOverrides,
         ...(options.skipWaitPort ? { skipWaitPort: true } : {}),
+        env: {
+          ...settings.env,
+          ...settingsOverrides?.env,
+          ...netlifyConfig?.build.environment,
+        },
       },
       cwd,
     })
 
     settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
+    settings.detectFrameworkHost = options.skipWaitPort
   }
 
   if (timeline === 'build') {
@@ -113,7 +140,7 @@ export const runNetlifyBuild = async ({
 
     // Copy `netlify.toml` into the internal directory. This will be the new
     // location of the config file for the duration of the command.
-    const tempConfigPath = await copyConfig(cachedConfig.configPath, command.workingDir)
+    const tempConfigPath = await copyConfig(cachedConfig.configPath ?? '', command.workingDir)
     const buildSiteOptions = {
       ...sharedOptions,
       outputConfigPath: tempConfigPath,
@@ -122,12 +149,10 @@ export const runNetlifyBuild = async ({
 
     // Run Netlify Build using the main entry point.
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ outputConfigPath: string; save... Remove this comment to see the full error message
-    const { netlifyConfig, success } = await buildSite(buildSiteOptions)
+    const { netlifyConfig, success, generatedFunctions } = await buildSite(buildSiteOptions)
 
     if (!success) {
-      error('Could not start local server due to a build error')
-
-      return {}
+      return logAndThrowError('Could not start local server due to a build error')
     }
 
     // Start the dev server, forcing the usage of a static server as opposed to
@@ -140,9 +165,13 @@ export const runNetlifyBuild = async ({
     if (!options.dir && netlifyConfig?.build?.publish) {
       settingsOverrides.dist = netlifyConfig.build.publish
     }
-    await devCommand(settingsOverrides)
+    await devCommand({ netlifyConfig, settingsOverrides })
 
-    return { configPath: tempConfigPath }
+    return {
+      configPath: tempConfigPath,
+      deployEnvironment: [] as { key: string; value: string; isSecret: boolean }[],
+      generatedFunctions,
+    }
   }
 
   const startDevOptions = {
@@ -155,13 +184,25 @@ export const runNetlifyBuild = async ({
   }
 
   // Run Netlify Build using the `startDev` entry point.
-  const { configMutations, error: startDevError, success } = await startDev(devCommand, startDevOptions)
+  const {
+    configMutations,
+    error: startDevError,
+    success,
+    generatedFunctions,
+    deployEnvVars: deployEnvironment,
+  } = await startDev(devCommand, startDevOptions)
 
   if (!success && startDevError) {
-    error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
+    return logAndThrowError(
+      `Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`,
+    )
   }
 
-  return { configMutations }
+  return {
+    configMutations,
+    deployEnvironment: deployEnvironment as { key: string; value: string; isSecret: boolean }[],
+    generatedFunctions,
+  }
 }
 
 type RunTimelineOptions = Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>

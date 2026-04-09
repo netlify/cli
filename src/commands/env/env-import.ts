@@ -7,6 +7,7 @@ import dotenv from 'dotenv'
 import { exit, log, logJson } from '../../utils/command-helpers.js'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
+import { getSiteInfo } from './utils.js'
 
 /**
  * Saves the imported env in the Envelope service
@@ -54,9 +55,11 @@ export const envImport = async (fileName: string, options: OptionValues, command
   const siteId = site.id
 
   if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
+    log('No project id found, please run inside a project folder or `netlify link`')
     return false
   }
+
+  const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
 
   let importedEnv = {}
   try {
@@ -73,8 +76,6 @@ export const envImport = async (fileName: string, options: OptionValues, command
     return false
   }
 
-  const { siteInfo } = cachedConfig
-
   const finalEnv = await importDotEnv({ api, importedEnv, options, siteInfo })
 
   // Return new environment variables of site if using json flag
@@ -90,4 +91,5 @@ export const envImport = async (fileName: string, options: OptionValues, command
   table.setHeading('Key', 'Value')
   table.addRowMatrix(Object.entries(importedEnv))
   log(table.toString())
+  log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
 }

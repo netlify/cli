@@ -1,10 +1,10 @@
-import { OptionValues } from 'commander'
+import type { NetlifyAPI } from '@netlify/api'
 import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
 
-import { startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, error, log } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
+import type BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
 
 // 1 second
@@ -15,28 +15,18 @@ const BUILD_FINISH_INTERVAL = 1e3
 // 20 minutes
 const BUILD_FINISH_TIMEOUT = 12e5
 
-/**
- *
- * @param {import('netlify').NetlifyAPI} api
- * @param {string} siteId
- * @param {import('ora').Ora} spinner
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-const waitForBuildFinish = async function (api, siteId, spinner) {
+const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spinner: Spinner) {
   let firstPass = true
 
   const waitForBuildToFinish = async function () {
     const builds = await api.listSiteBuilds({ siteId })
     // build.error
-    // @ts-expect-error TS(7006) FIXME: Parameter 'build' implicitly has an 'any' type.
     const currentBuilds = builds.filter((build) => !build.done)
 
     // if build.error
     // @TODO implement build error messages into this
 
     if (!currentBuilds || currentBuilds.length === 0) {
-      // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: any; }' is not assign... Remove this comment to see the full error message
       stopSpinner({ spinner })
       return true
     }
@@ -56,7 +46,7 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
   return firstPass
 }
 
-export const watch = async (options: OptionValues, command: BaseCommand) => {
+export const watch = async (_options: unknown, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   let siteId = command.netlify.site.id
@@ -70,8 +60,9 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
   // wait for 1 sec for everything to kickoff
   console.time('Deploy time')
   await new Promise((resolve) => {
-    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-    setTimeout(() => resolve(), INIT_WAIT)
+    setTimeout(() => {
+      resolve(undefined)
+    }, INIT_WAIT)
   })
 
   // Get latest commit and look for that
@@ -89,7 +80,7 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
   //     "created_at": "2018-07-17T17:14:03.423Z"
   // }
   //
-  const spinner = startSpinner({ text: 'Waiting for active site deploys to complete' })
+  const spinner = startSpinner({ text: 'Waiting for active project deploys to complete' })
   try {
     // Fetch all builds!
     // const builds = await client.listSiteBuilds({siteId})
@@ -114,6 +105,6 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
     )
     console.timeEnd('Deploy time')
   } catch (error_) {
-    error(error_)
+    return logAndThrowError(error_)
   }
 }

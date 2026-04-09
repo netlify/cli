@@ -1,0 +1,8 @@
+{
+  "name": "build-plugin",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@netlify/build": "^29.36.1"
+  }
+}

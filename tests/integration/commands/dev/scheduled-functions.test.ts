@@ -4,18 +4,18 @@ import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import fetch from 'node-fetch'
 import { pause } from '../../utils/pause.js'
 
-describe('scheduled functions', () => {
-  setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {
+describe('scheduled functions', async () => {
+  await setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {
     test<FixtureTestContext>('should emulate next_run for scheduled functions', async ({ devServer }) => {
-      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/scheduled-v2`, {})
+      const response = await fetch(`http://localhost:${devServer!.port}/.netlify/functions/scheduled-v2`, {})
 
       expect(response.status).toBe(200)
     })
   })
 
-  setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {
+  await setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {
     test<FixtureTestContext>('should detect file changes to scheduled function', async ({ devServer, fixture }) => {
-      const body = await fetch(`http://localhost:${devServer.port}/.netlify/functions/ping`, {}).then((res) =>
+      const body = await fetch(`http://localhost:${devServer!.port}/.netlify/functions/ping`, {}).then((res) =>
         res.text(),
       )
 
@@ -39,7 +39,7 @@ describe('scheduled functions', () => {
       const DETECT_FILE_CHANGE_DELAY = 500
       await pause(DETECT_FILE_CHANGE_DELAY)
 
-      const warning = await fetch(`http://localhost:${devServer.port}/.netlify/functions/ping`, {}).then((res) =>
+      const warning = await fetch(`http://localhost:${devServer!.port}/.netlify/functions/ping`, {}).then((res) =>
         res.text(),
       )
 

@@ -26,7 +26,7 @@ export const createCompletionCommand = (program: BaseCommand) => {
     .command('completion')
     .description('Generate shell completion script\nRun this command to see instructions for your shell.')
     .addExamples(['netlify completion:install'])
-    .action((options: OptionValues, command: BaseCommand) => {
+    .action((_options: OptionValues, command: BaseCommand) => {
       command.help()
     })
 }

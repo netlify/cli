@@ -24,7 +24,6 @@ promote a positive and inclusive environment.
 - [Releasing](#releasing)
 - [License](#license)
 
-
 ## Developing locally
 
 First, fork and clone the repository. If you’re not sure how to do this, please watch
@@ -33,7 +32,8 @@ First, fork and clone the repository. If you’re not sure how to do this, pleas
 Run:
 
 ```bash
-npm install && npm run site:build:install
+npm install
+npm run build
 ```
 
 Tests are run with:
@@ -52,9 +52,7 @@ You can either provide a
 [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the
 `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run.js login` before running the tests.
 
-The tests don’t count towards Netlify build minutes since they build a site locally and deploy it using the API.
-
-> You can disable these tests by setting the `NETLIFY_TEST_DISABLE_LIVE` environment variable to `true`.
+The tests don't count towards Netlify build minutes since they build a site locally and deploy it using the API.
 
 **For Netlify employees**, our CI uses a Netlify Auth Token from a
 [`netlify services` account](https://app.netlify.com/teams/netlify-services/sites). Credentials for the account are in
@@ -68,14 +66,13 @@ npm run watch
 
 Make sure everything is correctly set up by running those tests first.
 
-ESLint and Prettier have performed automatically on `git push`. However, we recommend you set up your IDE or text editor
-to run ESLint and Prettier automatically on file save. Otherwise, you should run them manually using:
+We recommend you set up your IDE or text editor to run ESLint and Prettier automatically on file save. Otherwise, you
+can run them manually using:
 
 ```bash
 npm run format
+npm run lint:fix
 ```
-
-Alternatively, you can set up your IDE to integrate with Prettier and ESLint for JavaScript and Markdown files.
 
 To run the CLI locally:
 
@@ -91,11 +88,14 @@ DEBUG=true ./bin/run.js [command]
 
 ### Attaching a Debugger
 
-When debugging a project, it's super helpful to attach a debugger to the CLI. If you use VS Code, here's how you can do it:
+When debugging a project, it's super helpful to attach a debugger to the CLI. If you use VS Code, here's how you can do
+it:
 
 1. Open this repository in VS Code.
-2. Open a "JavaScript Debug Terminal" (e.g. by searching for it in the Command Palette (Shift-Cmd+P)). Every Node process that's opened in this terminal will have a debugger attached.
-3. Place a breakpoint somewhere in the CLI. You will have to place them in the compiled `.js` files as opposed to the `.ts` files.
+2. Open a "JavaScript Debug Terminal" (e.g. by searching for it in the Command Palette (Shift-Cmd+P)). Every Node
+   process that's opened in this terminal will have a debugger attached.
+3. Place a breakpoint somewhere in the CLI. You will have to place them in the compiled `.js` files as opposed to the
+   `.ts` files.
 4. In your JavaScript Debug Terminal, navigate to the project you'd like to debug.
 5. Run `/path/to/netlify/cli/bin/run.js`. The debugger should be connecting automatically.
 
@@ -113,9 +113,9 @@ A good place to start is reading the base command README and looking at the comm
 
 > If you’d like to learn more on how `netlify dev` works, check [here](./docs/netlify-dev.md)
 
-
 ### Adding or updating a command
-If you're adding a new command or updating an existing one, make sure to also add docs for it by running `npm run site:build`.
+
+If you're adding a new command or updating an existing one, make sure to also add docs for it by running `npm run docs`.
 
 This will automatically generate documentation for you that will look like the following:
 
@@ -130,17 +130,17 @@ description: A description.
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 
 <!-- AUTO-GENERATED-CONTENT:END -->
-
 ```
 
-When adding a new command, you will also need to add it to the nav sidebar manually by adding it to the `navOrder` array in `site/src/_app.js`
+When adding a new command, you will also need to add it to the nav sidebar manually by adding it to the `navOrder` array
+in `site/src/_app.js`
 
 ### Updating our documentation
 
 If documentation looks to be out of date, it is likely that the code for the command itself is not correct.
 
-To update the documentation, update the code (rather than the markdown files) and then run `npm run docs` to sync the docs. To confirm that the changes to the docs are correct, run `cd site && npm run dev:start` to run the docs locally.
-
+To update the documentation, update the code (rather than the markdown files) and then run `npm run docs` to sync the
+docs. To confirm that the changes to the docs are correct, run `cd site && npm run dev:start` to run the docs locally.
 
 ### Testing
 
@@ -200,7 +200,8 @@ We actively welcome your pull requests.
 
 ## Releasing
 
-Tag the 'release' pull request using the `automerge` label. This will merge the pull request on GitHub and publish the package to npm.
+Tag the 'release' pull request using the `automerge` label. This will merge the pull request on GitHub and publish the
+package to npm.
 
 ### Creating a prerelease
 

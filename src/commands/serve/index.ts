@@ -8,27 +8,22 @@ export const createServeCommand = (program: BaseCommand) =>
   program
     .command('serve')
     .description(
-      'Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.',
+      'Build the project for production and serve locally. This does not watch the code for changes, so if you need to rebuild your project then you must exit and run `serve` again.',
     )
     .option(
       '--context <context>',
-      'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)',
       normalizeContext,
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
-    .option('-o ,--offline', 'disables any features that require network access')
+    .option('-o, --offline', 'Disables any features that require network access')
     .addOption(
       new Option(
         '--internal-disable-edge-functions',
         "disables edge functions. use this if your environment doesn't support Deno. This option is internal and should not be used by end users.",
       ).hideHelp(true),
-    )
-    .addOption(
-      new Option('--functionsPort <port>', 'Old, prefer --functions-port. Port of functions server')
-        .argParser((value) => Number.parseInt(value))
-        .hideHelp(true),
     )
     .option('--functions-port <port>', 'port of functions server', (value) => Number.parseInt(value))
     .addOption(
@@ -50,7 +45,13 @@ export const createServeCommand = (program: BaseCommand) =>
         .argParser((value) => Number.parseInt(value))
         .hideHelp(),
     )
-    .addExamples(['netlify serve', 'BROWSER=none netlify serve # disable browser auto opening'])
+    .addExamples([
+      'netlify serve',
+      'BROWSER=none netlify serve # disable browser auto opening',
+      'netlify serve --context production # Use env var values from production context',
+      'netlify serve --context deploy-preview # Use env var values from deploy-preview context',
+      'netlify serve --context branch:feat/make-it-pop # Use env var values from the feat/make-it-pop branch context or branch-deploy context',
+    ])
     .action(async (options: Option, command: BaseCommand) => {
       const { serve } = await import('./serve.js')
       await serve(options, command)

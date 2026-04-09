@@ -1,4 +1,5 @@
 import { OptionValues } from 'commander'
+import terminalLink from 'terminal-link'
 
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
 import BaseCommand from '../base-command.js'
@@ -33,7 +34,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
     )
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
-    .option('-o, --output <path>', 'Defines the filesystem path where the blob data should be persisted')
+    .option('-O, --output <path>', 'Defines the filesystem path where the blob data should be persisted')
     .alias('blob:get')
     .hook('preAction', requiresSiteInfo)
     .action(async (storeName: string, key: string, options: OptionValues, command: BaseCommand) => {
@@ -53,7 +54,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
       '-p, --prefix <prefix>',
       `A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned`,
     )
-    .option('--json', `Output list contents as JSON`)
+    .option('--json', 'Output list contents as JSON')
     .alias('blob:list')
     .hook('preAction', requiresSiteInfo)
     .action(async (storeName: string, options: OptionValues, command: BaseCommand) => {
@@ -84,6 +85,12 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .command('blobs')
     .alias('blob')
     .description(`Manage objects in Netlify Blobs`)
+    .addHelpText('after', () => {
+      const docsUrl = 'https://docs.netlify.com/blobs/overview/'
+      return `
+For more information about Netlify Blobs, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
+`
+    })
     .addExamples([
       'netlify blobs:get my-store my-key',
       'netlify blobs:set my-store my-key This will go in a blob',

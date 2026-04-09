@@ -1,7 +1,11 @@
-import { Buffer } from 'buffer'
-import { IncomingMessage } from 'http'
+import type { Buffer } from 'buffer'
+import type { IncomingMessage } from 'http'
 
-import { Match } from 'netlify-redirector'
+import type { PollingStrategy } from '@netlify/build-info'
+import type { Match } from 'netlify-redirector'
+
+export type { GlobalConfigStore } from '@netlify/dev-utils'
+export type { LocalState } from '@netlify/dev-utils'
 
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
@@ -12,7 +16,7 @@ export type FrameworkInfo = {
   dev: {
     commands: string[]
     port: number
-    pollingStrategies: { name: string }[]
+    pollingStrategies: PollingStrategy[]
   }
   name: FrameworkNames
   staticAssetsDirectory: string
@@ -22,7 +26,7 @@ export type FrameworkInfo = {
 
 export type BaseServerSettings = {
   baseDirectory?: string
-  dist?: string
+  dist: string
   /** The command that was provided for the dev config */
   command?: string
   /** If it should be served like static files */
@@ -32,6 +36,8 @@ export type BaseServerSettings = {
   frameworkPort?: number
   /** The host where a proxy can listen to it */
   frameworkHost?: '127.0.0.1' | '::1'
+  /** Try both v4 and v6 IPs */
+  detectFrameworkHost?: boolean
   functions?: string
   /** The framework name ('Create React App') */
   framework?: string
@@ -61,32 +67,52 @@ export interface Request extends IncomingMessage {
   hostname?: string
 }
 
-export type Rewriter = (req: Request) => Match | null
+export type Rewriter = (req: Request) => Promise<Match | null>
 
+// FIXME(serhalp): Much of this appears to be wrong? Most of these should be optional, or at
+// the very least `siteInfo` should be optional on `CachedConfig` when no site is linked...
+// Delete all of this and replace with generated Netlify API type.
 export interface SiteInfo {
+  account_id?: string | undefined
   account_name: string
   account_slug: string
   admin_url: string
-  build_settings: {
-    allowed_branches: string[]
-    cmd: string
-    deploy_key_id: string
-    dir: string
-    env?: Record<string, unknown>
-    id: number
-    private_logs: boolean
-    provider: string
-    public_repo: boolean
-    repo_branch: string
-    repo_path: string
-    repo_url: string
+  // TODO(serhalp): Investigate this. It seems like this should be required but there appear to
+  // be cases where it is missing.
+  build_settings?:
+    | {
+        allowed_branches: string[]
+        cmd: string
+        deploy_key_id: string
+        dir: string
+        env?: Record<string, unknown>
+        id: number
+        private_logs: boolean
+        provider: string
+        public_repo: boolean
+        repo_branch: string
+        repo_path: string
+        repo_url: string
+      }
+    | undefined
+  capabilities?: {
+    ai_gateway_disabled?: boolean
+    [key: string]: unknown
   }
-  capabilities: Record<string, unknown>
   created_at: string
   custom_domain: string
   deploy_hook: string
   deploy_url: string
+  functions_timeout?: number
+  functions_config?: { timeout?: number }
+  dev_server_settings?:
+    | {
+        cmd: string
+        target_port: number
+      }
+    | undefined
   domain_aliases: string[]
+  feature_flags?: Record<string, string | boolean>
   force_ssl: boolean
   git_provider: string
   id: string
@@ -108,41 +134,53 @@ export interface SiteInfo {
     }
     skip: boolean
   }
-  published_deploy: {
-    admin_url: string
-    branch: string
-    build_id: string
-    commit_ref: string
-    commit_url: string
-    context: string
-    created_at: string
-    deploy_ssl_url: string
-    deploy_url: string
-    draft: boolean
-    error_message: string
-    id: string
-    locked: boolean
-    name: string
-    published_at: string
-    required: string[]
-    required_functions: string[]
-    review_id: number
-    review_url: string
-    screenshot_url: string
-    site_id: string
-    skipped: boolean
-    ssl_url: string
-    state: string
-    title: string
-    updated_at: string
-    url: string
-    user_id: string
-  }
+  published_deploy:
+    | {
+        admin_url: string
+        branch: string
+        build_id: string
+        commit_ref: string
+        commit_url: string
+        context: string
+        created_at: string
+        deploy_ssl_url: string
+        deploy_url: string
+        draft: boolean
+        error_message: string
+        id: string
+        locked: boolean
+        name: string
+        published_at: string
+        required: string[]
+        required_functions: string[]
+        review_id: number
+        review_url: string
+        screenshot_url: string
+        site_id: string
+        skipped: boolean
+        ssl_url: string
+        state: string
+        title: string
+        updated_at: string
+        url: string
+        user_id: string
+      }
+    | undefined
   screenshot_url: string
   session_id: string
   ssl: boolean
   ssl_url: string
   state: string
+  repo?: {
+    provider?: string
+    repo_path?: string
+    repo_url?: string
+    repo_branch?: string
+  }
+  git_initial_push_progress?: {
+    state: string
+    error_message?: string
+  }
   updated_at: string
   url: string
   user_id: string
@@ -150,44 +188,42 @@ export interface SiteInfo {
 
 export type TokenLocation = 'env' | 'flag' | 'config' | 'not found'
 
-export interface Account {
+export type EnvVar = {
+  key: string
+  scopes: string[]
+  values: EnvVarValue[]
+  updated_at: string
+  is_secret: boolean
+}
+
+type EnvVarValue = {
+  id: string
+  context: string
+}
+
+export type MinimalAccount = {
   id: string
   name: string
   slug: string
-  type: string
-  capabilities: {
-    sites: {
-      included: number
-      used: number
-    }
-    collaborators: {
-      included: number
-      used: number
-    }
-  }
-  billing_name: string
-  billing_email: string
-  billing_details: string
-  billing_period: string
-  payment_method_id: string
+  default: boolean
+  team_logo_url: string | null
+  on_pro_trial: boolean
+  organization_id: string | null
   type_name: string
-  type_id: string
-  owner_ids: string[]
-  roles_allowed: string[]
-  created_at: string
-  updated_at: string
+  type_slug: string
+  members_count: number
 }
 
-export interface GithubRepo {
-  name: string
-  html_url: string
-  full_name: string
-  archived: boolean
-  disabled: boolean
-}
+type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
+export type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' | 'internal' | 'ui'
 
-export interface Template {
-  name: string
-  sourceCodeUrl: string
-  slug: string
+export type EnvironmentVariables = Record<
+  string,
+  { sources: EnvironmentVariableSource[]; value: string; scopes?: EnvironmentVariableScope[] }
+>
+
+export interface Plugin {
+  origin?: string
+  package: string
+  pinned_version?: string | undefined
 }

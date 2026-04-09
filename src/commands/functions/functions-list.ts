@@ -5,9 +5,20 @@ import { exit, log, logJson } from '../../utils/command-helpers.js'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.js'
 import BaseCommand from '../base-command.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'deployedFunctions' implicitly has an 'a... Remove this comment to see the full error message
-const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'deployedFunction' implicitly has an 'an... Remove this comment to see the full error message
+interface DeployedFunction {
+  n?: string
+}
+
+const normalizeFunction = function (
+  deployedFunctions: DeployedFunction[],
+  {
+    name,
+    urlPath: url,
+  }: {
+    name: string
+    urlPath: string
+  },
+) {
   const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)
   return { name, url, isDeployed }
 }
@@ -15,17 +26,16 @@ const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
 export const functionsList = async (options: OptionValues, command: BaseCommand) => {
   const { config, relConfigFilePath, siteInfo } = command.netlify
 
-  const deploy = siteInfo.published_deploy || {}
-  const deployedFunctions = deploy.available_functions || []
+  // @ts-expect-error FIXME(serhalp): Investigate. This is either dead code or a type error in the API client package.
+  const deployedFunctions = (siteInfo.published_deploy?.available_functions as DeployedFunction[] | undefined) ?? []
 
-  // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
   const functionsDir = getFunctionsDir({ options, config })
 
   if (typeof functionsDir === 'undefined') {
     log('Functions directory is undefined')
     log(`Please verify that 'functions.directory' is set in your Netlify configuration file ${relConfigFilePath}`)
     log('Refer to https://ntl.fyi/file-based-build-config for more information')
-    exit(1)
+    return exit(1)
   }
 
   const functions = await getFunctions(functionsDir)
@@ -33,12 +43,12 @@ export const functionsList = async (options: OptionValues, command: BaseCommand)
 
   if (normalizedFunctions.length === 0) {
     log(`No functions found in ${functionsDir}`)
-    exit()
+    return exit()
   }
 
   if (options.json) {
     logJson(normalizedFunctions)
-    exit()
+    return exit()
   }
 
   // Make table

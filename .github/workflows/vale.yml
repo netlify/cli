@@ -1,20 +1,24 @@
+---
 name: Lint Docs
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - '**'
+      - '!release-please--**'
 
 permissions:
   checks: write
 
 jobs:
   lint-docs:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Git checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download styles
         run: |

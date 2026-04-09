@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI functions command
+sidebar:
+  label: functions
 description: Run netlify dev locally
 ---
 
@@ -7,7 +9,7 @@ description: Run netlify dev locally
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 Manage netlify functions
-The `functions` command will help you manage the functions in this site
+The `functions` command will help you manage the functions in this project
 
 **Usage**
 
@@ -19,6 +21,7 @@ netlify functions
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -53,6 +56,7 @@ netlify functions:build
 - `functions` (*string*) - Specify a functions directory to build to
 - `src` (*string*) - Specify the source directory for the functions
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `functions:create`
@@ -74,8 +78,10 @@ netlify functions:create
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `language` (*string*) - function language
 - `name` (*string*) - function name
+- `offline` (*boolean*) - Disables any features that require network access
 - `url` (*string*) - pull template from URL
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -107,10 +113,12 @@ netlify functions:invoke
 - `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --identity to affirm unauthenticated request
 - `name` (*string*) - function name to invoke
 - `no-identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
+- `offline` (*boolean*) - Disables any features that require network access
 - `payload` (*string*) - Supply POST payload in stringified json, or a path to a json file
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `port` (*string*) - Port where netlify dev is accessible. e.g. 8888
 - `querystring` (*string*) - Querystring to add to your function invocation
-- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -145,6 +153,7 @@ netlify functions:list
 - `functions` (*string*) - Specify a functions directory to list
 - `json` (*boolean*) - Output function data as JSON
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `functions:serve`
@@ -161,9 +170,10 @@ netlify functions:serve
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to serve
-- `offline` (*boolean*) - disables any features that require network access
+- `offline` (*boolean*) - Disables any features that require network access
 - `port` (*string*) - Specify a port for the functions server
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 

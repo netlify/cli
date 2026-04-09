@@ -1,14 +1,14 @@
-import process from 'process'
+import { platform } from 'process'
 
-import fetch from 'node-fetch'
 import pWaitFor from 'p-wait-for'
 import { v4 as uuidv4 } from 'uuid'
 
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.js'
 import { getPathInHome } from '../lib/settings.js'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.js'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, exit, log } from './command-helpers.js'
 import execa from './execa.js'
+import type { LocalState } from './types.js'
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
@@ -19,18 +19,22 @@ const TUNNEL_POLL_INTERVAL = 1e3
 // 5 minutes
 const TUNNEL_POLL_TIMEOUT = 3e5
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'netlifyApiToken' implicitly has a... Remove this comment to see the full error message
-const createTunnel = async function ({ netlifyApiToken, siteId, slug }) {
-  await installTunnelClient()
+interface LiveSession {
+  id: string
+  session_url: string
+  state: string
+}
 
-  if (!siteId) {
-    console.error(
-      `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
-        'netlify init',
-      )} or ${chalk.yellow('netlify link')}?`,
-    )
-    process.exit(1)
-  }
+const createTunnel = async function ({
+  netlifyApiToken,
+  siteId,
+  slug,
+}: {
+  netlifyApiToken: string
+  siteId: string
+  slug: string
+}) {
+  await installTunnelClient()
 
   const url = `https://api.netlify.com/api/v1/live_sessions?site_id=${siteId}&slug=${slug}`
   const response = await fetch(url, {
@@ -45,31 +49,41 @@ const createTunnel = async function ({ netlifyApiToken, siteId, slug }) {
   const data = await response.json()
 
   if (response.status !== 201) {
-    // @ts-expect-error TS(18046) - 'data' is of type 'unknown'
-    throw new Error(data.message)
+    // TODO(serhalp): Use typed `netlify` API client?
+    throw new Error(
+      data != null && typeof data === 'object' && 'message' in data && typeof data.message === 'string'
+        ? data.message
+        : '',
+    )
   }
 
-  return data
+  return data as LiveSession
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'localPort' implicitly has an 'any... Remove this comment to see the full error message
-const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
+const connectTunnel = function ({
+  localPort,
+  netlifyApiToken,
+  session,
+}: {
+  localPort: number
+  netlifyApiToken: string
+  session: LiveSession
+}) {
   const execPath = getPathInHome(['tunnel', 'bin', EXEC_NAME])
-  const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
+  const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort.toString()]
   if (process.env.DEBUG) {
     args.push('-v')
-    log(execPath, args)
+    log(execPath, args.toString())
   }
 
   const ps = execa(execPath, args, { stdio: 'inherit' })
-  ps.on('close', (code) => process.exit(code))
-  ps.on('SIGINT', process.exit)
-  ps.on('SIGTERM', process.exit)
+  void ps.on('close', (code) => exit(code ?? undefined))
+  void ps.on('SIGINT', () => exit())
+  void ps.on('SIGTERM', () => exit())
 }
 
 const installTunnelClient = async function () {
   const binPath = getPathInHome(['tunnel', 'bin'])
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ binPath: string; packageName: ... Remove this comment to see the full error message
   const shouldFetch = await shouldFetchLatestVersion({
     binPath,
     packageName: PACKAGE_NAME,
@@ -83,25 +97,49 @@ const installTunnelClient = async function () {
 
   log(`${NETLIFYDEVLOG} Installing Live Tunnel Client`)
 
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ packageName: string; execName:... Remove this comment to see the full error message
   await fetchLatestVersion({
     packageName: PACKAGE_NAME,
     execName: EXEC_NAME,
     destination: binPath,
-    extension: process.platform === 'win32' ? 'zip' : 'tar.gz',
+    extension: platform === 'win32' ? 'zip' : 'tar.gz',
   })
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'localPort' implicitly has an 'any... Remove this comment to see the full error message
-export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId, slug }) => {
+export const startLiveTunnel = async ({
+  localPort,
+  netlifyApiToken,
+  siteId,
+  slug,
+}: {
+  localPort: number
+  netlifyApiToken?: string | null | undefined
+  siteId?: string | undefined
+  slug: string
+}) => {
+  if (!siteId) {
+    console.error(
+      `${NETLIFYDEVERR} Error: no project ID defined, did you forget to run ${chalk.yellow(
+        'netlify init',
+      )} or ${chalk.yellow('netlify link')}?`,
+    )
+    return exit(1)
+  }
+  if (!netlifyApiToken) {
+    console.error(
+      `${NETLIFYDEVERR} Error: no Netlify auth token defined, did you forget to run ${chalk.yellow(
+        'netlify login',
+      )} or define 'NETLIFY_AUTH_TOKEN'?`,
+    )
+    return exit(1)
+  }
+
   const session = await createTunnel({
     siteId,
     netlifyApiToken,
     slug,
   })
 
-  const isLiveTunnelReady = async function () {
-    // @ts-expect-error TS(18046) - 'session' is of type 'unknown'
+  const isLiveTunnelReady = async (): Promise<boolean> => {
     const url = `https://api.netlify.com/api/v1/live_sessions/${session.id}`
     const response = await fetch(url, {
       method: 'GET',
@@ -113,12 +151,15 @@ export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId, slug
     const data = await response.json()
 
     if (response.status !== 200) {
-      // @ts-expect-error TS(18046) - 'session' is of type 'unknown'
-      throw new Error(data.message)
+      // TODO(serhalp): Use typed `netlify` API client?
+      throw new Error(
+        data != null && typeof data === 'object' && 'message' in data && typeof data.message === 'string'
+          ? data.message
+          : '',
+      )
     }
 
-    // @ts-expect-error TS(18046) - 'data' is of type 'unknown'
-    return data.state === 'online'
+    return (data as LiveSession).state === 'online'
   }
 
   connectTunnel({ session, netlifyApiToken, localPort })
@@ -129,12 +170,10 @@ export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId, slug
     timeout: TUNNEL_POLL_TIMEOUT,
   })
 
-  // @ts-expect-error TS(18046) - 'session' is of type 'unknown'
   return session.session_url
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'state' implicitly has an 'any' type.
-export const getLiveTunnelSlug = (state, override) => {
+export const getLiveTunnelSlug = (state: LocalState, override?: string) => {
   if (override !== undefined) {
     return override
   }
@@ -150,8 +189,11 @@ export const getLiveTunnelSlug = (state, override) => {
 
     state.set(SLUG_LOCAL_STATE_KEY, newSlug)
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    log(`${NETLIFYDEVERR} Could not read or write local state file: ${error.message}`)
+    log(
+      `${NETLIFYDEVERR} Could not read or write local state file: ${
+        error instanceof Error ? error.message : error?.toString() ?? ''
+      }`,
+    )
   }
 
   return newSlug

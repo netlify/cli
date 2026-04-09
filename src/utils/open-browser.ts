@@ -1,7 +1,6 @@
 import process from 'process'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'bett... Remove this comment to see the full error message
-import open from 'better-opn'
+import open from 'open'
 import isDockerContainer from 'is-docker'
 
 import { chalk, log } from './command-helpers.js'
@@ -20,7 +19,7 @@ const unableToOpenBrowserMessage = function ({ message, url }: BrowserUnableMess
 }
 
 type OpenBrowsrProps = {
-  silentBrowserNoneError: boolean
+  silentBrowserNoneError?: boolean
   url: string
 }
 

@@ -7,7 +7,7 @@ export const createApiCommand = (program: BaseCommand) =>
     .argument('[apiMethod]', 'Open API method to run')
     .description(
       `Run any Netlify API method
-For more information on available methods checkout https://open-api.netlify.com/ or run '${chalk.grey(
+For more information on available methods check out https://open-api.netlify.com/ or run '${chalk.grey(
         'netlify api --list',
       )}'`,
     )

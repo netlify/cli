@@ -1,18 +1,17 @@
+import { cp } from 'fs/promises'
 import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { NodeOptions } from 'execa'
-import { copy } from 'fs-extra'
-import { temporaryDirectory } from 'tempy'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
 import { callCli } from './call-cli.js'
-import { DevServer, startDevServer } from './dev-server.ts'
+import { DevServer, startDevServer } from './dev-server.js'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
-import { SiteBuilder } from './site-builder.ts'
+import { SiteBuilder } from './site-builder.js'
+import { temporaryDirectory } from '../../../src/utils/temporary-file.js'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
-const HOOK_TIMEOUT = 30_000
 
 interface MockApiOptions {
   routes: Route[]
@@ -27,7 +26,7 @@ export interface FixtureTestContext {
 type LifecycleHook = (context: FixtureTestContext) => Promise<void> | void
 
 export interface FixtureOptions {
-  devServer?: boolean | { serve?: boolean; args?: string[] }
+  devServer?: boolean | { serve?: boolean; args?: string[]; env?: Record<string, any> }
   mockApi?: MockApiOptions
   /**
    * Executed after fixture setup, but before tests run
@@ -44,7 +43,7 @@ export interface FixtureOptions {
 }
 
 interface CallCliOptions {
-  execOptions?: NodeOptions<string>
+  execOptions?: NodeOptions
   offline?: boolean
   parseJson?: boolean
 }
@@ -75,7 +74,10 @@ export class Fixture {
   static async create(fixturePath: string, options?: FixtureSettings): Promise<Fixture> {
     const fixture = new Fixture(fixturePath, temporaryDirectory(), options)
 
-    await copy(join(FIXTURES_DIRECTORY, fixturePath), fixture.directory)
+    await cp(join(FIXTURES_DIRECTORY, fixturePath), fixture.directory, {
+      recursive: true,
+      verbatimSymlinks: true,
+    })
 
     return fixture
   }
@@ -92,27 +94,25 @@ export class Fixture {
   /**
    * Calls the CLI with a max timeout inside the fixture directory.
    * If the `parseJson` argument is specified then the result will be converted into an object.
-   * @param {string[]} args
-   * @param {any} options
-   * @returns {Promise<string|object>}
    */
   async callCli(
     args: string[],
     { execOptions = {}, offline = true, parseJson = false }: CallCliOptions = {},
   ): Promise<Record<string, unknown> | string> {
-    let cliOptions: NodeOptions<string> = execOptions
+    let cliOptions: NodeOptions = execOptions
     if (this.options.apiUrl) {
       cliOptions = getCLIOptions({ apiUrl: this.options.apiUrl, env: execOptions.env })
     }
 
-    // @ts-expect-error we do not care it is readonly here
+    // @ts-expect-error: Intentionally ignoring read-only property annotation
     cliOptions.cwd = this.directory
 
     if (offline) {
       args.push('--offline')
     }
 
-    return await callCli(args, cliOptions, parseJson)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return callCli(args, cliOptions, parseJson)
   }
 }
 
@@ -136,7 +136,7 @@ export async function setupFixtureTests(
     factory = optionsOrFactory
   } else {
     options = optionsOrFactory
-    factory = factoryInput as TestFactory
+    factory = factoryInput!
   }
 
   describe(`fixture: ${fixturePath}`, async () => {
@@ -156,6 +156,7 @@ export async function setupFixtureTests(
           args.push(...options.devServer.args)
         }
 
+        const env = typeof options.devServer === 'object' && options.devServer.env
         devServer = await startDevServer({
           serve: typeof options.devServer === 'object' && options.devServer.serve,
           cwd: fixture.directory,
@@ -165,12 +166,13 @@ export async function setupFixtureTests(
             NETLIFY_API_URL: mockApi?.apiUrl,
             NETLIFY_SITE_ID: 'foo',
             NETLIFY_AUTH_TOKEN: 'fake-token',
+            ...env,
           },
         })
 
         await options.setupAfterDev?.({ fixture, mockApi, devServer })
       }
-    }, HOOK_TIMEOUT)
+    })
 
     beforeEach<FixtureTestContext>((context) => {
       if (fixture) context.fixture = fixture
@@ -195,6 +197,6 @@ export async function setupFixtureTests(
       if (devServer) await devServer.close()
       if (mockApi) await mockApi.close()
       if (fixture) await fixture.cleanup()
-    }, HOOK_TIMEOUT)
+    })
   })
 }

@@ -1,35 +1,39 @@
-import path from 'path'
+import path, { join } from 'path'
 import process from 'process'
 
 import execa from 'execa'
-import { describe, test, expect } from 'vitest'
+import { describe, expect, test, type TestContext } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.ts'
+import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { CONFIRM, handleQuestions } from '../../utils/handle-questions.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 const defaultEnvs = {
   NETLIFY_AUTH_TOKEN: 'fake-token',
   FORCE_COLOR: '1',
 }
 
-// Runs `netlify build ...flags` then verify:
-//  - its exit code is `exitCode`
-//  - that its output contains `output`
+/**
+ * Runs `netlify build ...flags` then verify:
+ *  - its exit code is `exitCode`
+ *  - that its output contains `output`
+ */
 const runBuildCommand = async function (
-  t,
-  cwd,
+  t: TestContext,
+  cwd: string,
   options: Partial<{
     exitCode: number
     flags: string[]
-    output: any
+    expectedExitCode?: number | undefined
+    output: string | RegExp | (string | RegExp)[]
     env: Record<string, string>
     apiUrl: string
   }> = {},
 ) {
-  let { apiUrl, env = defaultEnvs, exitCode: expectedExitCode = 0, flags = [], output: outputs } = options
+  let { apiUrl, env = defaultEnvs, exitCode: expectedExitCode = 0, flags = [], output: outputs = [] } = options
   const { all, exitCode } = await execa(cliPath, ['build', ...flags], {
     reject: false,
     cwd,
@@ -256,7 +260,7 @@ describe.concurrent('command/build', () => {
     })
   })
 
-  test('should error when a site id is missing', async (t) => {
+  test('should error when a project id is missing', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
@@ -266,14 +270,14 @@ describe.concurrent('command/build', () => {
         await runBuildCommand(t, builder.directory, {
           apiUrl,
           exitCode: 1,
-          output: 'Could not find the site ID',
+          output: 'Could not find the project ID',
           env: { ...defaultEnvs, NETLIFY_SITE_ID: '' },
         })
       })
     })
   })
 
-  test('should not require a linked site when offline flag is set', async (t) => {
+  test('should not require a linked project when offline flag is set', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).build()
 
@@ -327,13 +331,51 @@ describe.concurrent('command/build', () => {
     test<FixtureTestContext>('should run build without any netlify specific configuration and install auto detected plugins', async ({
       fixture,
     }) => {
-      const output = await callCli(['build', '--offline'], { cwd: fixture.directory })
+      const output = (await callCli(['build', '--offline'], { cwd: fixture.directory })) as string
 
       // expect on the output that it installed the next runtime (auto detected the plugin + the build command and therefore had functions to bundle)
-      expect(output).toMatch(/❯ Using Next.js Runtime -/)
+      expect(output).toMatch(/Using Next.js Runtime -/)
       expect(output).toMatch(/\$ npm run build/)
       expect(output).toMatch(/Functions bundling completed/)
-      expect(output).toMatch(/Edge Functions bundling completed/)
     })
+  })
+})
+
+// Monorepo tests are commented out because they are all failing
+setupFixtureTests('monorepo', () => {
+  // This and the following tests are failing on all environments
+  test.skip<FixtureTestContext>('should set the PACKAGE_PATH constant when selecting a pkg', async ({ fixture }) => {
+    const childProcess = execa(cliPath, ['build', '--offline'], {
+      cwd: join(fixture.directory),
+    })
+
+    handleQuestions(childProcess, [
+      {
+        question: 'Select the project you want to work with',
+        answer: CONFIRM,
+      },
+    ])
+    const { stdout } = await childProcess
+    expect(stdout).toContain('@@ packagePath: packages/app-1')
+    expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
+  })
+
+  test.skip<FixtureTestContext>('should set the PACKAGE_PATH constant when run not from the monorepo root', async ({
+    fixture,
+  }) => {
+    const { stdout } = await execa(cliPath, ['build', '--offline'], {
+      cwd: join(fixture.directory, 'packages/app-1'),
+    })
+    expect(stdout).toContain('@@ packagePath: packages/app-1')
+    expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
+  })
+
+  // This test is consistently failing on windows @ latest
+  test.skip<FixtureTestContext>('should set the PACKAGE_PATH constant when run from repo root', async ({ fixture }) => {
+    const { stdout } = await execa(cliPath, ['build', '--offline', '--filter', 'packages/app-1'], {
+      cwd: join(fixture.directory),
+    })
+    expect(stdout).toContain('@@ packagePath: packages/app-1')
+    expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
   })
 })

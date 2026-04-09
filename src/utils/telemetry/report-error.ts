@@ -3,10 +3,10 @@ import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
 
+import { getGlobalConfigStore } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 
 import execa from '../execa.js'
-import getGlobalConfig from '../get-global-config.js'
 
 import { cliVersion } from './utils.js'
 
@@ -27,10 +27,9 @@ export const reportError = async function (error, config = {}) {
   }
 
   // convert a NotifiableError to an error class
-  // eslint-disable-next-line unicorn/no-nested-ternary
   const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
 
-  const globalConfig = await getGlobalConfig()
+  const globalConfig = await getGlobalConfigStore()
 
   const options = JSON.stringify({
     type: 'error',

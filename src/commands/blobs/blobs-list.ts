@@ -2,7 +2,7 @@ import { getStore } from '@netlify/blobs'
 import AsciiTable from 'ascii-table'
 import { OptionValues } from 'commander'
 
-import { chalk, error as printError, log, logJson } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
@@ -16,7 +16,7 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
-    siteID: siteInfo?.id ?? '',
+    siteID: siteInfo.id,
     token: api.accessToken ?? '',
   })
 
@@ -27,11 +27,13 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
     })
 
     if (options.json) {
-      return logJson({ blobs, directories })
+      logJson({ blobs, directories })
+      return
     }
 
     if (blobs.length === 0 && directories.length === 0) {
-      return log(`Netlify Blobs store ${chalk.yellow(storeName)} is empty`)
+      log(`Netlify Blobs store ${chalk.yellow(storeName)} is empty`)
+      return
     }
 
     const table = new AsciiTable(`Netlify Blobs (${storeName})`)
@@ -48,6 +50,6 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
 
     log(table.toString())
   } catch {
-    return printError(`Could not list blobs from store ${chalk.yellow(storeName)}`)
+    return logAndThrowError(`Could not list blobs from store ${chalk.yellow(storeName)}`)
   }
 }

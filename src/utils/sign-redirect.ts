@@ -9,7 +9,7 @@ export const signRedirect = ({ deployContext, secret, siteID, siteURL }) => {
     site_url: siteURL,
   }
   const options = {
-    expiresIn: '5 minutes',
+    expiresIn: '5 minutes' as const,
     issuer: 'netlify',
   }
 

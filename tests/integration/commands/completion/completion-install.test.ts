@@ -1,17 +1,17 @@
-import { describe, expect, test, beforeAll, afterAll } from 'vitest'
+import { describe, test, beforeAll, afterAll } from 'vitest'
 import fs from 'fs'
 import { rm } from 'fs/promises'
-import { temporaryDirectory } from 'tempy'
 import { handleQuestions, CONFIRM, DOWN, NO, answerWithValue } from '../../utils/handle-questions.js'
 import execa from 'execa'
 import { cliPath } from '../../utils/cli-path.js'
 import { join } from 'path'
 import { TABTAB_CONFIG_LINE, AUTOLOAD_COMPINIT } from '../../../../src/utils/command-helpers.js'
+import { temporaryDirectory } from '../../../../src/utils/temporary-file.js'
 
 describe('completion:install command', () => {
-  let tempDir
-  let zshConfigPath
-  let options
+  let tempDir: string
+  let zshConfigPath: string
+  let options: execa.Options
 
   beforeAll(() => {
     tempDir = temporaryDirectory()
@@ -25,7 +25,7 @@ describe('completion:install command', () => {
 
   test.skipIf(process.env.SHELL !== '/bin/zsh')(
     'should add compinit to .zshrc when user confirms prompt',
-    async (t) => {
+    async ({ expect }) => {
       fs.writeFileSync(zshConfigPath, TABTAB_CONFIG_LINE)
       const childProcess = execa(cliPath, ['completion:install'], options)
 
@@ -52,7 +52,7 @@ describe('completion:install command', () => {
 
   test.skipIf(process.env.SHELL !== '/bin/zsh')(
     'should not add compinit to .zshrc when user does not confirm prompt',
-    async (t) => {
+    async ({ expect }) => {
       fs.writeFileSync(zshConfigPath, TABTAB_CONFIG_LINE)
       const childProcess = execa(cliPath, ['completion:install'], options)
 

@@ -1,27 +1,92 @@
-import { OptionValues } from 'commander'
+import assert from 'node:assert'
+
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
+import type { NetlifyAPI } from '@netlify/api'
 
 import { listSites } from '../../lib/api.js'
-import { chalk, error, exit, log, APIError } from '../../utils/command-helpers.js'
-import getRepoData from '../../utils/get-repo-data.js'
+import { startSpinner } from '../../lib/spinner.js'
+import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
+import getRepoData from '../../utils/get-repo-data.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
+import type { LinkOptionValues } from './option_values.js'
 
-/**
- *
- * @param {import('../base-command.js').default} command
- * @param {import('commander').OptionValues} options
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const linkPrompt = async (command, options) => {
+const findSiteByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<SiteInfo> => {
+  log()
+  const spinner = startSpinner({ text: `Looking for projects connected to '${repoUrl}'` })
+
+  const sites = await listSites({ api, options: { filter: 'all' } })
+
+  if (sites.length === 0) {
+    spinner.error()
+    return logAndThrowError(
+      `You don't have any projects yet. Run ${chalk.cyanBright(
+        `${netlifyCommand()} sites:create`,
+      )} to create a project.`,
+    )
+  }
+
+  const matchingSites = sites.filter(({ build_settings: buildSettings = {} }) => repoUrl === buildSettings.repo_url)
+
+  if (matchingSites.length === 0) {
+    spinner.error()
+    log(chalk.redBright.bold.underline(`No matching project found`))
+    log()
+    log(`No project found with the remote ${repoUrl}.
+
+Double check you are in the correct working directory and a remote origin repo is configured.
+
+Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.
+
+To link manually:
+  ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}
+  ${chalk.cyanBright(`${netlifyCommand()} link --name <project-name>`)}
+
+To search for projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:search <search-term>`)}`)
+
+    return exit(1)
+  }
+
+  if (matchingSites.length === 1) {
+    spinner.success({ text: `Found 1 project connected to ${repoUrl}` })
+    const [firstSite] = matchingSites
+    return firstSite
+  }
+
+  spinner.warn({ text: `Found ${matchingSites.length} projects connected to ${repoUrl}` })
+
+  const { selectedSite } = await inquirer.prompt<{
+    selectedSite: SiteInfo | undefined
+  }>([
+    {
+      type: 'list',
+      name: 'selectedSite',
+      message: 'Which project do you want to link?',
+      choices: matchingSites.map((matchingSite) => ({
+        name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
+        value: matchingSite,
+      })),
+    },
+  ])
+
+  if (!selectedSite) {
+    return logAndThrowError('No project selected')
+  }
+
+  return selectedSite
+}
+
+const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Promise<SiteInfo> => {
   const { api, state } = command.netlify
 
-  const SITE_NAME_PROMPT = 'Search by full or partial site name'
-  const SITE_LIST_PROMPT = 'Choose from a list of your recently updated sites'
-  const SITE_ID_PROMPT = 'Enter a site ID'
+  const SITE_NAME_PROMPT = 'Search by full or partial project name'
+  const SITE_LIST_PROMPT = 'Choose from a list of your recently updated projects'
+  const SITE_ID_PROMPT = 'Enter a project ID'
 
   let GIT_REMOTE_PROMPT = 'Use the current git remote origin URL'
   let site
@@ -30,20 +95,20 @@ const linkPrompt = async (command, options) => {
 
   let linkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
 
-  if (!repoData.error) {
+  if (!('error' in repoData)) {
     // Add git GIT_REMOTE_PROMPT if in a repo
     GIT_REMOTE_PROMPT = `Use current git remote origin (${repoData.httpsUrl})`
     linkChoices = [GIT_REMOTE_PROMPT, ...linkChoices]
   }
 
   log()
-  log(`${chalk.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
+  log(`${chalk.cyanBright(`${netlifyCommand()} link`)} will connect this folder to a project on Netlify`)
   log()
-  const { linkType } = await inquirer.prompt([
+  const { linkType } = await inquirer.prompt<{ linkType: string | undefined }>([
     {
       type: 'list',
       name: 'linkType',
-      message: 'How do you want to link this folder to a site?',
+      message: 'How do you want to link this folder to a project?',
       choices: linkChoices,
     },
   ])
@@ -51,70 +116,23 @@ const linkPrompt = async (command, options) => {
   let kind
   switch (linkType) {
     case GIT_REMOTE_PROMPT: {
+      // TODO(serhalp): Refactor function to avoid this. We can only be here if `repoData` is not an error.
+      assert(!('error' in repoData))
+
       kind = 'gitRemote'
-      log()
-      log(`Looking for sites connected to '${repoData.httpsUrl}'...`)
-      log()
-      const sites = await listSites({ api, options: { filter: 'all' } })
-
-      if (sites.length === 0) {
-        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
-      }
-
-      const matchingSites = sites.filter(
-        ({ build_settings: buildSettings = {} }) => repoData.httpsUrl === buildSettings.repo_url,
-      )
-
-      // If no remote matches. Throw error
-      if (matchingSites.length === 0) {
-        log(chalk.redBright.bold.underline(`No Matching Site Found`))
-        log()
-        log(`No site found with the remote ${repoData.httpsUrl}.
-
-Double check you are in the correct working directory and a remote origin repo is configured.
-
-Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
-
-        exit()
-      }
-
-      // Matches a single site hooray!
-      if (matchingSites.length === 1) {
-        const [firstSite] = matchingSites
-        site = firstSite
-      } else if (matchingSites.length > 1) {
-        // Matches multiple sites. Users must choose which to link.
-        log(`Found ${matchingSites.length} matching sites!`)
-
-        // Prompt which options
-        const { selectedSite } = await inquirer.prompt([
-          {
-            type: 'list',
-            name: 'selectedSite',
-            message: 'Which site do you want to link?',
-            choices: matchingSites.map((matchingSite) => ({
-              name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
-              value: matchingSite,
-            })),
-          },
-        ])
-        if (!selectedSite) {
-          error('No site selected')
-        }
-        site = selectedSite
-      }
+      site = await findSiteByRepoUrl(api, repoData.httpsUrl)
       break
     }
     case SITE_NAME_PROMPT: {
       kind = 'byName'
-      const { searchTerm } = await inquirer.prompt([
+      const { searchTerm } = await inquirer.prompt<{ searchTerm: string }>([
         {
           type: 'input',
           name: 'searchTerm',
-          message: 'Enter the site name (or just part of it):',
+          message: 'Enter the project name (or just part of it):',
         },
       ])
-      log(`Looking for sites with names containing '${searchTerm}'...`)
+      log(`Looking for projects with names containing '${searchTerm}'...`)
       log()
 
       let matchingSites: SiteInfo[] = []
@@ -125,32 +143,40 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
         })
       } catch (error_) {
         if ((error_ as APIError).status === 404) {
-          error(`'${searchTerm}' not found`)
+          return logAndThrowError(`'${searchTerm}' not found`)
         } else {
-          error(error_)
+          return logAndThrowError(error_)
         }
       }
 
       if (!matchingSites || matchingSites.length === 0) {
-        error(`No site names found containing '${searchTerm}'.
+        return logAndThrowError(`No project names found containing '${searchTerm}'.
 
-Run ${chalk.cyanBright('netlify link')} again to try a new search,
-or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+To search for projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:search <search-term>`)}
+
+To link by project ID:
+  ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}
+
+To create a new project:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:create`)}`)
       }
 
       if (matchingSites.length > 1) {
-        log(`Found ${matchingSites.length} matching sites!`)
-        const { selectedSite } = await inquirer.prompt([
+        log(`Found ${matchingSites.length} matching projects!`)
+        const { selectedSite } = await inquirer.prompt<{
+          selectedSite: SiteInfo | undefined
+        }>([
           {
             type: 'list',
             name: 'selectedSite',
-            message: 'Which site do you want to link?',
+            message: 'Which project do you want to link?',
             paginated: true,
             choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
           },
         ])
         if (!selectedSite) {
-          error('No site selected')
+          return logAndThrowError('No project selected')
         }
         site = selectedSite
       } else {
@@ -161,43 +187,46 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
     }
     case SITE_LIST_PROMPT: {
       kind = 'fromList'
-      log(`Fetching recently updated sites...`)
+      log(`Fetching recently updated projects...`)
       log()
 
       let sites
       try {
         sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
       } catch (error_) {
-        error(error_)
+        return logAndThrowError(error_)
       }
 
       if (!sites || sites.length === 0) {
-        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        return logAndThrowError(
+          `You don't have any projects yet. Run ${chalk.cyanBright(
+            `${netlifyCommand()} sites:create`,
+          )} to create a project.`,
+        )
       }
 
-      const { selectedSite } = await inquirer.prompt([
+      const { selectedSite } = await inquirer.prompt<{ selectedSite: SiteInfo | undefined }>([
         {
           type: 'list',
           name: 'selectedSite',
-          message: 'Which site do you want to link?',
+          message: 'Which project do you want to link?',
           paginated: true,
-          // @ts-expect-error TS(7006) FIXME: Parameter 'matchingSite' implicitly has an 'any' t... Remove this comment to see the full error message
           choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
         },
       ])
       if (!selectedSite) {
-        error('No site selected')
+        return logAndThrowError('No project selected')
       }
       site = selectedSite
       break
     }
     case SITE_ID_PROMPT: {
       kind = 'bySiteId'
-      const { siteId } = await inquirer.prompt([
+      const { siteId } = await inquirer.prompt<{ siteId: string }>([
         {
           type: 'input',
           name: 'siteId',
-          message: 'What is the site ID?',
+          message: 'What is the project ID?',
         },
       ])
 
@@ -205,19 +234,17 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         site = await api.getSite({ siteId })
       } catch (error_) {
         if ((error_ as APIError).status === 404) {
-          error(`Site ID '${siteId}' not found`)
+          return logAndThrowError(`Project ID '${siteId}' not found`)
         } else {
-          error(error_)
+          return logAndThrowError(error_)
         }
       }
       break
     }
-    default:
-      return
   }
 
   if (!site) {
-    error(new Error(`No site found`))
+    return logAndThrowError(new Error(`No project found`))
   }
 
   // Save site ID to config
@@ -234,14 +261,15 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   log(chalk.greenBright.bold.underline(`Directory Linked`))
   log()
   log(`Admin url: ${chalk.magentaBright(site.admin_url)}`)
-  log(`Site url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
+  log(`Project url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
   log()
   log(`You can now run other \`netlify\` cli commands in this directory`)
 
-  return site
+  // FIXME(serhalp): Mismatch between hardcoded `SiteInfo` and generated Netlify API types.
+  return site as SiteInfo
 }
 
-export const link = async (options: OptionValues, command: BaseCommand) => {
+export const link = async (options: LinkOptionValues, command: BaseCommand) => {
   await command.authenticate()
 
   const {
@@ -252,41 +280,44 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     state,
   } = command.netlify
 
-  let siteData = siteInfo
+  let initialSiteData: SiteInfo | undefined
+  let newSiteData!: SiteInfo
 
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
   // Site id is incorrect
-  if (siteId && isEmpty(siteData)) {
+  if (siteId && isEmpty(siteInfo)) {
     log(`"${siteId}" was not found in your Netlify account.`)
-    log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
+    log(`Please double check your project ID and which account you are logged into via \`${netlifyCommand()} status\`.`)
     return exit()
   }
 
   if (!isEmpty(siteInfo)) {
-    // If already linked to site. exit and prompt for unlink
-    log(`Site already linked to "${siteData.name}"`)
-    log(`Admin url: ${siteData.admin_url}`)
+    // If already linked to project, exit and prompt for unlink
+    initialSiteData = siteInfo
+    log(`Project already linked to "${initialSiteData.name}"`)
+    log(`Admin url: ${initialSiteData.admin_url}`)
     log()
-    log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
+    log(`To unlink this project, run: ${chalk.cyanBright(`${netlifyCommand()} unlink`)}`)
   } else if (options.id) {
     try {
-      siteData = await api.getSite({ site_id: options.id })
+      // @ts-expect-error FIXME(serhalp): Mismatch between hardcoded `SiteInfo` and new generated Netlify API types.
+      newSiteData = await api.getSite({ site_id: options.id })
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
-        error(new Error(`Site id ${options.id} not found`))
+        return logAndThrowError(new Error(`Project id ${options.id} not found`))
       } else {
-        error(error_)
+        return logAndThrowError(error_)
       }
     }
 
     // Save site ID
-    state.set('siteId', siteData.id)
-    log(`Linked to ${siteData.name}`)
+    state.set('siteId', newSiteData.id)
+    log(`${chalk.green('✔')} Linked to ${newSiteData.name}`)
 
     await track('sites_linked', {
-      siteId: siteData.id,
+      siteId: newSiteData.id,
       linkType: 'manual',
       kind: 'byId',
     })
@@ -302,28 +333,65 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
       })
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
-        error(new Error(`${options.name} not found`))
+        return logAndThrowError(new Error(`${options.name} not found`))
       } else {
-        error(error_)
+        return logAndThrowError(error_)
       }
     }
 
     if (results.length === 0) {
-      error(new Error(`No sites found named ${options.name}`))
+      return logAndThrowError(`No projects found named ${options.name}.
+
+To search for projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:search ${options.name}`)}
+
+To link by project ID:
+  ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}`)
     }
 
     const matchingSiteData = results.find((site: SiteInfo) => site.name === options.name) || results[0]
     state.set('siteId', matchingSiteData.id)
 
-    log(`Linked to ${matchingSiteData.name}`)
+    log(`${chalk.green('✔')} Linked to ${matchingSiteData.name}`)
 
     await track('sites_linked', {
       siteId: (matchingSiteData && matchingSiteData.id) || siteId,
       linkType: 'manual',
       kind: 'byName',
     })
+  } else if (options.gitRemoteUrl) {
+    newSiteData = await findSiteByRepoUrl(api, options.gitRemoteUrl)
+    state.set('siteId', newSiteData.id)
+    log(`${chalk.green('✔')} Linked to ${newSiteData.name}`)
+
+    await track('sites_linked', {
+      siteId: newSiteData.id,
+      linkType: 'clone',
+      kind: 'byRepoUrl',
+    })
   } else {
-    siteData = await linkPrompt(command, options)
+    if (!isInteractive()) {
+      return logAndThrowError(`No project specified. In non-interactive mode, you must specify how to link:
+
+Link by project ID:
+  ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}
+
+Link by project name:
+  ${chalk.cyanBright(`${netlifyCommand()} link --name <project-name>`)}
+
+Link by git remote URL:
+  ${chalk.cyanBright(`${netlifyCommand()} link --gitRemoteUrl <url>`)}
+
+To search for projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:search <search-term>`)}
+
+To list all projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:list`)}`)
+    }
+
+    newSiteData = await linkPrompt(command, options)
   }
-  return siteData
+  // FIXME(serhalp): All the cases above except one (look up by site name) end up *returning*
+  // the site data. This is probably not intentional and may result in bugs in deploy/init. Investigate.
+  return initialSiteData || newSiteData
 }

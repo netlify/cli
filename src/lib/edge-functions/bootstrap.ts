@@ -1,6 +1,6 @@
 import { env } from 'process'
 
-import { getURL } from '@netlify/edge-functions/version'
+import { getURL } from '@netlify/edge-functions-bootstrap/version'
 
 import { warn } from '../../utils/command-helpers.js'
 
@@ -14,7 +14,11 @@ export const getBootstrapURL = async () => {
   try {
     return await getURL()
   } catch (error) {
-    warn(`Could not load latest version of Edge Functions environment: ${(error as NodeJS.ErrnoException)?.message}`)
+    warn(
+      `Could not load latest version of Edge Functions environment: ${
+        (error as NodeJS.ErrnoException | undefined)?.message ?? ''
+      }`,
+    )
 
     // If there was an error getting the bootstrap URL from the module, let's
     // use the latest version of the bootstrap. This is not ideal, but better

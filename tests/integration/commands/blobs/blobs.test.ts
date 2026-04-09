@@ -5,11 +5,11 @@ import { env } from 'process'
 import { ListResultBlob } from '@netlify/blobs'
 import { BlobsServer } from '@netlify/blobs/server'
 import httpProxy from 'http-proxy'
-import { temporaryDirectory } from 'tempy'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { Route } from '../../utils/mock-api-vitest.js'
+import { temporaryDirectory } from '../../../../src/utils/temporary-file.js'
 
 const blobsProxy = httpProxy.createProxyServer({})
 
@@ -48,7 +48,7 @@ describe('blobs:* commands', () => {
 
     routes.push({
       method: 'all',
-      path: 'blobs/*',
+      path: 'blobs/{*splat}',
       response: (req, res) => {
         blobsProxy.web(req, res, { target: `http://localhost:${address.port}` })
       },
@@ -64,12 +64,14 @@ describe('blobs:* commands', () => {
   })
 
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
+    const expectedSucusesMessage = 'Success: Blob my-key set in store my-store'
+
     test<FixtureTestContext>('should set, get, list, and delete blobs', async ({ fixture }) => {
       expect(
-        await fixture.callCli(['blobs:set', 'my-store', 'my-key', 'Hello world'], {
+        await fixture.callCli(['blobs:set', 'my-store', 'my-key', 'Hello world', '--force'], {
           offline: false,
         }),
-      ).toBe('')
+      ).toBe(expectedSucusesMessage)
 
       expect(
         await fixture.callCli(['blobs:get', 'my-store', 'my-key'], {
@@ -98,10 +100,10 @@ describe('blobs:* commands', () => {
       expect(listResult.directories).toEqual([])
 
       expect(
-        await fixture.callCli(['blobs:delete', 'my-store', 'my-key'], {
+        await fixture.callCli(['blobs:delete', 'my-store', 'my-key', '--force'], {
           offline: false,
         }),
-      ).toBe('')
+      ).toBe('Success: Blob my-key deleted from store my-store')
 
       expect(
         await fixture.callCli(['blobs:list', 'my-store', '--json'], {

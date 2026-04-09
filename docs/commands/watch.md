@@ -1,12 +1,14 @@
 ---
 title: Netlify CLI watch command
-description: Watch for site deploy to finish
+sidebar:
+  label: watch
+description: Watch for project deploy to finish
 ---
 
 # `watch`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Watch for site deploy to finish
+Watch for project deploy to finish
 
 **Usage**
 
@@ -18,6 +20,7 @@ netlify watch
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

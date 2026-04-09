@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI api command
+sidebar:
+  label: api
 ---
 
 # `api`
@@ -8,7 +10,7 @@ The `api` command will let you call any [Netlify open API methods](https://open-
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 Run any Netlify API method
-For more information on available methods checkout https://open-api.netlify.com/ or run 'netlify api --list'
+For more information on available methods check out https://open-api.netlify.com/ or run 'netlify api --list'
 
 **Usage**
 
@@ -25,6 +27,7 @@ netlify api
 - `data` (*string*) - Data to use
 - `list` (*boolean*) - List out available API methods
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

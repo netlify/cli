@@ -32,7 +32,7 @@ export function getName({ deploy, userId }: { deploy: any; userId: string }) {
   return `(${deploy.id.slice(0, 7)}) ${normalisedName}`
 }
 
-export const logsBuild = async (options: OptionValues, command: BaseCommand) => {
+export const logsBuild = async (_options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   const { site } = command.netlify
@@ -40,7 +40,7 @@ export const logsBuild = async (options: OptionValues, command: BaseCommand) => 
   const userId = command.netlify.globalConfig.get('userId')
 
   if (!siteId) {
-    log('You must link a site before attempting to view deploy logs')
+    log('You must link a project before attempting to view deploy logs')
     return
   }
 
@@ -63,7 +63,7 @@ export const logsBuild = async (options: OptionValues, command: BaseCommand) => 
       })),
     })
 
-    deploy = deploys.find((dep: any) => dep.id === result)
+    deploy = deploys.find((dep: any) => dep.id === result) || deploy
   }
 
   const { id } = deploy

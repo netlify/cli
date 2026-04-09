@@ -1,4 +1,4 @@
-import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { Mock, afterAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createLogsBuildCommand } from '../../../../src/commands/logs/index.js'
@@ -7,7 +7,7 @@ import { startMockApi } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables } from '../../utils/mock-api.js'
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 import { join } from 'path'
 
 vi.mock('../../../../src/utils/websockets/index.js', () => ({
@@ -15,7 +15,7 @@ vi.mock('../../../../src/utils/websockets/index.js', () => ({
 }))
 
 const siteInfo = {
-  admin_url: 'https://app.netlify.com/sites/site-name/overview',
+  admin_url: 'https://app.netlify.com/projects/site-name/overview',
   ssl_url: 'https://site-name.netlify.app/',
   id: 'site_id',
   name: 'site-name',
@@ -49,24 +49,32 @@ const routes = [
   },
 ]
 
+const originalEnv = { ...process.env }
+
 describe('logs:deploy command', () => {
   let program: BaseCommand
-  const originalEnv = { ...process.env }
 
   afterEach(() => {
     vi.clearAllMocks()
+    process.env = { ...originalEnv }
   })
 
   beforeEach(() => {
-    process.env = { ...originalEnv }
     program = new BaseCommand('netlify')
 
     createLogsBuildCommand(program)
   })
 
-  test('should setup the deploy stream correctly', async ({}) => {
+  afterAll(() => {
+    vi.restoreAllMocks()
+    vi.resetModules()
+
+    process.env = { ...originalEnv }
+  })
+
+  test('should setup the deploy stream correctly', async () => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
@@ -83,9 +91,9 @@ describe('logs:deploy command', () => {
     expect(spyOn).toHaveBeenCalledTimes(3)
   })
 
-  test('should send the correct payload to the websocket', async ({}) => {
+  test('should send the correct payload to the websocket', async () => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
@@ -101,8 +109,8 @@ describe('logs:deploy command', () => {
     const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
     expect(setupCall).toBeDefined()
 
-    const openCallback = setupCall[1]
-    openCallback()
+    const openCallback = setupCall?.[1]
+    openCallback?.()
 
     expect(spySend).toHaveBeenCalledOnce()
     const call = spySend.mock.calls[0]
@@ -114,7 +122,7 @@ describe('logs:deploy command', () => {
     expect(body.access_token).toEqual(env.NETLIFY_AUTH_TOKEN)
   })
 
-  test('should instruct user to link a site if one is not linked', async (t) => {
+  test('should instruct user to link a project if one is not linked', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const projectPath = join('projects', 'project1')
       await builder.withNetlifyToml({ config: {}, pathPrefix: projectPath }).build()
@@ -124,7 +132,7 @@ describe('logs:deploy command', () => {
         async ({ apiUrl }) => {
           const options = getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } })
           const stdout = await callCli(['logs:deploy'], { ...options, cwd: join(builder.directory, projectPath) })
-          expect(stdout).toContain('You must link a site before attempting to view deploy logs')
+          expect(stdout).toContain('You must link a project before attempting to view deploy logs')
         },
         true,
       )

@@ -11,7 +11,7 @@ import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
-import ora from 'ora'
+import { createSpinner } from 'nanospinner'
 
 import { fileExistsAsync } from '../../lib/fs.js'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
@@ -21,7 +21,7 @@ import {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   chalk,
-  error,
+  logAndThrowError,
   log,
 } from '../../utils/command-helpers.js'
 import { copyTemplateDir } from '../../utils/copy-template-dir/copy-template-dir.js'
@@ -44,6 +44,11 @@ const languages = [
   { name: 'Go', value: 'go' },
   { name: 'Rust', value: 'rust' },
 ]
+
+const MOON_SPINNER = {
+  interval: 80,
+  frames: ['🌑 ', '🌒 ', '🌓 ', '🌔 ', '🌕 ', '🌖 ', '🌗 ', '🌘 '],
+}
 
 /**
  * prompt for a name if name not supplied
@@ -83,8 +88,6 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
 const filterRegistry = function (registry, input) {
   // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
   const temp = registry.map((value) => value.name + value.description)
-  // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
-  // eslint-disable-next-line unicorn/no-array-method-this-argument
   const filteredTemplates = fuzzy.filter(input, temp)
   const filteredTemplateNames = new Set(
     filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
@@ -195,13 +198,12 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     language = languageFromPrompt
   }
 
-  // @ts-expect-error TS(7034) FIXME: Variable 'templatesForLanguage' implicitly has typ... Remove this comment to see the full error message
   let templatesForLanguage
 
   try {
     templatesForLanguage = await formatRegistryArrayForInquirer(language, funcType)
   } catch {
-    throw error(`Invalid language: ${language}`)
+    return logAndThrowError(`Invalid language: ${language}`)
   }
 
   const { chosenTemplate } = await inquirer.prompt({
@@ -209,8 +211,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     message: 'Pick a template',
     // @ts-expect-error TS(2769) FIXME: No overload matches this call.
     type: 'autocomplete',
-    // @ts-expect-error TS(7006) FIXME: Parameter 'answersSoFar' implicitly has an 'any' t... Remove this comment to see the full error message
-    source(answersSoFar, input) {
+    source(_answersSoFar: unknown, input: string | undefined) {
       // if Edge Functions template, don't show url option
       // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Separator... Remove this comment to see the full error message
       const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
@@ -218,11 +219,9 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
 
       if (!input || input === '') {
         // show separators
-        // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
         return [...templatesForLanguage, ...parsedSpecialCommands]
       }
       // only show filtered results sorted by score
-      // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
       const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
         (answerA, answerB) => answerB.score - answerA.score,
       )
@@ -234,8 +233,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
 
 const DEFAULT_PRIORITY = 999
 
-/** @returns {Promise<'edge' | 'serverless'>} */
-const selectTypeOfFunc = async () => {
+const selectTypeOfFunc = async (): Promise<'edge' | 'serverless'> => {
   const functionTypes = [
     { name: 'Edge function (Deno)', value: 'edge' },
     { name: 'Serverless function (Node/Go/Rust)', value: 'serverless' },
@@ -261,7 +259,9 @@ const ensureEdgeFuncDirExists = function (command) {
   const siteId = site.id
 
   if (!siteId) {
-    error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+    return logAndThrowError(
+      `${NETLIFYDEVERR} No project id found, please run inside a project directory or \`netlify link\``,
+    )
   }
 
   const functionsDir = config.build?.edge_functions ?? join(command.workingDir, 'netlify/edge-functions')
@@ -293,20 +293,22 @@ const promptFunctionsDirectory = async (command) => {
   log(`\n${NETLIFYDEVLOG} functions directory not specified in ${relConfigFilePath} or UI settings`)
 
   if (!site.id) {
-    error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+    return logAndThrowError(
+      `${NETLIFYDEVERR} No project id found, please run inside a project directory or \`netlify link\``,
+    )
   }
 
   const { functionsDir } = await inquirer.prompt([
     {
       type: 'input',
       name: 'functionsDir',
-      message: 'Enter the path, relative to your site, where your functions should live:',
+      message: 'Enter the path, relative to your project, where your functions should live:',
       default: 'netlify/functions',
     },
   ])
 
   try {
-    log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDir)}`)
+    log(`${NETLIFYDEVLOG} updating project settings with ${chalk.magenta.inverse(functionsDir)}`)
 
     await api.updateSite({
       siteId: site.id,
@@ -317,9 +319,9 @@ const promptFunctionsDirectory = async (command) => {
       },
     })
 
-    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDir)} updated in site settings`)
+    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDir)} updated in project settings`)
   } catch {
-    throw error('Error updating site settings')
+    return logAndThrowError('Error updating project settings')
   }
   return functionsDir
 }
@@ -423,9 +425,9 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
     .map(([name, version]) => `${name}@${version}`)
 
 /**
- * When installing a function's dependencies, we first try to find a site-level
- * `package.json` file. If we do, we look for any dependencies of the function
- * that aren't already listed as dependencies of the site and install them. If
+ * When installing a function's dependencies, we first try to find a project-level
+ * `package.json` file. If we find one, we identify the function's dependencies
+ * that aren't already listed as dependencies of the project and install them. If
  * we don't do this check, we may be upgrading the version of a module used in
  * another part of the project, which we don't want to do.
  */
@@ -435,7 +437,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
 
-  // If there is no site-level `package.json`, we fall back to the old behavior
+  // If there is no project-level `package.json`, we fall back to the old behavior
   // of keeping that file in the function directory and running `npm install`
   // from there.
   if (!sitePackageJson) {
@@ -457,7 +459,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     await execa('npm', ['i', ...devDependencies, '--save-dev', ...npmInstallFlags], { cwd: npmInstallPath })
   }
 
-  // We installed the function's dependencies in the site-level `package.json`,
+  // We installed the function's dependencies in the project-level `package.json`,
   // so there's no reason to keep the one copied over from the template.
   fs.unlinkSync(functionPackageJson)
 
@@ -498,10 +500,8 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     options.url = chosenUrl.trim()
     try {
       await downloadFromURL(command, options, argumentName, functionsDir)
-    } catch (error_) {
-      error(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
-      error(error_)
-      process.exit(1)
+    } catch {
+      return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
     }
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
@@ -544,12 +544,9 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     // npm install
     if (functionPackageJson !== undefined) {
-      const spinner = ora({
-        text: `Installing dependencies for ${name}`,
-        spinner: 'moon',
-      }).start()
+      const spinner = createSpinner(`Installing dependencies for ${name}`, MOON_SPINNER).start()
       await installDeps({ functionPackageJson, functionPath, functionsDir })
-      spinner.succeed(`Installed dependencies for ${name}`)
+      spinner.success(`Installed dependencies for ${name}`)
     }
 
     if (funcType === 'edge') {
@@ -565,7 +562,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     if (lang == 'rust') {
       log(
         chalk.green(
-          `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`,
+          `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your project.`,
         ),
       )
     }
@@ -590,7 +587,7 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
     log(`Add-on "${addonName}" created for ${siteData.name}`)
     return true
   } catch (error_) {
-    error((error_ as APIError).message)
+    return logAndThrowError((error_ as APIError).message)
   }
 }
 
@@ -667,7 +664,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
   const { api, site } = command.netlify
   const siteId = site.id
   if (!siteId) {
-    log('No site id found, please run inside a site directory or `netlify link`')
+    log('No project id found, please run inside a project directory or `netlify link`')
     return false
   }
   log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
@@ -688,7 +685,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 
       await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
     } catch (error_) {
-      error(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
+      return logAndThrowError(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
     }
   })
   return Promise.all(arr)
@@ -731,7 +728,9 @@ const registerEFInToml = async (funcName, options) => {
       `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`${relConfigFilePath}\` file.`,
     )
   } catch {
-    error(`${NETLIFYDEVERR} Unable to register function. Please check your \`${relConfigFilePath}\` file.`)
+    return logAndThrowError(
+      `${NETLIFYDEVERR} Unable to register function. Please check your \`${relConfigFilePath}\` file.`,
+    )
   }
 }
 

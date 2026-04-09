@@ -1,25 +1,30 @@
-import process from 'process'
-
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
     include: ['tests/**/*.test.js', 'tests/**/*.test.ts'],
-    testTimeout: 60_000,
-    hookTimeout: 60_000,
-    deps: {
-      external: ['**/fixtures/**', '**/node_modules/**'],
-      interopDefault: false,
+    testTimeout: 90_000,
+    hookTimeout: 90_000,
+    server: {
+      deps: {
+        inline: [
+          // Force Vitest to preprocess write-file-atomic via Vite, which lets us mock its `fs`
+          // import.
+          'write-file-atomic',
+        ],
+      },
     },
     snapshotFormat: {
       escapeString: true,
     },
+    // Pin to vitest@1 behavior: https://vitest.dev/guide/migration.html#default-pool-is-forks.
+    // TODO(serhalp) Remove this and fix hanging `next-app-without-config` fixture on Windows.
+    pool: 'threads',
     poolOptions: {
       threads: {
         singleThread: true,
       },
     },
-    reporters: [process.env.DEBUG_TESTS ? 'tap' : 'default'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

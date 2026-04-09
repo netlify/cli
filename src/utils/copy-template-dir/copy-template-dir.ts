@@ -18,19 +18,14 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import assert from 'assert'
 import fs from 'fs'
 import path from 'path'
 import { pipeline } from 'stream'
 import { promisify } from 'util'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'maxstache... Remove this comment to see the full error message
 import maxstache from 'maxstache'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'maxstache-stream... Remove this comment to see the full error message
 import maxstacheStream from 'maxstache-stream'
-import readdirp, { EntryInfo, ReaddirpStream } from 'readdirp'
-
-const noop = (): void => undefined
+import { readdirp, EntryInfo, ReaddirpStream } from 'readdirp'
 
 // Remove a leading underscore
 function removeUnderscore(filepath: string): string {
@@ -56,13 +51,7 @@ async function writeFile(outDir: string, vars: Record<string, string>, file: Ent
 }
 
 // High throughput template dir writes
-export async function copyTemplateDir(srcDir: string, outDir: string, vars: any): Promise<string[]> {
-  if (!vars) vars = noop
-
-  assert.strictEqual(typeof srcDir, 'string')
-  assert.strictEqual(typeof outDir, 'string')
-  assert.strictEqual(typeof vars, 'object')
-
+export async function copyTemplateDir(srcDir: string, outDir: string, vars: Record<string, string>): Promise<string[]> {
   await fs.promises.mkdir(outDir, { recursive: true })
 
   const rs: ReaddirpStream = readdirp(srcDir)

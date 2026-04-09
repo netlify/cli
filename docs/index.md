@@ -3,8 +3,6 @@ title: Netlify CLI command reference
 description: All Netlify CLI commands
 ---
 
-# Netlify CLI command reference
-
 To get a list of commands, run
 
 ```
@@ -20,6 +18,18 @@ netlify [command] help
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
+### [agents](/commands/agents)
+
+Manage Netlify AI agent tasks
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`agents:create`](/commands/agents#agentscreate) | Create and run a new agent task on your site  |
+| [`agents:list`](/commands/agents#agentslist) | List agent tasks for the current site  |
+| [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent task  |
+| [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent task  |
+
+
 ### [api](/commands/api)
 
 Run any Netlify API method
@@ -40,6 +50,14 @@ Manage objects in Netlify Blobs
 
 Build on your local machine
 
+### [claim](/commands/claim)
+
+Claim an anonymously deployed site and link it to your account
+
+### [clone](/commands/clone)
+
+Clone a remote repository and link it to an existing project on Netlify
+
 ### [completion](/commands/completion)
 
 Generate shell completion script
@@ -49,9 +67,23 @@ Generate shell completion script
 | [`completion:install`](/commands/completion#completioninstall) | Generates completion script for your preferred shell  |
 
 
+### [create](/commands/create)
+
+Create a new Netlify project using an AI agent
+
+### [db](/commands/db)
+
+Provision a production ready Postgres database with a single command
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`init`](/commands/db#init) | Initialize a new database for the current site  |
+| [`status`](/commands/db#status) | Check the status of the database  |
+
+
 ### [deploy](/commands/deploy)
 
-Create a new deploy from the contents of a folder
+Deploy your project to Netlify
 
 ### [dev](/commands/dev)
 
@@ -64,14 +96,14 @@ Local dev server
 
 ### [env](/commands/env)
 
-Control environment variables for the current site
+Control environment variables for the current project
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`env:clone`](/commands/env#envclone) | Clone environment variables from one site to another  |
+| [`env:clone`](/commands/env#envclone) | Clone environment variables from one project to another  |
 | [`env:get`](/commands/env#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
 | [`env:import`](/commands/env#envimport) | Import and set environment variables from .env file  |
-| [`env:list`](/commands/env#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
+| [`env:list`](/commands/env#envlist) | Lists resolved environment variables for project (includes netlify.toml)  |
 | [`env:set`](/commands/env#envset) | Set value of environment variable  |
 | [`env:unset`](/commands/env#envunset) | Unset an environment variable which removes it from the UI  |
 
@@ -91,20 +123,11 @@ Manage netlify functions
 
 ### [init](/commands/init)
 
-Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`
-
-### [integration](/commands/integration)
-
-Manage Netlify Integrations built with the Netlify SDK
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`integration:deploy`](/commands/integration#integrationdeploy) | Register, build, and deploy a private integration on Netlify  |
-
+Configure continuous deployment for a new or existing project. To create a new project without continuous deployment, use `netlify sites:create`
 
 ### [link](/commands/link)
 
-Link a local repo or project folder to an existing site on Netlify
+Link a local repo or project folder to an existing project on Netlify
 
 ### [login](/commands/login)
 
@@ -112,22 +135,22 @@ Login to your Netlify account
 
 ### [logs](/commands/logs)
 
-Stream logs from your site
+Stream logs from your project
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`logs:deploy`](/commands/logs#logsdeploy) | (Beta) Stream the logs of deploys currently being built to the console  |
-| [`logs:function`](/commands/logs#logsfunction) | (Beta) Stream netlify function logs to the console  |
+| [`logs:deploy`](/commands/logs#logsdeploy) | Stream the logs of deploys currently being built to the console  |
+| [`logs:function`](/commands/logs#logsfunction) | Stream netlify function logs to the console  |
 
 
 ### [open](/commands/open)
 
-Open settings for the site linked to the current folder
+Open settings for the project linked to the current folder
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`open:admin`](/commands/open#openadmin) | Opens current site admin UI in Netlify  |
-| [`open:site`](/commands/open#opensite) | Opens current site url in browser  |
+| [`open:admin`](/commands/open#openadmin) | Opens current project admin UI in Netlify  |
+| [`open:site`](/commands/open#opensite) | Opens current project url in browser  |
 
 
 ### [recipes](/commands/recipes)
@@ -141,18 +164,18 @@ Create and modify files in a project using pre-defined recipes
 
 ### [serve](/commands/serve)
 
-Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
+Build the project for production and serve locally. This does not watch the code for changes, so if you need to rebuild your project then you must exit and run `serve` again.
 
 ### [sites](/commands/sites)
 
-Handle various site operations
+Handle various project operations
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
-| [`sites:create-template`](/commands/sites#sitescreate-template) | (Beta) Create a site from a starter template  |
-| [`sites:delete`](/commands/sites#sitesdelete) | Delete a site  |
-| [`sites:list`](/commands/sites#siteslist) | List all sites you have access to  |
+| [`sites:create`](/commands/sites#sitescreate) | Create an empty project (advanced)  |
+| [`sites:delete`](/commands/sites#sitesdelete) | Delete a project  |
+| [`sites:list`](/commands/sites#siteslist) | List all projects you have access to  |
+| [`sites:search`](/commands/sites#sitessearch) | Search for projects by name  |
 
 
 ### [status](/commands/status)
@@ -161,20 +184,29 @@ Print status information
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked site  |
+| [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked project  |
 
 
 ### [switch](/commands/switch)
 
 Switch your active Netlify account
 
+### [teams](/commands/teams)
+
+Handle various team operations
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`teams:list`](/commands/teams#teamslist) | List all teams you have access to  |
+
+
 ### [unlink](/commands/unlink)
 
-Unlink a local folder from a Netlify site
+Unlink a local folder from a Netlify project
 
 ### [watch](/commands/watch)
 
-Watch for site deploy to finish
+Watch for project deploy to finish
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

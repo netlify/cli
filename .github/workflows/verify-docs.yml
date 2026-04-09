@@ -1,29 +1,36 @@
+---
 name: Verify Docs
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - '**'
+      - '!release-please--**'
 
 jobs:
   verify-docs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Git checkout
-        uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
         with:
-          node-version: lts/*
+          node-version: '24'
           cache: npm
-      - name: Install core dependencies
+
+      - name: Install dependencies
         run: npm ci --no-audit
-      - name: Install site dependencies
-        run: npm run site:build:install
+
+      - name: Install ./site dependencies
+        run: npm ci --prefix=site --no-audit
+
       - name: Generate docs
-        run: npm run docs
+        run: npm run --prefix=site build
+
       - name: Check for changes
         run: |
           if [ -z "$(git status --porcelain)" ]; then

@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI blobs command
+sidebar:
+  label: blobs
 description: Manage objects in Netlify Blobs
 ---
 
@@ -18,6 +20,7 @@ netlify blobs
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -57,7 +60,9 @@ netlify blobs:delete
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `blobs:get`
@@ -80,6 +85,7 @@ netlify blobs:get
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `output` (*string*) - Defines the filesystem path where the blob data should be persisted
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `blobs:list`
@@ -103,6 +109,7 @@ netlify blobs:list
 - `json` (*boolean*) - Output list contents as JSON
 - `prefix` (*string*) - A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `blobs:set`
@@ -124,8 +131,10 @@ netlify blobs:set
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `input` (*string*) - Defines the filesystem path where the blob data should be read from
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 

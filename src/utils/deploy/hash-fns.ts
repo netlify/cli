@@ -1,20 +1,15 @@
 import { readFile } from 'fs/promises'
 import path from 'path'
-import { promisify } from 'util'
+import { pipeline } from 'stream/promises'
+import { Readable } from 'stream'
 
 import { zipFunctions, type FunctionResult, type TrafficRules } from '@netlify/zip-it-and-ship-it'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'from... Remove this comment to see the full error message
-import fromArray from 'from2-array'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pump... Remove this comment to see the full error message
-import pumpModule from 'pump'
 
 import BaseCommand from '../../commands/base-command.js'
 import { $TSFixMe } from '../../commands/types.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.js'
 
 import { hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
-
-const pump = promisify(pumpModule)
 
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
@@ -31,10 +26,10 @@ const getFunctionZips = async ({
 }: {
   command: BaseCommand
   directories: string[]
-  functionsConfig: $TSFixMe
+  functionsConfig?: $TSFixMe
   manifestPath: $TSFixMe
   rootDir: $TSFixMe
-  skipFunctionsCache: $TSFixMe
+  skipFunctionsCache?: boolean | undefined
   statusCb: $TSFixMe
   tmpDir: $TSFixMe
 }): Promise<(FunctionResult & { buildData?: unknown })[]> => {
@@ -112,22 +107,7 @@ const trafficRulesConfig = (trafficRules?: TrafficRules) => {
 const hashFns = async (
   command: BaseCommand,
   directories: string[],
-  config: {
-    /** @default 'function' */
-    assetType?: string
-    concurrentHash?: number
-    functionsConfig: $TSFixMe
-    /** @default 'sha256' */
-    hashAlgorithm?: string
-    manifestPath: $TSFixMe
-    rootDir: $TSFixMe
-    skipFunctionsCache: $TSFixMe
-    statusCb: $TSFixMe
-    tmpDir: $TSFixMe
-  },
-): Promise<$TSFixMe> => {
-  const {
-    assetType = 'function',
+  {
     concurrentHash,
     functionsConfig,
     hashAlgorithm = 'sha256',
@@ -136,8 +116,25 @@ const hashFns = async (
     skipFunctionsCache,
     statusCb,
     tmpDir,
-  } = config || {}
-  // Early out if no functions directories are configured.
+  }: {
+    concurrentHash?: number
+    functionsConfig?: $TSFixMe
+    hashAlgorithm?: string | undefined
+    manifestPath?: string | undefined
+    rootDir?: string | undefined
+    skipFunctionsCache?: boolean | undefined
+    statusCb: $TSFixMe
+    tmpDir: $TSFixMe
+  },
+): Promise<{
+  functionSchedules?: { name: string; cron: string }[] | undefined
+  functions: Record<string, string>
+  functionsWithNativeModules: $TSFixMe[]
+  shaMap?: Record<string, $TSFixMe> | undefined
+  fnShaMap?: Record<string, $TSFixMe[]> | undefined
+  fnConfig?: Record<string, $TSFixMe> | undefined
+}> => {
+  // Exit early if no functions directories are configured.
   if (directories.length === 0) {
     return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
   }
@@ -210,12 +207,12 @@ const hashFns = async (
     )
   const functionSchedules = functionZips
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
-    .filter(Boolean)
+    .filter((schedule) => schedule !== '' && schedule !== undefined)
   const functionsWithNativeModules = functionZips.filter(
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )
 
-  const functionStream = fromArray.obj(fileObjs)
+  const functionStream = Readable.from(fileObjs)
 
   const hasher = hasherCtor({ concurrentHash, hashAlgorithm })
 
@@ -224,9 +221,9 @@ const hashFns = async (
   const functions = {}
   // hash: [fileObj, fileObj, fileObj]
   const fnShaMap = {}
-  const manifestCollector = manifestCollectorCtor(functions, fnShaMap, { statusCb, assetType })
+  const manifestCollector = manifestCollectorCtor(functions, fnShaMap, { statusCb })
 
-  await pump(functionStream, hasher, manifestCollector)
+  await pipeline([functionStream, hasher, manifestCollector])
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
 }
 
