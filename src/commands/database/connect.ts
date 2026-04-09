@@ -11,6 +11,17 @@ export interface ConnectOptions {
   json?: boolean
 }
 
+function redactConnectionString(connectionString: string): string {
+  try {
+    const url = new URL(connectionString)
+    url.username = ''
+    url.password = ''
+    return url.toString()
+  } catch {
+    return 'database'
+  }
+}
+
 export const connect = async (options: ConnectOptions, command: BaseCommand): Promise<void> => {
   const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
   if (!buildDir) {
@@ -26,7 +37,7 @@ export const connect = async (options: ConnectOptions, command: BaseCommand): Pr
     return
   }
 
-  log(`Connected to ${connectionString}`)
+  log(`Connected to ${redactConnectionString(connectionString)}`)
 
   // --query: one-shot mode
   if (options.query) {

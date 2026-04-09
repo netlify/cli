@@ -25,6 +25,17 @@ interface RawDBConnection {
 }
 
 export async function connectRawClient(buildDir: string): Promise<RawDBConnection> {
+  const envConnectionString = process.env.NETLIFY_DB_URL
+  if (envConnectionString) {
+    const client = new Client({ connectionString: envConnectionString })
+    await client.connect()
+    return {
+      client,
+      connectionString: envConnectionString,
+      cleanup: () => client.end(),
+    }
+  }
+
   const state = new LocalState(buildDir)
   const storedConnectionString = state.get('dbConnectionString')
 
