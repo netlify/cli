@@ -106,7 +106,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
 
     dbCommand
       .command('init')
-      .description('Initialize a new database for the current site')
+      .description('Deprecated: databases are auto-provisioned via `@netlify/db`')
       .action(async (_options: Record<string, unknown>, _command: BaseCommand) => {
         const { log, chalk } = await import('../../utils/command-helpers.js')
 
