@@ -66,7 +66,9 @@ jobs:
         run: npm run test:integration -- --coverage --shard=${{ matrix.shard }}
         env:
           NETLIFY_TEST_ACCOUNT_SLUG: 'netlify-integration-testing'
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          # PRs from forks don't have access to this secret, which
+          # may be used by some tests.
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN || 'fake-token' }}
           # NETLIFY_TEST_GITHUB_TOKEN is used to avoid reaching GitHub API limits in exec-fetcher.js
           NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Changes the polling interval used by the file watcher
