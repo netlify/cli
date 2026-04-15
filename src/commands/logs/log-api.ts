@@ -32,9 +32,7 @@ export const parseTimeValue = (input: string, now: number = Date.now()): number 
 
   const ms = new Date(trimmed).getTime()
   if (Number.isNaN(ms)) {
-    throw new Error(
-      `Invalid time value: "${input}". Use a duration (e.g. 10m, 1h, 24h, 2d) or an ISO 8601 timestamp.`,
-    )
+    throw new Error(`Invalid time value: "${input}". Use a duration (e.g. 10m, 1h, 24h, 2d) or an ISO 8601 timestamp.`)
   }
   return ms
 }
@@ -49,7 +47,9 @@ export const buildFunctionLogsUrl = ({
   functionName: string
 }): string => {
   const branchPath = branch ? `branch/${encodeURIComponent(branch)}/` : ''
-  return `${ANALYTICS_API_BASE}/v2/sites/${encodeURIComponent(siteId)}/${branchPath}function_logs/${encodeURIComponent(functionName)}`
+  return `${ANALYTICS_API_BASE}/v2/sites/${encodeURIComponent(siteId)}/${branchPath}function_logs/${encodeURIComponent(
+    functionName,
+  )}`
 }
 
 export const buildEdgeFunctionLogsUrl = ({ siteId }: { siteId: string }): string =>
@@ -90,7 +90,7 @@ export const fetchHistoricalLogs = async ({
     })
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch logs: ${response.status} ${response.statusText}`)
+      throw new Error(`Failed to fetch logs: ${response.status.toString()} ${response.statusText}`)
     }
 
     const body = (await response.json()) as { logs?: HistoricalLogEntry[]; pagination?: { next?: string } }
@@ -128,6 +128,8 @@ export const formatLogLine = ({
   const effectiveLevel = level || LOG_LEVELS.INFO
   const prefixStr = prefix ? `${chalk.cyan(prefix)} ` : ''
   const timestampStr =
-    typeof timestamp === 'number' && Number.isFinite(timestamp) ? `${chalk.dim(new Date(timestamp).toISOString())} ` : ''
+    typeof timestamp === 'number' && Number.isFinite(timestamp)
+      ? `${chalk.dim(new Date(timestamp).toISOString())} `
+      : ''
   return `${prefixStr}${timestampStr}${colorLevel(effectiveLevel)} ${message}`
 }

@@ -241,7 +241,11 @@ export const logsFunction = async (functionNames: string[], options: OptionValue
       const exampleNames = functions.slice(0, 3).map((fn) => fn.n)
       const exampleCommand = `${netlifyCommand()} logs:function ${exampleNames.join(' ')} --since 1h`
       return logAndThrowError(
-        `You can only stream logs for up to ${MAX_CONCURRENT_FUNCTIONS} functions at a time — this project has ${functions.length}.\nSpecify function names as arguments to choose which ones to view, for example:\n\n  ${chalk.cyan(exampleCommand)}`,
+        `You can only stream logs for up to ${MAX_CONCURRENT_FUNCTIONS} functions at a time — this project has ${
+          functions.length
+        }.\nSpecify function names as arguments to choose which ones to view, for example:\n\n  ${chalk.cyan(
+          exampleCommand,
+        )}`,
       )
     }
     selectedFunctions = functions

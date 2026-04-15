@@ -300,15 +300,15 @@ describe('logs:function command', () => {
     await program.parseAsync(['', '', 'logs:function', 'nope'])
 
     expect(spyWebsocket).not.toHaveBeenCalled()
-    const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
+    const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
     expect(logged).toContain('Could not find function nope')
   })
 
   test('should refuse to stream all when the project has more than 10 functions', async ({}) => {
     const manyFunctions = Array.from({ length: 11 }, (_, i) => ({
-      n: `fn-${i}`,
+      n: `fn-${i.toString()}`,
       a: 'account',
-      oid: `fn-${i}-id`,
+      oid: `fn-${i.toString()}-id`,
     }))
     const manyFunctionRoutes = routes.map((route) =>
       route.path === 'sites/site_id/functions' ? { ...route, response: { functions: manyFunctions } } : route,
@@ -338,9 +338,9 @@ describe('logs:function command', () => {
       const spyLog = log as unknown as Mock
 
       const fetchCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (!url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
         fetchCalls.push(url)
@@ -353,7 +353,7 @@ describe('logs:function command', () => {
           }),
           { status: 200 },
         )
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -371,7 +371,9 @@ describe('logs:function command', () => {
 
       expect(spyWebsocket).not.toHaveBeenCalled()
       expect(fetchCalls).toHaveLength(1)
-      expect(fetchCalls[0]).toContain('https://analytics.services.netlify.com/v2/sites/site_id/function_logs/cool-function')
+      expect(fetchCalls[0]).toContain(
+        'https://analytics.services.netlify.com/v2/sites/site_id/function_logs/cool-function',
+      )
       expect(fetchCalls[0]).toMatch(/from=\d+/)
       expect(fetchCalls[0]).toMatch(/to=\d+/)
       expect(fetchCalls[0]).not.toContain('deploy_id=')
@@ -393,15 +395,15 @@ describe('logs:function command', () => {
         'other-function': [{ ts: 150, type: 'line', message: 'B-second', level: 'INFO' }],
       }
       const analyticsCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (!url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
         analyticsCalls.push(url)
         const name = url.includes('cool-function') ? 'cool-function' : 'other-function'
         return new Response(JSON.stringify({ logs: responses[name] }), { status: 200 })
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -421,9 +423,9 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes })
       const calls: string[] = []
       let callNumber = 0
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (!url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
         calls.push(url)
@@ -443,7 +445,7 @@ describe('logs:function command', () => {
           }),
           { status: 200 },
         )
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -458,14 +460,14 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes })
       const spyLog = log as unknown as Mock
       const analyticsCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname === 'analytics.services.netlify.com') {
           analyticsCalls.push(url)
           return new Response(JSON.stringify({ logs: [] }), { status: 200 })
         }
         return originalFetch(input, init)
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -481,14 +483,14 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes })
       const spyLog = log as unknown as Mock
       const analyticsCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname === 'analytics.services.netlify.com') {
           analyticsCalls.push(url)
           return new Response(JSON.stringify({ logs: [] }), { status: 200 })
         }
         return originalFetch(input, init)
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -512,14 +514,14 @@ describe('logs:function command', () => {
     test('accepts a duration for --since and converts it to now minus the duration', async ({}) => {
       const { apiUrl } = await startMockApi({ routes })
       const analyticsCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (!url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
         analyticsCalls.push(url)
         return new Response(JSON.stringify({ logs: [] }), { status: 200 })
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -560,14 +562,14 @@ describe('logs:function command', () => {
       ]
       const { apiUrl } = await startMockApi({ routes: deployRoutes })
       const fetchCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (!url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
         fetchCalls.push(url)
         return new Response(JSON.stringify({ logs: [] }), { status: 200 })
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -608,14 +610,14 @@ describe('logs:function command', () => {
       ]
       const { apiUrl } = await startMockApi({ routes: deployRoutes })
       const fetchCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (!url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
         fetchCalls.push(url)
         return new Response(JSON.stringify({ logs: [] }), { status: 200 })
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -637,14 +639,14 @@ describe('logs:function command', () => {
     test('treats a production URL as no deploy filter', async ({}) => {
       const { apiUrl } = await startMockApi({ routes })
       const fetchCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (!url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
         fetchCalls.push(url)
         return new Response(JSON.stringify({ logs: [] }), { status: 200 })
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -707,14 +709,14 @@ describe('logs:function command', () => {
     test('rejects a URL that belongs to a different project', async ({}) => {
       const { apiUrl } = await startMockApi({ routes })
       const analyticsCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname === 'analytics.services.netlify.com') {
           analyticsCalls.push(url)
           return new Response(JSON.stringify({ logs: [] }), { status: 200 })
         }
         return originalFetch(input, init)
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -738,14 +740,14 @@ describe('logs:function command', () => {
     test('rejects a non-netlify hostname that does not match any configured domain', async ({}) => {
       const { apiUrl } = await startMockApi({ routes })
       const analyticsCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname === 'analytics.services.netlify.com') {
           analyticsCalls.push(url)
           return new Response(JSON.stringify({ logs: [] }), { status: 200 })
         }
         return originalFetch(input, init)
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -777,14 +779,14 @@ describe('logs:function command', () => {
       )
       const { apiUrl } = await startMockApi({ routes: customRoutes })
       const fetchCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
+      global.fetch = vi.fn<typeof fetch>(async (input, init) => {
         const url = String(input)
-        if (!url.includes('analytics.services.netlify.com')) {
+        if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
         fetchCalls.push(url)
         return new Response(JSON.stringify({ logs: [] }), { status: 200 })
-      }) as any
+      })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
