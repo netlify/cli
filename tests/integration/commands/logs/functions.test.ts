@@ -418,11 +418,13 @@ describe('logs:function command', () => {
 
       expect(analyticsCalls).toHaveLength(2)
       const logged = spyLog.mock.calls.map((args: string[]) => args[0]).filter((line) => typeof line === 'string')
-      const aLine = logged.find((line) => line.includes('A-first'))
-      const bLine = logged.find((line) => line.includes('B-second'))
-      expect(aLine).toContain('[Function: cool-function]')
-      expect(bLine).toContain('[Function: other-function]')
-      expect(logged.indexOf(aLine!)).toBeLessThan(logged.indexOf(bLine!))
+      const aIdx = logged.findIndex((line) => line.includes('A-first'))
+      const bIdx = logged.findIndex((line) => line.includes('B-second'))
+      expect(aIdx).toBeGreaterThanOrEqual(0)
+      expect(bIdx).toBeGreaterThanOrEqual(0)
+      expect(logged[aIdx]).toContain('[Function: cool-function]')
+      expect(logged[bIdx]).toContain('[Function: other-function]')
+      expect(aIdx).toBeLessThan(bIdx)
     })
 
     test('follows pagination cursor', async ({}) => {
