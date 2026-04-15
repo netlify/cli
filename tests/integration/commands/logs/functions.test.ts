@@ -663,19 +663,24 @@ describe('logs:function command', () => {
       expect(fetchCalls[0]).not.toContain('deploy_id=')
     })
 
-    test('errors when --url resolves to a deploy but --since is missing', async ({}) => {
-      const { apiUrl } = await startMockApi({ routes })
+    test('opens a real-time stream against the deploy-specific function oid when --url resolves to a deploy', async ({}) => {
+      const deployId = '507f1f77bcf86cd799439011'
+      const deployRoutes = [
+        ...routes,
+        {
+          path: `sites/site_id/deploys/${deployId}`,
+          response: {
+            id: deployId,
+            state: 'ready',
+            available_functions: [{ n: 'cool-function', a: 'account', oid: 'deploy-specific-oid' }],
+          },
+        },
+      ]
+      const { apiUrl } = await startMockApi({ routes: deployRoutes })
       const spyWebsocket = getWebSocket as unknown as Mock
-      const spyLog = log as unknown as Mock
-      const analyticsCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
-        const url = String(input)
-        if (url.includes('analytics.services.netlify.com')) {
-          analyticsCalls.push(url)
-          return new Response(JSON.stringify({ logs: [] }), { status: 200 })
-        }
-        return originalFetch(input, init)
-      }) as any
+      const spyOn = vi.fn()
+      const spySend = vi.fn()
+      spyWebsocket.mockReturnValue({ on: spyOn, send: spySend })
 
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
@@ -686,12 +691,17 @@ describe('logs:function command', () => {
         'logs:function',
         'cool-function',
         '--url',
-        'https://507f1f77bcf86cd799439011--site-name.netlify.app',
+        `https://${deployId}--site-name.netlify.app`,
       ])
 
-      expect(spyWebsocket).not.toHaveBeenCalled()
-      const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
-      expect(logged).toContain('Real-time logs cannot be scoped to a specific deploy')
+      expect(spyWebsocket).toHaveBeenCalledOnce()
+
+      const openCall = spyOn.mock.calls.find((args) => args[0] === 'open')
+      openCall?.[1]()
+
+      expect(spySend).toHaveBeenCalledOnce()
+      const sentPayload = JSON.parse(spySend.mock.calls[0][0] as string) as { function_id: string }
+      expect(sentPayload.function_id).toBe('deploy-specific-oid')
     })
 
     test('rejects a URL that belongs to a different project', async ({}) => {

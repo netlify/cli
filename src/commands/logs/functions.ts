@@ -210,11 +210,6 @@ export const logsFunction = async (functionNames: string[], options: OptionValue
     }
   }
 
-  if (deployId && !historicalRange) {
-    log('Real-time logs cannot be scoped to a specific deploy. Use --since/--until to fetch historical logs.')
-    return
-  }
-
   let functions: NetlifyFunction[]
   if (deployId) {
     const deploy = (await client.getSiteDeploy({ siteId: siteId!, deployId })) as any
