@@ -17,6 +17,9 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => {
   return {
     ...actual,
     log: vi.fn(),
+    logAndThrowError: vi.fn((message: unknown) => {
+      throw message instanceof Error ? message : new Error(String(message))
+    }),
   }
 })
 
@@ -175,7 +178,8 @@ describe('logs:function command', () => {
     messageCallbackFunc?.(JSON.stringify(mockInfoData))
     messageCallbackFunc?.(JSON.stringify(mockWarnData))
 
-    expect(spyLog).toHaveBeenCalledTimes(1)
+    // 4 header lines (tip + blank + polling + blank) + 1 info log (warn filtered out)
+    expect(spyLog).toHaveBeenCalledTimes(5)
   })
 
   test('should print all the log levels', async ({}) => {
@@ -207,7 +211,8 @@ describe('logs:function command', () => {
     messageCallbackFunc?.(JSON.stringify(mockInfoData))
     messageCallbackFunc?.(JSON.stringify(mockWarnData))
 
-    expect(spyLog).toHaveBeenCalledTimes(2)
+    // 4 header lines (tip + blank + polling + blank) + 2 log entries
+    expect(spyLog).toHaveBeenCalledTimes(6)
   })
 
   test('should open one websocket per function when no name is given', async ({}) => {
@@ -248,8 +253,8 @@ describe('logs:function command', () => {
     handlersPerSocket[1].message(JSON.stringify({ level: LOG_LEVELS.INFO, message: 'hello from second' }))
 
     const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
-    expect(logged).toContain('[cool-function]')
-    expect(logged).toContain('[other-function]')
+    expect(logged).toContain('[Function: cool-function]')
+    expect(logged).toContain('[Function: other-function]')
   })
 
   test('should open one websocket per named function and prefix lines when multiple names are passed', async ({}) => {
@@ -279,8 +284,8 @@ describe('logs:function command', () => {
     handlersPerSocket[1].message(JSON.stringify({ level: LOG_LEVELS.INFO, message: 'from second' }))
 
     const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
-    expect(logged).toContain('[cool-function]')
-    expect(logged).toContain('[other-function]')
+    expect(logged).toContain('[Function: cool-function]')
+    expect(logged).toContain('[Function: other-function]')
   })
 
   test('should error when a passed function name does not exist', async ({}) => {
@@ -311,19 +316,16 @@ describe('logs:function command', () => {
     const { apiUrl } = await startMockApi({ routes: manyFunctionRoutes })
     const spyWebsocket = getWebSocket as unknown as Mock
     spyWebsocket.mockReturnValue({ on: vi.fn(), send: vi.fn() })
-    const spyLog = log as unknown as Mock
 
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
-    await program.parseAsync(['', '', 'logs:function'])
+    await expect(program.parseAsync(['', '', 'logs:function'])).rejects.toThrow(/up to 10 functions at a time/)
 
     expect(spyWebsocket).not.toHaveBeenCalled()
-    const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
-    expect(logged).toContain('up to 10')
   })
 
-  describe('--timeline', () => {
+  describe('--since/--until', () => {
     const originalFetch = global.fetch
 
     afterEach(() => {
@@ -356,7 +358,16 @@ describe('logs:function command', () => {
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
 
-      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--timeline', '1h'])
+      await program.parseAsync([
+        '',
+        '',
+        'logs:function',
+        'cool-function',
+        '--since',
+        '2026-04-14T00:00:00Z',
+        '--until',
+        '2026-04-15T00:00:00Z',
+      ])
 
       expect(spyWebsocket).not.toHaveBeenCalled()
       expect(fetchCalls).toHaveLength(1)
@@ -395,15 +406,15 @@ describe('logs:function command', () => {
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
 
-      await program.parseAsync(['', '', 'logs:function', '--timeline', '2h'])
+      await program.parseAsync(['', '', 'logs:function', '--since', '2026-04-14T00:00:00Z'])
 
       expect(analyticsCalls).toHaveLength(2)
-      const logged = spyLog.mock.calls.map((args) => args[0]).filter((l) => typeof l === 'string')
+      const logged = spyLog.mock.calls.map((args: string[]) => args[0]).filter((line) => typeof line === 'string')
       const aLine = logged.find((line) => line.includes('A-first'))
       const bLine = logged.find((line) => line.includes('B-second'))
-      expect(aLine).toContain('[cool-function]')
-      expect(bLine).toContain('[other-function]')
-      expect(logged.indexOf(aLine!)).toBeLessThan(logged.indexOf(bLine!))
+      expect(aLine).toContain('[Function: cool-function]')
+      expect(bLine).toContain('[Function: other-function]')
+      expect(logged.indexOf(aLine as string)).toBeLessThan(logged.indexOf(bLine as string))
     })
 
     test('follows pagination cursor', async ({}) => {
@@ -437,13 +448,13 @@ describe('logs:function command', () => {
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
 
-      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--timeline', '1h'])
+      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--since', '2026-04-14T00:00:00Z'])
 
       expect(calls).toHaveLength(2)
       expect(calls[1]).toContain('cursor=cursor-xyz')
     })
 
-    test('errors on invalid duration', async ({}) => {
+    test('errors on an unparseable --since value', async ({}) => {
       const { apiUrl } = await startMockApi({ routes })
       const spyLog = log as unknown as Mock
       const analyticsCalls: string[] = []
@@ -459,11 +470,71 @@ describe('logs:function command', () => {
       const env = getEnvironmentVariables({ apiUrl })
       Object.assign(process.env, env)
 
-      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--timeline', 'bogus'])
+      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--since', 'bogus'])
 
       expect(analyticsCalls).toHaveLength(0)
-      const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
-      expect(logged).toContain('Invalid --timeline value')
+      const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
+      expect(logged).toContain('Invalid time value')
+    })
+
+    test('errors when --since is later than --until', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const spyLog = log as unknown as Mock
+      const analyticsCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (url.includes('analytics.services.netlify.com')) {
+          analyticsCalls.push(url)
+          return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+        }
+        return originalFetch(input, init)
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync([
+        '',
+        '',
+        'logs:function',
+        'cool-function',
+        '--since',
+        '2026-04-14T00:00:00Z',
+        '--until',
+        '2026-04-13T00:00:00Z',
+      ])
+
+      expect(analyticsCalls).toHaveLength(0)
+      const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
+      expect(logged).toContain('--since must be earlier than --until')
+    })
+
+    test('accepts a duration for --since and converts it to now minus the duration', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const analyticsCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (!url.includes('analytics.services.netlify.com')) {
+          return originalFetch(input, init)
+        }
+        analyticsCalls.push(url)
+        return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      const before = Date.now()
+      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--since', '1h'])
+      const after = Date.now()
+
+      expect(analyticsCalls).toHaveLength(1)
+      const parsed = new URL(analyticsCalls[0])
+      const from = Number(parsed.searchParams.get('from'))
+      const to = Number(parsed.searchParams.get('to'))
+      expect(to - from).toBe(60 * 60 * 1000)
+      expect(to).toBeGreaterThanOrEqual(before)
+      expect(to).toBeLessThanOrEqual(after)
     })
   })
 
@@ -475,45 +546,16 @@ describe('logs:function command', () => {
     })
 
     test('passes deploy_id when the URL uses a deploy permalink', async ({}) => {
-      const { apiUrl } = await startMockApi({ routes })
-      const fetchCalls: string[] = []
-      global.fetch = vi.fn(async (input: any, init?: any) => {
-        const url = String(input)
-        if (!url.includes('analytics.services.netlify.com')) {
-          return originalFetch(input, init)
-        }
-        fetchCalls.push(url)
-        return new Response(JSON.stringify({ logs: [] }), { status: 200 })
-      }) as any
-
-      const env = getEnvironmentVariables({ apiUrl })
-      Object.assign(process.env, env)
-
       const deployId = '507f1f77bcf86cd799439011'
-      await program.parseAsync([
-        '',
-        '',
-        'logs:function',
-        'cool-function',
-        '--timeline',
-        '1h',
-        '--url',
-        `https://${deployId}--site-name.netlify.app`,
-      ])
-
-      expect(fetchCalls).toHaveLength(1)
-      expect(fetchCalls[0]).toContain(`deploy_id=${deployId}`)
-    })
-
-    test('resolves a branch name via listSiteDeploys', async ({}) => {
       const deployRoutes = [
         ...routes,
         {
-          path: 'sites/site_id/deploys',
-          response: [
-            { id: 'deploy-building', state: 'building', branch: 'feature-x' },
-            { id: 'deploy-ready-id', state: 'ready', branch: 'feature-x' },
-          ],
+          path: `sites/site_id/deploys/${deployId}`,
+          response: {
+            id: deployId,
+            state: 'ready',
+            available_functions: [{ n: 'cool-function', a: 'account', oid: 'function-id' }],
+          },
         },
       ]
       const { apiUrl } = await startMockApi({ routes: deployRoutes })
@@ -535,8 +577,56 @@ describe('logs:function command', () => {
         '',
         'logs:function',
         'cool-function',
-        '--timeline',
-        '1h',
+        '--since',
+        '2026-04-14T00:00:00Z',
+        '--url',
+        `https://${deployId}--site-name.netlify.app`,
+      ])
+
+      expect(fetchCalls).toHaveLength(1)
+      expect(fetchCalls[0]).toContain(`deploy_id=${deployId}`)
+    })
+
+    test('resolves a branch name via listSiteDeploys', async ({}) => {
+      const deployRoutes = [
+        ...routes,
+        {
+          path: 'sites/site_id/deploys',
+          response: [
+            { id: 'deploy-building', state: 'building', branch: 'feature-x' },
+            { id: 'deploy-ready-id', state: 'ready', branch: 'feature-x' },
+          ],
+        },
+        {
+          path: 'sites/site_id/deploys/deploy-ready-id',
+          response: {
+            id: 'deploy-ready-id',
+            state: 'ready',
+            available_functions: [{ n: 'cool-function', a: 'account', oid: 'function-id' }],
+          },
+        },
+      ]
+      const { apiUrl } = await startMockApi({ routes: deployRoutes })
+      const fetchCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (!url.includes('analytics.services.netlify.com')) {
+          return originalFetch(input, init)
+        }
+        fetchCalls.push(url)
+        return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync([
+        '',
+        '',
+        'logs:function',
+        'cool-function',
+        '--since',
+        '2026-04-14T00:00:00Z',
         '--url',
         'https://feature-x--site-name.netlify.app',
       ])
@@ -564,8 +654,8 @@ describe('logs:function command', () => {
         '',
         'logs:function',
         'cool-function',
-        '--timeline',
-        '1h',
+        '--since',
+        '2026-04-14T00:00:00Z',
         '--url',
         'https://site-name.netlify.app',
       ])
@@ -573,7 +663,7 @@ describe('logs:function command', () => {
       expect(fetchCalls[0]).not.toContain('deploy_id=')
     })
 
-    test('errors when --url resolves to a deploy but --timeline is missing', async ({}) => {
+    test('errors when --url resolves to a deploy but --since is missing', async ({}) => {
       const { apiUrl } = await startMockApi({ routes })
       const spyWebsocket = getWebSocket as unknown as Mock
       const spyLog = log as unknown as Mock
@@ -600,8 +690,108 @@ describe('logs:function command', () => {
       ])
 
       expect(spyWebsocket).not.toHaveBeenCalled()
-      const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
+      const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
       expect(logged).toContain('Real-time logs cannot be scoped to a specific deploy')
+    })
+
+    test('rejects a URL that belongs to a different project', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const analyticsCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (url.includes('analytics.services.netlify.com')) {
+          analyticsCalls.push(url)
+          return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+        }
+        return originalFetch(input, init)
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await expect(
+        program.parseAsync([
+          '',
+          '',
+          'logs:function',
+          'cool-function',
+          '--since',
+          '1h',
+          '--url',
+          'https://feature-x--some-other-site.netlify.app',
+        ]),
+      ).rejects.toThrow(/doesn't seem to match the linked project/)
+
+      expect(analyticsCalls).toHaveLength(0)
+    })
+
+    test('rejects a non-netlify hostname that does not match any configured domain', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const analyticsCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (url.includes('analytics.services.netlify.com')) {
+          analyticsCalls.push(url)
+          return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+        }
+        return originalFetch(input, init)
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await expect(
+        program.parseAsync([
+          '',
+          '',
+          'logs:function',
+          'cool-function',
+          '--since',
+          '1h',
+          '--url',
+          'https://totally-unrelated.example.com',
+        ]),
+      ).rejects.toThrow(/doesn't seem to match the linked project/)
+
+      expect(analyticsCalls).toHaveLength(0)
+    })
+
+    test('accepts a custom domain configured on the linked project', async ({}) => {
+      const customDomainSiteInfo = {
+        ...siteInfo,
+        custom_domain: 'www.my-custom-domain.com',
+        domain_aliases: ['my-custom-domain.com'],
+      }
+      const customRoutes = routes.map((route) =>
+        route.path === 'sites/site_id' ? { ...route, response: customDomainSiteInfo } : route,
+      )
+      const { apiUrl } = await startMockApi({ routes: customRoutes })
+      const fetchCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (!url.includes('analytics.services.netlify.com')) {
+          return originalFetch(input, init)
+        }
+        fetchCalls.push(url)
+        return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync([
+        '',
+        '',
+        'logs:function',
+        'cool-function',
+        '--since',
+        '1h',
+        '--url',
+        'https://www.my-custom-domain.com',
+      ])
+
+      expect(fetchCalls).toHaveLength(1)
+      expect(fetchCalls[0]).not.toContain('deploy_id=')
     })
   })
 
@@ -623,7 +813,7 @@ describe('logs:function command', () => {
     messageCallback?.[1](JSON.stringify({ level: LOG_LEVELS.INFO, message: 'hello' }))
 
     const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
-    expect(logged).not.toContain('[cool-function]')
+    expect(logged).not.toContain('[Function: cool-function]')
     expect(logged).toContain('hello')
   })
 })

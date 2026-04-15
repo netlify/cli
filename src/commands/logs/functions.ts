@@ -1,14 +1,14 @@
 import { OptionValues } from 'commander'
 
-import { chalk, log } from '../../utils/command-helpers.js'
+import { chalk, log, logAndThrowError, netlifyCommand } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
-import { parseDuration } from './duration.js'
-import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS, LOG_LEVELS_LIST } from './log-levels.js'
+import { buildFunctionLogsUrl, fetchHistoricalLogs, formatLogLine, parseTimeValue } from './log-api.js'
+import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS_LIST } from './log-levels.js'
 
-const ANALYTICS_API_BASE = 'https://analytics.services.netlify.com'
 const DEPLOY_ID_RE = /^[a-f0-9]{24}$/
+const MAX_CONCURRENT_FUNCTIONS = 10
 
 interface NetlifyFunction {
   a: string
@@ -17,41 +17,54 @@ interface NetlifyFunction {
   branch?: string | null
 }
 
-interface HistoricalLogEntry {
-  ts: number
-  type: string
-  message: string
-  request_id?: string
-  netlify_request_id?: string
-  level: string
-}
+const functionPrefix = (functionName: string) => `[Function: ${functionName}]`
 
-function getLog(logData: { level: string; message: string }, functionName?: string) {
-  let logString = ''
-  switch (logData.level) {
-    case LOG_LEVELS.INFO:
-      logString += chalk.blueBright(logData.level)
-      break
-    case LOG_LEVELS.WARN:
-      logString += chalk.yellowBright(logData.level)
-      break
-    case LOG_LEVELS.ERROR:
-      logString += chalk.redBright(logData.level)
-      break
-    default:
-      logString += logData.level
-      break
+const hostnamesForSite = (siteInfo: {
+  name?: string
+  custom_domain?: string
+  domain_aliases?: string[]
+  url?: string
+  ssl_url?: string
+}): { canonicalHostnames: Set<string>; netlifyAppBaseHost: string | null } => {
+  const canonical = new Set<string>()
+  const addUrl = (value?: string) => {
+    if (!value) return
+    try {
+      canonical.add(new URL(value.includes('://') ? value : `https://${value}`).hostname.toLowerCase())
+    } catch {
+      // ignore invalid entries
+    }
   }
 
-  const prefix = functionName ? `${chalk.cyan(`[${functionName}]`)} ` : ''
-  return `${prefix}${logString} ${logData.message}`
+  addUrl(siteInfo.url)
+  addUrl(siteInfo.ssl_url)
+  if (siteInfo.custom_domain) {
+    canonical.add(siteInfo.custom_domain.toLowerCase())
+  }
+  for (const alias of siteInfo.domain_aliases ?? []) {
+    canonical.add(alias.toLowerCase())
+  }
+
+  const netlifyAppBaseHost = siteInfo.name ? `${siteInfo.name.toLowerCase()}.netlify.app` : null
+  if (netlifyAppBaseHost) {
+    canonical.add(netlifyAppBaseHost)
+  }
+
+  return { canonicalHostnames: canonical, netlifyAppBaseHost }
 }
 
-async function resolveDeployFromUrl(
+async function resolveDeployIdFromUrl(
   urlInput: string,
   client: any,
   siteId: string,
-): Promise<{ deployId?: string }> {
+  siteInfo: {
+    name?: string
+    custom_domain?: string
+    domain_aliases?: string[]
+    url?: string
+    ssl_url?: string
+  },
+): Promise<string | undefined> {
   let parsed: URL
   try {
     parsed = new URL(urlInput.includes('://') ? urlInput : `https://${urlInput}`)
@@ -59,15 +72,35 @@ async function resolveDeployFromUrl(
     throw new Error(`Invalid --url value: ${urlInput}`)
   }
 
-  const firstLabel = parsed.hostname.split('.')[0] ?? ''
+  const hostname = parsed.hostname.toLowerCase()
+  const { canonicalHostnames, netlifyAppBaseHost } = hostnamesForSite(siteInfo)
+
+  if (canonicalHostnames.has(hostname)) {
+    return undefined
+  }
+
+  const mismatchError = new Error(
+    `The URL ${urlInput} doesn't seem to match the linked project${siteInfo.name ? ` (${siteInfo.name})` : ''}.`,
+  )
+
+  if (!netlifyAppBaseHost || !hostname.endsWith(`.netlify.app`)) {
+    throw mismatchError
+  }
+
+  const firstLabel = hostname.split('.')[0] ?? ''
   const separatorIndex = firstLabel.indexOf('--')
   if (separatorIndex === -1) {
-    return {}
+    throw mismatchError
   }
 
   const prefix = firstLabel.slice(0, separatorIndex)
+  const suffix = firstLabel.slice(separatorIndex + 2)
+  if (suffix !== siteInfo.name?.toLowerCase()) {
+    throw mismatchError
+  }
+
   if (DEPLOY_ID_RE.test(prefix)) {
-    return { deployId: prefix }
+    return prefix
   }
 
   const deploys = (await client.listSiteDeploys({ siteId, branch: prefix, per_page: 20 })) as any[]
@@ -75,91 +108,7 @@ async function resolveDeployFromUrl(
   if (!ready) {
     throw new Error(`No ready deploys found for branch ${prefix}`)
   }
-  return { deployId: ready.id as string }
-}
-
-const debugLog = (message: string) => {
-  if (process.env.DEBUG) {
-    log(chalk.dim(`[debug] ${message}`))
-  }
-}
-
-async function fetchHistoricalLogs({
-  siteId,
-  functionName,
-  branch,
-  accessToken,
-  from,
-  to,
-  deployId,
-}: {
-  siteId: string
-  functionName: string
-  branch?: string | null
-  accessToken: string | null | undefined
-  from: number
-  to: number
-  deployId?: string
-}): Promise<HistoricalLogEntry[]> {
-  const entries: HistoricalLogEntry[] = []
-  let cursor: string | undefined
-  let page = 0
-
-  do {
-    const params = new URLSearchParams()
-    params.set('from', String(from))
-    params.set('to', String(to))
-    if (deployId) {
-      params.set('deploy_id', deployId)
-    }
-    if (cursor) {
-      params.set('cursor', cursor)
-    }
-
-    const branchPath = branch ? `branch/${encodeURIComponent(branch)}/` : ''
-    const url = `${ANALYTICS_API_BASE}/v2/sites/${siteId}/${branchPath}function_logs/${encodeURIComponent(functionName)}?${params.toString()}`
-    page += 1
-    debugLog(`GET ${url} (function=${functionName}, page=${page})`)
-
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${accessToken ?? ''}`,
-        'Content-Type': 'application/json',
-      },
-    })
-
-    const responseHeaders: Record<string, string> = {}
-    response.headers.forEach((value, key) => {
-      responseHeaders[key] = value
-    })
-    debugLog(
-      `← ${response.status} ${response.statusText} (function=${functionName}, page=${page}) headers=${JSON.stringify(responseHeaders)}`,
-    )
-
-    const rawBody = await response.text()
-    debugLog(`response body (${rawBody.length} bytes): ${rawBody.slice(0, 2000)}`)
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch logs for ${functionName}: ${response.status} ${response.statusText}`)
-    }
-
-    let body: { logs?: HistoricalLogEntry[]; pagination?: { next?: string } }
-    try {
-      body = JSON.parse(rawBody)
-    } catch (error) {
-      debugLog(`failed to parse response as JSON`)
-      throw error
-    }
-
-    const pageLogs = body.logs ?? []
-    debugLog(
-      `function=${functionName} page=${page} received ${pageLogs.length} entries, next cursor=${body.pagination?.next ?? '(none)'}`,
-    )
-    entries.push(...pageLogs)
-    cursor = body.pagination?.next
-  } while (cursor)
-
-  return entries
+  return ready.id as string
 }
 
 function streamFunctionLogs(
@@ -183,11 +132,18 @@ function streamFunctionLogs(
   })
 
   ws.on('message', (data: string) => {
-    const logData = JSON.parse(data)
+    const logData = JSON.parse(data) as { level: string; message: string; ts?: number }
     if (!levelsToPrint.includes(logData.level.toLowerCase())) {
       return
     }
-    log(getLog(logData, showName ? fn.n : undefined))
+    log(
+      formatLogLine({
+        level: logData.level,
+        message: logData.message,
+        prefix: showName ? functionPrefix(fn.n) : undefined,
+        timestamp: typeof logData.ts === 'number' ? logData.ts : Date.now(),
+      }),
+    )
   })
 
   ws.on('close', () => {
@@ -200,11 +156,9 @@ function streamFunctionLogs(
   })
 }
 
-const MAX_CONCURRENT_FUNCTIONS = 10
-
 export const logsFunction = async (functionNames: string[], options: OptionValues, command: BaseCommand) => {
   const client = command.netlify.api
-  const { site } = command.netlify
+  const { site, siteInfo } = command.netlify
   const { id: siteId } = site
 
   if (options.level && !options.level.every((level: string) => LOG_LEVELS_LIST.includes(level))) {
@@ -213,11 +167,23 @@ export const logsFunction = async (functionNames: string[], options: OptionValue
 
   const levelsToPrint = options.level || LOG_LEVELS_LIST
 
-  let durationMs: number | null = null
-  if (options.timeline) {
-    durationMs = parseDuration(options.timeline)
-    if (!durationMs) {
-      log(`Invalid --timeline value "${options.timeline}". Use a duration like 30m, 1h, 2h, 1d, or 1h30m.`)
+  if (options.until && !options.since) {
+    log('--until requires --since to also be set.')
+    return
+  }
+  let historicalRange: { from: number; to: number } | undefined
+  if (options.since) {
+    try {
+      const now = Date.now()
+      const from = parseTimeValue(options.since, now)
+      const to = options.until ? parseTimeValue(options.until, now) : now
+      if (from >= to) {
+        log('--since must be earlier than --until.')
+        return
+      }
+      historicalRange = { from, to }
+    } catch (error) {
+      log((error as Error).message)
       return
     }
   }
@@ -225,28 +191,42 @@ export const logsFunction = async (functionNames: string[], options: OptionValue
   let deployId: string | undefined
   if (options.url) {
     try {
-      debugLog(`resolving --url ${options.url}`)
-      const resolved = await resolveDeployFromUrl(options.url, client, siteId!)
-      deployId = resolved.deployId
-      debugLog(`resolved deploy_id=${deployId ?? '(production, no filter)'}`)
+      deployId = await resolveDeployIdFromUrl(options.url, client, siteId!, siteInfo)
     } catch (error) {
-      log((error as Error).message)
-      return
+      const message = (error as Error).message
+      const isMismatch = message.includes("doesn't seem to match")
+      if (isMismatch && siteInfo.name) {
+        const suggestionParts = [
+          netlifyCommand(),
+          'logs:function',
+          ...functionNames,
+          options.since ? `--since ${options.since}` : null,
+          options.until ? `--until ${options.until}` : null,
+          `--url https://${siteInfo.name}.netlify.app`,
+        ].filter(Boolean) as string[]
+        return logAndThrowError(`${message}\nTry running ${chalk.cyan(suggestionParts.join(' '))}`)
+      }
+      return logAndThrowError(message)
     }
   }
 
-  if (deployId && !options.timeline) {
-    log('Real-time logs cannot be scoped to a specific deploy. Use --timeline to fetch historical logs.')
+  if (deployId && !historicalRange) {
+    log('Real-time logs cannot be scoped to a specific deploy. Use --since/--until to fetch historical logs.')
     return
   }
 
-  // TODO: Update type once the open api spec is updated https://open-api.netlify.com/#tag/function/operation/searchSiteFunctions
-  const searchResponse = (await client.searchSiteFunctions({ siteId: siteId! })) as any
-  debugLog(`searchSiteFunctions raw response: ${JSON.stringify(searchResponse).slice(0, 1500)}`)
-  const { functions = [] } = searchResponse
+  let functions: NetlifyFunction[]
+  if (deployId) {
+    const deploy = (await client.getSiteDeploy({ siteId: siteId!, deployId })) as any
+    functions = (deploy?.available_functions ?? []) as NetlifyFunction[]
+  } else {
+    // TODO: Update type once the open api spec is updated https://open-api.netlify.com/#tag/function/operation/searchSiteFunctions
+    const searchResponse = (await client.searchSiteFunctions({ siteId: siteId! })) as any
+    functions = (searchResponse.functions ?? []) as NetlifyFunction[]
+  }
 
   if (functions.length === 0) {
-    log(`No functions found for the project`)
+    log(`No functions found for the ${deployId ? 'deploy' : 'project'}`)
     return
   }
 
@@ -254,7 +234,7 @@ export const logsFunction = async (functionNames: string[], options: OptionValue
   if (functionNames.length > 0) {
     selectedFunctions = []
     for (const name of functionNames) {
-      const match = functions.find((fn: any) => fn.n === name)
+      const match = functions.find((fn) => fn.n === name)
       if (!match) {
         log(`Could not find function ${name}`)
         return
@@ -263,42 +243,33 @@ export const logsFunction = async (functionNames: string[], options: OptionValue
     }
   } else {
     if (functions.length > MAX_CONCURRENT_FUNCTIONS) {
-      log(
-        `This project has ${functions.length} functions, but logs can only be streamed for up to ${MAX_CONCURRENT_FUNCTIONS} at a time. Specify function names as arguments to choose which ones to view.`,
+      const exampleNames = functions.slice(0, 3).map((fn) => fn.n)
+      const exampleCommand = `${netlifyCommand()} logs:function ${exampleNames.join(' ')} --since 1h`
+      return logAndThrowError(
+        `You can only stream logs for up to ${MAX_CONCURRENT_FUNCTIONS} functions at a time — this project has ${functions.length}.\nSpecify function names as arguments to choose which ones to view, for example:\n\n  ${chalk.cyan(exampleCommand)}`,
       )
-      return
     }
     selectedFunctions = functions
   }
 
   const showName = selectedFunctions.length > 1
 
-  if (options.timeline) {
-    const to = Date.now()
-    const from = to - (durationMs ?? 0)
-    debugLog(
-      `historical window: from=${from} (${new Date(from).toISOString()}) to=${to} (${new Date(to).toISOString()}), durationMs=${durationMs}`,
-    )
-    debugLog(`selected functions: ${selectedFunctions.map((fn) => fn.n).join(', ')}`)
-
+  if (historicalRange) {
     const results = await Promise.all(
       selectedFunctions.map(async (fn) => {
+        const baseUrl = buildFunctionLogsUrl({ siteId: siteId!, branch: fn.branch, functionName: fn.n })
         const entries = await fetchHistoricalLogs({
-          siteId: siteId!,
-          functionName: fn.n,
-          branch: fn.branch,
+          baseUrl,
           accessToken: client.accessToken,
-          from,
-          to,
+          from: historicalRange.from,
+          to: historicalRange.to,
           deployId,
         })
-        debugLog(`function=${fn.n} branch=${fn.branch ?? '(none)'} total entries=${entries.length}`)
         return entries.map((entry) => ({ functionName: fn.n, entry }))
       }),
     )
 
     const merged = results.flat().sort((a, b) => a.entry.ts - b.entry.ts)
-    debugLog(`total merged entries across all functions: ${merged.length}`)
 
     if (merged.length === 0) {
       log('No logs found for the given time range.')
@@ -306,18 +277,39 @@ export const logsFunction = async (functionNames: string[], options: OptionValue
     }
 
     for (const { functionName, entry } of merged) {
-      const level = entry.level || LOG_LEVELS.INFO
+      const level = entry.level || 'INFO'
       if (!levelsToPrint.includes(level.toLowerCase())) {
         continue
       }
-      log(getLog({ level, message: entry.message }, showName ? functionName : undefined))
+      log(
+        formatLogLine({
+          level,
+          message: entry.message,
+          prefix: showName ? functionPrefix(functionName) : undefined,
+          timestamp: entry.ts,
+        }),
+      )
     }
     return
   }
 
-  if (showName) {
-    log(`Streaming logs for ${selectedFunctions.length} functions`)
+  const baseCommand = netlifyCommand()
+  if (selectedFunctions.length === 1) {
+    log(
+      `Tip: To view logs for the past hour, run ${chalk.cyan(
+        `${baseCommand} logs:function ${selectedFunctions[0].n} --since 1h`,
+      )}`,
+    )
+    log('')
+    log(`Polling for logs from function ${selectedFunctions[0].n}...`)
+    log('')
+  } else {
+    log(`Tip: To view logs for the past hour, run ${chalk.cyan(`${baseCommand} logs:function --since 1h`)}`)
+    log('')
+    log(`Polling for logs from ${selectedFunctions.length} functions...`)
+    log('')
   }
+
   for (const fn of selectedFunctions) {
     streamFunctionLogs(fn, siteId!, client.accessToken, levelsToPrint, showName)
   }

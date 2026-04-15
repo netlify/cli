@@ -24,8 +24,14 @@ export const createLogsFunctionCommand = (program: BaseCommand) => {
     )
     .addOption(
       new Option(
-        '-t, --timeline <duration>',
-        'Fetch historical logs for the given duration (e.g. 30m, 1h, 2h, 1d, 1h30m) instead of streaming in real time',
+        '--since <time>',
+        'Start of the historical log window. Accepts a duration (e.g. 10m, 1h, 24h, 2d) or an ISO 8601 timestamp',
+      ),
+    )
+    .addOption(
+      new Option(
+        '--until <time>',
+        'End of the historical log window. Accepts a duration or an ISO 8601 timestamp (defaults to now)',
       ),
     )
     .addOption(
@@ -40,8 +46,10 @@ export const createLogsFunctionCommand = (program: BaseCommand) => {
       'netlify logs:function my-function',
       'netlify logs:function my-function other-function',
       'netlify logs:function my-function -l info warn',
-      'netlify logs:function my-function --timeline 1h',
-      'netlify logs:function --url https://my-branch--my-site.netlify.app --timeline 30m',
+      'netlify logs:function my-function --since 1h',
+      'netlify logs:function my-function --since 24h',
+      'netlify logs:function my-function --since 2026-04-14T00:00:00Z --until 2026-04-15T00:00:00Z',
+      'netlify logs:function --url https://my-branch--my-site.netlify.app --since 30m',
     ])
     .description('Stream netlify function logs to the console')
     .action(async (functionNames: string[], options: OptionValues, command: BaseCommand) => {
