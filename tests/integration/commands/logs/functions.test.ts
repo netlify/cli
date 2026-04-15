@@ -20,13 +20,6 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => {
   }
 })
 
-vi.mock('inquirer', () => ({
-  default: {
-    prompt: vi.fn().mockResolvedValue({ result: 'cool-function' }),
-    registerPrompt: vi.fn(),
-  },
-}))
-
 const siteInfo = {
   admin_url: 'https://app.netlify.com/projects/site-name/overview',
   ssl_url: 'https://site-name.netlify.app/',
@@ -63,6 +56,21 @@ const routes = [
     },
   },
 ]
+
+const multiFunctionRoutes = routes.map((route) => {
+  if (route.path !== 'sites/site_id/functions') {
+    return route
+  }
+  return {
+    ...route,
+    response: {
+      functions: [
+        { n: 'cool-function', a: 'account', oid: 'function-id' },
+        { n: 'other-function', a: 'account', oid: 'other-function-id' },
+      ],
+    },
+  }
+})
 
 describe('logs:function command', () => {
   const originalEnv = process.env
@@ -152,7 +160,7 @@ describe('logs:function command', () => {
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
-    await program.parseAsync(['', '', 'logs:function', '--level', 'info'])
+    await program.parseAsync(['', '', 'logs:function', 'cool-function', '--level', 'info'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
     const messageCallbackFunc = messageCallback?.[1]
     const mockInfoData = {
@@ -184,7 +192,7 @@ describe('logs:function command', () => {
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
-    await program.parseAsync(['', '', 'logs:function'])
+    await program.parseAsync(['', '', 'logs:function', 'cool-function'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
     const messageCallbackFunc = messageCallback?.[1]
     const mockInfoData = {
@@ -200,5 +208,422 @@ describe('logs:function command', () => {
     messageCallbackFunc?.(JSON.stringify(mockWarnData))
 
     expect(spyLog).toHaveBeenCalledTimes(2)
+  })
+
+  test('should open one websocket per function when no name is given', async ({}) => {
+    const { apiUrl } = await startMockApi({ routes: multiFunctionRoutes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+    spyWebsocket.mockReturnValue({ on: vi.fn(), send: vi.fn() })
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    await program.parseAsync(['', '', 'logs:function'])
+
+    expect(spyWebsocket).toHaveBeenCalledTimes(2)
+  })
+
+  test('should prefix log lines with the function name in multi-function mode', async ({}) => {
+    const { apiUrl } = await startMockApi({ routes: multiFunctionRoutes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+    const handlersPerSocket: Record<string, (data: string) => void>[] = []
+    spyWebsocket.mockImplementation(() => {
+      const handlers: Record<string, (data: string) => void> = {}
+      handlersPerSocket.push(handlers)
+      return {
+        on: (event: string, cb: (data: string) => void) => {
+          handlers[event] = cb
+        },
+        send: vi.fn(),
+      }
+    })
+    const spyLog = log as unknown as Mock
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    await program.parseAsync(['', '', 'logs:function'])
+
+    handlersPerSocket[0].message(JSON.stringify({ level: LOG_LEVELS.INFO, message: 'hello from first' }))
+    handlersPerSocket[1].message(JSON.stringify({ level: LOG_LEVELS.INFO, message: 'hello from second' }))
+
+    const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
+    expect(logged).toContain('[cool-function]')
+    expect(logged).toContain('[other-function]')
+  })
+
+  test('should open one websocket per named function and prefix lines when multiple names are passed', async ({}) => {
+    const { apiUrl } = await startMockApi({ routes: multiFunctionRoutes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+    const handlersPerSocket: Record<string, (data: string) => void>[] = []
+    spyWebsocket.mockImplementation(() => {
+      const handlers: Record<string, (data: string) => void> = {}
+      handlersPerSocket.push(handlers)
+      return {
+        on: (event: string, cb: (data: string) => void) => {
+          handlers[event] = cb
+        },
+        send: vi.fn(),
+      }
+    })
+    const spyLog = log as unknown as Mock
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    await program.parseAsync(['', '', 'logs:function', 'cool-function', 'other-function'])
+
+    expect(spyWebsocket).toHaveBeenCalledTimes(2)
+
+    handlersPerSocket[0].message(JSON.stringify({ level: LOG_LEVELS.INFO, message: 'from first' }))
+    handlersPerSocket[1].message(JSON.stringify({ level: LOG_LEVELS.INFO, message: 'from second' }))
+
+    const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
+    expect(logged).toContain('[cool-function]')
+    expect(logged).toContain('[other-function]')
+  })
+
+  test('should error when a passed function name does not exist', async ({}) => {
+    const { apiUrl } = await startMockApi({ routes: multiFunctionRoutes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+    spyWebsocket.mockReturnValue({ on: vi.fn(), send: vi.fn() })
+    const spyLog = log as unknown as Mock
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    await program.parseAsync(['', '', 'logs:function', 'nope'])
+
+    expect(spyWebsocket).not.toHaveBeenCalled()
+    const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
+    expect(logged).toContain('Could not find function nope')
+  })
+
+  test('should refuse to stream all when the project has more than 10 functions', async ({}) => {
+    const manyFunctions = Array.from({ length: 11 }, (_, i) => ({
+      n: `fn-${i}`,
+      a: 'account',
+      oid: `fn-${i}-id`,
+    }))
+    const manyFunctionRoutes = routes.map((route) =>
+      route.path === 'sites/site_id/functions' ? { ...route, response: { functions: manyFunctions } } : route,
+    )
+    const { apiUrl } = await startMockApi({ routes: manyFunctionRoutes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+    spyWebsocket.mockReturnValue({ on: vi.fn(), send: vi.fn() })
+    const spyLog = log as unknown as Mock
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    await program.parseAsync(['', '', 'logs:function'])
+
+    expect(spyWebsocket).not.toHaveBeenCalled()
+    const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
+    expect(logged).toContain('up to 10')
+  })
+
+  describe('--timeline', () => {
+    const originalFetch = global.fetch
+
+    afterEach(() => {
+      global.fetch = originalFetch
+    })
+
+    test('fetches historical logs for a single function and prints them sorted', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const spyWebsocket = getWebSocket as unknown as Mock
+      const spyLog = log as unknown as Mock
+
+      const fetchCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (!url.includes('analytics.services.netlify.com')) {
+          return originalFetch(input, init)
+        }
+        fetchCalls.push(url)
+        return new Response(
+          JSON.stringify({
+            logs: [
+              { ts: 200, type: 'line', message: 'second', level: 'INFO' },
+              { ts: 100, type: 'line', message: 'first', level: 'INFO' },
+            ],
+          }),
+          { status: 200 },
+        )
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--timeline', '1h'])
+
+      expect(spyWebsocket).not.toHaveBeenCalled()
+      expect(fetchCalls).toHaveLength(1)
+      expect(fetchCalls[0]).toContain('https://analytics.services.netlify.com/v2/sites/site_id/function_logs/cool-function')
+      expect(fetchCalls[0]).toMatch(/from=\d+/)
+      expect(fetchCalls[0]).toMatch(/to=\d+/)
+      expect(fetchCalls[0]).not.toContain('deploy_id=')
+
+      const logged = spyLog.mock.calls.map((args) => args[0])
+      const firstIdx = logged.findIndex((line) => typeof line === 'string' && line.includes('first'))
+      const secondIdx = logged.findIndex((line) => typeof line === 'string' && line.includes('second'))
+      expect(firstIdx).toBeGreaterThan(-1)
+      expect(secondIdx).toBeGreaterThan(-1)
+      expect(firstIdx).toBeLessThan(secondIdx)
+    })
+
+    test('fans out across multiple functions and interleaves by timestamp', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes: multiFunctionRoutes })
+      const spyLog = log as unknown as Mock
+
+      const responses: Record<string, { ts: number; type: string; message: string; level: string }[]> = {
+        'cool-function': [{ ts: 100, type: 'line', message: 'A-first', level: 'INFO' }],
+        'other-function': [{ ts: 150, type: 'line', message: 'B-second', level: 'INFO' }],
+      }
+      const analyticsCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (!url.includes('analytics.services.netlify.com')) {
+          return originalFetch(input, init)
+        }
+        analyticsCalls.push(url)
+        const name = url.includes('cool-function') ? 'cool-function' : 'other-function'
+        return new Response(JSON.stringify({ logs: responses[name] }), { status: 200 })
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync(['', '', 'logs:function', '--timeline', '2h'])
+
+      expect(analyticsCalls).toHaveLength(2)
+      const logged = spyLog.mock.calls.map((args) => args[0]).filter((l) => typeof l === 'string')
+      const aLine = logged.find((line) => line.includes('A-first'))
+      const bLine = logged.find((line) => line.includes('B-second'))
+      expect(aLine).toContain('[cool-function]')
+      expect(bLine).toContain('[other-function]')
+      expect(logged.indexOf(aLine!)).toBeLessThan(logged.indexOf(bLine!))
+    })
+
+    test('follows pagination cursor', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const calls: string[] = []
+      let callNumber = 0
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (!url.includes('analytics.services.netlify.com')) {
+          return originalFetch(input, init)
+        }
+        calls.push(url)
+        callNumber += 1
+        if (callNumber === 1) {
+          return new Response(
+            JSON.stringify({
+              logs: [{ ts: 1, type: 'line', message: 'page1', level: 'INFO' }],
+              pagination: { next: 'cursor-xyz' },
+            }),
+            { status: 200 },
+          )
+        }
+        return new Response(
+          JSON.stringify({
+            logs: [{ ts: 2, type: 'line', message: 'page2', level: 'INFO' }],
+          }),
+          { status: 200 },
+        )
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--timeline', '1h'])
+
+      expect(calls).toHaveLength(2)
+      expect(calls[1]).toContain('cursor=cursor-xyz')
+    })
+
+    test('errors on invalid duration', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const spyLog = log as unknown as Mock
+      const analyticsCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (url.includes('analytics.services.netlify.com')) {
+          analyticsCalls.push(url)
+          return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+        }
+        return originalFetch(input, init)
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--timeline', 'bogus'])
+
+      expect(analyticsCalls).toHaveLength(0)
+      const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
+      expect(logged).toContain('Invalid --timeline value')
+    })
+  })
+
+  describe('--url', () => {
+    const originalFetch = global.fetch
+
+    afterEach(() => {
+      global.fetch = originalFetch
+    })
+
+    test('passes deploy_id when the URL uses a deploy permalink', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const fetchCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (!url.includes('analytics.services.netlify.com')) {
+          return originalFetch(input, init)
+        }
+        fetchCalls.push(url)
+        return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      const deployId = '507f1f77bcf86cd799439011'
+      await program.parseAsync([
+        '',
+        '',
+        'logs:function',
+        'cool-function',
+        '--timeline',
+        '1h',
+        '--url',
+        `https://${deployId}--site-name.netlify.app`,
+      ])
+
+      expect(fetchCalls).toHaveLength(1)
+      expect(fetchCalls[0]).toContain(`deploy_id=${deployId}`)
+    })
+
+    test('resolves a branch name via listSiteDeploys', async ({}) => {
+      const deployRoutes = [
+        ...routes,
+        {
+          path: 'sites/site_id/deploys',
+          response: [
+            { id: 'deploy-building', state: 'building', branch: 'feature-x' },
+            { id: 'deploy-ready-id', state: 'ready', branch: 'feature-x' },
+          ],
+        },
+      ]
+      const { apiUrl } = await startMockApi({ routes: deployRoutes })
+      const fetchCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (!url.includes('analytics.services.netlify.com')) {
+          return originalFetch(input, init)
+        }
+        fetchCalls.push(url)
+        return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync([
+        '',
+        '',
+        'logs:function',
+        'cool-function',
+        '--timeline',
+        '1h',
+        '--url',
+        'https://feature-x--site-name.netlify.app',
+      ])
+
+      expect(fetchCalls[0]).toContain('deploy_id=deploy-ready-id')
+    })
+
+    test('treats a production URL as no deploy filter', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const fetchCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (!url.includes('analytics.services.netlify.com')) {
+          return originalFetch(input, init)
+        }
+        fetchCalls.push(url)
+        return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync([
+        '',
+        '',
+        'logs:function',
+        'cool-function',
+        '--timeline',
+        '1h',
+        '--url',
+        'https://site-name.netlify.app',
+      ])
+
+      expect(fetchCalls[0]).not.toContain('deploy_id=')
+    })
+
+    test('errors when --url resolves to a deploy but --timeline is missing', async ({}) => {
+      const { apiUrl } = await startMockApi({ routes })
+      const spyWebsocket = getWebSocket as unknown as Mock
+      const spyLog = log as unknown as Mock
+      const analyticsCalls: string[] = []
+      global.fetch = vi.fn(async (input: any, init?: any) => {
+        const url = String(input)
+        if (url.includes('analytics.services.netlify.com')) {
+          analyticsCalls.push(url)
+          return new Response(JSON.stringify({ logs: [] }), { status: 200 })
+        }
+        return originalFetch(input, init)
+      }) as any
+
+      const env = getEnvironmentVariables({ apiUrl })
+      Object.assign(process.env, env)
+
+      await program.parseAsync([
+        '',
+        '',
+        'logs:function',
+        'cool-function',
+        '--url',
+        'https://507f1f77bcf86cd799439011--site-name.netlify.app',
+      ])
+
+      expect(spyWebsocket).not.toHaveBeenCalled()
+      const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
+      expect(logged).toContain('Real-time logs cannot be scoped to a specific deploy')
+    })
+  })
+
+  test('should open a single websocket and omit the prefix when a function name is passed', async ({}) => {
+    const { apiUrl } = await startMockApi({ routes: multiFunctionRoutes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+    const spyOn = vi.fn()
+    spyWebsocket.mockReturnValue({ on: spyOn, send: vi.fn() })
+    const spyLog = log as unknown as Mock
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    await program.parseAsync(['', '', 'logs:function', 'cool-function'])
+
+    expect(spyWebsocket).toHaveBeenCalledOnce()
+
+    const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
+    messageCallback?.[1](JSON.stringify({ level: LOG_LEVELS.INFO, message: 'hello' }))
+
+    const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
+    expect(logged).not.toContain('[cool-function]')
+    expect(logged).toContain('hello')
   })
 })
