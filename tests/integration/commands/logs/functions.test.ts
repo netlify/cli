@@ -23,6 +23,12 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => {
   }
 })
 
+const fetchInputToUrl = (input: Parameters<typeof fetch>[0]): string => {
+  if (typeof input === 'string') return input
+  if (input instanceof URL) return input.toString()
+  return input.url
+}
+
 const siteInfo = {
   admin_url: 'https://app.netlify.com/projects/site-name/overview',
   ssl_url: 'https://site-name.netlify.app/',
@@ -339,7 +345,7 @@ describe('logs:function command', () => {
 
       const fetchCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
@@ -378,7 +384,7 @@ describe('logs:function command', () => {
       expect(fetchCalls[0]).toMatch(/to=\d+/)
       expect(fetchCalls[0]).not.toContain('deploy_id=')
 
-      const logged = spyLog.mock.calls.map((args) => args[0])
+      const logged = spyLog.mock.calls.map((args: string[]) => args[0])
       const firstIdx = logged.findIndex((line) => typeof line === 'string' && line.includes('first'))
       const secondIdx = logged.findIndex((line) => typeof line === 'string' && line.includes('second'))
       expect(firstIdx).toBeGreaterThan(-1)
@@ -396,7 +402,7 @@ describe('logs:function command', () => {
       }
       const analyticsCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
@@ -416,7 +422,7 @@ describe('logs:function command', () => {
       const bLine = logged.find((line) => line.includes('B-second'))
       expect(aLine).toContain('[Function: cool-function]')
       expect(bLine).toContain('[Function: other-function]')
-      expect(logged.indexOf(aLine as string)).toBeLessThan(logged.indexOf(bLine as string))
+      expect(logged.indexOf(aLine!)).toBeLessThan(logged.indexOf(bLine!))
     })
 
     test('follows pagination cursor', async ({}) => {
@@ -424,7 +430,7 @@ describe('logs:function command', () => {
       const calls: string[] = []
       let callNumber = 0
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
@@ -461,7 +467,7 @@ describe('logs:function command', () => {
       const spyLog = log as unknown as Mock
       const analyticsCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname === 'analytics.services.netlify.com') {
           analyticsCalls.push(url)
           return new Response(JSON.stringify({ logs: [] }), { status: 200 })
@@ -484,7 +490,7 @@ describe('logs:function command', () => {
       const spyLog = log as unknown as Mock
       const analyticsCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname === 'analytics.services.netlify.com') {
           analyticsCalls.push(url)
           return new Response(JSON.stringify({ logs: [] }), { status: 200 })
@@ -515,7 +521,7 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes })
       const analyticsCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
@@ -563,7 +569,7 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes: deployRoutes })
       const fetchCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
@@ -611,7 +617,7 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes: deployRoutes })
       const fetchCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
@@ -640,7 +646,7 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes })
       const fetchCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
@@ -710,7 +716,7 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes })
       const analyticsCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname === 'analytics.services.netlify.com') {
           analyticsCalls.push(url)
           return new Response(JSON.stringify({ logs: [] }), { status: 200 })
@@ -741,7 +747,7 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes })
       const analyticsCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname === 'analytics.services.netlify.com') {
           analyticsCalls.push(url)
           return new Response(JSON.stringify({ logs: [] }), { status: 200 })
@@ -780,7 +786,7 @@ describe('logs:function command', () => {
       const { apiUrl } = await startMockApi({ routes: customRoutes })
       const fetchCalls: string[] = []
       global.fetch = vi.fn<typeof fetch>(async (input, init) => {
-        const url = String(input)
+        const url = fetchInputToUrl(input)
         if (new URL(url).hostname !== 'analytics.services.netlify.com') {
           return originalFetch(input, init)
         }
@@ -824,7 +830,7 @@ describe('logs:function command', () => {
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
     messageCallback?.[1](JSON.stringify({ level: LOG_LEVELS.INFO, message: 'hello' }))
 
-    const logged = spyLog.mock.calls.map((args) => args[0]).join('\n')
+    const logged = spyLog.mock.calls.map((args: string[]) => args[0]).join('\n')
     expect(logged).not.toContain('[Function: cool-function]')
     expect(logged).toContain('hello')
   })
