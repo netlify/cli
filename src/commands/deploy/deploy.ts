@@ -581,7 +581,7 @@ const runDeploy = async ({
       }
 
       const draft = options.draft || (!deployToProduction && !alias)
-      const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
+      const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip, deploy_source: 'cli' }
 
       const createDeployResponse = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
       deployId = createDeployResponse.id as string
@@ -1358,7 +1358,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     }
 
     const draft = options.draft || (!deployToProduction && !alias)
-    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
+    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip, deploy_source: 'cli' }
 
     // TODO: Type this properly in `@netlify/api`.
     const deployMetadata = (await api.createSiteDeploy({
