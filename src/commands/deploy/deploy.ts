@@ -581,7 +581,12 @@ const runDeploy = async ({
       }
 
       const draft = options.draft || (!deployToProduction && !alias)
-      const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip, deploy_source: 'cli' }
+      const createDeployBody = {
+        draft,
+        branch: alias,
+        include_upload_url: options.uploadSourceZip,
+        deploy_source: 'cli',
+      }
 
       const createDeployResponse = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
       deployId = createDeployResponse.id as string
