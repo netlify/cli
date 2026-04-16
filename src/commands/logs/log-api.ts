@@ -159,16 +159,19 @@ const PREFIX_COLORS = [
   chalk.cyanBright,
 ]
 
-const hashString = (str: string): number => {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) | 0
+export const createColorAssigner = (): ((label: string) => (text: string) => string) => {
+  const map = new Map<string, (text: string) => string>()
+  let index = 0
+  return (label: string) => {
+    let colorFn = map.get(label)
+    if (!colorFn) {
+      colorFn = PREFIX_COLORS[index % PREFIX_COLORS.length]
+      map.set(label, colorFn)
+      index += 1
+    }
+    return colorFn
   }
-  return Math.abs(hash)
 }
-
-export const colorForLabel = (label: string): ((text: string) => string) =>
-  PREFIX_COLORS[hashString(label) % PREFIX_COLORS.length]
 
 const colorLevel = (level: string): string => {
   switch (level.toUpperCase()) {
@@ -196,7 +199,7 @@ export const formatJsonLine = (entry: LogEntry): string =>
   JSON.stringify({
     source: entry.source,
     name: entry.name,
-    timestamp: new Date(entry.ts).toISOString(),
+    timestamp: Number.isFinite(entry.ts) ? new Date(entry.ts).toISOString() : new Date().toISOString(),
     level: (entry.level || 'info').toLowerCase(),
     message: entry.message,
     ...(entry.section ? { section: entry.section } : {}),

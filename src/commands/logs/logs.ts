@@ -5,7 +5,7 @@ import { chalk, log, logAndThrowError, netlifyCommand } from '../../utils/comman
 import type BaseCommand from '../base-command.js'
 
 import {
-  colorForLabel,
+  createColorAssigner,
   formatJsonLine,
   formatLogLine,
   parseTimeValue,
@@ -336,11 +336,9 @@ const runHistoricalMode = async ({
     allEntries.push(...entries)
   }
 
-  const deployEntries = allEntries.filter((e) => e.source === 'deploy').sort((a, b) => a.ts - b.ts)
-  const otherEntries = allEntries.filter((e) => e.source !== 'deploy').sort((a, b) => a.ts - b.ts)
-  const sorted = [...deployEntries, ...otherEntries]
+  allEntries.sort((a, b) => a.ts - b.ts)
 
-  if (sorted.length === 0) {
+  if (allEntries.length === 0) {
     log('No logs found for the given time range.')
     return
   }
@@ -349,17 +347,10 @@ const runHistoricalMode = async ({
     printHeader(sources, timeDescription, false)
   }
 
-  const colorMap = new Map<string, (text: string) => string>()
-  for (const entry of sorted) {
+  const assignColor = createColorAssigner()
+  for (const entry of allEntries) {
     const key = `${entry.source}:${entry.name}`
-    if (!colorMap.has(key)) {
-      colorMap.set(key, colorForLabel(key))
-    }
-  }
-
-  for (const entry of sorted) {
-    const key = `${entry.source}:${entry.name}`
-    printEntry(entry, levelsToPrint, json, colorMap.get(key))
+    printEntry(entry, levelsToPrint, json, assignColor(key))
   }
 }
 
@@ -384,20 +375,11 @@ const runFollowMode = async ({
   levelsToPrint: string[]
   json: boolean
 }) => {
-  const colorMap = new Map<string, (text: string) => string>()
-
-  const getColor = (entry: LogEntry): ((text: string) => string) => {
-    const key = `${entry.source}:${entry.name}`
-    let colorFn = colorMap.get(key)
-    if (!colorFn) {
-      colorFn = colorForLabel(key)
-      colorMap.set(key, colorFn)
-    }
-    return colorFn
-  }
+  const assignColor = createColorAssigner()
 
   const onEntry = (entry: LogEntry) => {
-    printEntry(entry, levelsToPrint, json, getColor(entry))
+    const key = `${entry.source}:${entry.name}`
+    printEntry(entry, levelsToPrint, json, assignColor(key))
   }
 
   if (sources.includes('deploy') && deployId) {
