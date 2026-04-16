@@ -1,5 +1,6 @@
 import { rm } from 'fs/promises'
 
+import { getVersion as getNetlifyBuildVersion } from '@netlify/build'
 import cleanDeep from 'clean-deep'
 
 import BaseCommand from '../../commands/base-command.js'
@@ -18,6 +19,7 @@ import hashFiles from './hash-files.js'
 import hashFns from './hash-fns.js'
 import {
   deployFileNormalizer,
+  getDbMigrationsDistPathIfExists,
   getDeployConfigPathIfExists,
   getEdgeFunctionsDistPathIfExists,
   isEdgeFunctionFile,
@@ -97,6 +99,7 @@ export const deploySite = async (
 
   const edgeFunctionsDistPath = await getEdgeFunctionsDistPathIfExists(workingDir)
   const deployConfigPath = await getDeployConfigPathIfExists(workingDir)
+  const dbMigrationsDistPath = await getDbMigrationsDistPathIfExists(workingDir)
   const [
     { files: staticFiles, filesShaMap: staticShaMap },
     { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules },
@@ -105,7 +108,7 @@ export const deploySite = async (
     hashFiles({
       assetType,
       concurrentHash,
-      directories: [dir, edgeFunctionsDistPath, deployConfigPath].filter(Boolean),
+      directories: [dir, edgeFunctionsDistPath, deployConfigPath, dbMigrationsDistPath].filter(Boolean),
       filter,
       hashAlgorithm,
       normalizer: deployFileNormalizer.bind(null, workingDir),
@@ -168,6 +171,9 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'start',
   })
 
+  const packageFrameworks = command.project.frameworks.get(command.workspacePackage ?? '')
+  const primaryFramework = packageFrameworks?.[0]
+
   // @ts-expect-error TS(2349) This expression is not callable
   const deployParams = cleanDeep({
     siteId,
@@ -180,6 +186,9 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
       async: Object.keys(files).length > syncFileLimit,
       branch,
       draft,
+      framework: primaryFramework?.id ?? 'unknown',
+      framework_version: primaryFramework?.detected.package?.version?.toString() ?? 'unknown',
+      build_version: getNetlifyBuildVersion(),
     },
   })
   let deploy = await api.updateSiteDeploy(deployParams)
