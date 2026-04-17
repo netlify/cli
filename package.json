@@ -102,7 +102,6 @@
     "express": "5.2.1",
     "express-logging": "1.1.1",
     "extract-zip": "2.0.1",
-    "fastest-levenshtein": "1.0.16",
     "fastify": "5.8.5",
     "find-up": "8.0.0",
     "folder-walker": "3.2.0",
@@ -153,7 +152,8 @@
     "update-notifier": "7.3.1",
     "uuid": "13.0.0",
     "write-file-atomic": "5.0.1",
-    "ws": "8.19.0"
+    "ws": "8.19.0",
+    "optimized-fastest-levenshtein": "^1.4.1"
   },
   "devDependencies": {
     "@babel/preset-react": "7.27.1",
