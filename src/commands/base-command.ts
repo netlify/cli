@@ -519,8 +519,8 @@ export default class BaseCommand extends Command {
     log(`Opening ${authLink}`)
     const browserOpened = await openBrowser({ url: authLink })
 
-    if (!browserOpened && !isInteractive()) {
-      const ticketId = ticket.id!
+    if (!browserOpened && !isInteractive() && ticket.id) {
+      const ticketId = ticket.id
       logJson({
         ticket_id: ticketId,
         url: authLink,
