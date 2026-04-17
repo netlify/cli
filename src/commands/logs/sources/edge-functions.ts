@@ -44,13 +44,13 @@ export const fetchEdgeFunctionHistoricalLogs = async ({
 }): Promise<LogEntry[]> => {
   if (filterNames.length > 0) {
     const results = await Promise.all(
-      filterNames.map(async (name) => {
-        const baseUrl = buildEdgeFunctionLogsUrl({ siteId, search: name })
+      filterNames.map(async (filterName) => {
+        const baseUrl = buildEdgeFunctionLogsUrl({ siteId, search: filterName })
         const entries = await fetchHistoricalLogs({ baseUrl, accessToken, from, to, deployId })
         return entries.map(
           (entry): LogEntry => ({
             source: 'edge-function',
-            name: entry.function ?? name,
+            name: entry.name ?? entry.function ?? filterName,
             ts: entry.ts,
             level: entry.level || 'INFO',
             message: entry.message,
@@ -66,7 +66,7 @@ export const fetchEdgeFunctionHistoricalLogs = async ({
   return entries.map(
     (entry): LogEntry => ({
       source: 'edge-function',
-      name: entry.function ?? 'edge-function',
+      name: entry.name ?? entry.function ?? 'edge-function',
       ts: entry.ts,
       level: entry.level || 'INFO',
       message: entry.message,

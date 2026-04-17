@@ -37,6 +37,7 @@ export interface HistoricalLogEntry {
   netlify_request_id?: string
   level: string
   section?: string
+  name?: string
   function?: string
   request_path?: string
 }
