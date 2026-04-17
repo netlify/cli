@@ -135,13 +135,7 @@ Login to your Netlify account
 
 ### [logs](/commands/logs)
 
-Stream logs from your project
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`logs:deploy`](/commands/logs#logsdeploy) | Stream the logs of deploys currently being built to the console  |
-| [`logs:function`](/commands/logs#logsfunction) | Stream netlify function logs to the console  |
-
+View logs from your project
 
 ### [open](/commands/open)
 

@@ -31,7 +31,7 @@ COMMANDS
   $ link         Link a local repo or project folder to an existing project on
                  Netlify
   $ login        Login to your Netlify account
-  $ logs         Stream logs from your project
+  $ logs         View logs from your project
   $ open         Open settings for the project linked to the current folder
   $ recipes      Create and modify files in a project using pre-defined recipes
   $ serve        Build the project for production and serve locally. This does

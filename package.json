@@ -136,6 +136,7 @@
     "p-map": "7.0.3",
     "p-wait-for": "6.0.0",
     "parallel-transform": "1.2.0",
+    "parse-duration": "^2.1.6",
     "parse-github-url": "1.0.3",
     "pg": "8.20.0",
     "prettyjson": "1.2.5",
