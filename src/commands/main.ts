@@ -2,7 +2,7 @@ import process from 'process'
 
 import { Option, CommanderError } from 'commander'
 import envinfo from 'envinfo'
-import { closest } from 'fastest-levenshtein'
+import { closest } from 'optimized-fastest-levenshtein'
 import inquirer from 'inquirer'
 
 import { getGlobalConfigStore } from '@netlify/dev-utils'

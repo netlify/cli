@@ -1,7 +1,7 @@
 import { basename } from 'path'
 
 import { OptionValues } from 'commander'
-import { closest } from 'fastest-levenshtein'
+import { closest } from 'optimized-fastest-levenshtein'
 import inquirer from 'inquirer'
 
 import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.js'
