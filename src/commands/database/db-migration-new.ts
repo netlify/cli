@@ -5,6 +5,7 @@ import inquirer from 'inquirer'
 
 import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
+import { resolveMigrationsDirectory } from './util/migrations-path.js'
 
 export type NumberingScheme = 'sequential' | 'timestamp'
 
@@ -78,22 +79,6 @@ const getExistingMigrationNames = async (migrationsDirectory: string): Promise<s
     }
     throw error
   }
-}
-
-const DEFAULT_MIGRATIONS_PATH = 'netlify/db/migrations'
-
-export const resolveMigrationsDirectory = (command: BaseCommand): string => {
-  const configuredPath = command.netlify.config.db?.migrations?.path
-  if (configuredPath) {
-    return configuredPath
-  }
-
-  const projectRoot = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
-  if (!projectRoot) {
-    throw new Error('Could not determine the project root directory.')
-  }
-
-  return join(projectRoot, DEFAULT_MIGRATIONS_PATH)
 }
 
 export const migrationNew = async (options: MigrationNewOptions, command: BaseCommand) => {

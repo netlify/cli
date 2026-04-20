@@ -1,5 +1,5 @@
 import { carefullyWriteFile, getPackageJSON, spawnAsync } from './utils.js'
-import BaseCommand from '../base-command.js'
+import BaseCommand from '../../base-command.js'
 import path from 'path'
 import fs from 'fs/promises'
 import inquirer from 'inquirer'

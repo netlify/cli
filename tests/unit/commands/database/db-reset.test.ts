@@ -14,7 +14,7 @@ vi.mock('@netlify/dev', () => ({
   resetDatabase: (...args: unknown[]) => mockResetDatabase(...args),
 }))
 
-vi.mock('../../../../src/commands/database/db-connection.js', () => ({
+vi.mock('../../../../src/commands/database/util/db-connection.js', () => ({
   connectToDatabase: vi.fn().mockImplementation(() =>
     Promise.resolve({
       executor: mockExecutor,
@@ -33,7 +33,7 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   },
 }))
 
-import { reset } from '../../../../src/commands/database/reset.js'
+import { reset } from '../../../../src/commands/database/db-reset.js'
 
 function createMockCommand(overrides: { buildDir?: string; projectRoot?: string } = {}) {
   const { buildDir = '/project', projectRoot = '/project' } = overrides

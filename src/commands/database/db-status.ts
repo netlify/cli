@@ -7,8 +7,9 @@ import {
   localAppliedMigrations,
   type MigrationFile,
   remoteAppliedMigrations,
-} from './applied-migrations.js'
-import { connectToDatabase, detectExistingLocalConnectionString } from './db-connection.js'
+} from './util/applied-migrations.js'
+import { connectToDatabase, detectExistingLocalConnectionString } from './util/db-connection.js'
+import { resolveMigrationsDirectory } from './util/migrations-path.js'
 
 export interface DatabaseStatusOptions {
   branch?: string
@@ -38,7 +39,6 @@ interface ServerContext {
   basePath: string
 }
 
-const DEFAULT_MIGRATIONS_PATH = 'netlify/db/migrations'
 const DOCS_URL = 'https://ntl.fyi/database'
 const NETLIFY_DATABASE_PACKAGE = '@netlify/database'
 
@@ -56,20 +56,6 @@ const parseVersion = (name: string): number | null => {
   }
   const parsed = Number.parseInt(match[1], 10)
   return Number.isFinite(parsed) ? parsed : null
-}
-
-const resolveMigrationsDirectory = (command: BaseCommand): string => {
-  const configuredPath = command.netlify.config.db?.migrations?.path
-  if (configuredPath) {
-    return configuredPath
-  }
-
-  const projectRoot = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
-  if (!projectRoot) {
-    throw new Error('Could not determine the project root directory.')
-  }
-
-  return `${projectRoot}/${DEFAULT_MIGRATIONS_PATH}`
 }
 
 const readLocalMigrations = async (migrationsDirectory: string): Promise<MigrationEntry[]> => {

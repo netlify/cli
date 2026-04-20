@@ -14,7 +14,7 @@ vi.mock('@netlify/dev', () => ({
   applyMigrations: (...args: unknown[]) => mockApplyMigrations(...args),
 }))
 
-vi.mock('../../../../src/commands/database/db-connection.js', () => ({
+vi.mock('../../../../src/commands/database/util/db-connection.js', () => ({
   connectToDatabase: vi.fn().mockImplementation(() =>
     Promise.resolve({
       executor: mockExecutor,
@@ -33,13 +33,13 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   },
 }))
 
-import { migrate } from '../../../../src/commands/database/migrate.js'
+import { migrate } from '../../../../src/commands/database/db-migrate.js'
 
 function createMockCommand(overrides: { buildDir?: string; projectRoot?: string; migrationsPath?: string } = {}) {
   const {
     buildDir = '/project',
     projectRoot = '/project',
-    migrationsPath = '/project/netlify/db/migrations',
+    migrationsPath = '/project/netlify/database/migrations',
   } = overrides
 
   return {

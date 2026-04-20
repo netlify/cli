@@ -44,11 +44,11 @@ import {
   generateSlug,
   detectNumberingScheme,
   generateNextPrefix,
-  resolveMigrationsDirectory,
-} from '../../../../src/commands/database/migration-new.js'
+} from '../../../../src/commands/database/db-migration-new.js'
+import { resolveMigrationsDirectory } from '../../../../src/commands/database/util/migrations-path.js'
 
 function createMockCommand(overrides: { migrationsPath?: string | undefined } = {}) {
-  const { migrationsPath = '/project/netlify/db/migrations' } = overrides
+  const { migrationsPath = '/project/netlify/database/migrations' } = overrides
 
   return {
     project: { root: '/project', baseDirectory: undefined },
@@ -128,7 +128,7 @@ describe('resolveMigrationsDirectory', () => {
       netlify: { site: { root: '/project' }, config: {} },
     } as unknown as Parameters<typeof resolveMigrationsDirectory>[0]
 
-    expect(resolveMigrationsDirectory(command)).toBe(join('/project', 'netlify', 'db', 'migrations'))
+    expect(resolveMigrationsDirectory(command)).toBe(join('/project', 'netlify', 'database', 'migrations'))
   })
 
   test('throws when no config path and no project root', () => {
@@ -157,7 +157,7 @@ describe('migrationNew', () => {
 
     await migrationNew({ description: 'add users', scheme: 'sequential' }, command)
 
-    expect(mockMkdir).toHaveBeenCalledWith(join('/project', 'netlify', 'db', 'migrations', '0001_add-users'), {
+    expect(mockMkdir).toHaveBeenCalledWith(join('/project', 'netlify', 'database', 'migrations', '0001_add-users'), {
       recursive: true,
     })
   })
@@ -167,7 +167,7 @@ describe('migrationNew', () => {
 
     await migrationNew({ description: 'add posts table', scheme: 'sequential' }, createMockCommand())
 
-    const expectedFolder = join('/project/netlify/db/migrations', '0002_add-posts-table')
+    const expectedFolder = join('/project/netlify/database/migrations', '0002_add-posts-table')
     expect(mockMkdir).toHaveBeenCalledWith(expectedFolder, { recursive: true })
     expect(mockWriteFile).toHaveBeenCalledWith(
       join(expectedFolder, 'migration.sql'),
@@ -189,7 +189,7 @@ describe('migrationNew', () => {
 
     expect(jsonMessages).toHaveLength(1)
     expect(jsonMessages[0]).toEqual({
-      path: join('/project/netlify/db/migrations', '0001_add-posts-table'),
+      path: join('/project/netlify/database/migrations', '0001_add-posts-table'),
       name: '0001_add-posts-table',
     })
   })
@@ -249,7 +249,7 @@ describe('migrationNew', () => {
 
     await migrationNew({ description: 'initial migration', scheme: 'sequential' }, createMockCommand())
 
-    expect(mockMkdir).toHaveBeenCalledWith(join('/project/netlify/db/migrations', '0001_initial-migration'), {
+    expect(mockMkdir).toHaveBeenCalledWith(join('/project/netlify/database/migrations', '0001_initial-migration'), {
       recursive: true,
     })
   })

@@ -48,7 +48,7 @@ vi.stubGlobal('fetch', mockFetch)
 import { resolve } from 'path'
 
 import inquirer from 'inquirer'
-import { migrationPull } from '../../../../src/commands/database/migration-pull.js'
+import { migrationPull } from '../../../../src/commands/database/db-migration-pull.js'
 
 const sampleMigrations = [
   {
@@ -70,7 +70,7 @@ function createMockCommand(
 ) {
   const siteId = overrides.siteId === null ? undefined : overrides.siteId ?? 'site-123'
   const accessToken = overrides.accessToken === null ? undefined : overrides.accessToken ?? 'Bearer test-token'
-  const migrationsPath = overrides.migrationsPath ?? '/project/netlify/db/migrations'
+  const migrationsPath = overrides.migrationsPath ?? '/project/netlify/database/migrations'
 
   return {
     siteId,
@@ -164,7 +164,7 @@ describe('migrationPull', () => {
     mockFetchResponse(sampleMigrations)
     vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
 
-    const migrationsPath = '/project/netlify/db/migrations'
+    const migrationsPath = '/project/netlify/database/migrations'
     const resolved = resolve(migrationsPath)
     await migrationPull({}, createMockCommand({ migrationsPath }))
 

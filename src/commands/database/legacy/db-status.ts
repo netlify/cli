@@ -1,10 +1,10 @@
 import { OptionValues } from 'commander'
-import { SiteInfo } from './database.js'
-import BaseCommand from '../base-command.js'
+import { SiteInfo } from './types.js'
+import BaseCommand from '../../base-command.js'
 import { getAccount, getExtension, getSiteConfiguration } from './utils.js'
 import { NEON_DATABASE_EXTENSION_SLUG } from './constants.js'
 import prettyjson from 'prettyjson'
-import { chalk, log } from '../../utils/command-helpers.js'
+import { chalk, log } from '../../../utils/command-helpers.js'
 
 export const status = async (_options: OptionValues, command: BaseCommand) => {
   const siteInfo = command.netlify.siteInfo as SiteInfo
