@@ -7,13 +7,15 @@ import { PgClientExecutor } from './pg-client-executor.js'
 
 interface DBConnection {
   executor: SQLExecutor
+  connectionString: string
   cleanup: () => Promise<void>
 }
 
-export async function connectToDatabase(buildDir: string): Promise<DBConnection> {
-  const { client, cleanup } = await connectRawClient(buildDir)
+export async function connectToDatabase(buildDir: string, urlOverride?: string): Promise<DBConnection> {
+  const { client, connectionString, cleanup } = await connectRawClient(buildDir, urlOverride)
   return {
     executor: new PgClientExecutor(client),
+    connectionString,
     cleanup,
   }
 }
@@ -24,30 +26,33 @@ interface RawDBConnection {
   cleanup: () => Promise<void>
 }
 
-export async function connectRawClient(buildDir: string): Promise<RawDBConnection> {
-  const envConnectionString = process.env.NETLIFY_DB_URL
-  if (envConnectionString) {
-    const client = new Client({ connectionString: envConnectionString })
+// detectExistingLocalConnectionString returns a connection string for an
+// already-available local database (either the NETLIFY_DB_URL env override or
+// the connection string persisted by a running local dev session) without
+// starting a new dev database. Returns null when nothing's currently
+// available — callers should decide whether starting one is worth the cost.
+export function detectExistingLocalConnectionString(buildDir: string): string | null {
+  if (process.env.NETLIFY_DB_URL) {
+    return process.env.NETLIFY_DB_URL
+  }
+  const state = new LocalState(buildDir)
+  const stored = state.get('dbConnectionString')
+  return stored ?? null
+}
+
+export async function connectRawClient(buildDir: string, urlOverride?: string): Promise<RawDBConnection> {
+  const existing = urlOverride ?? detectExistingLocalConnectionString(buildDir)
+  if (existing) {
+    const client = new Client({ connectionString: existing })
     await client.connect()
     return {
       client,
-      connectionString: envConnectionString,
+      connectionString: existing,
       cleanup: () => client.end(),
     }
   }
 
   const state = new LocalState(buildDir)
-  const storedConnectionString = state.get('dbConnectionString')
-
-  if (storedConnectionString) {
-    const client = new Client({ connectionString: storedConnectionString })
-    await client.connect()
-    return {
-      client,
-      connectionString: storedConnectionString,
-      cleanup: () => client.end(),
-    }
-  }
 
   const netlifyDev = new NetlifyDev({
     projectRoot: buildDir,

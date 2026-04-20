@@ -4,6 +4,7 @@ import BaseCommand from '../base-command.js'
 import type { DatabaseBoilerplateType, DatabaseInitOptions } from './init.js'
 import type { MigrationNewOptions } from './migration-new.js'
 import type { MigrationPullOptions } from './migration-pull.js'
+import type { DatabaseStatusOptions } from './status-db.js'
 
 export type Extension = {
   id: string
@@ -79,18 +80,39 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         await init(options, command)
       })
       .addExamples([`netlify db init --assume-no`, `netlify db init --boilerplate=drizzle --overwrite`])
+
+    dbCommand
+      .command('status')
+      .description(`Check the status of the database`)
+      .action(async (options, command) => {
+        const { status } = await import('./status.js')
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        await status(options, command)
+      })
   }
 
-  dbCommand
-    .command('status')
-    .description(`Check the status of the database`)
-    .action(async (options, command) => {
-      const { status } = await import('./status.js')
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      await status(options, command)
-    })
-
   if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1') {
+    dbCommand
+      .command('status')
+      .description('Check the status of the database, including applied and pending migrations')
+      .option('-b, --branch <branch>', 'Netlify branch name to query; defaults to the local development database')
+      .option(
+        '--show-credentials',
+        'Include the full connection string (including username and password) in the output',
+        false,
+      )
+      .option('--json', 'Output result as JSON')
+      .action(async (options: DatabaseStatusOptions, command: BaseCommand) => {
+        const { statusDb } = await import('./status-db.js')
+        await statusDb(options, command)
+      })
+      .addExamples([
+        'netlify db status',
+        'netlify db status --show-credentials',
+        'netlify db status --json',
+        'netlify db status --branch my-feature-branch',
+      ])
+
     dbCommand
       .command('connect')
       .description('Connect to the database')
