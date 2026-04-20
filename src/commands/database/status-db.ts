@@ -361,6 +361,9 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
   }
   const enabled = Boolean(envUrl) || siteHasDatabase
 
+  // `--branch` can also be supplied via the NETLIFY_DB_BRANCH env var.
+  const branch = options.branch ?? process.env.NETLIFY_DB_BRANCH
+
   // Resolve what database we're looking at and how to fetch applied migrations.
   let branchLabel: string
   let connectionString: string | null = null
@@ -368,17 +371,17 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
   let cleanup: (() => Promise<void>) | undefined
   let isLocal = false
 
-  if (options.branch) {
+  if (branch) {
     if (!siteId) {
-      throw new Error(`The project must be linked with ${netlifyCommand()} link to use --branch.`)
+      throw new Error(`The project must be linked with ${netlifyCommand()} link to target a remote branch.`)
     }
     if (!accessToken) {
-      throw new Error(`You must be logged in with ${netlifyCommand()} login to use --branch.`)
+      throw new Error(`You must be logged in with ${netlifyCommand()} login to target a remote branch.`)
     }
 
-    connectionString = await fetchBranchConnectionString({ siteId, accessToken, basePath }, options.branch)
-    fetchApplied = remoteAppliedMigrations({ siteId, accessToken, basePath, branch: options.branch })
-    branchLabel = options.branch
+    connectionString = await fetchBranchConnectionString({ siteId, accessToken, basePath }, branch)
+    fetchApplied = remoteAppliedMigrations({ siteId, accessToken, basePath, branch })
+    branchLabel = branch
   } else {
     isLocal = true
     branchLabel = 'local'
