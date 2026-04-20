@@ -2,9 +2,9 @@ import readline from 'readline'
 
 import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
-import { connectRawClient } from './db-connection.js'
-import { executeMetaCommand } from './meta-commands.js'
-import { formatQueryResult } from './psql-formatter.js'
+import { connectRawClient } from './util/db-connection.js'
+import { executeMetaCommand } from './util/meta-commands.js'
+import { formatQueryResult } from './util/psql-formatter.js'
 
 export interface ConnectOptions {
   query?: string

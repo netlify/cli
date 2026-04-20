@@ -6,8 +6,8 @@ import fs from 'fs'
 import inquirer from 'inquirer'
 
 import { JIGSAW_URL } from './constants.js'
-import BaseCommand from '../base-command.js'
-import { Extension } from './database.js'
+import BaseCommand from '../../base-command.js'
+import { Extension } from './types.js'
 import { spawn } from 'child_process'
 
 type PackageJSON = {

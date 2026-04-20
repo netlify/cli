@@ -64,7 +64,7 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   },
 }))
 
-vi.mock('../../../../src/commands/database/db-connection.js', () => ({
+vi.mock('../../../../src/commands/database/util/db-connection.js', () => ({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   connectToDatabase: (...args: unknown[]) => mockConnectToDatabase(...args),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -73,7 +73,7 @@ vi.mock('../../../../src/commands/database/db-connection.js', () => ({
 
 vi.stubGlobal('fetch', mockFetch)
 
-import { statusDb } from '../../../../src/commands/database/status-db.js'
+import { statusDb } from '../../../../src/commands/database/db-status.js'
 
 const SITE_NAME = 'my-site'
 const LOCAL_CONN_WITH_CREDS = 'postgres://user:password@localhost:5432/netlify'
@@ -92,7 +92,7 @@ function createMockCommand(
 ) {
   const siteRoot = overrides.siteRoot === null ? undefined : overrides.siteRoot ?? '/project'
   const migrationsPath =
-    overrides.migrationsPath === null ? undefined : overrides.migrationsPath ?? '/project/netlify/db/migrations'
+    overrides.migrationsPath === null ? undefined : overrides.migrationsPath ?? '/project/netlify/database/migrations'
   const siteId = overrides.siteId === null ? undefined : overrides.siteId ?? 'site-123'
 
   return {

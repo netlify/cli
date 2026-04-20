@@ -6,7 +6,7 @@ import inquirer from 'inquirer'
 import { log, logJson } from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
 import BaseCommand from '../base-command.js'
-import { resolveMigrationsDirectory } from './migration-new.js'
+import { resolveMigrationsDirectory } from './util/migrations-path.js'
 
 export interface MigrationPullOptions {
   branch?: string | true
