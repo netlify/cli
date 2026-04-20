@@ -185,10 +185,12 @@ beforeEach(() => {
   mockPackageJson({ dependencies: { '@netlify/database': '^1.0.0' } })
   setLocalDatabaseRunning(LOCAL_CONN_WITH_CREDS)
   delete process.env.NETLIFY_DB_URL
+  delete process.env.NETLIFY_DB_BRANCH
 })
 
 afterEach(() => {
   delete process.env.NETLIFY_DB_URL
+  delete process.env.NETLIFY_DB_BRANCH
 })
 
 describe('statusDb', () => {
@@ -631,6 +633,33 @@ describe('statusDb', () => {
       await statusDb({ branch: 'feature-x' }, createMockCommand())
 
       expect(logMessages.join('\n')).not.toContain('netlify db migrations apply')
+    })
+
+    test('falls back to NETLIFY_DB_BRANCH env var when --branch is not passed', async () => {
+      process.env.NETLIFY_DB_BRANCH = 'feature-env'
+      setupFetchRouter({
+        siteDatabase: { connection_string: PROD_CONN },
+        branch: { 'feature-env': { connection_string: BRANCH_CONN } },
+        migrations: { 'feature-env': [] },
+      })
+
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({ target: 'feature-env' })
+      expect(mockConnectToDatabase).not.toHaveBeenCalled()
+    })
+
+    test('--branch wins over NETLIFY_DB_BRANCH when both are set', async () => {
+      process.env.NETLIFY_DB_BRANCH = 'env-branch'
+      setupFetchRouter({
+        siteDatabase: { connection_string: PROD_CONN },
+        branch: { 'flag-branch': { connection_string: BRANCH_CONN } },
+        migrations: { 'flag-branch': [] },
+      })
+
+      await statusDb({ branch: 'flag-branch', json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({ target: 'flag-branch' })
     })
   })
 })
