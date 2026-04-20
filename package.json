@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "24.11.3",
+  "version": "25.0.1",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -9,7 +9,6 @@
   },
   "files": [
     "/bin",
-    "/npm-shrinkwrap.json",
     "/scripts",
     "/functions-templates",
     "/dist"
@@ -52,7 +51,6 @@
     "test:integration": "vitest run --retry=3 tests/integration/",
     "test:unit": "vitest run tests/unit/",
     "postinstall": "node ./scripts/postinstall.js",
-    "prepublishOnly": "node ./scripts/prepublishOnly.js",
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch"
   },
@@ -64,7 +62,7 @@
     "@netlify/build": "35.13.1",
     "@netlify/build-info": "10.5.0",
     "@netlify/config": "24.5.0",
-    "@netlify/dev": "4.16.4",
+    "@netlify/dev": "4.17.1",
     "@netlify/dev-utils": "4.4.3",
     "@netlify/edge-bundler": "14.10.0",
     "@netlify/edge-functions": "3.0.6",
@@ -103,7 +101,7 @@
     "express-logging": "1.1.1",
     "extract-zip": "2.0.1",
     "fastest-levenshtein": "1.0.16",
-    "fastify": "5.8.3",
+    "fastify": "5.8.5",
     "find-up": "8.0.0",
     "folder-walker": "3.2.0",
     "fuzzy": "0.1.3",
@@ -138,6 +136,7 @@
     "p-map": "7.0.3",
     "p-wait-for": "6.0.0",
     "parallel-transform": "1.2.0",
+    "parse-duration": "^2.1.6",
     "parse-github-url": "1.0.3",
     "pg": "8.20.0",
     "prettyjson": "1.2.5",

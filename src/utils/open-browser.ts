@@ -23,24 +23,26 @@ type OpenBrowsrProps = {
   url: string
 }
 
-const openBrowser = async function ({ silentBrowserNoneError, url }: OpenBrowsrProps) {
+const openBrowser = async function ({ silentBrowserNoneError, url }: OpenBrowsrProps): Promise<boolean> {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, message: 'Running inside a docker container' })
-    return
+    return false
   }
   if (process.env.BROWSER === 'none') {
     if (!silentBrowserNoneError) {
       unableToOpenBrowserMessage({ url, message: "BROWSER environment variable is set to 'none'" })
     }
-    return
+    return false
   }
 
   try {
     await open(url)
+    return true
   } catch (error) {
     if (error instanceof Error) {
       unableToOpenBrowserMessage({ url, message: error.message })
     }
+    return false
   }
 }
 
