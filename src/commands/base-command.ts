@@ -769,10 +769,11 @@ export default class BaseCommand extends Command {
         root: buildDir,
         configPath,
         get id() {
-          return state.get('siteId')
+          return actionCommand.siteId || state.get('siteId')
         },
         set id(id) {
           state.set('siteId', id)
+          actionCommand.siteId = id
         },
       },
       // Site information retrieved using the API (api.getSite())
