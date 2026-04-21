@@ -10,18 +10,13 @@ import type { DatabaseStatusOptions } from './db-status.js'
 const supportedBoilerplates = new Set<DatabaseBoilerplateType>(['drizzle'])
 
 export const createDatabaseCommand = (program: BaseCommand) => {
-  const dbCommand = program
-    .command('db')
-    .alias('database')
-    .description(`Provision a production ready Postgres database with a single command`)
-    .addExamples([
-      'netlify db status',
-      ...(process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1'
-        ? ['netlify db migrations apply', 'netlify db migrations pull', 'netlify db reset', 'netlify db migrations new']
-        : ['netlify db init', 'netlify db init --help']),
-    ])
-
   if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED !== '1') {
+    const dbCommand = program
+      .command('db')
+      .alias('database')
+      .description(`Provision a production ready Postgres database with a single command`)
+      .addExamples(['netlify db status', 'netlify db init', 'netlify db init --help'])
+
     dbCommand
       .command('init')
       .description(`Initialize a new database for the current site`)
@@ -76,6 +71,18 @@ export const createDatabaseCommand = (program: BaseCommand) => {
   }
 
   if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1') {
+    const dbCommand = program
+      .command('database')
+      .alias('db')
+      .description(`Provision a production ready Postgres database with a single command`)
+      .addExamples([
+        'netlify database status',
+        'netlify database migrations apply',
+        'netlify database migrations pull',
+        'netlify database reset',
+        'netlify database migrations new',
+      ])
+
     dbCommand
       .command('status')
       .description('Check the status of the database, including applied and pending migrations')
@@ -91,10 +98,10 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         await statusDb(options, command)
       })
       .addExamples([
-        'netlify db status',
-        'netlify db status --show-credentials',
-        'netlify db status --json',
-        'netlify db status --branch my-feature-branch',
+        'netlify database status',
+        'netlify database status --show-credentials',
+        'netlify database status --json',
+        'netlify database status --branch my-feature-branch',
       ])
 
     dbCommand
@@ -110,10 +117,10 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         await connect(options, command)
       })
       .addExamples([
-        'netlify db connect',
-        'netlify db connect --query "SELECT * FROM users"',
-        'netlify db connect --json --query "SELECT * FROM users"',
-        'netlify db connect --json',
+        'netlify database connect',
+        'netlify database connect --query "SELECT * FROM users"',
+        'netlify database connect --json --query "SELECT * FROM users"',
+        'netlify database connect --json',
       ])
 
     dbCommand
@@ -153,8 +160,8 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         await migrationNew(options, command)
       })
       .addExamples([
-        'netlify db migrations new',
-        'netlify db migrations new --description "add users table" --scheme sequential',
+        'netlify database migrations new',
+        'netlify database migrations new --description "add users table" --scheme sequential',
       ])
 
     migrationsCommand
@@ -171,10 +178,10 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         await migrationPull(options, command)
       })
       .addExamples([
-        'netlify db migrations pull',
-        'netlify db migrations pull --branch staging',
-        'netlify db migrations pull --branch',
-        'netlify db migrations pull --force',
+        'netlify database migrations pull',
+        'netlify database migrations pull --branch staging',
+        'netlify database migrations pull --branch',
+        'netlify database migrations pull --force',
       ])
 
     migrationsCommand
@@ -186,6 +193,9 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         const { migrationsReset } = await import('./db-migrations-reset.js')
         await migrationsReset(options, command)
       })
-      .addExamples(['netlify db migrations reset', 'netlify db migrations reset --branch my-feature-branch'])
+      .addExamples([
+        'netlify database migrations reset',
+        'netlify database migrations reset --branch my-feature-branch',
+      ])
   }
 }
