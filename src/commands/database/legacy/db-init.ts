@@ -1,10 +1,10 @@
-import BaseCommand from '../base-command.js'
+import BaseCommand from '../../base-command.js'
 import { getAccount, getExtension, getJigsawToken, getPackageJSON, installExtension, spawnAsync } from './utils.js'
 import { initDrizzle } from './drizzle.js'
 import { NEON_DATABASE_EXTENSION_SLUG, NETLIFY_NEON_PACKAGE_NAME } from './constants.js'
 import prettyjson from 'prettyjson'
-import { log } from '../../utils/command-helpers.js'
-import { SiteInfo } from './database.js'
+import { log } from '../../../utils/command-helpers.js'
+import { SiteInfo } from './types.js'
 
 export type DatabaseInitOptions = {
   assumeNo: boolean

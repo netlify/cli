@@ -1,12 +1,15 @@
+import { join } from 'path'
+
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 
-const { mockApplyMigrations, mockCleanup, mockExecutor, logMessages, jsonMessages } = vi.hoisted(() => {
+const { mockApplyMigrations, mockCleanup, mockExecutor, mockExistsSync, logMessages, jsonMessages } = vi.hoisted(() => {
   const mockApplyMigrations = vi.fn().mockResolvedValue([])
   const mockCleanup = vi.fn().mockResolvedValue(undefined)
   const mockExecutor = {}
+  const mockExistsSync = vi.fn().mockReturnValue(false)
   const logMessages: string[] = []
   const jsonMessages: unknown[] = []
-  return { mockApplyMigrations, mockCleanup, mockExecutor, logMessages, jsonMessages }
+  return { mockApplyMigrations, mockCleanup, mockExecutor, mockExistsSync, logMessages, jsonMessages }
 })
 
 vi.mock('@netlify/dev', () => ({
@@ -14,7 +17,16 @@ vi.mock('@netlify/dev', () => ({
   applyMigrations: (...args: unknown[]) => mockApplyMigrations(...args),
 }))
 
-vi.mock('../../../../src/commands/database/db-connection.js', () => ({
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('fs')>()
+  return {
+    ...actual,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    existsSync: (...args: unknown[]) => mockExistsSync(...args),
+  }
+})
+
+vi.mock('../../../../src/commands/database/util/db-connection.js', () => ({
   connectToDatabase: vi.fn().mockImplementation(() =>
     Promise.resolve({
       executor: mockExecutor,
@@ -33,13 +45,13 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   },
 }))
 
-import { migrate } from '../../../../src/commands/database/migrate.js'
+import { migrate } from '../../../../src/commands/database/db-migrate.js'
 
 function createMockCommand(overrides: { buildDir?: string; projectRoot?: string; migrationsPath?: string } = {}) {
   const {
     buildDir = '/project',
     projectRoot = '/project',
-    migrationsPath = '/project/netlify/db/migrations',
+    migrationsPath = '/project/netlify/database/migrations',
   } = overrides
 
   return {
@@ -57,6 +69,7 @@ describe('migrate', () => {
     jsonMessages.length = 0
     vi.clearAllMocks()
     mockApplyMigrations.mockResolvedValue([])
+    mockExistsSync.mockReturnValue(false)
   })
 
   test('calls cleanup after successful migration', async () => {
@@ -79,13 +92,28 @@ describe('migrate', () => {
     expect(mockApplyMigrations).toHaveBeenCalledWith(mockExecutor, '/custom/migrations', undefined)
   })
 
-  test('throws when no migrations directory is configured', async () => {
+  test('throws when no migrations directory is configured and the default path does not exist', async () => {
+    mockExistsSync.mockReturnValue(false)
     const command = {
       project: { root: '/project', baseDirectory: undefined },
       netlify: { site: { root: '/project' }, config: {} },
     } as unknown as Parameters<typeof migrate>[1]
 
     await expect(migrate({}, command)).rejects.toThrow('No migrations directory found')
+  })
+
+  test('falls back to the default path when no config is set and the default directory exists', async () => {
+    mockExistsSync.mockReturnValue(true)
+    const command = {
+      project: { root: '/project', baseDirectory: undefined },
+      netlify: { site: { root: '/project' }, config: {} },
+    } as unknown as Parameters<typeof migrate>[1]
+
+    await migrate({}, command)
+
+    const expectedPath = join('/project', 'netlify', 'database', 'migrations')
+    expect(mockExistsSync).toHaveBeenCalledWith(expectedPath)
+    expect(mockApplyMigrations).toHaveBeenCalledWith(mockExecutor, expectedPath, undefined)
   })
 
   test('passes the --to target to applyMigrations', async () => {

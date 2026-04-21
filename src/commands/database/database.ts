@@ -1,26 +1,11 @@
 import { Option } from 'commander'
 import inquirer from 'inquirer'
 import BaseCommand from '../base-command.js'
-import type { DatabaseBoilerplateType, DatabaseInitOptions } from './init.js'
-import type { MigrationNewOptions } from './migration-new.js'
-import type { MigrationPullOptions } from './migration-pull.js'
-
-export type Extension = {
-  id: string
-  name: string
-  slug: string
-  hostSiteUrl: string
-  installedOnTeam: boolean
-}
-
-export type SiteInfo = {
-  id: string
-  name: string
-  account_id: string
-  admin_url: string
-  url: string
-  ssl_url: string
-}
+import type { DatabaseBoilerplateType, DatabaseInitOptions } from './legacy/db-init.js'
+import type { MigrationNewOptions } from './db-migration-new.js'
+import type { MigrationPullOptions } from './db-migration-pull.js'
+import type { MigrationsResetOptions } from './db-migrations-reset.js'
+import type { DatabaseStatusOptions } from './db-status.js'
 
 const supportedBoilerplates = new Set<DatabaseBoilerplateType>(['drizzle'])
 
@@ -53,7 +38,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       .option('--no-boilerplate', "Don't add any boilerplate to your project.")
       .option('-o, --overwrite', 'Overwrites existing files that would be created when setting up boilerplate')
       .action(async (_options: Record<string, unknown>, command: BaseCommand) => {
-        const { init } = await import('./init.js')
+        const { init } = await import('./legacy/db-init.js')
 
         // Only prompt for drizzle if the user did not specify a boilerplate option, and if we're in
         // interactive mode
@@ -79,18 +64,39 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         await init(options, command)
       })
       .addExamples([`netlify db init --assume-no`, `netlify db init --boilerplate=drizzle --overwrite`])
+
+    dbCommand
+      .command('status')
+      .description(`Check the status of the database`)
+      .action(async (options, command) => {
+        const { status } = await import('./legacy/db-status.js')
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        await status(options, command)
+      })
   }
 
-  dbCommand
-    .command('status')
-    .description(`Check the status of the database`)
-    .action(async (options, command) => {
-      const { status } = await import('./status.js')
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      await status(options, command)
-    })
-
   if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1') {
+    dbCommand
+      .command('status')
+      .description('Check the status of the database, including applied and pending migrations')
+      .option('-b, --branch <branch>', 'Netlify branch name to query; defaults to the local development database')
+      .option(
+        '--show-credentials',
+        'Include the full connection string (including username and password) in the output',
+        false,
+      )
+      .option('--json', 'Output result as JSON')
+      .action(async (options: DatabaseStatusOptions, command: BaseCommand) => {
+        const { statusDb } = await import('./db-status.js')
+        await statusDb(options, command)
+      })
+      .addExamples([
+        'netlify db status',
+        'netlify db status --show-credentials',
+        'netlify db status --json',
+        'netlify db status --branch my-feature-branch',
+      ])
+
     dbCommand
       .command('connect')
       .description('Connect to the database')
@@ -100,7 +106,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         'Output query results as JSON. When used without --query, prints the connection details as JSON instead.',
       )
       .action(async (options: { query?: string; json?: boolean }, command: BaseCommand) => {
-        const { connect } = await import('./connect.js')
+        const { connect } = await import('./db-connect.js')
         await connect(options, command)
       })
       .addExamples([
@@ -115,7 +121,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       .description('Reset the local development database, removing all data and tables')
       .option('--json', 'Output result as JSON')
       .action(async (options: { json?: boolean }, command: BaseCommand) => {
-        const { reset } = await import('./reset.js')
+        const { reset } = await import('./db-reset.js')
         await reset(options, command)
       })
 
@@ -127,7 +133,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       .option('--to <name>', 'Target migration name or prefix to apply up to (applies all if omitted)')
       .option('--json', 'Output result as JSON')
       .action(async (options: { to?: string; json?: boolean }, command: BaseCommand) => {
-        const { migrate } = await import('./migrate.js')
+        const { migrate } = await import('./db-migrate.js')
         await migrate(options, command)
       })
 
@@ -143,7 +149,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       )
       .option('--json', 'Output result as JSON')
       .action(async (options: MigrationNewOptions, command: BaseCommand) => {
-        const { migrationNew } = await import('./migration-new.js')
+        const { migrationNew } = await import('./db-migration-new.js')
         await migrationNew(options, command)
       })
       .addExamples([
@@ -161,7 +167,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       .option('--force', 'Skip confirmation prompt', false)
       .option('--json', 'Output result as JSON')
       .action(async (options: MigrationPullOptions, command: BaseCommand) => {
-        const { migrationPull } = await import('./migration-pull.js')
+        const { migrationPull } = await import('./db-migration-pull.js')
         await migrationPull(options, command)
       })
       .addExamples([
@@ -170,5 +176,16 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         'netlify db migrations pull --branch',
         'netlify db migrations pull --force',
       ])
+
+    migrationsCommand
+      .command('reset')
+      .description('Delete local migration files that have not been applied yet')
+      .option('-b, --branch <branch>', 'Target a remote preview branch instead of the local development database')
+      .option('--json', 'Output result as JSON')
+      .action(async (options: MigrationsResetOptions, command: BaseCommand) => {
+        const { migrationsReset } = await import('./db-migrations-reset.js')
+        await migrationsReset(options, command)
+      })
+      .addExamples(['netlify db migrations reset', 'netlify db migrations reset --branch my-feature-branch'])
   }
 }
