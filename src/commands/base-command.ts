@@ -727,6 +727,10 @@ export default class BaseCommand extends Command {
       siteData = result
     }
 
+    if (siteData.id) {
+      actionCommand.siteId = siteData.id
+    }
+
     const globalConfig = await getGlobalConfigStore()
 
     // ==================================================
