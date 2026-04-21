@@ -1363,7 +1363,12 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     }
 
     const draft = options.draft || (!deployToProduction && !alias)
-    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip, deploy_source: process.env.NETLIFY_DEPLOY_SOURCE || 'cli' }
+    const createDeployBody = {
+      draft,
+      branch: alias,
+      include_upload_url: options.uploadSourceZip,
+      deploy_source: process.env.NETLIFY_DEPLOY_SOURCE || 'cli',
+    }
 
     // TODO: Type this properly in `@netlify/api`.
     const deployMetadata = (await api.createSiteDeploy({
