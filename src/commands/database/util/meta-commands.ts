@@ -6,7 +6,7 @@ export type MetaCommandResult =
   | { type: 'help'; text: string }
   | { type: 'unknown'; command: string }
 
-const HELP_TEXT = `Netlify DB interactive client. Supports a subset of psql commands.
+const HELP_TEXT = `Netlify Database interactive client. Supports a subset of psql commands.
 
 General
   \\q          quit

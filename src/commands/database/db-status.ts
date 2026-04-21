@@ -45,8 +45,8 @@ const NETLIFY_DATABASE_PACKAGE = '@netlify/database'
 const formatCommand = (suffix: string): string => chalk.cyanBright.bold(`${netlifyCommand()} ${suffix}`)
 
 const logConnectCommands = () => {
-  secondary(`Run ${formatCommand('db connect')} to start an interactive database client`)
-  secondary(`Run ${formatCommand('db connect --query "<SQL>"')} to run a one-shot query`)
+  secondary(`Run ${formatCommand('database connect')} to start an interactive database client`)
+  secondary(`Run ${formatCommand('database connect --query "<SQL>"')} to run a one-shot query`)
 }
 
 const parseVersion = (name: string): number | null => {
@@ -262,7 +262,7 @@ const renderPretty = (params: RenderParams) => {
     if (!showCredentials && connectionStringHasCredentials(connectionString)) {
       secondary(
         `To reveal the full connection string (including credentials), run ${formatCommand(
-          'db status --show-credentials',
+          'database status --show-credentials',
         )}`,
       )
     } else {
@@ -297,7 +297,7 @@ const renderPretty = (params: RenderParams) => {
   log(renderList(status.pending))
   if (isLocal && status.pending.length > 0 && status.outOfOrder.length === 0) {
     log('')
-    log(chalk.gray(`Run ${formatCommand('db migrations apply')} to apply these to the local database.`))
+    log(chalk.gray(`Run ${formatCommand('database migrations apply')} to apply these to the local database.`))
   }
 
   if (status.missingOnDisk.length > 0 || status.outOfOrder.length > 0) {
@@ -316,7 +316,7 @@ const renderPretty = (params: RenderParams) => {
       log(
         chalk.gray(
           `Run ${formatCommand(
-            'db migrations reset',
+            'database migrations reset',
           )} to delete these local-only migrations, then generate them again with a higher prefix.`,
         ),
       )
