@@ -262,11 +262,6 @@ describe('migrationsReset', () => {
       })
     })
 
-    test('refuses to target the production branch', async () => {
-      await expect(migrationsReset({ branch: 'production' }, createMockCommand())).rejects.toThrow('Refusing to target')
-      expect(mockFetch).not.toHaveBeenCalled()
-    })
-
     test('requires linked project', async () => {
       await expect(migrationsReset({ branch: 'feature-x' }, createMockCommand({ siteId: null }))).rejects.toThrow(
         'project must be linked',
@@ -314,13 +309,6 @@ describe('migrationsReset', () => {
       const fetchUrl = (mockFetch.mock.calls[0][0] as URL | string).toString()
       expect(fetchUrl).toContain('branch=flag-branch')
       expect(jsonMessages[0]).toMatchObject({ target: 'branch', branch: 'flag-branch' })
-    })
-
-    test('refuses NETLIFY_DB_BRANCH=production', async () => {
-      process.env.NETLIFY_DB_BRANCH = 'production'
-
-      await expect(migrationsReset({}, createMockCommand())).rejects.toThrow('Refusing to target')
-      expect(mockFetch).not.toHaveBeenCalled()
     })
   })
 })

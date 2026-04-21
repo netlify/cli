@@ -4,7 +4,6 @@ import { join } from 'path'
 import { chalk, log, logJson, netlifyCommand } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { localAppliedMigrations, remoteAppliedMigrations } from './util/applied-migrations.js'
-import { PRODUCTION_BRANCH } from './util/constants.js'
 import { connectToDatabase } from './util/db-connection.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 
@@ -28,13 +27,6 @@ export const migrationsReset = async (options: MigrationsResetOptions, command: 
   const json = options.json ?? false
 
   if (branch) {
-    if (branch === PRODUCTION_BRANCH) {
-      throw new Error(
-        `Refusing to target the production branch. ${chalk.bold(
-          'db migrations reset',
-        )} against a remote branch is only for preview branches.`,
-      )
-    }
     await resetAgainstBranch(branch, json, command)
     return
   }
