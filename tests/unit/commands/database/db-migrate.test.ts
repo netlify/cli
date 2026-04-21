@@ -1,3 +1,5 @@
+import { join } from 'path'
+
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 
 const { mockApplyMigrations, mockCleanup, mockExecutor, mockExistsSync, logMessages, jsonMessages } = vi.hoisted(() => {
@@ -109,8 +111,9 @@ describe('migrate', () => {
 
     await migrate({}, command)
 
-    expect(mockExistsSync).toHaveBeenCalledWith('/project/netlify/database/migrations')
-    expect(mockApplyMigrations).toHaveBeenCalledWith(mockExecutor, '/project/netlify/database/migrations', undefined)
+    const expectedPath = join('/project', 'netlify', 'database', 'migrations')
+    expect(mockExistsSync).toHaveBeenCalledWith(expectedPath)
+    expect(mockApplyMigrations).toHaveBeenCalledWith(mockExecutor, expectedPath, undefined)
   })
 
   test('passes the --to target to applyMigrations', async () => {

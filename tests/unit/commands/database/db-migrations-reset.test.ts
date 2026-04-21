@@ -1,3 +1,5 @@
+import { join } from 'path'
+
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
 const { mockCleanup, mockExecutor, mockQuery, mockReaddir, mockRm, mockFetch, logMessages, jsonMessages } = vi.hoisted(
@@ -107,8 +109,8 @@ describe('migrationsReset', () => {
 
       const rmPaths = mockRm.mock.calls.map((c) => c[0] as string)
       expect(rmPaths).toEqual([
-        '/project/netlify/database/migrations/0003_c',
-        '/project/netlify/database/migrations/0004_d',
+        join('/project', 'netlify', 'database', 'migrations', '0003_c'),
+        join('/project', 'netlify', 'database', 'migrations', '0004_d'),
       ])
       expect(mockRm.mock.calls[0][1]).toEqual({ recursive: true, force: true })
       expect(mockFetch).not.toHaveBeenCalled()
@@ -127,8 +129,8 @@ describe('migrationsReset', () => {
 
       const rmPaths = mockRm.mock.calls.map((c) => c[0] as string)
       expect(rmPaths).toEqual([
-        '/project/netlify/database/migrations/0001_a',
-        '/project/netlify/database/migrations/0002_b.sql',
+        join('/project', 'netlify', 'database', 'migrations', '0001_a'),
+        join('/project', 'netlify', 'database', 'migrations', '0002_b.sql'),
       ])
     })
 
@@ -217,8 +219,8 @@ describe('migrationsReset', () => {
 
       const rmPaths = mockRm.mock.calls.map((c) => c[0] as string)
       expect(rmPaths).toEqual([
-        '/project/netlify/database/migrations/0002_b',
-        '/project/netlify/database/migrations/0003_c',
+        join('/project', 'netlify', 'database', 'migrations', '0002_b'),
+        join('/project', 'netlify', 'database', 'migrations', '0003_c'),
       ])
       // Does NOT connect to the local DB.
       expect(mockCleanup).not.toHaveBeenCalled()
