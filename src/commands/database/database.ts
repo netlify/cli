@@ -4,6 +4,7 @@ import BaseCommand from '../base-command.js'
 import type { DatabaseBoilerplateType, DatabaseInitOptions } from './legacy/db-init.js'
 import type { MigrationNewOptions } from './db-migration-new.js'
 import type { MigrationPullOptions } from './db-migration-pull.js'
+import type { MigrationsResetOptions } from './db-migrations-reset.js'
 import type { DatabaseStatusOptions } from './db-status.js'
 
 const supportedBoilerplates = new Set<DatabaseBoilerplateType>(['drizzle'])
@@ -175,5 +176,16 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         'netlify db migrations pull --branch',
         'netlify db migrations pull --force',
       ])
+
+    migrationsCommand
+      .command('reset')
+      .description('Delete local migration files that have not been applied yet')
+      .option('-b, --branch <branch>', 'Target a remote preview branch instead of the local development database')
+      .option('--json', 'Output result as JSON')
+      .action(async (options: MigrationsResetOptions, command: BaseCommand) => {
+        const { migrationsReset } = await import('./db-migrations-reset.js')
+        await migrationsReset(options, command)
+      })
+      .addExamples(['netlify db migrations reset', 'netlify db migrations reset --branch my-feature-branch'])
   }
 }

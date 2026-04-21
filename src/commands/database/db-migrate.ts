@@ -1,3 +1,6 @@
+import { existsSync } from 'fs'
+import { join } from 'path'
+
 import { applyMigrations } from '@netlify/dev'
 
 import { log, logJson } from '../../utils/command-helpers.js'
@@ -17,11 +20,16 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
     throw new Error('Could not determine the project root directory.')
   }
 
-  const migrationsDirectory = command.netlify.config.db?.migrations?.path
+  let migrationsDirectory = command.netlify.config.db?.migrations?.path
   if (!migrationsDirectory) {
-    throw new Error(
-      `No migrations directory found. Create a directory at ${DEFAULT_MIGRATIONS_PATH} or set \`db.migrations.path\` in \`netlify.toml\`.`,
-    )
+    const defaultDirectory = join(buildDir, DEFAULT_MIGRATIONS_PATH)
+    if (existsSync(defaultDirectory)) {
+      migrationsDirectory = defaultDirectory
+    } else {
+      throw new Error(
+        `No migrations directory found. Create a directory at ${DEFAULT_MIGRATIONS_PATH} or set \`db.migrations.path\` in \`netlify.toml\`.`,
+      )
+    }
   }
 
   const { executor, cleanup } = await connectToDatabase(buildDir)

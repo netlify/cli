@@ -6,6 +6,7 @@ import inquirer from 'inquirer'
 import { log, logJson } from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
 import BaseCommand from '../base-command.js'
+import { PRODUCTION_BRANCH } from './util/constants.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 
 export interface MigrationPullOptions {
@@ -81,8 +82,8 @@ const fetchMigrations = async (command: BaseCommand, branch: string | undefined)
 export const migrationPull = async (options: MigrationPullOptions, command: BaseCommand) => {
   const { force, json } = options
 
-  const branch = await resolveBranch(options.branch)
-  const source = branch ?? 'production'
+  const branch = (await resolveBranch(options.branch)) ?? process.env.NETLIFY_DB_BRANCH
+  const source = branch ?? PRODUCTION_BRANCH
   const migrations = await fetchMigrations(command, branch)
 
   if (migrations.length === 0) {

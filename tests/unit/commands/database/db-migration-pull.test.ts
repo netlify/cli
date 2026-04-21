@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
 const { mockRm, mockMkdir, mockWriteFile, mockFetch, mockExeca, logMessages, jsonMessages } = vi.hoisted(() => {
   const mockRm = vi.fn().mockResolvedValue(undefined)
@@ -98,6 +98,11 @@ describe('migrationPull', () => {
     logMessages.length = 0
     jsonMessages.length = 0
     vi.clearAllMocks()
+    delete process.env.NETLIFY_DB_BRANCH
+  })
+
+  afterEach(() => {
+    delete process.env.NETLIFY_DB_BRANCH
   })
 
   test('throws when project is not linked', async () => {
@@ -324,6 +329,26 @@ describe('migrationPull', () => {
       await expect(migrationPull({ branch: true, force: true }, createMockCommand())).rejects.toThrow(
         'Could not determine the current git branch',
       )
+    })
+
+    test('falls back to NETLIFY_DB_BRANCH env var when --branch is not passed', async () => {
+      process.env.NETLIFY_DB_BRANCH = 'feature-env'
+      mockFetchResponse(sampleMigrations)
+
+      await migrationPull({ force: true }, createMockCommand())
+
+      const calledUrl = mockFetch.mock.calls[0][0] as URL
+      expect(calledUrl.searchParams.get('branch')).toBe('feature-env')
+    })
+
+    test('--branch wins over NETLIFY_DB_BRANCH when both are set', async () => {
+      process.env.NETLIFY_DB_BRANCH = 'env-branch'
+      mockFetchResponse(sampleMigrations)
+
+      await migrationPull({ branch: 'flag-branch', force: true }, createMockCommand())
+
+      const calledUrl = mockFetch.mock.calls[0][0] as URL
+      expect(calledUrl.searchParams.get('branch')).toBe('flag-branch')
     })
   })
 })
