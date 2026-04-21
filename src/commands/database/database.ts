@@ -79,8 +79,8 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         'netlify database status',
         'netlify database migrations apply',
         'netlify database migrations pull',
-        'netlify database reset',
         'netlify database migrations new',
+        'netlify database reset',
       ])
 
     dbCommand
