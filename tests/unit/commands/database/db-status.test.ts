@@ -387,7 +387,7 @@ describe('statusDb', () => {
 
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain('netlify db migrations apply')
+      expect(logMessages.join('\n')).toContain('netlify database migrations apply')
     })
 
     test('default output omits the apply-command hint when there are no pending migrations', async () => {
@@ -396,7 +396,7 @@ describe('statusDb', () => {
 
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).not.toContain('netlify db migrations apply')
+      expect(logMessages.join('\n')).not.toContain('netlify database migrations apply')
     })
 
     test('shows --show-credentials hint when connection has credentials', async () => {
@@ -523,8 +523,8 @@ describe('statusDb', () => {
       await statusDb({}, createMockCommand())
       const output = logMessages.join('\n')
 
-      expect(output).toContain('netlify db connect')
-      expect(output).toContain('netlify db status --show-credentials')
+      expect(output).toContain('netlify database connect')
+      expect(output).toContain('netlify database status --show-credentials')
       expect(output).not.toContain('npx netlify')
     })
 
@@ -534,8 +534,8 @@ describe('statusDb', () => {
       await statusDb({}, createMockCommand())
       const output = logMessages.join('\n')
 
-      expect(output).toContain('npx netlify db connect')
-      expect(output).toContain('npx netlify db status --show-credentials')
+      expect(output).toContain('npx netlify database connect')
+      expect(output).toContain('npx netlify database status --show-credentials')
     })
 
     test('uses the dynamic command in the apply-pending hint', async () => {
@@ -544,7 +544,7 @@ describe('statusDb', () => {
 
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain('netlify db migrations apply')
+      expect(logMessages.join('\n')).toContain('netlify database migrations apply')
     })
 
     test('uses the dynamic command in the not-running hint', async () => {
@@ -632,7 +632,7 @@ describe('statusDb', () => {
 
       await statusDb({ branch: 'feature-x' }, createMockCommand())
 
-      expect(logMessages.join('\n')).not.toContain('netlify db migrations apply')
+      expect(logMessages.join('\n')).not.toContain('netlify database migrations apply')
     })
 
     test('falls back to NETLIFY_DB_BRANCH env var when --branch is not passed', async () => {
