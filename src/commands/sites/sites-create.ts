@@ -1,6 +1,6 @@
 import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
-import pick from 'lodash/pick.js'
+import { pick } from '../../utils/lang.js'
 import prettyjson from 'prettyjson'
 
 import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'

@@ -2,7 +2,7 @@ import process from 'process'
 
 import type { NetlifyAPI } from '@netlify/api'
 import getPort from 'get-port'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from './lang.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 

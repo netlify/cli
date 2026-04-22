@@ -1,5 +1,5 @@
 import type { Project } from '@netlify/build-info'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from '../utils/lang.js'
 import type { NetlifySite } from '../commands/types.js'
 import type { SiteInfo } from '../utils/types.js'
 

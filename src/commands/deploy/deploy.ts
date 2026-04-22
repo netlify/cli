@@ -7,8 +7,7 @@ import { stdin, stdout } from 'process'
 import type { NetlifyAPI } from '@netlify/api'
 import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
 import inquirer from 'inquirer'
-import isEmpty from 'lodash/isEmpty.js'
-import isObject from 'lodash/isObject.js'
+import { isEmpty } from '../../utils/lang.js'
 import { parseAllHeaders } from '@netlify/headers-parser'
 import { parseAllRedirects } from '@netlify/redirect-parser'
 import prettyjson from 'prettyjson'
@@ -359,7 +358,7 @@ const generateDeployCommand = (
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
-  if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
+  if (typeof siteData.published_deploy === 'object' && siteData.published_deploy !== null && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
 
     const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [], command)
