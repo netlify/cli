@@ -10,6 +10,8 @@ import {
 } from './util/applied-migrations.js'
 import { connectToDatabase, detectExistingLocalConnectionString } from './util/db-connection.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
+import { fileExistsAsync } from '../../lib/fs.js'
+import { join } from 'path'
 
 export interface DatabaseStatusOptions {
   branch?: string
@@ -50,13 +52,15 @@ const logConnectCommands = () => {
 }
 
 const parseVersion = (name: string): number | null => {
-  const match = /^(\d+)[_-]/.exec(name)
+  const match = /^(\d+)_/.exec(name)
   if (!match) {
     return null
   }
   const parsed = Number.parseInt(match[1], 10)
   return Number.isFinite(parsed) ? parsed : null
 }
+
+const MIGRATION_NAME_PATTERN = /^\d+_[a-z0-9_-]+$/
 
 const readLocalMigrations = async (migrationsDirectory: string): Promise<MigrationEntry[]> => {
   let entries
@@ -69,16 +73,34 @@ const readLocalMigrations = async (migrationsDirectory: string): Promise<Migrati
     throw error
   }
 
-  const migrations: MigrationEntry[] = []
+  // First pass is to extract migration names
+  const migrationNames: string[] = []
   for (const entry of entries) {
-    if (!entry.isDirectory()) {
+    if (entry.isDirectory()) {
+      if (
+        MIGRATION_NAME_PATTERN.test(entry.name) &&
+        (await fileExistsAsync(join(migrationsDirectory, entry.name, 'migration.sql')))
+      ) {
+        migrationNames.push(entry.name)
+      }
       continue
     }
-    const version = parseVersion(entry.name)
+
+    if (entry.isFile() && entry.name.endsWith('.sql')) {
+      const migrationName = entry.name.replace(/\.sql$/, '')
+      if (MIGRATION_NAME_PATTERN.test(migrationName)) {
+        migrationNames.push(migrationName)
+      }
+    }
+  }
+  // Second pass to parse version and create migration entries
+  const migrations: MigrationEntry[] = []
+  for (const migrationName of migrationNames) {
+    const version = parseVersion(migrationName)
     if (version === null) {
       continue
     }
-    migrations.push({ name: entry.name, version })
+    migrations.push({ name: migrationName, version })
   }
   migrations.sort((a, b) => a.version - b.version)
   return migrations

@@ -479,6 +479,85 @@ describe('statusDb', () => {
     })
   })
 
+  describe('local migration discovery', () => {
+    test('ignores directories that do not contain a migration.sql file', async () => {
+      mockFS({
+        dirs: {
+          '0001_with_sql': { files: { 'migration.sql': '' } },
+          '0002_without_sql': {},
+          '0003_wrong_file': { files: { 'readme.md': '' } },
+        },
+      })
+
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        pending: [{ version: 1, name: '0001_with_sql' }],
+      })
+    })
+
+    test('includes .sql files sitting directly under the migrations directory', async () => {
+      mockFS({
+        files: {
+          '0001_a.sql': '',
+          '0002_b.sql': '',
+        },
+      })
+
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        pending: [
+          { version: 1, name: '0001_a' },
+          { version: 2, name: '0002_b' },
+        ],
+      })
+    })
+
+    test('ignores directories whose name does not match the migration pattern', async () => {
+      mockFS({
+        dirs: {
+          '0001_valid': { files: { 'migration.sql': '' } },
+          '0002_with-hyphen': { files: { 'migration.sql': '' } },
+          'not-a-migration': { files: { 'migration.sql': '' } },
+          '0003_UPPERCASE': { files: { 'migration.sql': '' } },
+          '0004-hyphen-separator': { files: { 'migration.sql': '' } },
+          no_leading_digits: { files: { 'migration.sql': '' } },
+        },
+      })
+
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        pending: [
+          { version: 1, name: '0001_valid' },
+          { version: 2, name: '0002_with-hyphen' },
+        ],
+      })
+    })
+
+    test('ignores .sql files whose name does not match the migration pattern', async () => {
+      mockFS({
+        files: {
+          '0001_valid.sql': '',
+          '0002_with-hyphen.sql': '',
+          'random.sql': '',
+          '0003_UPPERCASE.sql': '',
+          '0004-hyphen-separator.sql': '',
+        },
+      })
+
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        pending: [
+          { version: 1, name: '0001_valid' },
+          { version: 2, name: '0002_with-hyphen' },
+        ],
+      })
+    })
+  })
+
   describe('secondary descriptive lines', () => {
     test('renders a descriptive line under Enabled when true', async () => {
       process.env.NETLIFY_DB_URL = 'postgres://x/y'
