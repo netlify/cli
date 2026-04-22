@@ -590,7 +590,6 @@ describe('statusDb', () => {
 
     test('renders an installed statement under Package when installed', async () => {
       await statusDb({}, createMockCommand())
-      console.log({ wat: logMessages.join('\n') })
       expect(logMessages.join('\n')).toContain('The @netlify/database package is installed')
     })
 
