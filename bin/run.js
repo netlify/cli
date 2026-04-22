@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import { argv } from 'process'
+import { accessSync, constants } from 'node:fs'
+import { join } from 'node:path'
+import { homedir } from 'node:os'
 import EventEmitter from 'events'
 
 import { maybeEnableCompileCache } from '../dist/utils/nodejs-compile-cache.js'
@@ -35,18 +38,30 @@ const main = async () => {
   const { default: getPackageJson } = await import('../dist/utils/get-cli-package-json.js')
   const { runProgram } = await import('../dist/utils/run-program.js')
 
-  try {
-    const pkg = await getPackageJson()
-    const message = `Update available ${chalk.dim('{currentVersion}')} → ${chalk.green('{latestVersion}')}
+  const canWriteConfigStore = () => {
+    try {
+      const configDir = join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'configstore')
+      accessSync(configDir, constants.W_OK)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  if (canWriteConfigStore()) {
+    try {
+      const pkg = await getPackageJson()
+      const message = `Update available ${chalk.dim('{currentVersion}')} → ${chalk.green('{latestVersion}')}
 See what's new in the ${terminalLink('release notes', 'https://ntl.fyi/cli-versions')}
 
 Run ${chalk.inverse.hex(NETLIFY_CYAN_HEX)('{updateCommand}')} to update`
-    updateNotifier({
-      pkg,
-      updateCheckInterval: UPDATE_CHECK_INTERVAL,
-    }).notify({ message, boxenOptions: UPDATE_BOXEN_OPTIONS })
-  } catch (error) {
-    logError(`Error checking for updates: ${error?.toString()}`)
+      updateNotifier({
+        pkg,
+        updateCheckInterval: UPDATE_CHECK_INTERVAL,
+      }).notify({ message, boxenOptions: UPDATE_BOXEN_OPTIONS })
+    } catch (error) {
+      logError(`Error checking for updates: ${error?.toString()}`)
+    }
   }
 
   const program = createMainCommand()
