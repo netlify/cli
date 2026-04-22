@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
 import inquirer from 'inquirer'
-import { isEmpty } from '../../utils/lang.js'
+import { isEmpty } from '../../utils/object-utilities.js'
 import type { NetlifyAPI } from '@netlify/api'
 
 import { listSites } from '../../lib/api.js'

@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
-import { isEmpty } from '../../utils/lang.js'
+import { isEmpty } from '../../utils/object-utilities.js'
 
 import { chalk, exit, log, netlifyCommand } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'

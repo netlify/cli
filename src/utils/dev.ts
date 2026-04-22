@@ -2,7 +2,7 @@ import process from 'process'
 
 import type { NetlifyAPI } from '@netlify/api'
 import getPort from 'get-port'
-import { isEmpty } from './lang.js'
+import { isEmpty } from './object-utilities.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 

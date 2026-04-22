@@ -14,7 +14,7 @@ import debug from 'debug'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
-import { deepMerge, pick } from '../utils/lang.js'
+import { deepMerge, pick } from '../utils/object-utilities.js'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
