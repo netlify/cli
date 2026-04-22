@@ -1,3 +1,5 @@
+import { relative, sep } from 'path'
+
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
 const {
@@ -99,13 +101,10 @@ const DEFAULT_MOCK_FS_ROOT = '/project/netlify/database/migrations'
 
 const mockFS = (tree: MockFSNode, { root = DEFAULT_MOCK_FS_ROOT }: { root?: string } = {}) => {
   const resolve = (absolutePath: string): { kind: 'dir'; node: MockFSNode } | { kind: 'file' } | null => {
-    const normalizedRoot = root.replace(/\/+$/, '')
-    if (absolutePath !== normalizedRoot && !absolutePath.startsWith(`${normalizedRoot}/`)) {
-      return null
-    }
-    const relative = absolutePath.slice(normalizedRoot.length).replace(/^\/+/, '')
-    if (relative === '') return { kind: 'dir', node: tree }
-    const parts = relative.split('/')
+    const rel = relative(root, absolutePath)
+    if (rel === '') return { kind: 'dir', node: tree }
+    if (rel.startsWith('..')) return null
+    const parts = rel.split(sep)
     let cursor: MockFSNode = tree
     for (let i = 0; i < parts.length; i += 1) {
       const part = parts[i]

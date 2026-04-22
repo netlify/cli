@@ -1,4 +1,5 @@
 import { readFile, readdir } from 'fs/promises'
+import { join } from 'path'
 
 import { chalk, log, logJson, netlifyCommand } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -11,7 +12,6 @@ import {
 import { connectToDatabase, detectExistingLocalConnectionString } from './util/db-connection.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import { fileExistsAsync } from '../../lib/fs.js'
-import { join } from 'path'
 
 export interface DatabaseStatusOptions {
   branch?: string
