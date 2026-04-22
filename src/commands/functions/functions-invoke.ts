@@ -1,6 +1,6 @@
 import fs from 'fs'
-import { createRequire } from 'module'
 import path from 'path'
+import { pathToFileURL } from 'url'
 
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
@@ -9,8 +9,6 @@ import fetch from 'node-fetch'
 import { APIError, NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
 import BaseCommand from '../base-command.js'
-
-const require = createRequire(import.meta.url)
 
 // https://docs.netlify.com/functions/trigger-on-events/
 const events = [
@@ -64,20 +62,22 @@ const formatQstring = function (querystring) {
  * @param {string} workingDir
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'payloadString' implicitly has an 'any' ... Remove this comment to see the full error message
-const processPayloadFromFlag = function (payloadString, workingDir) {
+export const processPayloadFromFlag = async function (payloadString, workingDir) {
   if (payloadString) {
     // case 1: jsonstring
-    let payload = tryParseJSON(payloadString)
-    if (payload) return payload
-    // case 2: jsonpath
+    const parsedJson = tryParseJSON(payloadString)
+    if (parsedJson) return parsedJson
+    // case 2: file path to a JSON or JS module
     const payloadpath = path.join(workingDir, payloadString)
     const pathexists = fs.existsSync(payloadpath)
     if (pathexists) {
       try {
+        if (payloadpath.endsWith('.json')) {
+          return JSON.parse(fs.readFileSync(payloadpath, 'utf8'))
+        }
         // there is code execution potential here
-
-        payload = require(payloadpath)
-        return payload
+        const imported = (await import(pathToFileURL(payloadpath).href)) as { default?: unknown }
+        return imported.default ?? imported
       } catch (error_) {
         console.error(error_)
       }
@@ -219,7 +219,7 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
       // }
     }
   }
-  const payload = processPayloadFromFlag(options.payload, command.workingDir)
+  const payload = await processPayloadFromFlag(options.payload, command.workingDir)
   body = { ...body, ...payload }
 
   try {
