@@ -7,6 +7,15 @@ Bugsnag.start({
   apiKey: `${process.env.NETLIFY_BUGSNAG_API_KEY}`,
 })
 
+const USER_INPUT_ERROR_MESSAGE_PATTERNS: string[] = [
+  'When resolving config file',
+  'NETLIFY_AUTH_TOKEN is not set',
+  'Project not found. Please rerun',
+]
+
+const isUserInputError = (message: unknown): boolean =>
+  typeof message === 'string' && USER_INPUT_ERROR_MESSAGE_PATTERNS.some((pattern) => message.includes(pattern))
+
 export const handler: Handler = async ({ body }) => {
   try {
     if (typeof body !== 'string') {
@@ -24,6 +33,11 @@ export const handler: Handler = async ({ body }) => {
       stack,
       user,
     } = JSON.parse(body)
+
+    if (isUserInputError(message)) {
+      return { statusCode: 200 }
+    }
+
     Bugsnag.notify({ name, message, stack, cause }, (event) => {
       event.app = {
         releaseStage: 'production',
