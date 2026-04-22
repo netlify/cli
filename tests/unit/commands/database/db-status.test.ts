@@ -3,6 +3,7 @@ import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 const {
   mockReaddir,
   mockReadFile,
+  mockFileExistsAsync,
   mockConnectToDatabase,
   mockDetectExisting,
   mockQuery,
@@ -13,6 +14,7 @@ const {
 } = vi.hoisted(() => {
   const mockReaddir = vi.fn()
   const mockReadFile = vi.fn()
+  const mockFileExistsAsync = vi.fn()
   const mockQuery = vi.fn()
   const mockCleanup = vi.fn().mockResolvedValue(undefined)
   const mockConnectToDatabase = vi.fn()
@@ -23,6 +25,7 @@ const {
   return {
     mockReaddir,
     mockReadFile,
+    mockFileExistsAsync,
     mockConnectToDatabase,
     mockDetectExisting,
     mockQuery,
@@ -64,6 +67,12 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   },
 }))
 
+vi.mock('../../../../src/lib/fs.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/lib/fs.js')>()),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  fileExistsAsync: (path: string) => mockFileExistsAsync(path),
+}))
+
 vi.mock('../../../../src/commands/database/util/db-connection.js', () => ({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   connectToDatabase: (...args: unknown[]) => mockConnectToDatabase(...args),
@@ -81,11 +90,61 @@ const LOCAL_CONN_NO_CREDS = 'postgres://localhost:5432/postgres'
 const BRANCH_CONN = 'postgres://admin:secret@branch-host.neon.tech/db'
 const PROD_CONN = 'postgres://owner:prodsecret@prod-host.neon.tech/db'
 
-const makeDirents = (names: string[]) =>
-  names.map((name) => ({
-    name,
-    isDirectory: () => true,
-  }))
+interface MockFSNode {
+  files?: Record<string, string>
+  dirs?: Record<string, MockFSNode>
+}
+
+const DEFAULT_MOCK_FS_ROOT = '/project/netlify/database/migrations'
+
+const mockFS = (tree: MockFSNode, { root = DEFAULT_MOCK_FS_ROOT }: { root?: string } = {}) => {
+  const resolve = (absolutePath: string): { kind: 'dir'; node: MockFSNode } | { kind: 'file' } | null => {
+    const normalizedRoot = root.replace(/\/+$/, '')
+    if (absolutePath !== normalizedRoot && !absolutePath.startsWith(`${normalizedRoot}/`)) {
+      return null
+    }
+    const relative = absolutePath.slice(normalizedRoot.length).replace(/^\/+/, '')
+    if (relative === '') return { kind: 'dir', node: tree }
+    const parts = relative.split('/')
+    let cursor: MockFSNode = tree
+    for (let i = 0; i < parts.length; i += 1) {
+      const part = parts[i]
+      const isLast = i === parts.length - 1
+      if (isLast && cursor.files && part in cursor.files) return { kind: 'file' }
+      if (cursor.dirs && part in cursor.dirs) {
+        cursor = cursor.dirs[part]
+        if (isLast) return { kind: 'dir', node: cursor }
+        continue
+      }
+      return null
+    }
+    return null
+  }
+
+  mockReaddir.mockImplementation((path: unknown) => {
+    const resolved = typeof path === 'string' ? resolve(path) : null
+    if (!resolved || resolved.kind !== 'dir') {
+      return Promise.reject(Object.assign(new Error(`ENOENT: ${String(path)}`), { code: 'ENOENT' }))
+    }
+    const dirEntries = Object.keys(resolved.node.dirs ?? {}).map((name) => ({
+      name,
+      isDirectory: () => true,
+      isFile: () => false,
+    }))
+    const fileEntries = Object.keys(resolved.node.files ?? {}).map((name) => ({
+      name,
+      isDirectory: () => false,
+      isFile: () => true,
+    }))
+    return Promise.resolve([...dirEntries, ...fileEntries])
+  })
+
+  mockFileExistsAsync.mockImplementation((path: unknown) => Promise.resolve(typeof path === 'string' && resolve(path) !== null))
+}
+
+const migrationsTree = (names: string[]): MockFSNode => ({
+  dirs: Object.fromEntries(names.map((name) => [name, { files: { 'migration.sql': '' } }])),
+})
 
 function createMockCommand(
   overrides: { siteRoot?: string | null; migrationsPath?: string | null; siteId?: string | null } = {},
@@ -178,7 +237,7 @@ beforeEach(() => {
   logMessages.length = 0
   jsonMessages.length = 0
   vi.clearAllMocks()
-  mockReaddir.mockResolvedValue([])
+  mockFS({})
   mockCleanup.mockResolvedValue(undefined)
   mockLocalAppliedRows([])
   setupFetchRouter({ siteDatabase: null })
@@ -288,7 +347,7 @@ describe('statusDb', () => {
     test('still connects and reads migration state when no local database is already running', async () => {
       mockDetectExisting.mockReturnValue(null)
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b']))
+      mockFS(migrationsTree(['0001_a', '0002_b']))
 
       await statusDb({ json: true }, createMockCommand())
 
@@ -315,7 +374,7 @@ describe('statusDb', () => {
     test('default output hints at starting a persistent local database when none is running', async () => {
       mockDetectExisting.mockReturnValue(null)
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b']))
+      mockFS(migrationsTree(['0001_a', '0002_b']))
 
       await statusDb({}, createMockCommand())
 
@@ -338,7 +397,7 @@ describe('statusDb', () => {
 
     test('reports applied and pending correctly', async () => {
       mockLocalAppliedRows(['0001_a', '0002_b'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b', '0003_c']))
+      mockFS(migrationsTree(['0001_a', '0002_b', '0003_c']))
 
       await statusDb({ json: true }, createMockCommand())
 
@@ -370,7 +429,7 @@ describe('statusDb', () => {
 
     test('default output shows applied and pending as bullets', async () => {
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b']))
+      mockFS(migrationsTree(['0001_a', '0002_b']))
 
       await statusDb({}, createMockCommand())
 
@@ -383,7 +442,7 @@ describe('statusDb', () => {
 
     test('default output includes the apply-command hint when pending migrations exist on local', async () => {
       mockLocalAppliedRows([])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({}, createMockCommand())
 
@@ -392,7 +451,7 @@ describe('statusDb', () => {
 
     test('default output omits the apply-command hint when there are no pending migrations', async () => {
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({}, createMockCommand())
 
@@ -451,7 +510,7 @@ describe('statusDb', () => {
 
     test('renders an installed statement under Package when installed', async () => {
       await statusDb({}, createMockCommand())
-
+      console.log({ wat: logMessages.join('\n') })
       expect(logMessages.join('\n')).toContain('The @netlify/database package is installed')
     })
 
@@ -493,7 +552,7 @@ describe('statusDb', () => {
 
     test('always renders the immutability note below the Applied migrations list', async () => {
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({}, createMockCommand())
 
@@ -540,7 +599,7 @@ describe('statusDb', () => {
 
     test('uses the dynamic command in the apply-pending hint', async () => {
       mockLocalAppliedRows([])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({}, createMockCommand())
 
@@ -595,7 +654,7 @@ describe('statusDb', () => {
           ],
         },
       })
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b', '0003_c']))
+      mockFS(migrationsTree(['0001_a', '0002_b', '0003_c']))
 
       await statusDb({ branch: 'feature-x', json: true }, createMockCommand())
 
@@ -628,7 +687,7 @@ describe('statusDb', () => {
         branch: { 'feature-x': { connection_string: BRANCH_CONN } },
         migrations: { 'feature-x': [] },
       })
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({ branch: 'feature-x' }, createMockCommand())
 
