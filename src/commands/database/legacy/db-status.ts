@@ -78,11 +78,11 @@ export const status = async (_options: OptionValues, command: BaseCommand) => {
   )
 
   // Show deprecation warning if a legacy extension DB is detected
-  if (databaseUrlEnv?.key === 'NETLIFY_DATABASE_URL') {
+  if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1' && databaseUrlEnv?.key === 'NETLIFY_DATABASE_URL') {
     log()
     log(
       chalk.yellow(
-        'Warning: This site has a database from the legacy Netlify DB extension, which has been deprecated. Netlify DB is now available as a built-in feature.',
+        'Warning: This site has a database from the legacy Netlify DB extension, which has been deprecated. Netlify Database is now available as a built-in feature.',
       ),
     )
     log(`For migration instructions, visit ${chalk.cyan('https://ntl.fyi/db-migration')}`)
