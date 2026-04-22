@@ -139,7 +139,9 @@ const mockFS = (tree: MockFSNode, { root = DEFAULT_MOCK_FS_ROOT }: { root?: stri
     return Promise.resolve([...dirEntries, ...fileEntries])
   })
 
-  mockFileExistsAsync.mockImplementation((path: unknown) => Promise.resolve(typeof path === 'string' && resolve(path) !== null))
+  mockFileExistsAsync.mockImplementation((path: unknown) =>
+    Promise.resolve(typeof path === 'string' && resolve(path) !== null),
+  )
 }
 
 const migrationsTree = (names: string[]): MockFSNode => ({
