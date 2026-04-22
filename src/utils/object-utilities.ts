@@ -31,21 +31,33 @@ export const pick = <T extends object>(obj: T, keys: readonly string[]): Partial
 /**
  * Recursively merges the properties of `source` into a copy of `target`.
  *
- * Only plain (non-array) objects are merged recursively; arrays and primitive
- * values from `source` overwrite the corresponding value in `target`. Neither
- * argument is mutated. Behavior is intentionally narrow: this is not a full
- * replacement for `lodash/merge`, only enough to cover the existing call sites
- * that merge shallow-nested config objects.
+ * Behavior matches `lodash/merge` in the ways the existing call sites rely on:
+ * - `undefined` source values are skipped, preserving any existing value in
+ *   the target. This lets callers pass partial patch objects without having
+ *   to strip keys that happen to be `undefined` (e.g. `storeToken` in
+ *   `base-command.ts` passes `{ github: { user: undefined, token: undefined } }`
+ *   and relies on the existing GitHub auth fields being preserved).
+ * - `null` source values DO overwrite -- only `undefined` is treated as
+ *   "no-op".
+ * - Only plain (non-array) objects are merged recursively; arrays and
+ *   primitive values from `source` overwrite the corresponding value in
+ *   `target`.
+ *
+ * Neither argument is mutated.
  *
  * @param target - The base object to merge into. `undefined` is treated as `{}`.
  * @param source - The object whose properties take precedence over `target`.
  * @returns A new object containing the combined properties.
  */
-export function deepMerge<T extends Record<string, unknown>>(target: T | undefined, source: Record<string, unknown>): T {
+export function deepMerge<T extends Record<string, unknown>>(
+  target: T | undefined,
+  source: Record<string, unknown>,
+): T {
   const result: Record<string, unknown> = { ...(target ?? {}) }
   for (const key of Object.keys(source)) {
-    const targetVal = result[key]
     const sourceVal = source[key]
+    if (sourceVal === undefined) continue
+    const targetVal = result[key]
     if (
       targetVal != null &&
       sourceVal != null &&

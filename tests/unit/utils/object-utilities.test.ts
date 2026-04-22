@@ -97,10 +97,22 @@ describe('deepMerge', () => {
     expect(deepMerge(target, source)).toEqual({ list: [4] })
   })
 
-  test('overwrites target values with null or undefined from source', () => {
-    const target = { a: 1, b: 2 }
-    const source = { a: null, b: undefined }
-    expect(deepMerge(target, source)).toEqual({ a: null, b: undefined })
+  test('overwrites target values with null from source', () => {
+    const target = { a: 1 }
+    const source = { a: null }
+    expect(deepMerge(target, source)).toEqual({ a: null })
+  })
+
+  test('skips undefined source values to preserve existing target values (lodash.merge parity)', () => {
+    const target = { auth: { token: 'existing', github: { user: 'octocat', token: 'gh-token' } } }
+    const source = { auth: { github: { user: undefined, token: undefined } } }
+    expect(deepMerge(target, source)).toEqual({
+      auth: { token: 'existing', github: { user: 'octocat', token: 'gh-token' } },
+    })
+  })
+
+  test('skips top-level undefined source values', () => {
+    expect(deepMerge({ a: 1, b: 2 }, { a: undefined, b: 3 })).toEqual({ a: 1, b: 3 })
   })
 
   test('does not mutate the target object', () => {
@@ -134,7 +146,7 @@ describe('throttle', () => {
     expect(fn).toHaveBeenCalledTimes(1)
   })
 
-  test('drops calls that arrive within the throttle interval', () => {
+  test('drops calls that arrive within the throttle interval and schedules no trailing invocation', () => {
     const fn = vi.fn()
     const throttled = throttle(fn, 100)
 
@@ -142,6 +154,10 @@ describe('throttle', () => {
     vi.advanceTimersByTime(50)
     throttled()
     throttled()
+
+    expect(fn).toHaveBeenCalledTimes(1)
+
+    vi.advanceTimersByTime(200)
 
     expect(fn).toHaveBeenCalledTimes(1)
   })
