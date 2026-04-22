@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { argv } from 'process'
-import { accessSync, constants } from 'node:fs'
-import { join } from 'node:path'
+import { accessSync, existsSync, constants } from 'node:fs'
+import { join, dirname } from 'node:path'
 import { homedir } from 'node:os'
 import EventEmitter from 'events'
 
@@ -40,8 +40,13 @@ const main = async () => {
 
   const canWriteConfigStore = () => {
     try {
-      const configDir = join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'configstore')
-      accessSync(configDir, constants.W_OK)
+      let dir = join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'configstore')
+      while (!existsSync(dir)) {
+        const parent = dirname(dir)
+        if (parent === dir) return false
+        dir = parent
+      }
+      accessSync(dir, constants.W_OK)
       return true
     } catch {
       return false
