@@ -383,7 +383,7 @@ describe('statusDb', () => {
       expect(output).toContain('The local database is not running')
       expect(output).toContain('netlify dev')
       // Migration state is still rendered — connection string is the only thing suppressed.
-      expect(output).toContain('Applied migrations')
+      expect(output).toContain('Migrations')
       expect(output).toContain('• 0001_a')
       expect(output).toContain('• 0002_b')
     })
@@ -451,9 +451,9 @@ describe('statusDb', () => {
       await statusDb({}, createMockCommand())
 
       const output = logMessages.join('\n')
-      expect(output).toContain('Applied migrations')
+      expect(output).toContain('Applied')
       expect(output).toContain('• 0001_a')
-      expect(output).toContain('Migrations not applied')
+      expect(output).toContain('Pending')
       expect(output).toContain('• 0002_b')
     })
 
@@ -473,6 +473,18 @@ describe('statusDb', () => {
       await statusDb({}, createMockCommand())
 
       expect(logMessages.join('\n')).not.toContain('netlify database migrations apply')
+    })
+
+    test('shows the deploy hint instead of the apply-command hint when NETLIFY_DB_URL overrides the connection', async () => {
+      process.env.NETLIFY_DB_URL = 'postgres://override.example.com/db'
+      mockLocalAppliedRows([])
+      mockFS(migrationsTree(['0001_a']))
+
+      await statusDb({}, createMockCommand())
+
+      const output = logMessages.join('\n')
+      expect(output).not.toContain('netlify database migrations apply')
+      expect(output).toContain('Deploy these files to apply the migrations.')
     })
 
     test('shows --show-credentials hint when connection has credentials', async () => {
@@ -633,50 +645,61 @@ describe('statusDb', () => {
       )
     })
 
-    test('renders a subtitle under Applied migrations', async () => {
+    test('renders a subtitle under Migrations', async () => {
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain('Migrations that have been applied to the database branch')
+      expect(logMessages.join('\n')).toContain('Database migrations managed by Netlify')
     })
 
-    test('renders a subtitle under Migrations not applied', async () => {
+    test('renders a dedicated section for the migrations directory with a relative path', async () => {
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain("Migrations that exist locally that haven't yet been applied")
+      const output = logMessages.join('\n')
+      expect(output).toContain('Migrations directory')
+      expect(output).toContain('netlify/database/migrations')
     })
 
-    test('renders a dedicated line for the migrations directory', async () => {
-      await statusDb({}, createMockCommand())
-
-      expect(logMessages.join('\n')).toContain('Migrations directory: /project/netlify/database/migrations')
-    })
-
-    test('migrations directory line honours netlify.toml db.migrations.path override', async () => {
+    test('falls back to the absolute path when the directory is outside the project root', async () => {
       await statusDb({}, createMockCommand({ migrationsPath: '/custom/migrations/dir' }))
 
-      expect(logMessages.join('\n')).toContain('Migrations directory: /custom/migrations/dir')
+      expect(logMessages.join('\n')).toContain('/custom/migrations/dir')
     })
 
-    test('always renders the immutability note below the Applied migrations list', async () => {
+    test('renders the immutability note above the Applied Migrations list', async () => {
       mockLocalAppliedRows(['0001_a'])
       mockFS(migrationsTree(['0001_a']))
 
       await statusDb({}, createMockCommand())
 
       const output = logMessages.join('\n')
-      // Note appears after the bullet list.
       const bulletIndex = output.indexOf('• 0001_a')
-      const noteIndex = output.indexOf('Note that these migrations cannot be removed or edited')
-      expect(bulletIndex).toBeGreaterThanOrEqual(0)
-      expect(noteIndex).toBeGreaterThan(bulletIndex)
-      expect(output).toContain('you should generate a new migration')
+      const noteIndex = output.indexOf('These migrations have been applied and cannot be edited or deleted')
+      expect(bulletIndex).toBeGreaterThan(0)
+      expect(noteIndex).toBeGreaterThan(0)
+      expect(noteIndex).toBeLessThan(bulletIndex)
+      expect(output).toContain('Any changes to the schema must involve a new migration')
     })
 
-    test('renders the immutability note regardless of NETLIFY_AGENT_RUNNER_ID', async () => {
-      // env var intentionally unset in beforeEach
+    test('renders the immutability note even when there are no applied migrations', async () => {
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain('Note that these migrations cannot be removed or edited')
+      expect(logMessages.join('\n')).toContain('These migrations have been applied and cannot be edited or deleted')
+    })
+
+    test('renders a subtitle under Pending Migrations', async () => {
+      await statusDb({}, createMockCommand())
+
+      expect(logMessages.join('\n')).toContain(
+        "These migrations are defined locally but haven't been applied, and you can change them or delete them.",
+      )
+    })
+
+    test('renders a note under the migrations directory line', async () => {
+      await statusDb({}, createMockCommand())
+
+      expect(logMessages.join('\n')).toContain(
+        'Migration files in this directory are automatically applied when deploying to Netlify.',
+      )
     })
   })
 
@@ -788,7 +811,7 @@ describe('statusDb', () => {
       })
     })
 
-    test('does not show the apply-command hint for remote', async () => {
+    test('shows the deploy hint instead of the apply-command hint for remote', async () => {
       setupFetchRouter({
         siteDatabase: { connection_string: PROD_CONN },
         branch: { 'feature-x': { connection_string: BRANCH_CONN } },
@@ -798,7 +821,9 @@ describe('statusDb', () => {
 
       await statusDb({ branch: 'feature-x' }, createMockCommand())
 
-      expect(logMessages.join('\n')).not.toContain('netlify database migrations apply')
+      const output = logMessages.join('\n')
+      expect(output).not.toContain('netlify database migrations apply')
+      expect(output).toContain('Deploy these files to apply the migrations.')
     })
 
     test('falls back to NETLIFY_DB_BRANCH env var when --branch is not passed', async () => {
