@@ -33,6 +33,8 @@ jobs:
 
       - name: Compute matrix
         id: matrix
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           node_versions=$(yq eval '.node_versions | join(" ")' .github/test-matrix.yml)
           extra_oses=$(yq eval '.extra_oses_on_release | join(" ")' .github/test-matrix.yml)
@@ -42,7 +44,7 @@ jobs:
           for node in $node_versions; do
             OS_NODE+=("ubuntu-latest:$node")
           done
-          if [[ "${{ github.head_ref }}" == release-please--* ]]; then
+          if [[ "$HEAD_REF" == release-please--* ]]; then
             for os in $extra_oses; do
               OS_NODE+=("$os:$primary")
             done
