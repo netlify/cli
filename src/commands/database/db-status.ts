@@ -373,9 +373,7 @@ const renderPretty = (params: RenderParams) => {
     const canApplyLocally = isLocal && !hasUrlOverride
     log('')
     if (canApplyLocally) {
-      log(
-        chalk.gray(`${INDENT}Run ${formatCommand('database migrations apply')} to apply them to the local database.`),
-      )
+      log(chalk.gray(`${INDENT}Run ${formatCommand('database migrations apply')} to apply them to the local database.`))
     } else {
       log(chalk.gray(`${INDENT}Deploy these files to apply the migrations.`))
     }
