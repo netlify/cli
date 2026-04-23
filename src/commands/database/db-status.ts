@@ -1,4 +1,5 @@
 import { readFile, readdir } from 'fs/promises'
+import { join } from 'path'
 
 import { chalk, log, logJson, netlifyCommand } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -10,6 +11,7 @@ import {
 } from './util/applied-migrations.js'
 import { connectToDatabase, detectExistingLocalConnectionString } from './util/db-connection.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
+import { fileExistsAsync } from '../../lib/fs.js'
 
 export interface DatabaseStatusOptions {
   branch?: string
@@ -45,18 +47,20 @@ const NETLIFY_DATABASE_PACKAGE = '@netlify/database'
 const formatCommand = (suffix: string): string => chalk.cyanBright.bold(`${netlifyCommand()} ${suffix}`)
 
 const logConnectCommands = () => {
-  secondary(`Run ${formatCommand('db connect')} to start an interactive database client`)
-  secondary(`Run ${formatCommand('db connect --query "<SQL>"')} to run a one-shot query`)
+  secondary(`Run ${formatCommand('database connect')} to start an interactive database client`)
+  secondary(`Run ${formatCommand('database connect --query "<SQL>"')} to run a one-shot query`)
 }
 
 const parseVersion = (name: string): number | null => {
-  const match = /^(\d+)[_-]/.exec(name)
+  const match = /^(\d+)_/.exec(name)
   if (!match) {
     return null
   }
   const parsed = Number.parseInt(match[1], 10)
   return Number.isFinite(parsed) ? parsed : null
 }
+
+const MIGRATION_NAME_PATTERN = /^\d+_[a-z0-9_-]+$/
 
 const readLocalMigrations = async (migrationsDirectory: string): Promise<MigrationEntry[]> => {
   let entries
@@ -69,16 +73,34 @@ const readLocalMigrations = async (migrationsDirectory: string): Promise<Migrati
     throw error
   }
 
-  const migrations: MigrationEntry[] = []
+  // First pass is to extract migration names
+  const migrationNames: string[] = []
   for (const entry of entries) {
-    if (!entry.isDirectory()) {
+    if (entry.isDirectory()) {
+      if (
+        MIGRATION_NAME_PATTERN.test(entry.name) &&
+        (await fileExistsAsync(join(migrationsDirectory, entry.name, 'migration.sql')))
+      ) {
+        migrationNames.push(entry.name)
+      }
       continue
     }
-    const version = parseVersion(entry.name)
+
+    if (entry.isFile() && entry.name.endsWith('.sql')) {
+      const migrationName = entry.name.replace(/\.sql$/, '')
+      if (MIGRATION_NAME_PATTERN.test(migrationName)) {
+        migrationNames.push(migrationName)
+      }
+    }
+  }
+  // Second pass to parse version and create migration entries
+  const migrations: MigrationEntry[] = []
+  for (const migrationName of migrationNames) {
+    const version = parseVersion(migrationName)
     if (version === null) {
       continue
     }
-    migrations.push({ name: entry.name, version })
+    migrations.push({ name: migrationName, version })
   }
   migrations.sort((a, b) => a.version - b.version)
   return migrations
@@ -272,7 +294,7 @@ const renderPretty = (params: RenderParams) => {
     if (!showCredentials && connectionStringHasCredentials(connectionString)) {
       secondary(
         `To reveal the full connection string (including credentials), run ${formatCommand(
-          'db status --show-credentials',
+          'database status --show-credentials',
         )}`,
       )
     } else {
@@ -310,7 +332,7 @@ const renderPretty = (params: RenderParams) => {
   log(renderList(status.pending))
   if (isLocal && status.pending.length > 0 && status.outOfOrder.length === 0) {
     log('')
-    log(chalk.gray(`Run ${formatCommand('db migrations apply')} to apply these to the local database.`))
+    log(chalk.gray(`Run ${formatCommand('database migrations apply')} to apply these to the local database.`))
   }
 
   if (status.missingOnDisk.length > 0 || status.outOfOrder.length > 0) {
@@ -329,7 +351,7 @@ const renderPretty = (params: RenderParams) => {
       log(
         chalk.gray(
           `Run ${formatCommand(
-            'db migrations reset',
+            'database migrations reset',
           )} to delete these local-only migrations, then generate them again with a higher prefix.`,
         ),
       )
