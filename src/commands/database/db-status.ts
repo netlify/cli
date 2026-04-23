@@ -228,6 +228,7 @@ interface RenderParams {
   showCredentials: boolean
   status: MigrationsStatus
   isLocal: boolean
+  migrationsDirectory: string
   adminUrl?: string
 }
 
@@ -247,7 +248,16 @@ const secondary = (text: string): void => {
 }
 
 const renderPretty = (params: RenderParams) => {
-  const { enabled, packageInstalled, connectionString, showCredentials, status, isLocal, adminUrl } = params
+  const {
+    enabled,
+    packageInstalled,
+    connectionString,
+    showCredentials,
+    status,
+    isLocal,
+    migrationsDirectory,
+    adminUrl,
+  } = params
 
   log(chalk.bold('Netlify Database'))
   log(chalk.gray('Managed Postgres databases that seamlessly integrate with the Netlify workflow'))
@@ -299,6 +309,9 @@ const renderPretty = (params: RenderParams) => {
     )
     logConnectCommands()
   }
+
+  log('')
+  log(`Migrations directory: ${chalk.bold(migrationsDirectory)}`)
 
   log('')
   log(chalk.bold('Applied migrations'))
@@ -426,6 +439,7 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
     logJson({
       enabled,
       packageInstalled,
+      migrationsPath: migrationsDirectory,
       target: branchLabel,
       database: displayedConnection === null ? null : { connectionString: displayedConnection },
       applied: status.applied.map((m) => ({ version: m.version, name: m.name })),
@@ -445,6 +459,7 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
     showCredentials: options.showCredentials ?? false,
     status,
     isLocal,
+    migrationsDirectory,
     adminUrl: siteInfo?.admin_url,
   })
 }

@@ -420,6 +420,22 @@ describe('statusDb', () => {
       })
     })
 
+    test('includes the resolved migrations directory in JSON output', async () => {
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        migrationsPath: '/project/netlify/database/migrations',
+      })
+    })
+
+    test('JSON migrationsPath honours netlify.toml db.migrations.path override', async () => {
+      await statusDb({ json: true }, createMockCommand({ migrationsPath: '/custom/migrations/dir' }))
+
+      expect(jsonMessages[0]).toMatchObject({
+        migrationsPath: '/custom/migrations/dir',
+      })
+    })
+
     test('returns full connection string with --show-credentials', async () => {
       await statusDb({ json: true, showCredentials: true }, createMockCommand())
 
@@ -627,6 +643,18 @@ describe('statusDb', () => {
       await statusDb({}, createMockCommand())
 
       expect(logMessages.join('\n')).toContain("Migrations that exist locally that haven't yet been applied")
+    })
+
+    test('renders a dedicated line for the migrations directory', async () => {
+      await statusDb({}, createMockCommand())
+
+      expect(logMessages.join('\n')).toContain('Migrations directory: /project/netlify/database/migrations')
+    })
+
+    test('migrations directory line honours netlify.toml db.migrations.path override', async () => {
+      await statusDb({}, createMockCommand({ migrationsPath: '/custom/migrations/dir' }))
+
+      expect(logMessages.join('\n')).toContain('Migrations directory: /custom/migrations/dir')
     })
 
     test('always renders the immutability note below the Applied migrations list', async () => {
