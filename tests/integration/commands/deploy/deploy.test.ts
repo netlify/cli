@@ -1507,6 +1507,34 @@ describe.concurrent('deploy command', () => {
     })
   })
 
+  test('should honor NETLIFY_DEPLOY_SOURCE env var in create deploy request', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({
+            apiUrl: mockApi.apiUrl,
+            builder,
+            env: { NETLIFY_DEPLOY_SOURCE: 'agent_runner' },
+          }),
+        ).then(parseDeploy)
+
+        const createDeployRequest = mockApi.requests.find(
+          (req) => req.method === 'POST' && req.path === '/api/v1/sites/site_id/deploys',
+        )
+        expect(createDeployRequest).toBeDefined()
+        expect((createDeployRequest!.body as Record<string, unknown>).deploy_source).toBe('agent_runner')
+      })
+    })
+  })
+
   test('should include build_version in deploy body', async (t) => {
     await withMockDeploy(async (mockApi, deployState) => {
       await withSiteBuilder(t, async (builder) => {
