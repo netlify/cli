@@ -1,8 +1,11 @@
+import { relative, sep } from 'path'
+
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
 const {
   mockReaddir,
   mockReadFile,
+  mockFileExistsAsync,
   mockConnectToDatabase,
   mockDetectExisting,
   mockQuery,
@@ -13,6 +16,7 @@ const {
 } = vi.hoisted(() => {
   const mockReaddir = vi.fn()
   const mockReadFile = vi.fn()
+  const mockFileExistsAsync = vi.fn()
   const mockQuery = vi.fn()
   const mockCleanup = vi.fn().mockResolvedValue(undefined)
   const mockConnectToDatabase = vi.fn()
@@ -23,6 +27,7 @@ const {
   return {
     mockReaddir,
     mockReadFile,
+    mockFileExistsAsync,
     mockConnectToDatabase,
     mockDetectExisting,
     mockQuery,
@@ -64,6 +69,12 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   },
 }))
 
+vi.mock('../../../../src/lib/fs.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/lib/fs.js')>()),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  fileExistsAsync: (path: string) => mockFileExistsAsync(path),
+}))
+
 vi.mock('../../../../src/commands/database/util/db-connection.js', () => ({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   connectToDatabase: (...args: unknown[]) => mockConnectToDatabase(...args),
@@ -81,11 +92,60 @@ const LOCAL_CONN_NO_CREDS = 'postgres://localhost:5432/postgres'
 const BRANCH_CONN = 'postgres://admin:secret@branch-host.neon.tech/db'
 const PROD_CONN = 'postgres://owner:prodsecret@prod-host.neon.tech/db'
 
-const makeDirents = (names: string[]) =>
-  names.map((name) => ({
-    name,
-    isDirectory: () => true,
-  }))
+interface MockFSNode {
+  files?: Record<string, string>
+  dirs?: Record<string, MockFSNode>
+}
+
+const DEFAULT_MOCK_FS_ROOT = '/project/netlify/database/migrations'
+
+const mockFS = (tree: MockFSNode, { root = DEFAULT_MOCK_FS_ROOT }: { root?: string } = {}) => {
+  const resolve = (absolutePath: string): { kind: 'dir'; node: MockFSNode } | { kind: 'file' } | null => {
+    const rel = relative(root, absolutePath)
+    if (rel === '') return { kind: 'dir', node: tree }
+    if (rel.startsWith('..')) return null
+    const parts = rel.split(sep)
+    let cursor: MockFSNode = tree
+    for (let i = 0; i < parts.length; i += 1) {
+      const part = parts[i]
+      const isLast = i === parts.length - 1
+      if (isLast && cursor.files && part in cursor.files) return { kind: 'file' }
+      if (cursor.dirs && part in cursor.dirs) {
+        cursor = cursor.dirs[part]
+        if (isLast) return { kind: 'dir', node: cursor }
+        continue
+      }
+      return null
+    }
+    return null
+  }
+
+  mockReaddir.mockImplementation((path: unknown) => {
+    const resolved = typeof path === 'string' ? resolve(path) : null
+    if (!resolved || resolved.kind !== 'dir') {
+      return Promise.reject(Object.assign(new Error(`ENOENT: ${String(path)}`), { code: 'ENOENT' }))
+    }
+    const dirEntries = Object.keys(resolved.node.dirs ?? {}).map((name) => ({
+      name,
+      isDirectory: () => true,
+      isFile: () => false,
+    }))
+    const fileEntries = Object.keys(resolved.node.files ?? {}).map((name) => ({
+      name,
+      isDirectory: () => false,
+      isFile: () => true,
+    }))
+    return Promise.resolve([...dirEntries, ...fileEntries])
+  })
+
+  mockFileExistsAsync.mockImplementation((path: unknown) =>
+    Promise.resolve(typeof path === 'string' && resolve(path) !== null),
+  )
+}
+
+const migrationsTree = (names: string[]): MockFSNode => ({
+  dirs: Object.fromEntries(names.map((name) => [name, { files: { 'migration.sql': '' } }])),
+})
 
 function createMockCommand(
   overrides: { siteRoot?: string | null; migrationsPath?: string | null; siteId?: string | null } = {},
@@ -178,7 +238,7 @@ beforeEach(() => {
   logMessages.length = 0
   jsonMessages.length = 0
   vi.clearAllMocks()
-  mockReaddir.mockResolvedValue([])
+  mockFS({})
   mockCleanup.mockResolvedValue(undefined)
   mockLocalAppliedRows([])
   setupFetchRouter({ siteDatabase: null })
@@ -288,7 +348,7 @@ describe('statusDb', () => {
     test('still connects and reads migration state when no local database is already running', async () => {
       mockDetectExisting.mockReturnValue(null)
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b']))
+      mockFS(migrationsTree(['0001_a', '0002_b']))
 
       await statusDb({ json: true }, createMockCommand())
 
@@ -315,7 +375,7 @@ describe('statusDb', () => {
     test('default output hints at starting a persistent local database when none is running', async () => {
       mockDetectExisting.mockReturnValue(null)
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b']))
+      mockFS(migrationsTree(['0001_a', '0002_b']))
 
       await statusDb({}, createMockCommand())
 
@@ -323,7 +383,7 @@ describe('statusDb', () => {
       expect(output).toContain('The local database is not running')
       expect(output).toContain('netlify dev')
       // Migration state is still rendered — connection string is the only thing suppressed.
-      expect(output).toContain('Applied migrations')
+      expect(output).toContain('Migrations')
       expect(output).toContain('• 0001_a')
       expect(output).toContain('• 0002_b')
     })
@@ -338,7 +398,7 @@ describe('statusDb', () => {
 
     test('reports applied and pending correctly', async () => {
       mockLocalAppliedRows(['0001_a', '0002_b'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b', '0003_c']))
+      mockFS(migrationsTree(['0001_a', '0002_b', '0003_c']))
 
       await statusDb({ json: true }, createMockCommand())
 
@@ -360,6 +420,22 @@ describe('statusDb', () => {
       })
     })
 
+    test('includes the resolved migrations directory in JSON output', async () => {
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        migrationsPath: '/project/netlify/database/migrations',
+      })
+    })
+
+    test('JSON migrationsPath honours netlify.toml db.migrations.path override', async () => {
+      await statusDb({ json: true }, createMockCommand({ migrationsPath: '/custom/migrations/dir' }))
+
+      expect(jsonMessages[0]).toMatchObject({
+        migrationsPath: '/custom/migrations/dir',
+      })
+    })
+
     test('returns full connection string with --show-credentials', async () => {
       await statusDb({ json: true, showCredentials: true }, createMockCommand())
 
@@ -370,33 +446,45 @@ describe('statusDb', () => {
 
     test('default output shows applied and pending as bullets', async () => {
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b']))
+      mockFS(migrationsTree(['0001_a', '0002_b']))
 
       await statusDb({}, createMockCommand())
 
       const output = logMessages.join('\n')
-      expect(output).toContain('Applied migrations')
+      expect(output).toContain('Applied')
       expect(output).toContain('• 0001_a')
-      expect(output).toContain('Migrations not applied')
+      expect(output).toContain('Pending')
       expect(output).toContain('• 0002_b')
     })
 
     test('default output includes the apply-command hint when pending migrations exist on local', async () => {
       mockLocalAppliedRows([])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain('netlify db migrations apply')
+      expect(logMessages.join('\n')).toContain('netlify database migrations apply')
     })
 
     test('default output omits the apply-command hint when there are no pending migrations', async () => {
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).not.toContain('netlify db migrations apply')
+      expect(logMessages.join('\n')).not.toContain('netlify database migrations apply')
+    })
+
+    test('shows the deploy hint instead of the apply-command hint when NETLIFY_DB_URL overrides the connection', async () => {
+      process.env.NETLIFY_DB_URL = 'postgres://override.example.com/db'
+      mockLocalAppliedRows([])
+      mockFS(migrationsTree(['0001_a']))
+
+      await statusDb({}, createMockCommand())
+
+      const output = logMessages.join('\n')
+      expect(output).not.toContain('netlify database migrations apply')
+      expect(output).toContain('Deploy these files to apply the migrations.')
     })
 
     test('shows --show-credentials hint when connection has credentials', async () => {
@@ -417,6 +505,85 @@ describe('statusDb', () => {
       await statusDb({ showCredentials: true }, createMockCommand())
 
       expect(logMessages.join('\n')).not.toContain('To reveal the full connection string')
+    })
+  })
+
+  describe('local migration discovery', () => {
+    test('ignores directories that do not contain a migration.sql file', async () => {
+      mockFS({
+        dirs: {
+          '0001_with_sql': { files: { 'migration.sql': '' } },
+          '0002_without_sql': {},
+          '0003_wrong_file': { files: { 'readme.md': '' } },
+        },
+      })
+
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        pending: [{ version: 1, name: '0001_with_sql' }],
+      })
+    })
+
+    test('includes .sql files sitting directly under the migrations directory', async () => {
+      mockFS({
+        files: {
+          '0001_a.sql': '',
+          '0002_b.sql': '',
+        },
+      })
+
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        pending: [
+          { version: 1, name: '0001_a' },
+          { version: 2, name: '0002_b' },
+        ],
+      })
+    })
+
+    test('ignores directories whose name does not match the migration pattern', async () => {
+      mockFS({
+        dirs: {
+          '0001_valid': { files: { 'migration.sql': '' } },
+          '0002_with-hyphen': { files: { 'migration.sql': '' } },
+          'not-a-migration': { files: { 'migration.sql': '' } },
+          '0003_UPPERCASE': { files: { 'migration.sql': '' } },
+          '0004-hyphen-separator': { files: { 'migration.sql': '' } },
+          no_leading_digits: { files: { 'migration.sql': '' } },
+        },
+      })
+
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        pending: [
+          { version: 1, name: '0001_valid' },
+          { version: 2, name: '0002_with-hyphen' },
+        ],
+      })
+    })
+
+    test('ignores .sql files whose name does not match the migration pattern', async () => {
+      mockFS({
+        files: {
+          '0001_valid.sql': '',
+          '0002_with-hyphen.sql': '',
+          'random.sql': '',
+          '0003_UPPERCASE.sql': '',
+          '0004-hyphen-separator.sql': '',
+        },
+      })
+
+      await statusDb({ json: true }, createMockCommand())
+
+      expect(jsonMessages[0]).toMatchObject({
+        pending: [
+          { version: 1, name: '0001_valid' },
+          { version: 2, name: '0002_with-hyphen' },
+        ],
+      })
     })
   })
 
@@ -451,7 +618,6 @@ describe('statusDb', () => {
 
     test('renders an installed statement under Package when installed', async () => {
       await statusDb({}, createMockCommand())
-
       expect(logMessages.join('\n')).toContain('The @netlify/database package is installed')
     })
 
@@ -479,38 +645,61 @@ describe('statusDb', () => {
       )
     })
 
-    test('renders a subtitle under Applied migrations', async () => {
+    test('renders a subtitle under Migrations', async () => {
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain('Migrations that have been applied to the database branch')
+      expect(logMessages.join('\n')).toContain('Database migrations managed by Netlify')
     })
 
-    test('renders a subtitle under Migrations not applied', async () => {
+    test('renders a dedicated section for the migrations directory with a relative path', async () => {
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain("Migrations that exist locally that haven't yet been applied")
+      const output = logMessages.join('\n')
+      expect(output).toContain('Migrations directory')
+      expect(output).toContain('netlify/database/migrations')
     })
 
-    test('always renders the immutability note below the Applied migrations list', async () => {
+    test('falls back to the absolute path when the directory is outside the project root', async () => {
+      await statusDb({}, createMockCommand({ migrationsPath: '/custom/migrations/dir' }))
+
+      expect(logMessages.join('\n')).toContain('/custom/migrations/dir')
+    })
+
+    test('renders the immutability note above the Applied Migrations list', async () => {
       mockLocalAppliedRows(['0001_a'])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({}, createMockCommand())
 
       const output = logMessages.join('\n')
-      // Note appears after the bullet list.
       const bulletIndex = output.indexOf('• 0001_a')
-      const noteIndex = output.indexOf('Note that these migrations cannot be removed or edited')
-      expect(bulletIndex).toBeGreaterThanOrEqual(0)
-      expect(noteIndex).toBeGreaterThan(bulletIndex)
-      expect(output).toContain('you should generate a new migration')
+      const noteIndex = output.indexOf('These migrations have been applied and cannot be edited or deleted')
+      expect(bulletIndex).toBeGreaterThan(0)
+      expect(noteIndex).toBeGreaterThan(0)
+      expect(noteIndex).toBeLessThan(bulletIndex)
+      expect(output).toContain('Any changes to the schema must involve a new migration')
     })
 
-    test('renders the immutability note regardless of NETLIFY_AGENT_RUNNER_ID', async () => {
-      // env var intentionally unset in beforeEach
+    test('renders the immutability note even when there are no applied migrations', async () => {
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain('Note that these migrations cannot be removed or edited')
+      expect(logMessages.join('\n')).toContain('These migrations have been applied and cannot be edited or deleted')
+    })
+
+    test('renders a subtitle under Pending Migrations', async () => {
+      await statusDb({}, createMockCommand())
+
+      expect(logMessages.join('\n')).toContain(
+        "These migrations are defined locally but haven't been applied, and you can change them or delete them.",
+      )
+    })
+
+    test('renders a note under the migrations directory line', async () => {
+      await statusDb({}, createMockCommand())
+
+      expect(logMessages.join('\n')).toContain(
+        'Migration files in this directory are automatically applied when deploying to Netlify.',
+      )
     })
   })
 
@@ -523,8 +712,8 @@ describe('statusDb', () => {
       await statusDb({}, createMockCommand())
       const output = logMessages.join('\n')
 
-      expect(output).toContain('netlify db connect')
-      expect(output).toContain('netlify db status --show-credentials')
+      expect(output).toContain('netlify database connect')
+      expect(output).toContain('netlify database status --show-credentials')
       expect(output).not.toContain('npx netlify')
     })
 
@@ -534,17 +723,17 @@ describe('statusDb', () => {
       await statusDb({}, createMockCommand())
       const output = logMessages.join('\n')
 
-      expect(output).toContain('npx netlify db connect')
-      expect(output).toContain('npx netlify db status --show-credentials')
+      expect(output).toContain('npx netlify database connect')
+      expect(output).toContain('npx netlify database status --show-credentials')
     })
 
     test('uses the dynamic command in the apply-pending hint', async () => {
       mockLocalAppliedRows([])
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({}, createMockCommand())
 
-      expect(logMessages.join('\n')).toContain('netlify db migrations apply')
+      expect(logMessages.join('\n')).toContain('netlify database migrations apply')
     })
 
     test('uses the dynamic command in the not-running hint', async () => {
@@ -595,7 +784,7 @@ describe('statusDb', () => {
           ],
         },
       })
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a', '0002_b', '0003_c']))
+      mockFS(migrationsTree(['0001_a', '0002_b', '0003_c']))
 
       await statusDb({ branch: 'feature-x', json: true }, createMockCommand())
 
@@ -622,17 +811,19 @@ describe('statusDb', () => {
       })
     })
 
-    test('does not show the apply-command hint for remote', async () => {
+    test('shows the deploy hint instead of the apply-command hint for remote', async () => {
       setupFetchRouter({
         siteDatabase: { connection_string: PROD_CONN },
         branch: { 'feature-x': { connection_string: BRANCH_CONN } },
         migrations: { 'feature-x': [] },
       })
-      mockReaddir.mockResolvedValue(makeDirents(['0001_a']))
+      mockFS(migrationsTree(['0001_a']))
 
       await statusDb({ branch: 'feature-x' }, createMockCommand())
 
-      expect(logMessages.join('\n')).not.toContain('netlify db migrations apply')
+      const output = logMessages.join('\n')
+      expect(output).not.toContain('netlify database migrations apply')
+      expect(output).toContain('Deploy these files to apply the migrations.')
     })
 
     test('falls back to NETLIFY_DB_BRANCH env var when --branch is not passed', async () => {

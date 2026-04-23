@@ -6,6 +6,7 @@ import inquirer from 'inquirer'
 import { log, logJson } from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
 import BaseCommand from '../base-command.js'
+import { readApiErrorMessage } from './util/api-errors.js'
 import { PRODUCTION_BRANCH } from './util/constants.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 
@@ -15,15 +16,28 @@ export interface MigrationPullOptions {
   json?: boolean
 }
 
-interface MigrationFile {
+interface MigrationListItem {
+  version: number
+  name: string
+  path: string
+  applied: boolean
+}
+
+interface ListMigrationsResponse {
+  migrations: MigrationListItem[]
+}
+
+interface MigrationDetailResponse {
   version: number
   name: string
   path: string
   content: string
 }
 
-interface ListMigrationsResponse {
-  migrations: MigrationFile[]
+interface ApiContext {
+  siteId: string
+  token: string
+  basePath: string
 }
 
 const getLocalGitBranch = async (): Promise<string> => {
@@ -45,7 +59,7 @@ const resolveBranch = async (branchOption: string | true | undefined): Promise<s
   return branchOption
 }
 
-const fetchMigrations = async (command: BaseCommand, branch: string | undefined): Promise<MigrationFile[]> => {
+const getApiContext = (command: BaseCommand): ApiContext => {
   const siteId = command.siteId
   if (!siteId) {
     throw new Error('The project must be linked with netlify link before pulling migrations.')
@@ -56,27 +70,51 @@ const fetchMigrations = async (command: BaseCommand, branch: string | undefined)
     throw new Error('You must be logged in with netlify login to pull migrations.')
   }
 
-  const token = accessToken.replace('Bearer ', '')
-  const basePath = command.netlify.api.basePath
+  return {
+    siteId,
+    token: accessToken.replace('Bearer ', ''),
+    basePath: command.netlify.api.basePath,
+  }
+}
 
-  const url = new URL(`${basePath}/sites/${encodeURIComponent(siteId)}/database/migrations`)
+const fetchMigrations = async (ctx: ApiContext, branch: string | undefined): Promise<MigrationListItem[]> => {
+  const url = new URL(`${ctx.basePath}/sites/${encodeURIComponent(ctx.siteId)}/database/migrations`)
   if (branch) {
     url.searchParams.set('branch', branch)
   }
 
   const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${ctx.token}` },
   })
 
   if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Failed to fetch migrations (${String(response.status)}): ${text}`)
+    const message = await readApiErrorMessage(response)
+    throw new Error(`Failed to fetch migrations (${String(response.status)}): ${message}`)
   }
 
   const data = (await response.json()) as ListMigrationsResponse
   return data.migrations
+}
+
+const fetchMigrationContent = async (ctx: ApiContext, name: string, branch: string | undefined): Promise<string> => {
+  const url = new URL(
+    `${ctx.basePath}/sites/${encodeURIComponent(ctx.siteId)}/database/migrations/${encodeURIComponent(name)}`,
+  )
+  if (branch) {
+    url.searchParams.set('branch', branch)
+  }
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${ctx.token}` },
+  })
+
+  if (!response.ok) {
+    const message = await readApiErrorMessage(response)
+    throw new Error(`Failed to fetch content for migration "${name}" (${String(response.status)}): ${message}`)
+  }
+
+  const data = (await response.json()) as MigrationDetailResponse
+  return data.content
 }
 
 export const migrationPull = async (options: MigrationPullOptions, command: BaseCommand) => {
@@ -84,7 +122,8 @@ export const migrationPull = async (options: MigrationPullOptions, command: Base
 
   const branch = (await resolveBranch(options.branch)) ?? process.env.NETLIFY_DB_BRANCH
   const source = branch ?? PRODUCTION_BRANCH
-  const migrations = await fetchMigrations(command, branch)
+  const ctx = getApiContext(command)
+  const migrations = await fetchMigrations(ctx, branch)
 
   if (migrations.length === 0) {
     if (json) {
@@ -96,6 +135,18 @@ export const migrationPull = async (options: MigrationPullOptions, command: Base
   }
 
   const migrationsDirectory = resolveMigrationsDirectory(command)
+  const canonicalMigrationsDir = resolve(migrationsDirectory)
+
+  const resolvedPaths = migrations.map((migration) => {
+    if (isAbsolute(migration.path) || migration.path.split(/[/\\]/).includes('..')) {
+      throw new Error(`Migration path "${migration.path}" contains invalid path segments.`)
+    }
+    const filePath = resolve(canonicalMigrationsDir, migration.path)
+    if (!filePath.startsWith(canonicalMigrationsDir)) {
+      throw new Error(`Migration path "${migration.path}" resolves outside the migrations directory.`)
+    }
+    return filePath
+  })
 
   if (!force) {
     const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([
@@ -115,22 +166,13 @@ export const migrationPull = async (options: MigrationPullOptions, command: Base
     }
   }
 
-  const canonicalMigrationsDir = resolve(migrationsDirectory)
+  const contents = await Promise.all(migrations.map((migration) => fetchMigrationContent(ctx, migration.name, branch)))
 
   await rm(canonicalMigrationsDir, { recursive: true, force: true })
 
-  for (const migration of migrations) {
-    if (isAbsolute(migration.path) || migration.path.split(/[/\\]/).includes('..')) {
-      throw new Error(`Migration path "${migration.path}" contains invalid path segments.`)
-    }
-
-    const filePath = resolve(canonicalMigrationsDir, migration.path)
-    if (!filePath.startsWith(canonicalMigrationsDir)) {
-      throw new Error(`Migration path "${migration.path}" resolves outside the migrations directory.`)
-    }
-
+  for (const [index, filePath] of resolvedPaths.entries()) {
     await mkdir(dirname(filePath), { recursive: true })
-    await writeFile(filePath, migration.content)
+    await writeFile(filePath, contents[index])
   }
 
   if (json) {
