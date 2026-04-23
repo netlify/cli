@@ -2,30 +2,77 @@
 name: E2E Tests
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches:
-      - '**'
-      - '!release-please--**'
+    branches: ['**']
   schedule:
     # check daily to notice potential package manager issues
     - cron: '0 1 * * *' # At 01:00 daily
 
 jobs:
-  e2e-windows:
-    name: E2E Windows tests
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+      has-code-changes: ${{ steps.filter.outputs.code || 'true' }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v6
+
+      - name: Detect code changes
+        uses: dorny/paths-filter@v3
+        if: github.event_name == 'pull_request'
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**'
+              - '!**/*.md'
+              - '!LICENSE'
+              - '!docs/**'
+              - '!.vale.ini'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/PULL_REQUEST_TEMPLATE.md'
+
+      - name: Compute matrix
+        id: matrix
+        run: |
+          node_versions=$(yq eval '.node_versions | join(" ")' .github/test-matrix.yml)
+          extra_oses=$(yq eval '.extra_oses_on_release | join(" ")' .github/test-matrix.yml)
+          primary=$(yq eval '.primary_node_version' .github/test-matrix.yml)
+
+          OS_NODE=()
+          for node in $node_versions; do
+            OS_NODE+=("ubuntu-latest:$node")
+          done
+          if [[ "${{ github.event_name }}" == "schedule" ]] || [[ "${{ github.head_ref }}" == release-please--* ]]; then
+            for os in $extra_oses; do
+              OS_NODE+=("$os:$primary")
+            done
+          fi
+
+          entries=()
+          for combo in "${OS_NODE[@]}"; do
+            os="${combo%:*}"
+            node="${combo##*:}"
+            entries+=("{\"os\":\"$os\",\"node-version\":\"$node\"}")
+          done
+          joined=$(IFS=,; echo "${entries[*]}")
+          echo "value={\"include\":[$joined]}" >> "$GITHUB_OUTPUT"
+
+  e2e:
+    name: E2E
+    needs: setup
+    if: needs.setup.outputs.has-code-changes == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
-      matrix:
-        os: [windows-2025]
-        # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
-        node-version: ['20.12.2', '22', '24']
       fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
       # This improves Windows network performance. We need this since we open many ports in our tests.
       - name: Increase Windows port limit and reduce time wait delay
+        if: matrix.os == 'windows-2025'
         run: |
           netsh int ipv4 set dynamicport tcp start=1025 num=64511
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
@@ -42,59 +89,14 @@ jobs:
           cache: npm
           check-latest: true
 
-      # Let corepack manage npm, pnpm, and yarn versions for E2E tests
-      - name: Enable corepack
+      # Let corepack manage npm, pnpm, and yarn versions on Windows.
+      - name: Enable corepack (Windows)
+        if: matrix.os == 'windows-2025'
         run: corepack enable
 
-      - name: Install dependencies
-        run: npm ci --no-audit
-
-      - name: Build project
-        run: npm run build
-
-      - name: Run E2E tests
-        run: npm run test:e2e
-
-      - name: Notify Slack
-        uses: 8398a7/action-slack@v3
-        if: ${{ github.event_name == 'schedule' && failure() }}
-        with:
-          status: custom
-          fields: workflow
-          custom_payload: |
-            {
-              attachments: [{
-                title: 'E2E Test Failed! (${{ matrix.os }},node-${{ matrix.node-version }}',
-                color: 'danger',
-                text: `${process.env.AS_WORKFLOW}\n\nEither something broke or a test is flaky.\n\nConsider doing something about it :fire_engine:`,
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  e2e-linux-based-os:
-    name: E2E
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest]
-        node-version: ['20.12.2', '22', '24']
-      fail-fast: false
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
-          check-latest: true
-
-      - uses: pnpm/action-setup@v4
+      - name: Setup pnpm (non-Windows)
+        if: matrix.os != 'windows-2025'
+        uses: pnpm/action-setup@v4
         with:
           version: 10
 
@@ -123,3 +125,20 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  status:
+    name: E2E Tests Status
+    needs: [setup, e2e]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify result
+        run: |
+          if [[ "${{ needs.setup.result }}" != "success" ]]; then
+            echo "Setup job failed"
+            exit 1
+          fi
+          if [[ "${{ needs.e2e.result }}" == "failure" || "${{ needs.e2e.result }}" == "cancelled" ]]; then
+            echo "E2E tests failed"
+            exit 1
+          fi

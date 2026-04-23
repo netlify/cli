@@ -1,0 +1,21 @@
+---
+# Node.js versions tested on Linux in every PR's test matrix.
+# The minimum version should stay aligned with package.json `engines.node`.
+# Used by: unit-tests.yml, integration-tests.yml, e2e-tests.yml
+node_versions: [ "20.12.2", "22", "24" ]
+
+# Additional operating systems added to the full test matrix on release-please
+# PRs and scheduled (cron) E2E runs. Only the primary Node version (see below)
+# is tested on these platforms to keep the job count manageable.
+# Do NOT include ubuntu here — Linux is always covered by `node_versions` above.
+# Used by: unit-tests.yml, integration-tests.yml, e2e-tests.yml
+extra_oses_on_release: [ "macOS-latest", "windows-2025" ]
+
+# The "primary" Node.js version. Two uses:
+#   1. Paired with each of `extra_oses_on_release` in the full matrix.
+#   2. The pinned version for all single-version workflows.
+# Must be present in `node_versions` above.
+# Used by: unit-tests.yml, integration-tests.yml, e2e-tests.yml,
+#          release-please.yml, pre-release.yml, pre-release-sha.yml,
+#          benchmark.yml, lint.yml, typecheck.yml, format.yml, verify-docs.yml
+primary_node_version: "24"
