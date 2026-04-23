@@ -1,5 +1,5 @@
 import { readFile, readdir } from 'fs/promises'
-import { join, relative } from 'path'
+import { join, relative, sep } from 'path'
 
 import { chalk, log, logJson, netlifyCommand } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -323,7 +323,8 @@ const renderPretty = (params: RenderParams) => {
 
   log('')
   const relativePath = relative(projectRoot, migrationsDirectory)
-  const displayPath = relativePath && !relativePath.startsWith('..') ? relativePath : migrationsDirectory
+  const isInsideProject = relativePath !== '' && !relativePath.startsWith('..')
+  const displayPath = (isInsideProject ? relativePath : migrationsDirectory).split(sep).join('/')
   log(`  ${STATUS_INFO} ${chalk.bold('Migrations directory')}`)
   log(chalk.gray(`${INDENT}Migration files in this directory are automatically applied when deploying to Netlify.`))
   log(`${INDENT}${displayPath}`)
