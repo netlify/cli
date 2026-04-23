@@ -1,5 +1,6 @@
 import { type SQLExecutor } from '@netlify/dev'
 
+import { readApiErrorMessage } from './api-errors.js'
 import { MIGRATIONS_TABLE } from './constants.js'
 
 export interface MigrationFile {
@@ -53,8 +54,8 @@ export const remoteAppliedMigrations =
     })
 
     if (!response.ok) {
-      const text = await response.text()
-      throw new Error(`Failed to fetch applied migrations (${String(response.status)}): ${text}`)
+      const message = await readApiErrorMessage(response)
+      throw new Error(`Failed to fetch applied migrations (${String(response.status)}): ${message}`)
     }
 
     const data = (await response.json()) as ListMigrationsResponse
