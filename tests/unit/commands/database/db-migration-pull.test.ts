@@ -321,6 +321,18 @@ describe('migrationPull', () => {
     )
   })
 
+  test('extracts the server `message` from a JSON error body', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 423,
+      text: () => Promise.resolve(JSON.stringify({ code: 423, message: 'database is disabled' })),
+    })
+
+    await expect(migrationPull({ force: true }, createMockCommand())).rejects.toThrow(
+      'Failed to fetch migrations (423): database is disabled',
+    )
+  })
+
   test('rejects migration paths with directory traversal', async () => {
     mockFetch.mockResolvedValue({
       ok: true,

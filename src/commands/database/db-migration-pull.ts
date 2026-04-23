@@ -6,6 +6,7 @@ import inquirer from 'inquirer'
 import { log, logJson } from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
 import BaseCommand from '../base-command.js'
+import { readApiErrorMessage } from './util/api-errors.js'
 import { PRODUCTION_BRANCH } from './util/constants.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 
@@ -87,8 +88,8 @@ const fetchMigrations = async (ctx: ApiContext, branch: string | undefined): Pro
   })
 
   if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Failed to fetch migrations (${String(response.status)}): ${text}`)
+    const message = await readApiErrorMessage(response)
+    throw new Error(`Failed to fetch migrations (${String(response.status)}): ${message}`)
   }
 
   const data = (await response.json()) as ListMigrationsResponse
@@ -108,8 +109,8 @@ const fetchMigrationContent = async (ctx: ApiContext, name: string, branch: stri
   })
 
   if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Failed to fetch content for migration "${name}" (${String(response.status)}): ${text}`)
+    const message = await readApiErrorMessage(response)
+    throw new Error(`Failed to fetch content for migration "${name}" (${String(response.status)}): ${message}`)
   }
 
   const data = (await response.json()) as MigrationDetailResponse

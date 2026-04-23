@@ -9,6 +9,7 @@ import {
   type MigrationFile,
   remoteAppliedMigrations,
 } from './util/applied-migrations.js'
+import { readApiErrorMessage } from './util/api-errors.js'
 import { connectToDatabase, detectExistingLocalConnectionString } from './util/db-connection.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import { fileExistsAsync } from '../../lib/fs.js'
@@ -176,8 +177,8 @@ const fetchBranchConnectionString = async (ctx: ServerContext, branchId: string)
   }
 
   if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Failed to fetch database branch "${branchId}" (${String(response.status)}): ${text}`)
+    const message = await readApiErrorMessage(response)
+    throw new Error(`Failed to fetch database branch "${branchId}" (${String(response.status)}): ${message}`)
   }
 
   const data = (await response.json()) as { connection_string?: string }
