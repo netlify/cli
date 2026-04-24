@@ -7,8 +7,6 @@ import { stdin, stdout } from 'process'
 import type { NetlifyAPI } from '@netlify/api'
 import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
 import inquirer from 'inquirer'
-import isEmpty from 'lodash/isEmpty.js'
-import isObject from 'lodash/isObject.js'
 import { parseAllHeaders } from '@netlify/headers-parser'
 import { parseAllRedirects } from '@netlify/redirect-parser'
 import prettyjson from 'prettyjson'
@@ -45,6 +43,7 @@ import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
 import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
+import { isEmpty } from '../../utils/object-utilities.js'
 import openBrowser from '../../utils/open-browser.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { resolveTeamForNonInteractive } from '../../utils/team.js'
@@ -359,7 +358,11 @@ const generateDeployCommand = (
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
-  if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
+  if (
+    typeof siteData.published_deploy === 'object' &&
+    siteData.published_deploy !== null &&
+    siteData.published_deploy.locked
+  ) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
 
     const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [], command)
