@@ -192,7 +192,11 @@ describe.concurrent('frameworks/framework-detection', () => {
       await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).build()
 
       try {
-        await withDevServer({ cwd: builder.directory, args: ['--target-port', targetPort.toString()] }, async () => {}, true)
+        await withDevServer(
+          { cwd: builder.directory, args: ['--target-port', targetPort.toString()] },
+          async () => {},
+          true,
+        )
         t.expect.unreachable()
       } catch (err) {
         t.expect(err).toHaveProperty('stdout')

@@ -49,12 +49,16 @@ describe('redirects', async () => {
         await writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
         await writeFile(
           netlifyTomlPath,
-          (await readFile(netlifyTomlPath, 'utf8')).replace('targetPort = 6123', `targetPort = ${targetPort.toString()}`),
+          (
+            await readFile(netlifyTomlPath, 'utf8')
+          ).replace('targetPort = 6123', `targetPort = ${targetPort.toString()}`),
         )
       },
     },
     () => {
-      test<FixtureTestContext>('should prefer local files instead of redirect when not forced', async ({ devServer }) => {
+      test<FixtureTestContext>('should prefer local files instead of redirect when not forced', async ({
+        devServer,
+      }) => {
         const response = await fetch(`http://localhost:${devServer!.port}/test.txt`, {})
 
         expect(response.status).toBe(200)
