@@ -1,5 +1,5 @@
-import { readFile, readdir } from 'fs/promises'
-import { join, relative, sep } from 'path'
+import { readdir } from 'fs/promises'
+import { join } from 'path'
 
 import { chalk, log, logJson, netlifyCommand } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -12,6 +12,8 @@ import {
 import { readApiErrorMessage } from './util/api-errors.js'
 import { connectToDatabase, detectExistingLocalConnectionString } from './util/db-connection.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
+import { hasDependency } from './util/package-json.js'
+import { relativeToProject } from './util/paths.js'
 import { fileExistsAsync } from '../../lib/fs.js'
 
 export interface DatabaseStatusOptions {
@@ -144,19 +146,6 @@ const connectionStringHasCredentials = (connectionString: string): boolean => {
   try {
     const url = new URL(connectionString)
     return Boolean(url.username || url.password)
-  } catch {
-    return false
-  }
-}
-
-const isNetlifyDatabasePackageInstalled = async (projectRoot: string): Promise<boolean> => {
-  try {
-    const raw = await readFile(`${projectRoot}/package.json`, 'utf-8')
-    const pkg = JSON.parse(raw) as {
-      dependencies?: Record<string, string>
-      devDependencies?: Record<string, string>
-    }
-    return Boolean(pkg.dependencies?.[NETLIFY_DATABASE_PACKAGE] ?? pkg.devDependencies?.[NETLIFY_DATABASE_PACKAGE])
   } catch {
     return false
   }
@@ -322,9 +311,7 @@ const renderPretty = (params: RenderParams) => {
   log('')
 
   log('')
-  const relativePath = relative(projectRoot, migrationsDirectory)
-  const isInsideProject = relativePath !== '' && !relativePath.startsWith('..')
-  const displayPath = (isInsideProject ? relativePath : migrationsDirectory).split(sep).join('/')
+  const displayPath = relativeToProject(projectRoot, migrationsDirectory)
   log(`  ${STATUS_INFO} ${chalk.bold('Migrations directory')}`)
   log(chalk.gray(`${INDENT}Migration files in this directory are automatically applied when deploying to Netlify.`))
   log(`${INDENT}${displayPath}`)
@@ -390,7 +377,7 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
 
   const migrationsDirectory = resolveMigrationsDirectory(command)
   const local = await readLocalMigrations(migrationsDirectory)
-  const packageInstalled = await isNetlifyDatabasePackageInstalled(buildDir)
+  const packageInstalled = await hasDependency(NETLIFY_DATABASE_PACKAGE, buildDir)
 
   const siteId = command.siteId
   const accessToken = command.netlify.api.accessToken
