@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import inquirer from 'inquirer'
 
 import type { OptionValues } from 'commander'
-import { install, uninstall } from '@pnpm/tabtab'
+import { install, isShellSupported, uninstall } from '@pnpm/tabtab'
 
 import { generateAutocompletion } from '../../lib/completion/index.js'
 import {
@@ -27,10 +27,19 @@ export const completionGenerate = async (_options: OptionValues, command: BaseCo
     return logAndThrowError(`There has been an error generating the completion script.`)
   }
 
+  let shell: 'bash' | 'fish' | 'pwsh' | 'zsh' | undefined
+  if (typeof _options.shell === 'string') {
+    if (!isShellSupported(_options.shell)) {
+      return logAndThrowError(`Unsupported shell "${_options.shell}". Supported shells are bash, fish, pwsh, and zsh.`)
+    }
+    shell = _options.shell
+  }
+
   generateAutocompletion(parent)
   await install({
     name: parent.name(),
     completer,
+    shell,
   })
 
   const completionScriptPath = join(homedir(), `.config/tabtab/${parent.name()}.zsh`)

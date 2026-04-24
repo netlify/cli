@@ -59,10 +59,10 @@ USAGE
   $ netlify completion [options]
 
 OPTIONS
-  -h, --help             display help for command
   --debug                Print debugging information
   --auth <token>         Netlify auth token - can be used to run this command
                          without logging in
+  -h, --help             display help for command
 
 DESCRIPTION
   Run this command to see instructions for your shell.

@@ -828,13 +828,15 @@ describe.concurrent('command/dev', () => {
 
   test('deploy environment variables injected by onDev plugin hooks are injected into functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
+
       await builder
         .withNetlifyToml({
           config: {
             plugins: [{ package: './plugins/plugin' }],
             dev: {
               command: 'node index.mjs',
-              targetPort: 4445,
+              targetPort,
             },
           },
         })
@@ -889,7 +891,7 @@ describe.concurrent('command/dev', () => {
                 res.end();
               })
 
-              server.listen(4445)
+              server.listen(${targetPort.toString()})
               `,
         })
         .build()
