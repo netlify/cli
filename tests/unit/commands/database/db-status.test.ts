@@ -46,8 +46,10 @@ vi.mock('fs/promises', async (importOriginal) => {
     readdir: (...args: unknown[]) => mockReaddir(...args),
     readFile: (path: unknown, ...rest: unknown[]) => {
       // Only intercept reads under the mocked project root — the CLI's own
-      // package.json and other ambient reads go straight through.
-      if (typeof path === 'string' && path.startsWith('/project/')) {
+      // package.json and other ambient reads go straight through. Normalize
+      // backslashes so this works on Windows too (path.join on Windows turns
+      // `/project` + `package.json` into `\project\package.json`).
+      if (typeof path === 'string' && path.replace(/\\/g, '/').startsWith('/project/')) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return mockReadFile(path, ...rest)
       }
