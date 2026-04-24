@@ -10,7 +10,7 @@ import { isInteractive } from '../../utils/scripted-commands.js'
 import BaseCommand from '../base-command.js'
 import { generateNextPrefix } from './db-migration-new.js'
 import { carefullyWriteFile, spawnAsync } from './legacy/utils.js'
-import { connectRawClient } from './util/db-connection.js'
+import { connectRawClient, describeError } from './util/db-connection.js'
 import {
   DRIZZLE_SCHEMA_TS,
   DRIZZLE_SEED_SQL,
@@ -61,11 +61,9 @@ const readDirectoryEntries = async (dir: string): Promise<string[]> => {
 }
 
 const promptForQueryStyle = async (interactive: boolean): Promise<QueryStyle> => {
-  // Non-interactive (no TTY or --yes): skip the prompt and go straight to
-  // Drizzle. A TypeScript schema is friendlier for both agents and scripts
-  // than hand-authored SQL, and it matches the "I don't know" fallback in
-  // the interactive path.
-  if (!interactive) return 'drizzle'
+  if (!interactive) {
+    return 'drizzle'
+  }
 
   log('')
   let { queryStyle } = await inquirer.prompt<{ queryStyle: QueryStyle | undefined }>([
@@ -113,9 +111,6 @@ const promptForStarter = async (interactive: boolean): Promise<boolean> => {
   return answer
 }
 
-// Installs @netlify/database plus (if Drizzle) drizzle-orm + drizzle-kit,
-// and scaffolds drizzle.config.ts. The starter migration + schema get
-// scaffolded separately, only when the user opts in.
 const installDependencies = async (
   pm: PmInfo,
   projectRoot: string,
@@ -212,21 +207,6 @@ interface QueryResult {
   rows: Record<string, unknown>[]
   rowCount: number | null
   command: string
-}
-
-// Unwraps AggregateError's inner errors into a single readable string. pg's
-// connection errors show up this way when the server resolves to multiple
-// addresses (IPv4/IPv6) and every attempt fails — the outer message is empty
-// without this.
-const describeError = (err: unknown): string => {
-  if (err && typeof err === 'object' && 'errors' in err && Array.isArray((err as AggregateError).errors)) {
-    const inner = (err as AggregateError).errors
-      .map((e) => (e instanceof Error ? e.message : String(e)))
-      .filter((msg) => msg.length > 0)
-    if (inner.length > 0) return inner.join('; ')
-  }
-  if (err instanceof Error) return err.message || err.name || 'unknown error'
-  return String(err)
 }
 
 const applyAndQuery = async (
@@ -326,9 +306,6 @@ export const initDatabase = async (options: DatabaseInitOptions, command: BaseCo
     throw new Error('Could not determine the project root directory.')
   }
   const yes = options.yes ?? false
-  // A TTY with no --yes override is the only case where we prompt. Agents
-  // and `--yes` both get the same non-interactive flow: skip the ORM prompt
-  // and default to Drizzle.
   const interactive = isInteractive() && !yes
   const pm = getPackageManager(command)
 

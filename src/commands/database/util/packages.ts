@@ -16,9 +16,6 @@ export interface PackageEntry {
   dev?: boolean
 }
 
-// `@netlify/build-info` already detects the project's package manager via a
-// multi-signal check (Corepack field, `npm_config_user_agent`, lockfiles). We
-// just read that off the command and fall back to npm.
 export const getPackageManager = (command: BaseCommand): PmInfo => {
   const detected = command.project.packageManager
   return {
@@ -27,8 +24,6 @@ export const getPackageManager = (command: BaseCommand): PmInfo => {
   }
 }
 
-// Builds the argv for adding one or more packages in a single install call.
-// `quiet` injects per-manager flags that reduce output to warnings + errors.
 export const buildAddArgs = (name: PkgManagerName, pkgs: string[], dev: boolean, quiet: boolean): string[] => {
   switch (name) {
     case 'yarn':
@@ -47,16 +42,9 @@ export const buildAddArgs = (name: PkgManagerName, pkgs: string[], dev: boolean,
   }
 }
 
-// Produces a user-facing install command string (without quiet flags), safe to
-// show as a suggestion in the terminal.
 export const installCommand = (name: PkgManagerName, pkg: string, dev = false): string =>
   `${name} ${buildAddArgs(name, [pkg], dev, false).join(' ')}`
 
-// Shells out to the detected package manager to add one or more packages,
-// with quiet flags so only warnings and errors surface. Prod-only and dev-only
-// packages run as separate calls (most managers don't let them mix), but the
-// whole batch is wrapped in a single pair of 📦 delimiters so callers only see
-// one "install" block in their output.
 export const installPackages = async (pm: PmInfo, projectRoot: string, entries: PackageEntry[]): Promise<void> => {
   if (entries.length === 0) return
 

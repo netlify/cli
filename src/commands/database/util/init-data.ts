@@ -1,6 +1,3 @@
-// Sample data used by the `database init` wizard. Kept in one place so the
-// starter migration, the Drizzle schema, and the seed migration stay in sync.
-
 export const STARTER_TABLE = 'planets'
 export const STARTER_MIGRATION_NAME = 'create_planets'
 export const SEED_MIGRATION_NAME = 'seed_planets'

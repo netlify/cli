@@ -40,6 +40,21 @@ export function detectExistingLocalConnectionString(buildDir: string): string | 
   return stored ?? null
 }
 
+// Unwraps AggregateError's inner errors into a single readable string. pg's
+// connection errors show up this way when the server resolves to multiple
+// addresses (IPv4/IPv6) and every attempt fails — the outer message is empty
+// without this.
+export const describeError = (err: unknown): string => {
+  if (err && typeof err === 'object' && 'errors' in err && Array.isArray((err as AggregateError).errors)) {
+    const inner = (err as AggregateError).errors
+      .map((e) => (e instanceof Error ? e.message : String(e)))
+      .filter((msg) => msg.length > 0)
+    if (inner.length > 0) return inner.join('; ')
+  }
+  if (err instanceof Error) return err.message || err.name || 'unknown error'
+  return String(err)
+}
+
 // Detects pg "can't reach the server" errors. pg wraps multi-address attempts
 // (IPv4 + IPv6) in an AggregateError whose outer message is empty, so we also
 // unwrap .errors when present.
