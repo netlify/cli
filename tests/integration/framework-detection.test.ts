@@ -1,4 +1,5 @@
 import execa from 'execa'
+import getPort from 'get-port'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
@@ -89,6 +90,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should warn if using static server and `targetPort` is configured', async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
       await builder
         .withContentFile({
           path: 'public/index.html',
@@ -97,7 +99,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .build()
 
       await withDevServer(
-        { cwd: builder.directory, args: ['--dir', 'public', '--target-port', '3000'] },
+        { cwd: builder.directory, args: ['--dir', 'public', '--target-port', targetPort.toString()] },
         async ({ output, url }) => {
           const response = await fetch(url)
           const responseContent = await response.text()
@@ -111,11 +113,12 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should run `command` when both `command` and `targetPort` are configured', async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
       await builder.withNetlifyToml({ config: { build: { publish: 'public' } } }).build()
 
       try {
         await withDevServer(
-          { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
+          { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', targetPort.toString()] },
           async () => {},
           true,
         )
@@ -185,10 +188,15 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should throw if framework=#custom but command is missing', async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
       await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).build()
 
       try {
-        await withDevServer({ cwd: builder.directory, args: ['--target-port', '3000'] }, async () => {}, true)
+        await withDevServer(
+          { cwd: builder.directory, args: ['--target-port', targetPort.toString()] },
+          async () => {},
+          true,
+        )
         t.expect.unreachable()
       } catch (err) {
         t.expect(err).toHaveProperty('stdout')
@@ -217,11 +225,12 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should start custom command if framework=#custom, command and targetPort are configured', async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
       await builder.withNetlifyToml({ config: { dev: { framework: '#custom', publish: 'public' } } }).build()
 
       try {
         await withDevServer(
-          { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
+          { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', targetPort.toString()] },
           async () => {},
           true,
         )
@@ -237,6 +246,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test(`should print specific error when command doesn't exist`, async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
       await builder.build()
 
       try {
@@ -247,7 +257,7 @@ describe.concurrent('frameworks/framework-detection', () => {
               '--command',
               'oops-i-did-it-again forgot-to-use-a-valid-command',
               '--target-port',
-              '3000',
+              targetPort.toString(),
               '--framework',
               '#custom',
             ],
@@ -345,11 +355,12 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should not run framework detection if command and targetPort are configured', async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
       await builder.withContentFile({ path: 'config.toml', content: '' }).build()
 
       try {
         await withDevServer(
-          { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
+          { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', targetPort.toString()] },
           async () => {},
           true,
         )
