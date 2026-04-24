@@ -66,26 +66,18 @@ const promptForQueryStyle = async (interactive: boolean): Promise<QueryStyle> =>
   }
 
   log('')
-  let { queryStyle } = await inquirer.prompt<{ queryStyle: QueryStyle | undefined }>([
+  const { queryStyle } = await inquirer.prompt<{ queryStyle: QueryStyle }>([
     {
       type: 'list',
       name: 'queryStyle',
       message: 'What is your preferred style?',
-      default: 'raw',
+      default: 'drizzle',
       choices: [
+        { name: 'Drizzle ORM (recommended)', value: 'drizzle' },
         { name: 'Direct SQL', value: 'raw' },
-        { name: 'Drizzle ORM', value: 'drizzle' },
-        { name: "I don't know", value: undefined },
       ],
     },
   ])
-
-  if (!queryStyle) {
-    log('')
-    log("Let's go with Drizzle ORM so that you don't have to write migrations manually.")
-
-    queryStyle = 'drizzle'
-  }
 
   return queryStyle
 }
@@ -186,11 +178,16 @@ const scaffoldStarter = async (
     // The seed's timestamp is generated AFTER drizzle-kit runs, so it
     // lexicographically sorts after whatever drizzle-kit produced. If they
     // happen to land in the same second, `create_planets` < `seed_planets`
-    // alphabetically still runs the CREATE TABLE first.
-    const seedName = `${generateNextPrefix([], 'timestamp')}_${SEED_MIGRATION_NAME}.sql`
-    await writeFile(join(migrationsDirectory, seedName), DRIZZLE_SEED_SQL, { flag: 'wx' })
+    // alphabetically still runs the CREATE TABLE first. We use the same
+    // directory layout drizzle-kit uses so both migrations look consistent
+    // in the migrations/ folder.
+    const seedDirName = `${generateNextPrefix([], 'timestamp')}_${SEED_MIGRATION_NAME}`
+    const seedDir = join(migrationsDirectory, seedDirName)
+    await mkdir(seedDir, { recursive: true })
+    await writeFile(join(seedDir, 'migration.sql'), DRIZZLE_SEED_SQL, { flag: 'wx' })
     log('')
-    success(`Created seed migration ${seedName}`)
+    success(`Created seed migration ${seedDirName}/migration.sql`)
+
     return
   }
 

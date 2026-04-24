@@ -80,6 +80,7 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 }))
 
 import { initDatabase } from '../../../../src/commands/database/db-init.js'
+import { utcTimestampPrefix } from '../../../../src/commands/database/util/timestamp.js'
 
 let tmpDir: tmp.DirectoryResult | undefined
 
@@ -141,7 +142,7 @@ beforeEach(async () => {
       const migrationsDir = join(cwd, 'netlify', 'database', 'migrations')
       await fs.mkdir(migrationsDir, { recursive: true })
       const name = argv[argv.indexOf('--name') + 1]
-      const prefix = formatTimestamp(new Date())
+      const prefix = utcTimestampPrefix()
       const dirName = `${prefix}_${name}`
       await fs.mkdir(join(migrationsDir, dirName), { recursive: true })
       await fs.writeFile(join(migrationsDir, dirName, 'migration.sql'), 'CREATE TABLE planets (id serial primary key);')
@@ -171,13 +172,6 @@ afterEach(async () => {
     tmpDir = undefined
   }
 })
-
-const formatTimestamp = (d: Date): string => {
-  const pad = (n: number, w = 2) => String(n).padStart(w, '0')
-  return `${String(d.getFullYear())}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(
-    d.getMinutes(),
-  )}${pad(d.getSeconds())}`
-}
 
 describe('initDatabase (integration)', () => {
   test('raw SQL + starter writes a timestamp-prefixed migration with a CREATE TABLE and seed data', async () => {
@@ -234,11 +228,14 @@ describe('initDatabase (integration)', () => {
     // "0001_seed_planets runs before 2026…_create_planets" bug).
     const entries = (await readMigrations(projectRoot())).sort()
     const createDir = entries.find((name) => name.includes('create_planets'))
-    const seedFile = entries.find((name) => name.includes('seed_planets'))
-    if (!createDir || !seedFile) throw new Error('expected both the drizzle-kit migration and the seed migration')
-    expect(seedFile.localeCompare(createDir)).toBeGreaterThan(0)
+    const seedDir = entries.find((name) => name.includes('seed_planets'))
+    if (!createDir || !seedDir) throw new Error('expected both the drizzle-kit migration and the seed migration')
+    expect(seedDir.localeCompare(createDir)).toBeGreaterThan(0)
 
-    const seedSql = await fs.readFile(join(projectRoot(), 'netlify', 'database', 'migrations', seedFile), 'utf-8')
+    // Drizzle-style seed uses the directory layout, matching drizzle-kit's
+    // own output format.
+    const seedPath = join(projectRoot(), 'netlify', 'database', 'migrations', seedDir, 'migration.sql')
+    const seedSql = await fs.readFile(seedPath, 'utf-8')
     expect(seedSql).toContain("'Earth'")
 
     expect(logMessages.join('\n')).toContain('functions:create --language typescript --template database-drizzle')
