@@ -1,6 +1,5 @@
 import fs from 'fs'
 
-import backoff from 'backoff'
 import pMap from 'p-map'
 
 import { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } from './constants.js'
@@ -40,9 +39,8 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
         break
       }
       case 'function': {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'retryCount' implicitly has an 'any' typ... Remove this comment to see the full error message
-        response = await retryUpload((retryCount) => {
-          const params = {
+        response = await retryUpload((retryCount: number) => {
+          const params: Record<string, unknown> = {
             body: readStreamCtor,
             deployId,
             invocationMode,
@@ -52,7 +50,6 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
           }
 
           if (retryCount > 0) {
-            // @ts-expect-error TS(2339) FIXME: Property 'xNfRetryCount' does not exist on type '{... Remove this comment to see the full error message
             params.xNfRetryCount = retryCount
           }
 
@@ -80,61 +77,53 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
   return results
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'uploadFn' implicitly has an 'any' type.
-const retryUpload = (uploadFn, maxRetry) =>
+const retryUpload = (uploadFn: (retryCount: number) => Promise<unknown>, maxRetry: number) =>
   new Promise((resolve, reject) => {
-    // @ts-expect-error TS(7034) FIXME: Variable 'lastError' implicitly has type 'any' in ... Remove this comment to see the full error message
-    let lastError
+    let lastError: unknown
+    let retryCount = 0
+    let previousDelay = 0
+    let nextDelay = UPLOAD_INITIAL_DELAY
 
-    const fibonacciBackoff = backoff.fibonacci({
-      randomisationFactor: UPLOAD_RANDOM_FACTOR,
-      initialDelay: UPLOAD_INITIAL_DELAY,
-      maxDelay: UPLOAD_MAX_DELAY,
-    })
+    const scheduleNextAttempt = () => {
+      const baseDelay = Math.min(nextDelay, UPLOAD_MAX_DELAY)
+      nextDelay = previousDelay + baseDelay
+      previousDelay = baseDelay
+      const jitteredDelay = Math.round(baseDelay * (1 + Math.random() * UPLOAD_RANDOM_FACTOR))
+      setTimeout(() => {
+        void tryUpload()
+      }, jitteredDelay)
+    }
 
-    const tryUpload = async (retryIndex = -1) => {
+    const tryUpload = async () => {
       try {
-        const results = await uploadFn(retryIndex + 1)
-
-        resolve(results)
+        const result = await uploadFn(retryCount)
+        resolve(result)
         return
       } catch (error) {
         lastError = error
+        const status = (error as { status?: number } | null)?.status
+        const name = (error as { name?: string } | null)?.name
 
-        // We don't need to retry for 400 or 422 errors
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.status === 400 || error.status === 422) {
+        if (status === 400 || status === 422) {
           reject(error)
           return
         }
 
-        // observed errors: 408, 401 (4** swallowed), 502
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.status > 400 || error.name === 'FetchError') {
-          fibonacciBackoff.backoff()
+        if ((typeof status === 'number' && status > 400) || name === 'FetchError') {
+          retryCount += 1
+          if (retryCount > maxRetry) {
+            reject(lastError)
+            return
+          }
+          scheduleNextAttempt()
           return
         }
+
         reject(error)
-        return
       }
     }
 
-    fibonacciBackoff.failAfter(maxRetry)
-
-    fibonacciBackoff.on('backoff', () => {
-      // Do something when backoff starts, e.g. show to the
-      // user the delay before next reconnection attempt.
-    })
-
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    fibonacciBackoff.on('ready', tryUpload)
-
-    fibonacciBackoff.on('fail', () => {
-      // @ts-expect-error TS(7005) FIXME: Variable 'lastError' implicitly has an 'any' type.
-      reject(lastError)
-    })
-
-    tryUpload()
+    void tryUpload()
   })
 
 export default uploadFiles

@@ -1,4 +1,3 @@
-import { fibonacci } from 'backoff'
 import fetch from 'node-fetch'
 import { afterAll, describe, expect, test, vi } from 'vitest'
 
@@ -11,6 +10,26 @@ vi.mock('../../../src/utils/open-browser.js', () => ({
   default: vi.fn(() => Promise.resolve()),
 }))
 
+const waitForBrowserOpen = () =>
+  new Promise<void>((resolve, reject) => {
+    const maxAttempts = 10
+    const pollIntervalMs = 200
+    let attempts = 0
+    const check = () => {
+      if (openBrowser.mock.calls.length > 0) {
+        resolve()
+        return
+      }
+      attempts += 1
+      if (attempts >= maxAttempts) {
+        reject(new Error('Timed out waiting for browser to be opened'))
+        return
+      }
+      setTimeout(check, pollIntervalMs)
+    }
+    check()
+  })
+
 describe('gh-auth', () => {
   afterAll(() => {
     vi.restoreAllMocks()
@@ -18,22 +37,7 @@ describe('gh-auth', () => {
 
   test('should check if the authWithNetlify is working', async () => {
     const promise = authWithNetlify()
-    // wait for server to be started
-    await new Promise<void>((resolve, reject) => {
-      const fibonacciBackoff = fibonacci()
-      const check = () => {
-        if (openBrowser.mock.calls.length === 0) {
-          fibonacciBackoff.backoff()
-        } else {
-          resolve()
-        }
-      }
-
-      fibonacciBackoff.failAfter(10)
-      fibonacciBackoff.on('ready', check)
-      fibonacciBackoff.on('fail', reject)
-      check()
-    })
+    await waitForBrowserOpen()
 
     const params = new URLSearchParams([
       ['user', 'spongebob'],

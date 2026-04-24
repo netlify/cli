@@ -1,7 +1,6 @@
 import cp from 'child_process'
 import fs from 'fs'
 import { mkdir, readdir, unlink } from 'fs/promises'
-import { createRequire } from 'module'
 import path, { dirname, join, relative } from 'path'
 import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
@@ -30,7 +29,7 @@ import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import BaseCommand from '../base-command.js'
 
-const require = createRequire(import.meta.url)
+const readJsonFile = (filePath: string): unknown => JSON.parse(fs.readFileSync(filePath, 'utf8'))
 
 const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../../functions-templates')
 
@@ -443,7 +442,9 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'functionPackageJson' implicitly h... Remove this comment to see the full error message
 const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
-  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
+  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = readJsonFile(
+    functionPackageJson,
+  ) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> }
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
 
@@ -456,7 +457,10 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     return
   }
 
-  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(sitePackageJson)
+  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = readJsonFile(sitePackageJson) as {
+    dependencies?: Record<string, string>
+    devDependencies?: Record<string, string>
+  }
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
   const npmInstallPath = path.dirname(sitePackageJson)
