@@ -40,15 +40,46 @@ export function detectExistingLocalConnectionString(buildDir: string): string | 
   return stored ?? null
 }
 
+// Detects pg "can't reach the server" errors. pg wraps multi-address attempts
+// (IPv4 + IPv6) in an AggregateError whose outer message is empty, so we also
+// unwrap .errors when present.
+function isConnectionUnreachableError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false
+  const code = (err as NodeJS.ErrnoException).code
+  if (code === 'ECONNREFUSED' || code === 'ENOTFOUND' || code === 'EHOSTUNREACH') return true
+  if ('errors' in err && Array.isArray((err as AggregateError).errors)) {
+    return (err as AggregateError).errors.some(isConnectionUnreachableError)
+  }
+  return false
+}
+
 export async function connectRawClient(buildDir: string, urlOverride?: string): Promise<RawDBConnection> {
   const existing = urlOverride ?? detectExistingLocalConnectionString(buildDir)
+  // Explicit overrides (NETLIFY_DB_URL env var, or a urlOverride argument) are
+  // user-supplied and should never be silently discarded on a connection
+  // failure — let the error propagate. A persisted `dbConnectionString` in
+  // LocalState is different: it's a stale record of a prior `netlify dev` run
+  // that may not be running anymore, and we should recover by falling back to
+  // starting a fresh NetlifyDev.
+  const isUserOverride = Boolean(urlOverride ?? process.env.NETLIFY_DB_URL)
+
   if (existing) {
-    const client = new Client({ connectionString: existing })
-    await client.connect()
-    return {
-      client,
-      connectionString: existing,
-      cleanup: () => client.end(),
+    try {
+      const client = new Client({ connectionString: existing })
+      await client.connect()
+      return {
+        client,
+        connectionString: existing,
+        cleanup: () => client.end(),
+      }
+    } catch (err) {
+      if (isUserOverride || !isConnectionUnreachableError(err)) {
+        throw err
+      }
+      // Persisted connection string points at a port that nothing is listening
+      // on. Drop the stale record so subsequent calls don't hit the same dead
+      // end, and fall through to the NetlifyDev.start() path.
+      new LocalState(buildDir).delete('dbConnectionString')
     }
   }
 

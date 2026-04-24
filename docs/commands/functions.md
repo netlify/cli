@@ -79,6 +79,7 @@ netlify functions:create
 - `language` (*string*) - function language
 - `name` (*string*) - function name
 - `offline` (*boolean*) - Disables any features that require network access
+- `template` (*string*) - bundled template to use (skips the interactive template picker)
 - `url` (*string*) - pull template from URL
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
@@ -89,6 +90,7 @@ netlify functions:create
 netlify functions:create
 netlify functions:create hello-world
 netlify functions:create --name hello-world
+netlify functions:create --language typescript --template hello-world
 ```
 
 ---
