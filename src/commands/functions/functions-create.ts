@@ -394,7 +394,10 @@ const downloadFromURL = async function (command, options, argumentName, function
     folderContents.map(async ({ download_url: downloadUrl, name }) => {
       try {
         const res = await fetch(downloadUrl)
-        const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
+        // SAFE:
+        const finalName = path.basename(name, '.js') === functionName
+          ? `${nameToUse}.js`
+          : path.basename(name)  // ← strip any directory components
         const dest = fs.createWriteStream(path.join(fnFolder, finalName))
         res.body?.pipe(dest)
       } catch (error_) {
@@ -744,14 +747,20 @@ const registerEFInToml = async (funcName, options) => {
  * @returns
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'functionsDir' implicitly has an 'any' t... Remove this comment to see the full error message
-const ensureFunctionPathIsOk = function (functionsDir, name) {
-  const functionPath = path.join(functionsDir, name)
-  if (fs.existsSync(functionPath)) {
-    log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
-    process.exit(1)
+  const ensureFunctionPathIsOk = function (functionsDir, name) {
+    // Prevent path traversal: reject names like "../../evil"
+    const resolvedFunctionsDir = path.resolve(functionsDir)
+    const functionPath = path.join(resolvedFunctionsDir, name)
+    if (!functionPath.startsWith(resolvedFunctionsDir + path.sep)) {
+      log(`${NETLIFYDEVERR} Invalid function name: "${name}" resolves outside the functions directory.`)
+      process.exit(1)
+    }
+    if (fs.existsSync(functionPath)) {
+      log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
+      process.exit(1)
+    }
+    return functionPath
   }
-  return functionPath
-}
 
 // Scans `functions-templates/<lang>` for a template whose `.mjs` metadata
 // `name` matches. Returns its `functionType` and the language folder it lives
