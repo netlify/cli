@@ -394,7 +394,6 @@ const downloadFromURL = async function (command, options, argumentName, function
     folderContents.map(async ({ download_url: downloadUrl, name }) => {
       try {
         const res = await fetch(downloadUrl)
-        // SAFE:
         const finalName = path.basename(name, '.js') === functionName
           ? `${nameToUse}.js`
           : path.basename(name)  // ← strip any directory components
