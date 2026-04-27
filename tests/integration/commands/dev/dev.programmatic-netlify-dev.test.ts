@@ -38,7 +38,6 @@ describe('@netlify/dev integration', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/db-test`)
         const body = await response.text()
-        console.log(body)
         t.expect(body).toEqual(JSON.stringify({ sum: 2 }))
       })
     })
