@@ -77,11 +77,11 @@ Provision a production ready Postgres database with a single command
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`status`](/commands/database#status) | Check the status of the database, including applied and pending migrations  |
-| [`init`](/commands/database#init) | Interactive setup: install the package, scaffold a starter migration, and verify the database  |
-| [`connect`](/commands/database#connect) | Connect to the database  |
-| [`reset`](/commands/database#reset) | Reset the local development database, removing all data and tables  |
-| [`migrations`](/commands/database#migrations) | Manage database migrations  |
+| [`database status`](/commands/database#database-status) | Check the status of the database, including applied and pending migrations  |
+| [`database init`](/commands/database#database-init) | Interactive setup: install the package, scaffold a starter migration, and verify the database  |
+| [`database connect`](/commands/database#database-connect) | Connect to the database  |
+| [`database reset`](/commands/database#database-reset) | Reset the local development database, removing all data and tables  |
+| [`database migrations`](/commands/database#database-migrations) | Manage database migrations  |
 
 
 ### [deploy](/commands/deploy)

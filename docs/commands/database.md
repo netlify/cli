@@ -25,11 +25,11 @@ netlify database
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`status`](/commands/database#status) | Check the status of the database, including applied and pending migrations  |
-| [`init`](/commands/database#init) | Interactive setup: install the package, scaffold a starter migration, and verify the database  |
-| [`connect`](/commands/database#connect) | Connect to the database  |
-| [`reset`](/commands/database#reset) | Reset the local development database, removing all data and tables  |
-| [`migrations`](/commands/database#migrations) | Manage database migrations  |
+| [`database status`](/commands/database#database-status) | Check the status of the database, including applied and pending migrations  |
+| [`database init`](/commands/database#database-init) | Interactive setup: install the package, scaffold a starter migration, and verify the database  |
+| [`database connect`](/commands/database#database-connect) | Connect to the database  |
+| [`database reset`](/commands/database#database-reset) | Reset the local development database, removing all data and tables  |
+| [`database migrations`](/commands/database#database-migrations) | Manage database migrations  |
 
 
 **Examples**
@@ -43,14 +43,14 @@ netlify database reset
 ```
 
 ---
-## `status`
+## `database status`
 
 Check the status of the database, including applied and pending migrations
 
 **Usage**
 
 ```bash
-netlify status
+netlify database status
 ```
 
 **Flags**
@@ -60,6 +60,11 @@ netlify status
 - `show-credentials` (*boolean*) - Include the full connection string (including username and password) in the output
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`status:hooks`](/commands/database#statushooks) | Print hook information of the linked project  |
+
 
 **Examples**
 
@@ -71,14 +76,31 @@ netlify database status --branch my-feature-branch
 ```
 
 ---
-## `init`
+## `status:hooks`
+
+Print hook information of the linked project
+
+**Usage**
+
+```bash
+netlify status:hooks
+```
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+---
+## `database init`
 
 Interactive setup: install the package, scaffold a starter migration, and verify the database
 
 **Usage**
 
 ```bash
-netlify init
+netlify database init
 ```
 
 **Flags**
@@ -96,14 +118,14 @@ netlify database init --yes
 ```
 
 ---
-## `connect`
+## `database connect`
 
 Connect to the database
 
 **Usage**
 
 ```bash
-netlify connect
+netlify database connect
 ```
 
 **Flags**
@@ -124,14 +146,14 @@ netlify database connect --json
 ```
 
 ---
-## `reset`
+## `database reset`
 
 Reset the local development database, removing all data and tables
 
 **Usage**
 
 ```bash
-netlify reset
+netlify database reset
 ```
 
 **Flags**
@@ -142,14 +164,14 @@ netlify reset
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
-## `migrations`
+## `database migrations`
 
 Manage database migrations
 
 **Usage**
 
 ```bash
-netlify migrations
+netlify database migrations
 ```
 
 **Flags**
@@ -157,6 +179,115 @@ netlify migrations
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`database migrations apply`](/commands/database#database-migrations-apply) | Apply database migrations to the local development database  |
+| [`database migrations new`](/commands/database#database-migrations-new) | Create a new migration  |
+| [`database migrations pull`](/commands/database#database-migrations-pull) | Pull migrations and overwrite local migration files  |
+| [`database migrations reset`](/commands/database#database-migrations-reset) | Delete local migration files that have not been applied yet  |
+
+
+---
+## `database migrations apply`
+
+Apply database migrations to the local development database
+
+**Usage**
+
+```bash
+netlify database migrations apply
+```
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output result as JSON
+- `to` (*string*) - Target migration name or prefix to apply up to (applies all if omitted)
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+---
+## `database migrations new`
+
+Create a new migration
+
+**Usage**
+
+```bash
+netlify database migrations new
+```
+
+**Flags**
+
+- `description` (*string*) - Purpose of the migration (used to generate the file name)
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output result as JSON
+- `scheme` (*sequential | timestamp*) - Numbering scheme for migration prefixes
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify database migrations new
+netlify database migrations new --description "add users table" --scheme sequential
+```
+
+---
+## `database migrations pull`
+
+Pull migrations and overwrite local migration files
+
+**Usage**
+
+```bash
+netlify database migrations pull
+```
+
+**Flags**
+
+- `branch` (*string*) - Pull migrations for a specific branch (defaults to 'production'; pass --branch with no value to use local git branch)
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Skip confirmation prompt
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `json` (*boolean*) - Output result as JSON
+
+**Examples**
+
+```bash
+netlify database migrations pull
+netlify database migrations pull --branch staging
+netlify database migrations pull --branch
+netlify database migrations pull --force
+```
+
+---
+## `database migrations reset`
+
+Delete local migration files that have not been applied yet
+
+**Usage**
+
+```bash
+netlify database migrations reset
+```
+
+**Flags**
+
+- `branch` (*string*) - Target a remote preview branch instead of the local development database
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output result as JSON
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify database migrations reset
+netlify database migrations reset --branch my-feature-branch
+```
 
 ---
 
