@@ -7,6 +7,7 @@ export const spawnAsync = (command: string, args: string[], options: Parameters<
     child.on('exit', (code) => {
       if (code === 0) {
         resolve(code)
+        return
       }
       const errorMessage = code ? `Process exited with code ${code.toString()}` : 'Process exited with no code'
       reject(new Error(errorMessage))
