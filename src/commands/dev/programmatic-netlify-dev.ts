@@ -9,6 +9,7 @@ interface StartNetlifyDevOptions {
   projectRoot: string
   apiToken: string | undefined
   env: EnvironmentVariables
+  skipGitignore?: boolean
 }
 
 /**
@@ -25,6 +26,7 @@ export const startNetlifyDev = async ({
   apiToken,
   env,
   projectRoot,
+  skipGitignore,
 }: StartNetlifyDevOptions): Promise<InstanceType<typeof NetlifyDev> | undefined> => {
   const netlifyDev = new NetlifyDev({
     projectRoot,
@@ -42,6 +44,7 @@ export const startNetlifyDev = async ({
     redirects: { enabled: false },
     staticFiles: { enabled: false },
     serverAddress: null,
+    skipGitignore,
   })
 
   try {
