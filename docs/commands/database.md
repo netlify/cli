@@ -61,11 +61,6 @@ netlify database status
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`status:hooks`](/commands/database#statushooks) | Print hook information of the linked project  |
-
-
 **Examples**
 
 ```bash
@@ -74,23 +69,6 @@ netlify database status --show-credentials
 netlify database status --json
 netlify database status --branch my-feature-branch
 ```
-
----
-## `status:hooks`
-
-Print hook information of the linked project
-
-**Usage**
-
-```bash
-netlify status:hooks
-```
-
-**Flags**
-
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `database init`
