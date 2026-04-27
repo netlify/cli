@@ -41,8 +41,8 @@ vi.mock('inquirer', () => ({
   },
 }))
 
-vi.mock('../../../../src/commands/database/legacy/utils.js', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/commands/database/legacy/utils.js')>()),
+vi.mock('../../../../src/commands/database/util/spawn-async.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/commands/database/util/spawn-async.js')>()),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   spawnAsync: (...args: unknown[]) => mockSpawnAsync(...args),
 }))
