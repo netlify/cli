@@ -82,6 +82,11 @@ beforeAll(async () => {
       },
     },
     packages: {
+      '@netlify/*': {
+        access: '$all',
+        publish: '$all',
+        proxy: 'npmjs',
+      },
       '@*/*': {
         access: '$all',
         publish: 'noone',
@@ -139,6 +144,43 @@ beforeAll(async () => {
     path.join(publishWorkspace, '.npmrc'),
     `//${registryURL.hostname}:${registryURL.port}/:_authToken=dummy`,
   )
+
+  // Replace `file:*.tgz` deps (used for testing unreleased local builds) with their real version
+  // and publish each tarball to Verdaccio so the published netlify-cli resolves them via the registry.
+  const publishPkgPath = path.join(publishWorkspace, 'package.json')
+  const publishPkg = JSON.parse(await fs.readFile(publishPkgPath, 'utf8')) as {
+    dependencies?: Record<string, string>
+    devDependencies?: Record<string, string>
+  }
+  const depBuckets = [publishPkg.dependencies, publishPkg.devDependencies].filter(
+    (bucket): bucket is Record<string, string> => bucket != null,
+  )
+  for (const bucket of depBuckets) {
+    for (const [name, spec] of Object.entries(bucket)) {
+      const match = /^file:(.+\.tgz)$/.exec(spec)
+      if (!match) continue
+      const tgzPath = path.resolve(publishWorkspace, match[1])
+      const { stdout: innerManifestJSON } = await execa('tar', ['-xzOf', tgzPath, 'package/package.json'])
+      const innerManifest = JSON.parse(innerManifestJSON) as { name: string; version: string }
+      if (innerManifest.name !== name) {
+        throw new Error(
+          `Tarball ${tgzPath} contains package "${innerManifest.name}" but is referenced as "${name}" in package.json`,
+        )
+      }
+      const publishResult = await execa(
+        'npm',
+        ['publish', tgzPath, `--registry=${registryURL.toString()}`, '--access=public', '--tag=testing'],
+        { cwd: publishWorkspace, all: true, reject: false },
+      )
+      if (publishResult.exitCode !== 0) {
+        const detail = publishResult.all ? `:\n\n${publishResult.all}` : ''
+        throw new Error(`Failed to publish ${name}@${innerManifest.version} from ${tgzPath}${detail}`)
+      }
+      bucket[name] = innerManifest.version
+    }
+  }
+  await fs.writeFile(publishPkgPath, `${JSON.stringify(publishPkg, null, 2)}\n`)
+
   await execa('npm', ['publish', `--registry=${registryURL.toString()}`, '--tag=testing'], {
     cwd: publishWorkspace,
     stdio: debug.enabled ? 'inherit' : 'ignore',
