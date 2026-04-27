@@ -47,7 +47,12 @@ export const detectNumberingScheme = (existingNames: string[]): NumberingScheme 
 
 export const generateNextPrefix = (existingNames: string[], scheme: NumberingScheme): string => {
   if (scheme === 'timestamp') {
-    return utcTimestampPrefix()
+    const now = utcTimestampPrefix()
+    const existingPrefixes = new Set(existingNames.map((n) => n.match(/^(\d+)/)?.[1]).filter(Boolean))
+    if (existingPrefixes.has(now)) {
+      return utcTimestampPrefix(new Date(Date.now() + 1000))
+    }
+    return now
   }
 
   const prefixes = existingNames.map((name) => {
