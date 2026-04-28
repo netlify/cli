@@ -196,13 +196,13 @@ const scaffoldStarter = async (
       cwd: projectRoot,
     })
 
-    // The seed's timestamp is generated AFTER drizzle-kit runs, so it
-    // lexicographically sorts after whatever drizzle-kit produced. If they
-    // happen to land in the same second, `create_planets` < `seed_planets`
-    // alphabetically still runs the CREATE TABLE first. We use the same
-    // directory layout drizzle-kit uses so both migrations look consistent
-    // in the migrations/ folder.
-    const seedDirName = `${generateNextPrefix([], 'timestamp')}_${SEED_MIGRATION_NAME}`
+    // The seed's timestamp is generated AFTER drizzle-kit runs. We read the
+    // migrations directory so `generateNextPrefix` can detect a collision and
+    // bump the prefix by one second if the two migrations landed in the same
+    // second — the deploy-time validator rejects duplicate numeric prefixes.
+    const existingMigrations = await readDirectoryEntries(migrationsDirectory)
+    const seedPrefix = generateNextPrefix(existingMigrations, 'timestamp')
+    const seedDirName = `${seedPrefix}_${SEED_MIGRATION_NAME}`
     const seedDir = join(migrationsDirectory, seedDirName)
     await mkdir(seedDir, { recursive: true })
     await writeFile(join(seedDir, 'migration.sql'), DRIZZLE_SEED_SQL, { flag: 'wx' })
