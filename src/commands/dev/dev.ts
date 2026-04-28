@@ -188,6 +188,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     projectRoot: command.workingDir,
     apiToken: api.accessToken ?? undefined,
     env,
+    skipGitignore: options.skipGitignore,
   })
 
   if (programmaticNetlifyDev) {
