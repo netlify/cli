@@ -1,4 +1,3 @@
-import { createRequire } from 'module'
 import { join } from 'path'
 
 import fsPromises from 'fs/promises'
@@ -17,8 +16,8 @@ type PackageJSON = {
 }
 
 export function getPackageJSON(directory: string) {
-  const require = createRequire(join(directory, 'package.json'))
-  const packageJson = require('./package.json') as unknown
+  const packageJsonPath = join(directory, 'package.json')
+  const packageJson: unknown = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
   if (typeof packageJson !== 'object' || packageJson === null) {
     throw new Error('Failed to load package.json')
   }
