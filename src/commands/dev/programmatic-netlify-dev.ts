@@ -55,6 +55,7 @@ export const startNetlifyDev = async ({
 
   if (process.env.NETLIFY_DB_URL) {
     env.NETLIFY_DB_URL = { sources: ['internal'], value: process.env.NETLIFY_DB_URL }
+    process.env.NETLIFY_DB_DRIVER = 'server'
   }
 
   return netlifyDev
