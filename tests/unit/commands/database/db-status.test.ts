@@ -770,7 +770,7 @@ describe('statusDb', () => {
     test('does not fetch branch connection string or remote applied migrations when database is not enabled', async () => {
       setupFetchRouter({ siteDatabase: null })
 
-      await expect(statusDb({ branch: 'feature-x' }, createMockCommand())).resolves.not.toThrow()
+      await expect(statusDb({ branch: 'feature-x' }, createMockCommand())).resolves.toBeUndefined()
 
       const fetchedUrls = mockFetch.mock.calls.map((c) => {
         const u = c[0] as URL | string
