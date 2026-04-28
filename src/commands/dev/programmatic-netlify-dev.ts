@@ -2,7 +2,7 @@ import process from 'process'
 
 import { NetlifyDev } from '@netlify/dev'
 
-import { NETLIFYDEVWARN, log } from '../../utils/command-helpers.js'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, log } from '../../utils/command-helpers.js'
 import type { EnvironmentVariables } from '../../utils/types.js'
 
 interface StartNetlifyDevOptions {
@@ -56,6 +56,7 @@ export const startNetlifyDev = async ({
 
   if (process.env.NETLIFY_DB_URL) {
     env.NETLIFY_DB_URL = { sources: ['internal'], value: process.env.NETLIFY_DB_URL }
+    log(`${NETLIFYDEVLOG} Local DB ready: ${process.env.NETLIFY_DB_URL}`)
   }
 
   return netlifyDev

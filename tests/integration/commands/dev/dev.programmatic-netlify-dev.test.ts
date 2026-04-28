@@ -40,6 +40,7 @@ describe('@netlify/dev integration', () => {
         const body = await response.text()
         console.log(body)
         t.expect(body).toEqual(JSON.stringify({ sum: 2 }))
+        t.expect(server.output).toMatch(/Local DB ready: postgres:\/\/localhost:\d+\/postgres/)
       })
     })
   })
@@ -63,6 +64,7 @@ describe('@netlify/dev integration', () => {
 
         t.expect(response.status).toBe(200)
         t.expect(body).toEqual(JSON.stringify({ url: '' }))
+        t.expect(server.output).not.toContain('Local DB ready:')
       })
     })
   })
