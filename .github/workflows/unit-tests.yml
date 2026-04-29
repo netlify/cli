@@ -2,26 +2,71 @@
 name: Unit Tests
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - '**'
-      - '!release-please--**'
+    branches: ['**']
 
 jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+      has-code-changes: ${{ steps.filter.outputs.code || 'true' }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v6
+
+      - name: Detect code changes
+        uses: dorny/paths-filter@v3
+        if: github.event_name == 'pull_request'
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**'
+              - '!**/*.md'
+              - '!LICENSE'
+              - '!docs/**'
+              - '!.vale.ini'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/PULL_REQUEST_TEMPLATE.md'
+
+      - name: Compute matrix
+        id: matrix
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          node_versions=$(yq eval '.node_versions | join(" ")' .github/test-matrix.yml)
+          extra_oses=$(yq eval '.extra_oses_on_release | join(" ")' .github/test-matrix.yml)
+          primary=$(yq eval '.primary_node_version' .github/test-matrix.yml)
+
+          OS_NODE=()
+          for node in $node_versions; do
+            OS_NODE+=("ubuntu-latest:$node")
+          done
+          if [[ "$HEAD_REF" == release-please--* ]]; then
+            for os in $extra_oses; do
+              OS_NODE+=("$os:$primary")
+            done
+          fi
+
+          entries=()
+          for combo in "${OS_NODE[@]}"; do
+            os="${combo%:*}"
+            node="${combo##*:}"
+            entries+=("{\"os\":\"$os\",\"node-version\":\"$node\"}")
+          done
+          joined=$(IFS=,; echo "${entries[*]}")
+          echo "value={\"include\":[$joined]}" >> "$GITHUB_OUTPUT"
+
   unit:
     name: Unit
+    needs: setup
+    if: needs.setup.outputs.has-code-changes == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-2025]
-        node-version: ['20.12.2', '22.x', '24']
-        exclude:
-          - os: windows-2025
-            node-version: '22.x'
       fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v6
@@ -41,3 +86,20 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:unit -- --coverage
+
+  status:
+    name: Unit Tests Status
+    needs: [setup, unit]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify result
+        run: |
+          if [[ "${{ needs.setup.result }}" != "success" ]]; then
+            echo "Setup job failed"
+            exit 1
+          fi
+          if [[ "${{ needs.unit.result }}" == "failure" || "${{ needs.unit.result }}" == "cancelled" ]]; then
+            echo "Unit tests failed"
+            exit 1
+          fi

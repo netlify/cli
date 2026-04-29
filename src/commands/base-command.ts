@@ -9,7 +9,7 @@ import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
-import { Command, Help, Option, type OptionValues } from 'commander'
+import { Command, CommanderError, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
@@ -23,6 +23,7 @@ import {
   USER_AGENT,
   chalk,
   logAndThrowError,
+  logJson,
   exit,
   getToken,
   log,
@@ -34,13 +35,16 @@ import {
   warn,
   logError,
 } from '../utils/command-helpers.js'
+import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
+import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
+import type { MinimalAccount } from '../utils/types.js'
 
 type Analytics = {
   startTime: bigint
@@ -68,7 +72,15 @@ const HELP_SEPARATOR_WIDTH = 5
  * Those commands work with the system or are not writing any config files that need to be
  * workspace aware.
  */
-const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login'])
+const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set([
+  'api',
+  'recipes',
+  'completion',
+  'status',
+  'switch',
+  'login',
+  'teams',
+])
 
 /**
  * A list of commands where we need to fetch featureflags for config resolution
@@ -226,12 +238,13 @@ export default class BaseCommand extends Command {
   accountId?: string
 
   /**
-   * IMPORTANT this function will be called for each command!
-   * Don't do anything expensive in there.
+   * Override Commander's createCommand to return BaseCommand instances with our setup.
+   * This is called by .command() to create subcommands.
+   * IMPORTANT: This function is called for each command! Don't do anything expensive here.
    */
-  createCommand(name: string): BaseCommand {
-    const base = new BaseCommand(name)
-      // .addOption(new Option('--force', 'Force command to run. Bypasses prompts for certain destructive commands.'))
+  createCommand(name?: string): BaseCommand {
+    const commandName = name || ''
+    const base = new BaseCommand(commandName)
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
       .addOption(new Option('--cwd <cwd>').hideHelp(true))
       .addOption(
@@ -252,20 +265,42 @@ export default class BaseCommand extends Command {
       )
       .option('--debug', 'Print debugging information')
 
-    // only add the `--filter` option to commands that are workspace aware
-    if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(name)) {
+    if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(commandName)) {
       base.option('--filter <app>', 'For monorepos, specify the name of the application to run the command in')
     }
 
-    return base.hook('preAction', async (_parentCommand, actionCommand) => {
+    base.hook('preAction', async (_parentCommand, actionCommand) => {
       if (actionCommand.opts()?.debug) {
         process.env.DEBUG = '*'
       }
-      debug(`${name}:preAction`)('start')
+      debug(`${commandName}:preAction`)('start')
       this.analytics.startTime = process.hrtime.bigint()
       await this.init(actionCommand as BaseCommand)
-      debug(`${name}:preAction`)('end')
+      debug(`${commandName}:preAction`)('end')
     })
+
+    // Wrap the command's action() to set exitOverride when action is registered.
+    // We set exitOverride here (rather than earlier) because Commander may clone
+    // or modify command instances during registration, so we need to set it on
+    // the final instance that will actually execute.
+    const originalAction = base.action.bind(base)
+    base.action = function (this: BaseCommand, fn: any) {
+      // Set exitOverride for option-related errors in non-interactive environments.
+      // In non-interactive mode, we show the full help output instead of just a
+      // brief error message, making it easier for users in CI/CD environments to
+      // understand what went wrong.
+      this.exitOverride((error: CommanderError) => {
+        if (isOptionError(error)) {
+          handleOptionError(this)
+        }
+
+        throw error
+      })
+
+      return originalAction(fn)
+    }
+
+    return base
   }
 
   #noBaseOptions = false
@@ -444,7 +479,29 @@ export default class BaseCommand extends Command {
     if (token) {
       return token
     }
-    return this.expensivelyAuthenticate()
+    if (!isInteractive()) {
+      return logAndThrowError(
+        `Authentication required. NETLIFY_AUTH_TOKEN is not set and ${chalk.cyanBright(
+          '`netlify status`',
+        )} also informs us that you need to use ${chalk.cyanBright(
+          '`netlify login --request <message>`',
+        )} as a next step.`,
+      )
+    }
+    const accessToken = await this.expensivelyAuthenticate()
+    this.netlify.api.accessToken = accessToken
+    await this.refreshAccounts()
+    return accessToken
+  }
+
+  private async refreshAccounts() {
+    try {
+      const accounts = (await this.netlify.api.listAccountsForUser()) as MinimalAccount[]
+      this.netlify.accounts = accounts
+    } catch {
+      // If refresh fails, leave existing accounts in place.
+      // Commands will handle empty accounts with their own error messages.
+    }
   }
 
   async expensivelyAuthenticate() {
@@ -460,7 +517,26 @@ export default class BaseCommand extends Command {
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
     log(`Opening ${authLink}`)
-    await openBrowser({ url: authLink })
+    const browserOpened = await openBrowser({ url: authLink })
+
+    if (!browserOpened && !isInteractive() && ticket.id) {
+      const ticketId = ticket.id
+      logJson({
+        ticket_id: ticketId,
+        url: authLink,
+        check_command: `netlify login --check ${ticketId}`,
+        agent_next_steps:
+          'Give the URL to the user so they can authorize. Then poll the check_command for up to ten minutes to see if the user has logged in, or wait for them to tell you and then use check_command after.',
+      })
+      log(`Ticket ID: ${ticketId}`)
+      log(`Authorize URL: ${authLink}`)
+      log()
+      log(`After authorizing, run: netlify login --check ${ticketId}`)
+      log()
+      log('After user opens the authorization URL and approves, the login will be complete.')
+      return exit()
+    }
+
     log()
     log(`To request authorization from a human, run: ${chalk.cyanBright('netlify login --request "<msg>"')}`)
     log()

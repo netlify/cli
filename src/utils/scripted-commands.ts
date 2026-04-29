@@ -15,6 +15,9 @@ export const shouldForceFlagBeInjected = (argv: string[]): boolean => {
   return Boolean(scriptedCommand && testingPrompts && noForceFlag)
 }
 
+export const isInteractive = (): boolean =>
+  Boolean(process.stdin.isTTY && process.stdout.isTTY && !isCI && !process.env.CI)
+
 export const injectForceFlagIfScripted = (argv: string[]) => {
   if (shouldForceFlagBeInjected(argv)) {
     argv.push('--force')

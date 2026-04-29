@@ -35,6 +35,9 @@ interface DeployBody {
   async?: boolean
   branch?: string
   draft?: boolean
+  framework?: string
+  framework_version?: string
+  build_version?: string
 }
 
 export interface DeployRouteState {

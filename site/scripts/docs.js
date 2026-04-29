@@ -35,19 +35,12 @@ const config = {
       md += formatUsage(command, info)
       md += formatArgs(info.args)
       md += formatFlags(info.flags)
-      md += commandListSubCommandDisplay(info.commands)
+      md += commandListSubCommandDisplay(info.commands, command)
       md += commandExamples(info.examples)
       if (info.commands.length !== 0) {
         md += `---\n`
         info.commands.forEach((subCmd) => {
-          // Child Commands
-          md += formatSubCommandTitle(subCmd.name)
-          md += formatDescription(stripAnsi(subCmd.description))
-          md += formatUsage(subCmd.name, subCmd)
-          md += formatArgs(subCmd.args)
-          md += formatFlags(subCmd.flags)
-          md += commandExamples(subCmd.examples)
-          md += `---\n`
+          md += renderSubCommand(subCmd, command)
         })
       }
       return md
@@ -59,7 +52,7 @@ const config = {
         const info = commandData[commandName]
         md += commandListTitle(commandName)
         md += commandListDescription(stripAnsi(info.description))
-        md += commandListSubCommandDisplay(info.commands)
+        md += commandListSubCommandDisplay(info.commands, commandName)
       })
 
       return md
@@ -93,23 +86,44 @@ const commandListDescription = function (desc) {
   return `${cleanDescription}${newLine}`
 }
 
-const commandListSubCommandDisplay = function (commands) {
+const commandListSubCommandDisplay = function (commands, parentChain) {
   if (commands.length === 0) {
     return ''
   }
   let table = '| Subcommand | description  |\n'
   table += '|:--------------------------- |:-----|\n'
   commands.forEach((cmd) => {
+    const fullName = cmd.parent && parentChain ? `${parentChain} ${cmd.name}` : cmd.name
     let commandBase
-    commandBase = cmd.name.split(':')[0]
-    if (cmd.parent) {
+    if (parentChain) {
+      commandBase = parentChain.split(' ')[0]
+    } else if (cmd.parent) {
       commandBase = cmd.parent
+    } else {
+      commandBase = cmd.name.split(':')[0]
     }
     const baseUrl = `/commands/${commandBase}`
-    const slug = cmd.name.replace(/:/g, '')
-    table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`
+    const slug = fullName.replace(/:/g, '').replace(/\s+/g, '-')
+    table += `| [\`${fullName}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`
   })
   return `${table}${newLine}`
+}
+
+const renderSubCommand = function (subCmd, parentChain) {
+  const fullName = subCmd.parent ? `${parentChain} ${subCmd.name}` : subCmd.name
+  let md = ''
+  md += formatSubCommandTitle(fullName)
+  md += formatDescription(stripAnsi(subCmd.description))
+  md += formatUsage(fullName, subCmd)
+  md += formatArgs(subCmd.args)
+  md += formatFlags(subCmd.flags)
+  md += commandListSubCommandDisplay(subCmd.commands, fullName)
+  md += commandExamples(subCmd.examples)
+  md += `---\n`
+  subCmd.commands.forEach((nestedCmd) => {
+    md += renderSubCommand(nestedCmd, fullName)
+  })
+  return md
 }
 
 const formatUsage = function (commandName, info) {

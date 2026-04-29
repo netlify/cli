@@ -171,6 +171,16 @@ export interface SiteInfo {
   ssl: boolean
   ssl_url: string
   state: string
+  repo?: {
+    provider?: string
+    repo_path?: string
+    repo_url?: string
+    repo_branch?: string
+  }
+  git_initial_push_progress?: {
+    state: string
+    error_message?: string
+  }
   updated_at: string
   url: string
   user_id: string

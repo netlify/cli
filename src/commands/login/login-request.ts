@@ -17,10 +17,18 @@ export const loginRequest = async (message: string, apiOpts: NetlifyOptions['api
   const ticketId = ticket.id
   const url = `${webUI}/authorize?response_type=ticket&ticket=${ticketId}`
 
-  logJson({ ticket_id: ticketId, url, check_command: `netlify login --check ${ticketId}` })
+  logJson({
+    ticket_id: ticketId,
+    url,
+    check_command: `netlify login --check ${ticketId}`,
+    agent_next_steps:
+      'Give the URL to the user so they can authorize. Then poll the check_command for up to ten minutes to see if the user has logged in, or wait for them to tell you and then use check_command after.',
+  })
 
   log(`Ticket ID: ${ticketId}`)
   log(`Authorize URL: ${url}`)
   log()
   log(`After authorizing, run: netlify login --check ${ticketId}`)
+  log()
+  log('After user opens the authorization URL and approves, the login will be complete.')
 }

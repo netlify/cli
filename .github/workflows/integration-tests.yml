@@ -2,26 +2,74 @@
 name: Integration Tests
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - '**'
-      - '!release-please--**'
+    branches: ['**']
 
 jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+      has-code-changes: ${{ steps.filter.outputs.code || 'true' }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v6
+
+      - name: Detect code changes
+        uses: dorny/paths-filter@v3
+        if: github.event_name == 'pull_request'
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**'
+              - '!**/*.md'
+              - '!LICENSE'
+              - '!docs/**'
+              - '!.vale.ini'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/PULL_REQUEST_TEMPLATE.md'
+
+      - name: Compute matrix
+        id: matrix
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          node_versions=$(yq eval '.node_versions | join(" ")' .github/test-matrix.yml)
+          extra_oses=$(yq eval '.extra_oses_on_release | join(" ")' .github/test-matrix.yml)
+          primary=$(yq eval '.primary_node_version' .github/test-matrix.yml)
+
+          OS_NODE=()
+          for node in $node_versions; do
+            OS_NODE+=("ubuntu-latest:$node")
+          done
+          if [[ "$HEAD_REF" == release-please--* ]]; then
+            for os in $extra_oses; do
+              OS_NODE+=("$os:$primary")
+            done
+          fi
+
+          entries=()
+          for combo in "${OS_NODE[@]}"; do
+            os="${combo%:*}"
+            node="${combo##*:}"
+            for shard in "1/4" "2/4" "3/4" "4/4"; do
+              entries+=("{\"os\":\"$os\",\"node-version\":\"$node\",\"shard\":\"$shard\"}")
+            done
+          done
+          joined=$(IFS=,; echo "${entries[*]}")
+          echo "value={\"include\":[$joined]}" >> "$GITHUB_OUTPUT"
+
   integration:
     name: Integration
+    needs: setup
+    if: needs.setup.outputs.has-code-changes == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-2025]
-        # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
-        node-version: ['20.12.2', '22', '24']
-        shard: ['1/4', '2/4', '3/4', '4/4']
       fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
       # This improves Windows network performance, we need this since we open many ports in our tests
       - name: Increase Windows port limit and reduce time wait delay
@@ -66,7 +114,9 @@ jobs:
         run: npm run test:integration -- --coverage --shard=${{ matrix.shard }}
         env:
           NETLIFY_TEST_ACCOUNT_SLUG: 'netlify-integration-testing'
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          # PRs from forks don't have access to this secret, which
+          # may be used by some tests.
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN || 'fake-token' }}
           # NETLIFY_TEST_GITHUB_TOKEN is used to avoid reaching GitHub API limits in exec-fetcher.js
           NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Changes the polling interval used by the file watcher
@@ -102,3 +152,20 @@ jobs:
         with:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  status:
+    name: Integration Tests Status
+    needs: [setup, integration]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify result
+        run: |
+          if [[ "${{ needs.setup.result }}" != "success" ]]; then
+            echo "Setup job failed"
+            exit 1
+          fi
+          if [[ "${{ needs.integration.result }}" == "failure" || "${{ needs.integration.result }}" == "cancelled" ]]; then
+            echo "Integration tests failed"
+            exit 1
+          fi

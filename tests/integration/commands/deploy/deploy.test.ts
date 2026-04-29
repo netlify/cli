@@ -1,9 +1,11 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import execa from 'execa'
 import { describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
+import { cliPath } from '../../utils/cli-path.js'
 import { getCLIOptions, type MockApi } from '../../utils/mock-api-vitest.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 import { createDeployRoutes, startDeployMockApi, type DeployRouteState } from './deploy-api-routes.js'
@@ -399,6 +401,81 @@ describe.concurrent('deploy command', () => {
     })
   })
 
+  test('should deploy DB migration files when internal migrations directory exists', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>Site with DB migrations</h1>',
+          })
+          .withContentFile({
+            path: '.netlify/internal/db/migrations/0000_oval_proudstar/migration.sql',
+            content: 'CREATE TABLE users (id serial PRIMARY KEY);',
+          })
+          .withContentFile({
+            path: '.netlify/internal/db/migrations/0001_second_migration/migration.sql',
+            content: 'ALTER TABLE users ADD COLUMN name text;',
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+            },
+          })
+
+        await builder.build()
+
+        const deploy = await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        expect(deploy.site_id).toBe('site_id')
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+
+        const fileKeys = Object.keys(body!.files!)
+        expect(fileKeys).toContain('index.html')
+        expect(fileKeys).toContain('.netlify/internal/db/migrations/0000_oval_proudstar/migration.sql')
+        expect(fileKeys).toContain('.netlify/internal/db/migrations/0001_second_migration/migration.sql')
+      })
+    })
+  })
+
+  test('should not include DB migrations in deploy when internal migrations directory does not exist', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>Site without DB migrations</h1>',
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+            },
+          })
+
+        await builder.build()
+
+        const deploy = await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        expect(deploy.site_id).toBe('site_id')
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+
+        const fileKeys = Object.keys(body!.files!)
+        expect(fileKeys).toContain('index.html')
+        expect(fileKeys.some((key) => key.includes('db/migrations'))).toBe(false)
+      })
+    })
+  })
+
   test('runs build command before deploy by default', async (t) => {
     await withMockDeploy(async (mockApi, deployState) => {
       await withSiteBuilder(t, async (builder) => {
@@ -695,6 +772,46 @@ describe.concurrent('deploy command', () => {
         await expect(
           callCli(['deploy', '--json', '--verbose'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder })),
         ).rejects.toThrow('Build output')
+      })
+    })
+  })
+
+  test('should pipe build output to stderr when --json --verbose is used on successful deploy', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>Test content</h1>',
+          })
+          .withNetlifyToml({
+            config: {
+              build: {
+                publish: 'public',
+                command:
+                  "node -e \"process.stdout.write('Build stdout line 1\\nBuild stdout line 2'); process.stderr.write('Build stderr line 1\\nBuild stderr line 2')\"",
+              },
+            },
+          })
+
+        await builder.build()
+
+        const { env, ...execOptions } = getCLIOptions({ apiUrl: mockApi.apiUrl, builder })
+        const { stdout, stderr } = await execa.node(cliPath, ['deploy', '--json', '--verbose'], {
+          ...execOptions,
+          env,
+          timeout: 3e5,
+          nodeOptions: [],
+        })
+
+        // stdout should still be valid JSON
+        expect(() => JSON.parse(stdout)).not.toThrowError()
+
+        // stderr should contain the build output with line breaks preserved
+        expect(stderr).toContain('Build stdout line 1')
+        expect(stderr).toContain('Build stdout line 2')
+        expect(stderr).toContain('Build stderr line 1')
+        expect(stderr).toContain('Build stderr line 2')
       })
     })
   })
@@ -1320,6 +1437,300 @@ describe.concurrent('deploy command', () => {
           'edge_function_logs',
           'https://app.netlify.com/projects/test-site/logs/edge-functions?scope=deployid:deploy_id',
         )
+      })
+    })
+  })
+
+  test('should use alias as the branch for both the deploy request and the build', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>test</h1>',
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+              plugins: [{ package: './plugins/log-branch' }],
+            },
+          })
+          .withBuildPlugin({
+            name: 'log-branch',
+            plugin: {
+              async onPreBuild() {
+                console.log(`TEST_BRANCH: ${require('process').env.BRANCH}`)
+              },
+            },
+          })
+
+        await builder.build()
+
+        const output: string = await callCli(
+          ['deploy', '--alias', 'custom-alias', '--context', 'deploy-preview'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        )
+
+        const [, branch] = output.match(/TEST_BRANCH: (.+)/) ?? []
+        expect(branch).toBe('custom-alias')
+
+        const createDeployRequest = mockApi.requests.find(
+          (req) => req.method === 'POST' && req.path === '/api/v1/sites/site_id/deploys',
+        )
+        expect(createDeployRequest).toBeDefined()
+        expect((createDeployRequest!.body as Record<string, unknown>).branch).toBe('custom-alias')
+      })
+    })
+  })
+
+  test('should include deploy_source cli in create deploy request', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const createDeployRequest = mockApi.requests.find(
+          (req) => req.method === 'POST' && req.path === '/api/v1/sites/site_id/deploys',
+        )
+        expect(createDeployRequest).toBeDefined()
+        expect((createDeployRequest!.body as Record<string, unknown>).deploy_source).toBe('cli')
+      })
+    })
+  })
+
+  test('should honor NETLIFY_DEPLOY_SOURCE env var in create deploy request', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({
+            apiUrl: mockApi.apiUrl,
+            builder,
+            env: { NETLIFY_DEPLOY_SOURCE: 'agent_runner' },
+          }),
+        ).then(parseDeploy)
+
+        const createDeployRequest = mockApi.requests.find(
+          (req) => req.method === 'POST' && req.path === '/api/v1/sites/site_id/deploys',
+        )
+        expect(createDeployRequest).toBeDefined()
+        expect((createDeployRequest!.body as Record<string, unknown>).deploy_source).toBe('agent_runner')
+      })
+    })
+  })
+
+  test('should include build_version in deploy body', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+        expect(body!.build_version).toMatch(/^\d+\.\d+\.\d+/)
+      })
+    })
+  })
+
+  test('should report unknown framework when no framework is detected', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+        expect(body!.framework).toBe('unknown')
+        expect(body!.framework_version).toBe('unknown')
+      })
+    })
+  })
+
+  test('should report detected framework and version in deploy body', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>test</h1>',
+          })
+          .withPackageJson({
+            packageJson: {
+              dependencies: { astro: '5.7.0' },
+            },
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+            },
+          })
+
+        await builder.build()
+
+        await callCli(['deploy', '--json', '--no-build'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder })).then(
+          parseDeploy,
+        )
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+        expect(body!.framework).toBe('astro')
+        expect(body!.framework_version).toBe('5.7.0')
+      })
+    })
+  })
+
+  test('should report correct framework for each package in a monorepo', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withPackageJson({
+            packageJson: {
+              workspaces: ['packages/*'],
+            },
+          })
+          .withContentFile({
+            path: 'packages/app-astro/public/index.html',
+            content: '<h1>astro app</h1>',
+          })
+          .withPackageJson({
+            packageJson: { name: 'app-astro', dependencies: { astro: '5.7.0' } },
+            pathPrefix: 'packages/app-astro',
+          })
+          .withNetlifyToml({
+            config: { build: { publish: 'packages/app-astro/public' } },
+            pathPrefix: 'packages/app-astro',
+          })
+          .withContentFile({
+            path: 'packages/app-tanstack/public/index.html',
+            content: '<h1>tanstack app</h1>',
+          })
+          .withPackageJson({
+            packageJson: { name: 'app-tanstack', dependencies: { '@tanstack/react-start': '1.120.0' } },
+            pathPrefix: 'packages/app-tanstack',
+          })
+          .withNetlifyToml({
+            config: { build: { publish: 'packages/app-tanstack/public' } },
+            pathPrefix: 'packages/app-tanstack',
+          })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--filter', path.join('packages', 'app-astro')],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const astroBody = deployState.getDeployBody()
+        expect(astroBody).not.toBeNull()
+        expect(astroBody!.framework).toBe('astro')
+        expect(astroBody!.framework_version).toBe('5.7.0')
+
+        deployState.reset()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--filter', path.join('packages', 'app-tanstack')],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const tanstackBody = deployState.getDeployBody()
+        expect(tanstackBody).not.toBeNull()
+        expect(tanstackBody!.framework).toBe('tanstack-start')
+        expect(tanstackBody!.framework_version).toBe('1.120.0')
+      })
+    })
+  })
+
+  test('should report correct framework for each package in a monorepo using --cwd', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withPackageJson({
+            packageJson: {
+              workspaces: ['packages/*'],
+            },
+          })
+          .withContentFile({
+            path: 'packages/app-astro/public/index.html',
+            content: '<h1>astro app</h1>',
+          })
+          .withPackageJson({
+            packageJson: { name: 'app-astro', dependencies: { astro: '5.7.0' } },
+            pathPrefix: 'packages/app-astro',
+          })
+          .withNetlifyToml({
+            config: { build: { publish: 'public' } },
+            pathPrefix: 'packages/app-astro',
+          })
+          .withContentFile({
+            path: 'packages/app-tanstack/public/index.html',
+            content: '<h1>tanstack app</h1>',
+          })
+          .withPackageJson({
+            packageJson: { name: 'app-tanstack', dependencies: { '@tanstack/react-start': '1.120.0' } },
+            pathPrefix: 'packages/app-tanstack',
+          })
+          .withNetlifyToml({
+            config: { build: { publish: 'public' } },
+            pathPrefix: 'packages/app-tanstack',
+          })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--cwd', path.join('packages', 'app-astro')],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const astroBody = deployState.getDeployBody()
+        expect(astroBody).not.toBeNull()
+        expect(astroBody!.framework).toBe('astro')
+        expect(astroBody!.framework_version).toBe('5.7.0')
+
+        deployState.reset()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--cwd', path.join('packages', 'app-tanstack')],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const tanstackBody = deployState.getDeployBody()
+        expect(tanstackBody).not.toBeNull()
+        expect(tanstackBody!.framework).toBe('tanstack-start')
+        expect(tanstackBody!.framework_version).toBe('1.120.0')
       })
     })
   })
