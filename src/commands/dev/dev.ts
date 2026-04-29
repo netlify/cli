@@ -22,6 +22,7 @@ import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-s
 import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import { runBeforeProcessExit } from '../../utils/shell.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
@@ -35,6 +36,7 @@ import { getBaseOptionValues } from '../base-command.js'
 import type { NetlifySite } from '../types.js'
 
 import type { DevConfig } from './types.js'
+import { startNetlifyDev as startProgrammaticNetlifyDev } from './programmatic-netlify-dev.js'
 import { doesProjectRequireLinkedSite } from '../../lib/extensions.js'
 
 const handleLiveTunnel = async ({
@@ -156,7 +158,15 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (!options.offline && !options.offlineEnv && !capabilities.aiGatewayDisabled) {
-    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+    const resolvedAccountId = accountId ?? command.netlify.accounts[0]?.id
+    await setupAIGateway({
+      api,
+      env,
+      siteID: site.id,
+      siteURL: siteUrl,
+      accountID: resolvedAccountId,
+      siteHasDeploy: !!siteInfo.published_deploy,
+    })
 
     const aiGatewayEnv = env.AI_GATEWAY as (typeof env)[string] | undefined
     if (aiGatewayEnv) {
@@ -173,6 +183,17 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   }
 
   injectEnvVariables(env)
+
+  const programmaticNetlifyDev = await startProgrammaticNetlifyDev({
+    projectRoot: command.workingDir,
+    apiToken: api.accessToken ?? undefined,
+    env,
+    skipGitignore: options.skipGitignore,
+  })
+
+  if (programmaticNetlifyDev) {
+    runBeforeProcessExit(() => programmaticNetlifyDev.stop())
+  }
 
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
@@ -218,7 +239,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   log(`${NETLIFYDEVLOG} Setting up local dev server`)
 
-  const { configMutations, generatedFunctions } = await runDevTimeline({
+  const { configMutations, generatedFunctions, deployEnvironment } = await runDevTimeline({
     command,
     options,
     settings,
@@ -252,6 +273,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     offline: options.offline,
     state,
     accountId,
+    deployEnvironment,
   })
 
   // Try to add `.netlify` to `.gitignore`.
@@ -297,6 +319,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     accountId,
     functionsRegistry,
     repositoryRoot,
+    deployEnvironment,
   })
 
   if (devConfig.autoLaunch !== false) {

@@ -22,6 +22,12 @@
       "semanticCommitScope": "website",
       "additionalBranchPrefix": "website-"
     },
+    // Reduce noise by grouping `site/package.json` non-major updates together
+    {
+      "matchFileNames": ["site/package.json"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "website non-major dependencies"
+    },
     {
       "matchFileNames": ["tests/**/package.json"],
       "semanticCommitType": "chore",
@@ -41,7 +47,7 @@
       "extends": [":pinAllExceptPeerDependencies"]
     },
     {
-      "matchFileNames": ["package.json", "site/package.json"],
+      "matchFileNames": ["package.json"],
       "extends": [":pinAllExceptPeerDependencies"]
     },
     {

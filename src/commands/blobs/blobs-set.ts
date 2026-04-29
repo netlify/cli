@@ -60,6 +60,7 @@ export const blobsSet = async (
   if (force === undefined) {
     const existingValue = await store.get(key)
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (existingValue) {
       await promptBlobSetOverwrite(key, storeName)
     }

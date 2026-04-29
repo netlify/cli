@@ -111,9 +111,13 @@ export const pollForToken = async ({
           'https://app.netlify.com/signup',
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
-    } else {
-      return logAndThrowError(error_)
     }
+    if ((error_ as { status?: number }).status === 404) {
+      return logAndThrowError(
+        `Authorization was denied or the login session expired. Run ${chalk.cyanBright('netlify login')} to try again.`,
+      )
+    }
+    return logAndThrowError(error_)
   } finally {
     spinner.stop()
     spinner.clear()
@@ -239,29 +243,6 @@ export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== n
 export interface APIError extends Error {
   status: number
   message: string
-}
-
-export class GitHubAPIError extends Error {
-  status: string
-
-  constructor(status: string, message: string) {
-    super(message)
-    this.status = status
-    this.name = 'GitHubAPIError'
-  }
-}
-
-export interface GitHubRepoResponse {
-  status?: string
-  message?: string
-  id?: number
-  name?: string
-  clone_url?: string
-  full_name?: string
-  private?: boolean
-  default_branch?: string
-  errors?: string[]
-  is_template?: boolean
 }
 
 export const checkFileForLine = (filename: string, line: string) => {

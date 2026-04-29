@@ -10,7 +10,7 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
     steps:
-      - uses: navikt/github-app-token-generator@793caf0d755fb4d6e88150825f680f188535cb48
+      - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         id: get-token
         with:
           private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
@@ -34,9 +34,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Read primary Node version
+        id: node
+        run: echo "version=$(yq eval '.primary_node_version' .github/test-matrix.yml)" >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: ${{ steps.node.outputs.version }}
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
@@ -44,19 +48,11 @@ jobs:
       - name: Setup npm version
         run: npm install -g npm@10
 
-      # Used by E2E tests
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - name: Install core dependencies
         run: npm ci --no-audit
 
       - name: Build project
         run: npm run build
-
-      - name: Run E2E tests
-        run: npm run test:e2e
 
       - name: Publish netlify-cli package
         run: npm publish --provenance

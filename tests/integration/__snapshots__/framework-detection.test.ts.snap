@@ -152,7 +152,7 @@ exports[`frameworks/framework-detection > should use static server when framewor
 ⬥ Unable to determine public folder to serve files from. Using current working directory
 ⬥ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
 ⬥ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
-⬥ Running static server from \\"should-use-static-server-when-framework-is-set-to-static\\"
+⬥ Running static server from \\"should-use-static-server-when-framework-i-cabde4ea\\"
 ⬥ Setting up local dev server
 
 ⬥ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
@@ -168,7 +168,7 @@ exports[`frameworks/framework-detection > should warn if using static server and
 "⬥ Using simple static server because '--dir' flag was specified
 ⬥ Ignoring 'targetPort' setting since using a simple static server.
 ⬥ Use --staticServerPort or [dev.staticServerPort] to configure the static server port
-⬥ Running static server from \\"should-warn-if-using-static-server-and-target-port-is-configured/public\\"
+⬥ Running static server from \\"should-warn-if-using-static-server-and-ta-45f6af30/public\\"
 ⬥ Setting up local dev server
 
 ⬥ Static server listening to <SNAPSHOT_PORT_NORMALIZED>

@@ -7,7 +7,6 @@ jobs:
   lint-title:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - name: Install Dependencies
-        run: npm install @commitlint/config-conventional
-      - uses: JulienKode/pull-request-name-linter-action@v19.0.0
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
