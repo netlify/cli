@@ -415,9 +415,6 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
       connectionString = await fetchBranchConnectionString({ siteId, accessToken, basePath }, branch)
       fetchApplied = remoteAppliedMigrations({ siteId, accessToken, basePath, branch })
     } else {
-      // When site does not have database, skip the remote fetch — the branch endpoint would 404 with
-      // a non-actionable error. The pending-migrations hint below directs users to install
-      // @netlify/database and deploy, which is the actionable next step.
       fetchApplied = () => Promise.resolve([])
     }
   } else {
