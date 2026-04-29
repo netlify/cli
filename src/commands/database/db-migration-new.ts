@@ -6,6 +6,7 @@ import inquirer from 'inquirer'
 import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
+import { utcTimestampPrefix } from './util/timestamp.js'
 
 export type NumberingScheme = 'sequential' | 'timestamp'
 
@@ -46,16 +47,12 @@ export const detectNumberingScheme = (existingNames: string[]): NumberingScheme 
 
 export const generateNextPrefix = (existingNames: string[], scheme: NumberingScheme): string => {
   if (scheme === 'timestamp') {
-    const now = new Date()
-    const pad = (n: number, width = 2) => String(n).padStart(width, '0')
-    return [
-      now.getFullYear(),
-      pad(now.getMonth() + 1),
-      pad(now.getDate()),
-      pad(now.getHours()),
-      pad(now.getMinutes()),
-      pad(now.getSeconds()),
-    ].join('')
+    const now = utcTimestampPrefix()
+    const existingPrefixes = new Set(existingNames.map((n) => /^(\d+)/.exec(n)?.[1]).filter(Boolean))
+    if (existingPrefixes.has(now)) {
+      return utcTimestampPrefix(new Date(Date.now() + 1000))
+    }
+    return now
   }
 
   const prefixes = existingNames.map((name) => {

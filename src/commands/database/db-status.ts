@@ -1,4 +1,5 @@
-import { readFile, readdir } from 'fs/promises'
+import { readdir } from 'fs/promises'
+import { join } from 'path'
 
 import { chalk, log, logJson, netlifyCommand } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -8,8 +9,12 @@ import {
   type MigrationFile,
   remoteAppliedMigrations,
 } from './util/applied-migrations.js'
+import { readApiErrorMessage } from './util/api-errors.js'
 import { connectToDatabase, detectExistingLocalConnectionString } from './util/db-connection.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
+import { hasDependency } from './util/package-json.js'
+import { relativeToProject } from './util/paths.js'
+import { fileExistsAsync } from '../../lib/fs.js'
 
 export interface DatabaseStatusOptions {
   branch?: string
@@ -45,18 +50,20 @@ const NETLIFY_DATABASE_PACKAGE = '@netlify/database'
 const formatCommand = (suffix: string): string => chalk.cyanBright.bold(`${netlifyCommand()} ${suffix}`)
 
 const logConnectCommands = () => {
-  secondary(`Run ${formatCommand('db connect')} to start an interactive database client`)
-  secondary(`Run ${formatCommand('db connect --query "<SQL>"')} to run a one-shot query`)
+  secondary(`Run ${formatCommand('database connect')} to start an interactive database client`)
+  secondary(`Run ${formatCommand(`database connect --query "SELECT 'SQL goes here'"`)} to run a one-shot query`)
 }
 
 const parseVersion = (name: string): number | null => {
-  const match = /^(\d+)[_-]/.exec(name)
+  const match = /^(\d+)_/.exec(name)
   if (!match) {
     return null
   }
   const parsed = Number.parseInt(match[1], 10)
   return Number.isFinite(parsed) ? parsed : null
 }
+
+const MIGRATION_NAME_PATTERN = /^\d+_[a-z0-9_-]+$/
 
 const readLocalMigrations = async (migrationsDirectory: string): Promise<MigrationEntry[]> => {
   let entries
@@ -69,16 +76,34 @@ const readLocalMigrations = async (migrationsDirectory: string): Promise<Migrati
     throw error
   }
 
-  const migrations: MigrationEntry[] = []
+  // First pass is to extract migration names
+  const migrationNames: string[] = []
   for (const entry of entries) {
-    if (!entry.isDirectory()) {
+    if (entry.isDirectory()) {
+      if (
+        MIGRATION_NAME_PATTERN.test(entry.name) &&
+        (await fileExistsAsync(join(migrationsDirectory, entry.name, 'migration.sql')))
+      ) {
+        migrationNames.push(entry.name)
+      }
       continue
     }
-    const version = parseVersion(entry.name)
+
+    if (entry.isFile() && entry.name.endsWith('.sql')) {
+      const migrationName = entry.name.replace(/\.sql$/, '')
+      if (MIGRATION_NAME_PATTERN.test(migrationName)) {
+        migrationNames.push(migrationName)
+      }
+    }
+  }
+  // Second pass to parse version and create migration entries
+  const migrations: MigrationEntry[] = []
+  for (const migrationName of migrationNames) {
+    const version = parseVersion(migrationName)
     if (version === null) {
       continue
     }
-    migrations.push({ name: entry.name, version })
+    migrations.push({ name: migrationName, version })
   }
   migrations.sort((a, b) => a.version - b.version)
   return migrations
@@ -126,19 +151,6 @@ const connectionStringHasCredentials = (connectionString: string): boolean => {
   }
 }
 
-const isNetlifyDatabasePackageInstalled = async (projectRoot: string): Promise<boolean> => {
-  try {
-    const raw = await readFile(`${projectRoot}/package.json`, 'utf-8')
-    const pkg = JSON.parse(raw) as {
-      dependencies?: Record<string, string>
-      devDependencies?: Record<string, string>
-    }
-    return Boolean(pkg.dependencies?.[NETLIFY_DATABASE_PACKAGE] ?? pkg.devDependencies?.[NETLIFY_DATABASE_PACKAGE])
-  } catch {
-    return false
-  }
-}
-
 const fetchBranchConnectionString = async (ctx: ServerContext, branchId: string): Promise<string> => {
   const token = ctx.accessToken.replace('Bearer ', '')
   const url = new URL(
@@ -154,8 +166,8 @@ const fetchBranchConnectionString = async (ctx: ServerContext, branchId: string)
   }
 
   if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Failed to fetch database branch "${branchId}" (${String(response.status)}): ${text}`)
+    const message = await readApiErrorMessage(response)
+    throw new Error(`Failed to fetch database branch "${branchId}" (${String(response.status)}): ${message}`)
   }
 
   const data = (await response.json()) as { connection_string?: string }
@@ -191,11 +203,11 @@ const fetchSiteDatabase = async (ctx: ServerContext): Promise<{ connectionString
   return { connectionString: data.connection_string }
 }
 
-const renderList = (items: MigrationEntry[]): string => {
+const renderList = (items: MigrationEntry[], indent = '  '): string => {
   if (items.length === 0) {
-    return chalk.dim('  (none)')
+    return chalk.dim(`${indent}(none)`)
   }
-  return items.map((m) => `  • ${m.name}`).join('\n')
+  return items.map((m) => `${indent}• ${m.name}`).join('\n')
 }
 
 interface RenderParams {
@@ -206,6 +218,9 @@ interface RenderParams {
   showCredentials: boolean
   status: MigrationsStatus
   isLocal: boolean
+  hasUrlOverride: boolean
+  migrationsDirectory: string
+  projectRoot: string
   adminUrl?: string
 }
 
@@ -214,7 +229,8 @@ interface RenderParams {
 const INDENT = '     '
 const STATUS_GOOD = '🟢'
 const STATUS_WARN = '🟡'
-const STATUS_PAUSED = '⏸️ '
+const STATUS_NONE = '⚪'
+const STATUS_INFO = 'ℹ️ '
 
 const primary = (emoji: string, text: string): void => {
   log(`  ${emoji} ${text}`)
@@ -225,7 +241,18 @@ const secondary = (text: string): void => {
 }
 
 const renderPretty = (params: RenderParams) => {
-  const { enabled, packageInstalled, connectionString, showCredentials, status, isLocal, adminUrl } = params
+  const {
+    enabled,
+    packageInstalled,
+    connectionString,
+    showCredentials,
+    status,
+    isLocal,
+    hasUrlOverride,
+    migrationsDirectory,
+    projectRoot,
+    adminUrl,
+  } = params
 
   log(chalk.bold('Netlify Database'))
   log(chalk.gray('Managed Postgres databases that seamlessly integrate with the Netlify workflow'))
@@ -262,14 +289,14 @@ const renderPretty = (params: RenderParams) => {
     if (!showCredentials && connectionStringHasCredentials(connectionString)) {
       secondary(
         `To reveal the full connection string (including credentials), run ${formatCommand(
-          'db status --show-credentials',
+          'database status --show-credentials',
         )}`,
       )
     } else {
       secondary(`To connect to the database directly, use the connection string: ${displayed}`)
     }
   } else if (isLocal) {
-    primary(STATUS_PAUSED, 'The local database is not running')
+    primary(STATUS_INFO, 'The local database is not running')
     secondary(
       `It starts automatically when you run ${formatCommand(
         'dev',
@@ -279,26 +306,15 @@ const renderPretty = (params: RenderParams) => {
   }
 
   log('')
-  log(chalk.bold('Applied migrations'))
-  log(chalk.gray('Migrations that have been applied to the database branch'))
+  log(chalk.bold('Migrations'))
+  log(chalk.gray('Database migrations managed by Netlify'))
   log('')
-  log(renderList(status.applied))
-  log('')
-  log(
-    chalk.gray(
-      'Note that these migrations cannot be removed or edited. To change anything, you should generate a new migration.',
-    ),
-  )
 
   log('')
-  log(chalk.bold('Migrations not applied'))
-  log(chalk.gray("Migrations that exist locally that haven't yet been applied"))
-  log('')
-  log(renderList(status.pending))
-  if (isLocal && status.pending.length > 0 && status.outOfOrder.length === 0) {
-    log('')
-    log(chalk.gray(`Run ${formatCommand('db migrations apply')} to apply these to the local database.`))
-  }
+  const displayPath = relativeToProject(projectRoot, migrationsDirectory)
+  log(`  ${STATUS_INFO} ${chalk.bold('Migrations directory')}`)
+  log(chalk.gray(`${INDENT}Migration files in this directory are automatically applied when deploying to Netlify.`))
+  log(`${INDENT}${displayPath}`)
 
   if (status.missingOnDisk.length > 0 || status.outOfOrder.length > 0) {
     log('')
@@ -316,10 +332,39 @@ const renderPretty = (params: RenderParams) => {
       log(
         chalk.gray(
           `Run ${formatCommand(
-            'db migrations reset',
+            'database migrations reset',
           )} to delete these local-only migrations, then generate them again with a higher prefix.`,
         ),
       )
+    }
+  }
+
+  const appliedEmoji = status.applied.length > 0 ? STATUS_GOOD : STATUS_NONE
+  log('')
+  log(`  ${appliedEmoji} ${chalk.bold(`Applied migrations (${String(status.applied.length)})`)}`)
+  log(
+    chalk.gray(
+      `${INDENT}These migrations have been applied and cannot be edited or deleted. Any changes to the schema must involve a new migration.`,
+    ),
+  )
+  log(renderList(status.applied, INDENT))
+
+  log('')
+  const pendingEmoji = status.pending.length === 0 ? STATUS_GOOD : STATUS_WARN
+  log(`  ${pendingEmoji} ${chalk.bold(`Pending migrations (${String(status.pending.length)})`)}`)
+  log(
+    chalk.gray(
+      `${INDENT}These migrations are defined locally but haven't been applied, and you can change them or delete them.`,
+    ),
+  )
+  log(renderList(status.pending, INDENT))
+  if (status.pending.length > 0 && status.outOfOrder.length === 0) {
+    const canApplyLocally = isLocal && !hasUrlOverride
+    log('')
+    if (canApplyLocally) {
+      log(chalk.gray(`${INDENT}Run ${formatCommand('database migrations apply')} to apply them to the local database.`))
+    } else {
+      log(chalk.gray(`${INDENT}Deploy these files to apply the migrations.`))
     }
   }
 }
@@ -332,7 +377,7 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
 
   const migrationsDirectory = resolveMigrationsDirectory(command)
   const local = await readLocalMigrations(migrationsDirectory)
-  const packageInstalled = await isNetlifyDatabasePackageInstalled(buildDir)
+  const packageInstalled = await hasDependency(NETLIFY_DATABASE_PACKAGE, buildDir)
 
   const siteId = command.siteId
   const accessToken = command.netlify.api.accessToken
@@ -404,6 +449,7 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
     logJson({
       enabled,
       packageInstalled,
+      migrationsPath: migrationsDirectory,
       target: branchLabel,
       database: displayedConnection === null ? null : { connectionString: displayedConnection },
       applied: status.applied.map((m) => ({ version: m.version, name: m.name })),
@@ -423,6 +469,9 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
     showCredentials: options.showCredentials ?? false,
     status,
     isLocal,
+    hasUrlOverride: Boolean(envUrl),
+    migrationsDirectory,
+    projectRoot: buildDir,
     adminUrl: siteInfo?.admin_url,
   })
 }
