@@ -71,14 +71,17 @@ Generate shell completion script
 
 Create a new Netlify project using an AI agent
 
-### [db](/commands/db)
+### [database](/commands/database)
 
 Provision a production ready Postgres database with a single command
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`init`](/commands/db#init) | Initialize a new database for the current site  |
-| [`status`](/commands/db#status) | Check the status of the database  |
+| [`database status`](/commands/database#database-status) | Check the status of the database, including applied and pending migrations  |
+| [`database init`](/commands/database#database-init) | Interactive setup: install the package, scaffold a starter migration, and verify the database  |
+| [`database connect`](/commands/database#database-connect) | Connect to the database  |
+| [`database reset`](/commands/database#database-reset) | Reset the local development database, removing all data and tables  |
+| [`database migrations`](/commands/database#database-migrations) | Manage database migrations  |
 
 
 ### [deploy](/commands/deploy)

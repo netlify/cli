@@ -19,7 +19,7 @@ COMMANDS
                  on Netlify
   $ completion   Generate shell completion script
   $ create       Create a new Netlify project using an AI agent
-  $ db           Provision a production ready Postgres database with a single
+  $ database     Provision a production ready Postgres database with a single
                  command
   $ deploy       Deploy your project to Netlify
   $ dev          Local dev server
