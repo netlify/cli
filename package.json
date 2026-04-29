@@ -142,7 +142,7 @@
     "prettyjson": "1.2.5",
     "raw-body": "3.0.1",
     "read-package-up": "12.0.0",
-    "readdirp": "4.1.2",
+    "readdirp": "5.0.0",
     "semver": "7.7.2",
     "source-map-support": "0.5.21",
     "terminal-link": "5.0.0",
