@@ -175,6 +175,8 @@ export const initializeProxy = async ({
 
     const url = new URL(req.url!, `http://${LOCAL_HOST}:${mainPort}`)
     const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method!, req.headers)
+    // eslint-disable-next-line no-console
+    console.error(`[EF-PROBE] ${req.method} ${req.url} matched=${JSON.stringify(functionNames)}`)
 
     if (functionNames.length === 0) {
       return

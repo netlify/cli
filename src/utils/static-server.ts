@@ -13,6 +13,8 @@ import { log, NETLIFYDEVLOG } from './command-helpers.js'
 export const startStaticServer = async ({ settings }) => {
   const server = Fastify()
   const rootPath = path.resolve(settings.dist)
+  // eslint-disable-next-line no-console
+  console.error(`[STATIC-PROBE] starting; root=${rootPath}`)
   server.register(fastifyStatic, {
     root: rootPath,
     etag: false,
@@ -25,6 +27,8 @@ export const startStaticServer = async ({ settings }) => {
   })
 
   server.addHook('onRequest', (req, reply, done) => {
+    // eslint-disable-next-line no-console
+    console.error(`[STATIC-PROBE] ${req.method} ${req.url}`)
     reply.header('age', '0')
     reply.header('cache-control', 'public, max-age=0, must-revalidate')
     const validMethods = ['GET', 'HEAD']
