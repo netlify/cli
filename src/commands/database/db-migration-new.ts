@@ -7,6 +7,7 @@ import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import { utcTimestampPrefix } from './util/timestamp.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 
 export type NumberingScheme = 'sequential' | 'timestamp'
 
@@ -89,31 +90,43 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
   let scheme = options.scheme
 
   if (!description) {
-    const answers = await inquirer.prompt<{ description: string }>([
-      {
-        type: 'input',
-        name: 'description',
-        message: 'What is the purpose of this migration?',
-        validate: (input: string) => (input.trim().length > 0 ? true : 'Description cannot be empty'),
-      },
-    ])
-    description = answers.description
+    if (isInteractive()) {
+      const answers = await inquirer.prompt<{ description: string }>([
+        {
+          type: 'input',
+          name: 'description',
+          message: 'What is the purpose of this migration?',
+          validate: (input: string) => (input.trim().length > 0 ? true : 'Description cannot be empty'),
+        },
+      ])
+      description = answers.description
+    } else {
+      throw new Error(
+        `--description <description> argument is required when not running interactively. Provide a description of the migration (e.g. --description "add users table").`,
+      )
+    }
   }
 
   if (!scheme) {
-    const answers = await inquirer.prompt<{ scheme: NumberingScheme }>([
-      {
-        type: 'list',
-        name: 'scheme',
-        message: 'Numbering scheme:',
-        choices: [
-          { name: 'Sequential (0001, 0002, ...)', value: 'sequential' },
-          { name: 'Timestamp (20260312143000)', value: 'timestamp' },
-        ],
-        ...(detectedScheme && { default: detectedScheme }),
-      },
-    ])
-    scheme = answers.scheme
+    const defaultScheme = detectedScheme ?? 'timestamp'
+
+    if (isInteractive()) {
+      const answers = await inquirer.prompt<{ scheme: NumberingScheme }>([
+        {
+          type: 'list',
+          name: 'scheme',
+          message: 'Numbering scheme:',
+          choices: [
+            { name: 'Timestamp (e.g. 20260312143000) [Recommended]', value: 'timestamp' },
+            { name: 'Sequential (e.g. 0001, 0002, ...)', value: 'sequential' },
+          ],
+          default: defaultScheme,
+        },
+      ])
+      scheme = answers.scheme
+    } else {
+      scheme = defaultScheme
+    }
   }
 
   const slug = generateSlug(description)
