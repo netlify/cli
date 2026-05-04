@@ -96,8 +96,8 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .option('-d, --description <description>', 'Purpose of the migration (used to generate the file name)')
     .addOption(
       new Option('-s, --scheme <scheme>', 'Numbering scheme for migration prefixes').choices([
-        'sequential',
         'timestamp',
+        'sequential',
       ]),
     )
     .option('--json', 'Output result as JSON')
