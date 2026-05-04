@@ -1,7 +1,7 @@
 import { describe, test, beforeAll, afterAll } from 'vitest'
 import fs from 'fs'
 import { rm } from 'fs/promises'
-import { handleQuestions, CONFIRM, DOWN, NO, answerWithValue } from '../../utils/handle-questions.js'
+import { handleQuestions, CONFIRM, NO } from '../../utils/handle-questions.js'
 import execa from 'execa'
 import { cliPath } from '../../utils/cli-path.js'
 import { join } from 'path'
@@ -27,13 +27,9 @@ describe('completion:install command', () => {
     'should add compinit to .zshrc when user confirms prompt',
     async ({ expect }) => {
       fs.writeFileSync(zshConfigPath, TABTAB_CONFIG_LINE)
-      const childProcess = execa(cliPath, ['completion:install'], options)
+      const childProcess = execa(cliPath, ['completion:install', '--shell', 'zsh'], options)
 
       handleQuestions(childProcess, [
-        {
-          question: 'Which Shell do you use ?',
-          answer: answerWithValue(DOWN),
-        },
         {
           question: 'We will install completion to ~/.zshrc, is it ok ?',
           answer: CONFIRM,
@@ -54,20 +50,16 @@ describe('completion:install command', () => {
     'should not add compinit to .zshrc when user does not confirm prompt',
     async ({ expect }) => {
       fs.writeFileSync(zshConfigPath, TABTAB_CONFIG_LINE)
-      const childProcess = execa(cliPath, ['completion:install'], options)
+      const childProcess = execa(cliPath, ['completion:install', '--shell', 'zsh'], options)
 
       handleQuestions(childProcess, [
-        {
-          question: 'Which Shell do you use ?',
-          answer: answerWithValue(DOWN),
-        },
         {
           question: 'We will install completion to ~/.zshrc, is it ok ?',
           answer: CONFIRM,
         },
         {
           question: 'Would you like to add it?',
-          answer: answerWithValue(NO),
+          answer: [NO, CONFIRM],
         },
       ])
 

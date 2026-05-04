@@ -7,6 +7,7 @@ export const createCompletionCommand = (program: BaseCommand) => {
     .command('completion:install')
     .alias('completion:generate')
     .description('Generates completion script for your preferred shell')
+    .option('--shell <shell>', 'Shell to install completion for (bash, fish, pwsh, zsh)')
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { completionGenerate } = await import('./completion.js')
       await completionGenerate(options, command)

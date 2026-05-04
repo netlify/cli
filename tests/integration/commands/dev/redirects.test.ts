@@ -1,3 +1,6 @@
+import { readFile, writeFile } from 'fs/promises'
+import { join } from 'path'
+
 import getPort from 'get-port'
 import fetch from 'node-fetch'
 import { describe, expect, test } from 'vitest'
@@ -32,27 +35,46 @@ describe('redirects', async () => {
     })
   })
 
-  await setupFixtureTests('next-app', { devServer: { env: { NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS: 1 } } }, () => {
-    test<FixtureTestContext>('should prefer local files instead of redirect when not forced', async ({ devServer }) => {
-      const response = await fetch(`http://localhost:${devServer!.port}/test.txt`, {})
+  await setupFixtureTests(
+    'next-app',
+    {
+      devServer: { env: { NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS: 1 } },
+      setup: async ({ fixture }) => {
+        const targetPort = await getPort()
+        const packageJsonPath = join(fixture.directory, 'package.json')
+        const netlifyTomlPath = join(fixture.directory, 'netlify.toml')
+        const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8')) as { scripts: { dev: string } }
 
-      expect(response.status).toBe(200)
+        packageJson.scripts.dev = `next dev -p ${targetPort.toString()}`
+        await writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
+        await writeFile(
+          netlifyTomlPath,
+          (await readFile(netlifyTomlPath, 'utf8')).replace('targetPort = 6123', `targetPort = ${targetPort.toString()}`),
+        )
+      },
+    },
+    () => {
+      test<FixtureTestContext>('should prefer local files instead of redirect when not forced', async ({ devServer }) => {
+        const response = await fetch(`http://localhost:${devServer!.port}/test.txt`, {})
 
-      const result = await response.text()
-      expect(result.trim()).toEqual('hello world')
-    })
+        expect(response.status).toBe(200)
 
-    test<FixtureTestContext>('should check for the dynamic page existence before doing redirect', async ({
-      devServer,
-    }) => {
-      const response = await fetch(`http://localhost:${devServer!.port}/`, {})
+        const result = await response.text()
+        expect(result.trim()).toEqual('hello world')
+      })
 
-      expect(response.status).toBe(200)
+      test<FixtureTestContext>('should check for the dynamic page existence before doing redirect', async ({
+        devServer,
+      }) => {
+        const response = await fetch(`http://localhost:${devServer!.port}/`, {})
 
-      const result = await response.text()
-      expect(result.toLowerCase()).not.toContain('netlify')
-    })
-  })
+        expect(response.status).toBe(200)
+
+        const result = await response.text()
+        expect(result.toLowerCase()).not.toContain('netlify')
+      })
+    },
+  )
 
   test('should not check the endpoint existence for hidden proxies', async (t) => {
     await withSiteBuilder(t, async (builder) => {
