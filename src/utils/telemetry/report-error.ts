@@ -22,7 +22,7 @@ const dirPath = dirname(fileURLToPath(import.meta.url))
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'error' implicitly has an 'any' type.
 export const reportError = async function (error, config = {}) {
-  if (isCI) {
+  if (isCI || process.env.CI) {
     return
   }
   // convert a NotifiableError to an error class
