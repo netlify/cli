@@ -117,8 +117,8 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
           name: 'scheme',
           message: 'Numbering scheme:',
           choices: [
-            { name: 'Timestamp (20260312143000)', value: 'timestamp' },
-            { name: 'Sequential (0001, 0002, ...)', value: 'sequential' },
+            { name: 'Timestamp (e.g. 20260312143000) [Recommended]', value: 'timestamp' },
+            { name: 'Sequential (e.g. 0001, 0002, ...)', value: 'sequential' },
           ],
           default: defaultScheme,
         },
