@@ -248,18 +248,14 @@ describe('migrationNew', () => {
     await migrationNew({ description: 'add comments' }, createMockCommand())
 
     expect(inquirer.prompt).not.toHaveBeenCalled()
-    expect(mockMkdir).toHaveBeenCalledWith(
-      join('/project/netlify/database/migrations', '0003_add-comments'),
-      { recursive: true },
-    )
+    expect(mockMkdir).toHaveBeenCalledWith(join('/project/netlify/database/migrations', '0003_add-comments'), {
+      recursive: true,
+    })
   })
 
   test('detects timestamp scheme in non-interactive mode when timestamp migrations exist', async () => {
     vi.mocked(isInteractive).mockReturnValue(false)
-    mockReaddir.mockResolvedValue([
-      dirEntry('20260312143000_create-users'),
-      dirEntry('20260312150000_add-posts'),
-    ])
+    mockReaddir.mockResolvedValue([dirEntry('20260312143000_create-users'), dirEntry('20260312150000_add-posts')])
 
     await migrationNew({ description: 'add comments' }, createMockCommand())
 
