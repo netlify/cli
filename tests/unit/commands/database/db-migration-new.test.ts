@@ -26,6 +26,10 @@ vi.mock('inquirer', () => ({
   default: { prompt: vi.fn() },
 }))
 
+vi.mock('../../../../src/utils/scripted-commands.js', () => ({
+  isInteractive: vi.fn(),
+}))
+
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
   log: (...args: string[]) => {
@@ -46,6 +50,7 @@ import {
   generateNextPrefix,
 } from '../../../../src/commands/database/db-migration-new.js'
 import { resolveMigrationsDirectory } from '../../../../src/commands/database/util/migrations-path.js'
+import { isInteractive } from '../../../../src/utils/scripted-commands.js'
 
 function createMockCommand(overrides: { migrationsPath?: string | undefined } = {}) {
   const { migrationsPath = '/project/netlify/database/migrations' } = overrides
@@ -195,6 +200,7 @@ describe('migrationNew', () => {
   })
 
   test('prompts for description when not provided', async () => {
+    vi.mocked(isInteractive).mockReturnValue(true)
     vi.mocked(inquirer.prompt)
       .mockResolvedValueOnce({ description: 'create users table' })
       .mockResolvedValueOnce({ scheme: 'sequential' })
@@ -205,7 +211,16 @@ describe('migrationNew', () => {
     expect(mockMkdir).toHaveBeenCalledWith(expect.stringContaining('create-users-table'), expect.any(Object))
   })
 
+  test('throws when description is missing in non-interactive mode', async () => {
+    vi.mocked(isInteractive).mockReturnValue(false)
+
+    await expect(migrationNew({}, createMockCommand())).rejects.toThrow(
+      '--description <description> argument is required when not running interactively',
+    )
+  })
+
   test('prompts for scheme with detected default when not provided', async () => {
+    vi.mocked(isInteractive).mockReturnValue(true)
     mockReaddir.mockResolvedValue([dirEntry('0001_create-users'), dirEntry('0002_add-posts')])
     vi.mocked(inquirer.prompt).mockResolvedValueOnce({ scheme: 'sequential' })
 
@@ -213,6 +228,41 @@ describe('migrationNew', () => {
 
     const promptCall = vi.mocked(inquirer.prompt).mock.calls[0][0] as { default?: string }[]
     expect(promptCall[0].default).toBe('sequential')
+  })
+
+  test('defaults to timestamp scheme in non-interactive mode when no migrations exist', async () => {
+    vi.mocked(isInteractive).mockReturnValue(false)
+
+    await migrationNew({ description: 'add posts table' }, createMockCommand())
+
+    expect(inquirer.prompt).not.toHaveBeenCalled()
+    const mkdirCall = mockMkdir.mock.calls[0][0] as string
+    const folderName = mkdirCall.split(/[/\\]/).pop() ?? ''
+    expect(folderName).toMatch(/^\d{14}_add-posts-table$/)
+  })
+
+  test('detects sequential scheme in non-interactive mode when sequential migrations exist', async () => {
+    vi.mocked(isInteractive).mockReturnValue(false)
+    mockReaddir.mockResolvedValue([dirEntry('0001_create-users'), dirEntry('0002_add-posts')])
+
+    await migrationNew({ description: 'add comments' }, createMockCommand())
+
+    expect(inquirer.prompt).not.toHaveBeenCalled()
+    expect(mockMkdir).toHaveBeenCalledWith(join('/project/netlify/database/migrations', '0003_add-comments'), {
+      recursive: true,
+    })
+  })
+
+  test('detects timestamp scheme in non-interactive mode when timestamp migrations exist', async () => {
+    vi.mocked(isInteractive).mockReturnValue(false)
+    mockReaddir.mockResolvedValue([dirEntry('20260312143000_create-users'), dirEntry('20260312150000_add-posts')])
+
+    await migrationNew({ description: 'add comments' }, createMockCommand())
+
+    expect(inquirer.prompt).not.toHaveBeenCalled()
+    const mkdirCall = mockMkdir.mock.calls[0][0] as string
+    const folderName = mkdirCall.split(/[/\\]/).pop() ?? ''
+    expect(folderName).toMatch(/^\d{14}_add-comments$/)
   })
 
   test('uses timestamp scheme when specified', async () => {
