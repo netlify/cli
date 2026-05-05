@@ -41,7 +41,7 @@ describe('config-manual', () => {
       netlify: {
         api: mockApi as NetlifyAPI,
         cachedConfig: { configPath: '/test/netlify.toml' } as BaseCommand['netlify']['cachedConfig'],
-        config: { plugins: [] } as BaseCommand['netlify']['config'],
+        config: { plugins: [] } as unknown as BaseCommand['netlify']['config'],
         repositoryRoot: '/test',
       } as BaseCommand['netlify'],
     }

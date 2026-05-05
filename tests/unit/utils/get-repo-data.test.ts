@@ -1,120 +1,143 @@
-import { describe, expect, it, vi } from 'vitest'
-import type { RepoData } from '../../../src/utils/get-repo-data.js'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import getRepoData from '../../../src/utils/get-repo-data.js'
+
+const mockGitConfig = vi.fn()
+const mockFindUp = vi.fn()
+const mockGitRepoInfo = vi.fn()
+
+vi.mock('gitconfiglocal', () => ({
+  default: (workingDir: string, cb: (err: Error | null, config: unknown) => void) => {
+    try {
+      cb(null, mockGitConfig(workingDir))
+    } catch (err) {
+      cb(err as Error, null)
+    }
+  },
+}))
+
+vi.mock('find-up', () => ({
+  findUp: (...args: unknown[]): unknown => mockFindUp(...args),
+}))
+
+vi.mock('git-repo-info', () => ({
+  default: (): unknown => mockGitRepoInfo(),
+}))
 
 vi.mock('../../../src/utils/command-helpers.js', () => ({
   log: vi.fn(),
 }))
 
 describe('getRepoData', () => {
-  describe('RepoData structure for different Git providers', () => {
-    it('should construct correct httpsUrl for GitHub SSH URLs', () => {
-      const mockRepoData: RepoData = {
-        name: 'test',
-        owner: 'ownername',
-        repo: 'ownername/test',
-        url: 'git@github.com:ownername/test.git',
-        branch: 'main',
-        provider: 'github',
-        httpsUrl: 'https://github.com/ownername/test',
-      }
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFindUp.mockResolvedValue('/test/.git')
+    mockGitRepoInfo.mockReturnValue({ branch: 'main' })
+  })
 
-      expect(mockRepoData.httpsUrl).toBe('https://github.com/ownername/test')
-      expect(mockRepoData.provider).toBe('github')
-      expect(mockRepoData.repo).toBe('ownername/test')
-    })
+  it('parses GitHub SSH URLs', async () => {
+    mockGitConfig.mockReturnValue({ remote: { origin: { url: 'git@github.com:ownername/test.git' } } })
 
-    it('should construct correct httpsUrl for GitLab SSH URLs', () => {
-      const mockRepoData: RepoData = {
-        name: 'test',
-        owner: 'ownername',
-        repo: 'ownername/test',
-        url: 'git@gitlab.com:ownername/test.git',
-        branch: 'main',
-        provider: 'gitlab',
-        httpsUrl: 'https://gitlab.com/ownername/test',
-      }
+    const result = await getRepoData({ workingDir: '/test' })
 
-      expect(mockRepoData.httpsUrl).toBe('https://gitlab.com/ownername/test')
-      expect(mockRepoData.provider).toBe('gitlab')
-      expect(mockRepoData.repo).toBe('ownername/test')
-    })
-
-    it('should construct correct httpsUrl for GitHub HTTPS URLs', () => {
-      const mockRepoData: RepoData = {
-        name: 'test',
-        owner: 'ownername',
-        repo: 'ownername/test',
-        url: 'https://github.com/ownername/test.git',
-        branch: 'main',
-        provider: 'github',
-        httpsUrl: 'https://github.com/ownername/test',
-      }
-
-      expect(mockRepoData.httpsUrl).toBe('https://github.com/ownername/test')
-      expect(mockRepoData.provider).toBe('github')
-      expect(mockRepoData.repo).toBe('ownername/test')
-    })
-
-    it('should construct correct httpsUrl for GitLab HTTPS URLs', () => {
-      const mockRepoData: RepoData = {
-        name: 'test',
-        owner: 'ownername',
-        repo: 'ownername/test',
-        url: 'https://gitlab.com/ownername/test.git',
-        branch: 'main',
-        provider: 'gitlab',
-        httpsUrl: 'https://gitlab.com/ownername/test',
-      }
-
-      expect(mockRepoData.httpsUrl).toBe('https://gitlab.com/ownername/test')
-      expect(mockRepoData.provider).toBe('gitlab')
-      expect(mockRepoData.repo).toBe('ownername/test')
-    })
-
-    it('should use host as provider for unknown Git hosts', () => {
-      const mockRepoData: RepoData = {
-        name: 'test',
-        owner: 'user',
-        repo: 'user/test',
-        url: 'git@custom-git.example.com:user/test.git',
-        branch: 'main',
-        provider: 'custom-git.example.com',
-        httpsUrl: 'https://custom-git.example.com/user/test',
-      }
-
-      expect(mockRepoData.httpsUrl).toBe('https://custom-git.example.com/user/test')
-      expect(mockRepoData.provider).toBe('custom-git.example.com')
-      expect(mockRepoData.repo).toBe('user/test')
+    expect(result).toEqual({
+      name: 'test',
+      owner: 'ownername',
+      repo: 'ownername/test',
+      url: 'git@github.com:ownername/test.git',
+      branch: 'main',
+      provider: 'github',
+      httpsUrl: 'https://github.com/ownername/test',
     })
   })
 
-  describe('provider field mapping', () => {
-    it('should map github.com to "github" provider', () => {
-      const mockRepoData: RepoData = {
-        name: 'test',
-        owner: 'user',
-        repo: 'user/test',
-        url: 'git@github.com:user/test.git',
-        branch: 'main',
-        provider: 'github',
-        httpsUrl: 'https://github.com/user/test',
-      }
+  it('parses GitLab SSH URLs', async () => {
+    mockGitConfig.mockReturnValue({ remote: { origin: { url: 'git@gitlab.com:ownername/test.git' } } })
 
-      expect(mockRepoData.provider).toBe('github')
+    const result = await getRepoData({ workingDir: '/test' })
+
+    expect(result).toEqual({
+      name: 'test',
+      owner: 'ownername',
+      repo: 'ownername/test',
+      url: 'git@gitlab.com:ownername/test.git',
+      branch: 'main',
+      provider: 'gitlab',
+      httpsUrl: 'https://gitlab.com/ownername/test',
+    })
+  })
+
+  it('parses GitHub HTTPS URLs', async () => {
+    mockGitConfig.mockReturnValue({ remote: { origin: { url: 'https://github.com/ownername/test.git' } } })
+
+    const result = await getRepoData({ workingDir: '/test' })
+
+    expect(result).toMatchObject({
+      provider: 'github',
+      repo: 'ownername/test',
+      httpsUrl: 'https://github.com/ownername/test',
+    })
+  })
+
+  it('parses GitLab HTTPS URLs', async () => {
+    mockGitConfig.mockReturnValue({ remote: { origin: { url: 'https://gitlab.com/ownername/test.git' } } })
+
+    const result = await getRepoData({ workingDir: '/test' })
+
+    expect(result).toMatchObject({
+      provider: 'gitlab',
+      repo: 'ownername/test',
+      httpsUrl: 'https://gitlab.com/ownername/test',
+    })
+  })
+
+  it('uses host as provider for unknown Git hosts', async () => {
+    mockGitConfig.mockReturnValue({
+      remote: { origin: { url: 'git@custom-git.example.com:user/test.git' } },
     })
 
-    it('should map gitlab.com to "gitlab" provider', () => {
-      const mockRepoData: RepoData = {
-        name: 'test',
-        owner: 'user',
-        repo: 'user/test',
-        url: 'git@gitlab.com:user/test.git',
-        branch: 'main',
-        provider: 'gitlab',
-        httpsUrl: 'https://gitlab.com/user/test',
-      }
+    const result = await getRepoData({ workingDir: '/test' })
 
-      expect(mockRepoData.provider).toBe('gitlab')
+    expect(result).toMatchObject({
+      provider: 'custom-git.example.com',
+      repo: 'user/test',
+      httpsUrl: 'https://custom-git.example.com/user/test',
+    })
+  })
+
+  it('uses the specified remote name when provided', async () => {
+    mockGitConfig.mockReturnValue({
+      remote: {
+        origin: { url: 'git@github.com:owner/origin-repo.git' },
+        upstream: { url: 'git@gitlab.com:owner/upstream-repo.git' },
+      },
+    })
+
+    const result = await getRepoData({ workingDir: '/test', remoteName: 'upstream' })
+
+    expect(result).toMatchObject({
+      provider: 'gitlab',
+      repo: 'owner/upstream-repo',
+    })
+  })
+
+  it('returns an error when no Git remote is found', async () => {
+    mockFindUp.mockResolvedValue(undefined)
+    mockGitConfig.mockReturnValue({ remote: {} })
+
+    const result = await getRepoData({ workingDir: '/test' })
+
+    expect(result).toEqual({ error: 'No Git remote found' })
+  })
+
+  it('returns an error when the requested remote is not defined', async () => {
+    mockGitConfig.mockReturnValue({ remote: { origin: { url: 'git@github.com:owner/repo.git' } } })
+
+    const result = await getRepoData({ workingDir: '/test', remoteName: 'missing' })
+
+    expect(result).toEqual({
+      error:
+        'The specified remote "missing" is not defined in Git repo. Please use --git-remote-name flag to specify a remote.',
     })
   })
 })
