@@ -1,3 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`command/envelope > env:clone should return success message 1`] = `"Successfully cloned environment variables from site-name-a to site-name-b"`;
+exports[`command/envelope > env:clone should return success message 1`] = `
+"Successfully cloned environment variables from site-name-a to site-name-b
+Changes will require a redeploy to take effect on any deployed versions of your project."
+`;

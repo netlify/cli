@@ -130,7 +130,6 @@ The CLI integrates with Netlify's build plugin system, allowing plugins to:
 - Node.js 20.12.2+ required
 - Git LFS must be installed for full test suite
 - Some integration tests require Netlify Auth Token (`NETLIFY_AUTH_TOKEN`) or login via `./bin/run.js login`
-- Live tests can be disabled with `NETLIFY_TEST_DISABLE_LIVE=true`
 
 ### Coding Style:
 - Never write comments on what the code does, make the code clean and self explanatory instead

@@ -4,6 +4,7 @@ import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpe
 import { SUPPORTED_CONTEXTS, ALL_ENVELOPE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-set-prompts.js'
 import BaseCommand from '../base-command.js'
+import { getSiteInfo } from './utils.js'
 
 /**
  * Updates the env for a site configured with Envelope with a new key/value pair
@@ -115,7 +116,7 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
     log('No project id found, please run inside a project folder or `netlify link`')
     return false
   }
-  const { siteInfo } = cachedConfig
+  const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
 
   // Get current environment variables set in the UI
   const finalEnv = await setInEnvelope({ api, siteInfo, force, key, value, context, scope, secret })
@@ -138,4 +139,5 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
       `${key}${value && !secret ? `=${value}` : ''}`,
     )}${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
   )
+  log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
 }

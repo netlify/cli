@@ -40,7 +40,15 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   })
 
   if (!options.offline && !capabilities.aiGatewayDisabled) {
-    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+    const resolvedAccountId = accountId ?? command.netlify.accounts[0]?.id
+    await setupAIGateway({
+      api,
+      env,
+      siteID: site.id,
+      siteURL: siteUrl,
+      accountID: resolvedAccountId,
+      siteHasDeploy: !!siteInfo.published_deploy,
+    })
   } else if (!options.offline && capabilities.aiGatewayDisabled) {
     log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
@@ -80,6 +88,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     offline: options.offline,
     state,
     accountId,
+    deployEnvironment: [],
   })
 
   const url = getProxyUrl({ port: functionsPort })

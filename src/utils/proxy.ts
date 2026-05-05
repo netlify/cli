@@ -546,6 +546,10 @@ const initializeProxy = async function ({
         options.target = `http://${isIPv6(newHost) ? `[${newHost}]` : newHost}:${targetUrl.port}`
         options.targetHostname = newHost
         options.isChangingTarget = true
+        // http-proxy attaches new 'aborted'/'error' listeners on req for every proxy.web call; without
+        // clearing them first, retries leak listeners and the closures retain per-attempt proxyReq objects.
+        req.removeAllListeners('aborted')
+        req.removeAllListeners('error')
         proxy.web(req, res, options)
         return
       }
@@ -619,6 +623,10 @@ const initializeProxy = async function ({
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
         // @ts-expect-error TS(2339) FIXME: Property 'alternativePaths' does not exist on type... Remove this comment to see the full error message
         req.url = req.alternativePaths.shift()
+        // http-proxy attaches new 'aborted'/'error' listeners on req for every proxy.web call; without
+        // clearing them first, retries leak listeners and the closures retain per-attempt proxyReq objects.
+        req.removeAllListeners('aborted')
+        req.removeAllListeners('error')
         // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
         proxy.web(req, res, req.proxyOptions)
         return
@@ -939,6 +947,7 @@ export const startProxy = async function ({
   settings,
   siteInfo,
   state,
+  deployEnvironment,
 }: {
   command: BaseCommand
   config: NormalizedCachedConfigConfig
@@ -946,6 +955,7 @@ export const startProxy = async function ({
   disableEdgeFunctions: boolean
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   aiGatewayContext?: AIGatewayContext | null
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 } & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
@@ -978,6 +988,7 @@ export const startProxy = async function ({
       repositoryRoot,
       siteInfo,
       state,
+      deployEnvironment,
     })
   }
 

@@ -4,6 +4,7 @@ import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { SUPPORTED_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
 import BaseCommand from '../base-command.js'
+import { getSiteInfo } from './utils.js'
 /**
  * Deletes a given key from the env of a site configured with Envelope
  * @returns {Promise<object>}
@@ -77,7 +78,7 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
     return false
   }
 
-  const { siteInfo } = cachedConfig
+  const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
 
   const finalEnv = await unsetInEnvelope({ api, context, force, siteInfo, key })
 
@@ -89,4 +90,5 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
 
   const contextType = SUPPORTED_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
   log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
+  log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
 }

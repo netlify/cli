@@ -150,3 +150,90 @@ describe('link command with multiple projects', () => {
     })
   })
 })
+
+describe('link command non-interactive mode', () => {
+  test('should error with helpful message when no options provided in non-interactive mode', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        [],
+        async ({ apiUrl }) => {
+          try {
+            await callCli(['link'], {
+              ...getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '', CI: 'true' } }),
+            })
+            expect.fail('Should have thrown an error')
+          } catch (error_) {
+            const errorMessage = (error_ as Error).message
+            expect(errorMessage).toContain('No project specified')
+            expect(errorMessage).toContain('link --id')
+            expect(errorMessage).toContain('link --name')
+            expect(errorMessage).toContain('sites:search')
+          }
+        },
+        true,
+      )
+    })
+  })
+
+  test('should error with helpful message when site not found by name', async (t) => {
+    const routes = [
+      {
+        path: 'sites',
+        response: [],
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          await expect(
+            callCli(
+              ['link', '--name', 'nonexistent-site'],
+              getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+            ),
+          ).rejects.toThrow(/No projects found|sites:search/)
+        },
+        true,
+      )
+    })
+  })
+
+  test('should error with helpful message when site not found by git remote', async (t) => {
+    const routes = [
+      {
+        path: 'sites',
+        response: [
+          {
+            id: 'different-site-id',
+            name: 'different-site',
+            build_settings: {
+              repo_url: 'https://github.com/other/repo',
+            },
+          },
+        ],
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          await expect(
+            callCli(
+              ['link', '--git-remote-url', 'https://github.com/test/repo'],
+              getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+            ),
+          ).rejects.toThrow(/No matching project found|sites:search/)
+        },
+        true,
+      )
+    })
+  })
+})

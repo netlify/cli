@@ -19,6 +19,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       'dev',
     )
     .option('--json', 'Output environment variables as JSON')
+    .option('--site <name-or-id>', 'A project name or ID to target')
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')
         .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
@@ -45,6 +46,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       false,
     )
     .option('--json', 'Output environment variables as JSON')
+    .option('-s, --site <name-or-id>', 'A project name or ID to target')
     .description('Import and set environment variables from .env file')
     .action(async (fileName: string, options: OptionValues, command: BaseCommand) => {
       const { envImport } = await import('./env-import.js')
@@ -60,6 +62,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       'dev',
     )
     .option('--json', 'Output environment variables as JSON')
+    .option('--site <name-or-id>', 'A project name or ID to target')
     .addOption(new Option('--plain', 'Output environment variables as plaintext').conflicts('json'))
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')
@@ -90,6 +93,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       (context: string, previous: string[] = []) => [...previous, normalizeContext(context)],
     )
     .option('--json', 'Output environment variables as JSON')
+    .option('--site <name-or-id>', 'A project name or ID to target')
     .addOption(
       new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
         'builds',
@@ -126,6 +130,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       (context: string, previous: string[] = []) => [...previous, normalizeContext(context)],
     )
     .option('--json', 'Output environment variables as JSON')
+    .option('-s, --site <name-or-id>', 'A project name or ID to target')
     .addExamples([
       'netlify env:unset VAR_NAME # unset in all contexts',
       'netlify env:unset VAR_NAME --context production',

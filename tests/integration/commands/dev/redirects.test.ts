@@ -1,3 +1,4 @@
+import getPort from 'get-port'
 import fetch from 'node-fetch'
 import { describe, expect, test } from 'vitest'
 
@@ -55,6 +56,9 @@ describe('redirects', async () => {
 
   test('should not check the endpoint existence for hidden proxies', async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const mainPort = await getPort()
+      const proxyPort = await getPort()
+
       await builder
         .withContentFile({
           path: './index.js',
@@ -64,29 +68,29 @@ describe('redirects', async () => {
             console.log('Got request main server', req.method, req.url)
             res.end()
           })
-          server.listen(6125)
+          server.listen(${mainPort.toString()})
 
           const proxyServer = http.createServer((req, res) => {
             console.log('Got request proxy server', req.method, req.url)
             res.end()
           })
-          proxyServer.listen(6126)
+          proxyServer.listen(${proxyPort.toString()})
           `,
         })
         .withNetlifyToml({
           config: {
             dev: {
-              targetPort: 6125,
+              targetPort: mainPort,
               command: 'node index.js',
             },
             redirects: [
               {
                 from: '/from-hidden',
-                to: 'http://localhost:6126/to',
+                to: `http://localhost:${proxyPort.toString()}/to`,
                 status: 200,
                 headers: { 'x-nf-hidden-proxy': 'true' },
               },
-              { from: '/from', to: 'http://localhost:6126/to', status: 200 },
+              { from: '/from', to: `http://localhost:${proxyPort.toString()}/to`, status: 200 },
             ],
           },
         })

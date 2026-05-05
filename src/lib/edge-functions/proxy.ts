@@ -95,6 +95,7 @@ export const initializeProxy = async ({
   settings,
   siteInfo,
   state,
+  deployEnvironment,
 }: {
   accountId: string
   aiGatewayContext?: AIGatewayContext | null
@@ -116,6 +117,7 @@ export const initializeProxy = async ({
   settings: ServerSettings
   siteInfo: $TSFixMe
   state: LocalState
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   const isolatePort = await getAvailablePort()
   const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode', 'edge_functions_bootstrap_populate_environment']
@@ -138,6 +140,7 @@ export const initializeProxy = async ({
     port: isolatePort,
     projectDir,
     repositoryRoot,
+    deployEnvironment,
   })
   return async (req: ExtendedIncomingMessage) => {
     if (req.headers[headers.Passthrough] !== undefined) {
@@ -212,6 +215,7 @@ const prepareServer = async ({
   port,
   projectDir,
   repositoryRoot,
+  deployEnvironment,
 }: {
   aiGatewayContext?: AIGatewayContext | null
   command: BaseCommand
@@ -225,6 +229,7 @@ const prepareServer = async ({
   port: number
   projectDir: string
   repositoryRoot?: string
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   try {
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
@@ -264,6 +269,11 @@ const prepareServer = async ({
       projectDir,
       runIsolate,
       servePath,
+      deployEnvironment: deployEnvironment
+        .filter(({ scopes }) => scopes.includes('functions'))
+        // Scopes should be opaque to the functions registry: We just filtered down to only variables
+        // should be applied to functions.
+        .map(({ scopes, ...rest }) => rest),
     })
 
     return registry

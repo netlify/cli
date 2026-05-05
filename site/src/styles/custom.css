@@ -114,6 +114,11 @@
   .expressive-code pre {
     border-radius: var(--smallRadius);
   }
+
+  .expressive-code .frame.is-terminal pre {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
 }
 
 /* Colors (light mode) */

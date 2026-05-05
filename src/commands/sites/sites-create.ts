@@ -6,8 +6,11 @@ import prettyjson from 'prettyjson'
 import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
+import { resolveTeamForNonInteractive } from '../../utils/team.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
+import { MAX_SITE_NAME_LENGTH } from '../../utils/validation.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 
@@ -35,50 +38,119 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   let accountSlug = options.accountSlug as string | undefined
   if (!accountSlug) {
-    const { accountSlug: accountSlugInput }: { accountSlug: string } = await inquirer.prompt<
-      Promise<{ accountSlug: string }>
-    >([
-      {
-        type: 'list',
-        name: 'accountSlug',
-        message: 'Team:',
-        choices: accounts.map((account) => ({
-          value: account.slug,
-          name: account.name,
-        })),
-      },
-    ])
-    accountSlug = accountSlugInput
+    if (!isInteractive()) {
+      const team = resolveTeamForNonInteractive(
+        accounts,
+        'netlify sites:create --name <SITE_NAME> --account-slug <TEAM_SLUG>',
+      )
+      accountSlug = team.slug
+      log(`Using team: ${team.name}`)
+    } else {
+      const { accountSlug: accountSlugInput }: { accountSlug: string } = await inquirer.prompt<
+        Promise<{ accountSlug: string }>
+      >([
+        {
+          type: 'list',
+          name: 'accountSlug',
+          message: 'Team:',
+          choices: accounts.map((account) => ({
+            value: account.slug,
+            name: account.name,
+          })),
+        },
+      ])
+      accountSlug = accountSlugInput
+    }
   }
 
   let site!: SiteInfo
 
-  // Allow the user to reenter site name if selected one isn't available
-  const inputSiteName = async (name?: string) => {
-    const { name: siteName } = await getSiteNameInput(name)
+  const MAX_NAME_RETRIES = 2
 
+  const tryCreateSiteInteractive = async (nameToTry: string | undefined): Promise<void> => {
+    const { name: attemptName } = await getSiteNameInput(nameToTry)
     const body: { name?: string } = {}
-    if (typeof siteName === 'string') {
-      body.name = siteName.trim()
+    if (attemptName.trim()) {
+      body.name = attemptName.trim()
     }
+
     try {
-      // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
       site = (await api.createSiteInTeam({
         accountSlug: accountSlug,
         body,
       })) as unknown as SiteInfo
     } catch (error_) {
       if ((error_ as APIError).status === 422) {
-        warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
-        await inputSiteName()
-      } else {
-        return logAndThrowError(
-          `createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`,
-        )
+        warn(`${attemptName}.netlify.app already exists. Please try a different slug.`)
+        return tryCreateSiteInteractive(undefined)
       }
+
+      return logAndThrowError(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }
   }
-  await inputSiteName(options.name)
+
+  const createSiteWithRetry = async (siteName: string | undefined) => {
+    if (!isInteractive() && siteName) {
+      for (let attempt = 0; attempt <= MAX_NAME_RETRIES; attempt++) {
+        let nameToTry = siteName
+
+        if (attempt > 0) {
+          const suffix = `-${Math.floor(Math.random() * 900 + 100).toString()}`
+          const normalizedBase = siteName.trim()
+          const maxBaseLength = MAX_SITE_NAME_LENGTH - suffix.length
+          const truncatedBase = normalizedBase.slice(0, maxBaseLength)
+          nameToTry = `${truncatedBase}${suffix}`
+          warn(`${siteName}.netlify.app already exists. Trying ${nameToTry}...`)
+        }
+
+        const body: { name?: string } = {}
+        if (nameToTry.trim()) {
+          body.name = nameToTry.trim()
+        }
+
+        try {
+          site = (await api.createSiteInTeam({
+            accountSlug: accountSlug,
+            body,
+          })) as unknown as SiteInfo
+          return
+        } catch (error_) {
+          if ((error_ as APIError).status === 422) {
+            if (attempt === MAX_NAME_RETRIES) {
+              return logAndThrowError(`Project name "${nameToTry}" is already taken. Please try a different name.`)
+            }
+            continue
+          }
+
+          return logAndThrowError(
+            `createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`,
+          )
+        }
+      }
+    }
+
+    if (isInteractive()) {
+      return tryCreateSiteInteractive(siteName)
+    }
+
+    return logAndThrowError('Failed to create site: name already taken')
+  }
+
+  if (!isInteractive() && !options.name) {
+    try {
+      site = (await api.createSiteInTeam({
+        accountSlug: accountSlug,
+        body: {},
+      })) as unknown as SiteInfo
+    } catch (error_) {
+      return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+    }
+  } else if (isInteractive() && !options.name) {
+    const { name: siteName } = await getSiteNameInput(options.name)
+    await createSiteWithRetry(siteName)
+  } else {
+    await createSiteWithRetry(options.name)
+  }
 
   log()
   log(chalk.greenBright.bold.underline(`Project Created`))

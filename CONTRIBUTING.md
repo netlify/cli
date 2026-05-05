@@ -52,9 +52,7 @@ You can either provide a
 [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the
 `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run.js login` before running the tests.
 
-The tests don’t count towards Netlify build minutes since they build a site locally and deploy it using the API.
-
-> You can disable these tests by setting the `NETLIFY_TEST_DISABLE_LIVE` environment variable to `true`.
+The tests don't count towards Netlify build minutes since they build a site locally and deploy it using the API.
 
 **For Netlify employees**, our CI uses a Netlify Auth Token from a
 [`netlify services` account](https://app.netlify.com/teams/netlify-services/sites). Credentials for the account are in

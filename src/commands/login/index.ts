@@ -11,6 +11,9 @@ export const createLoginCommand = (program: BaseCommand) =>
 Opens a web browser to acquire an OAuth token.`,
     )
     .option('--new', 'Login to new Netlify account')
+    .option('--request <message>', 'Create a login ticket for agent/human-in-the-loop auth')
+    .option('--check <ticket-id>', 'Check the status of a login ticket created with --request')
+    .option('--json', 'Output as JSON (for use with --request or --check)')
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/get-started/#authentication'
       return `

@@ -5,6 +5,7 @@ import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 import {
   assertAIGatewayValue,
+  createAccountScopedAIGatewayTestData,
   createAIGatewayCheckFunction,
   createAIGatewayDisabledTestData,
   createAIGatewayTestData,
@@ -257,6 +258,92 @@ describe.concurrent('AI Gateway Integration', () => {
 
             t.expect(response.status).toBe(200)
             assertAIGatewayValue(t, result, aiGatewayToken.token, `${siteInfo.ssl_url}/.netlify/ai`)
+          },
+        )
+      })
+    })
+  })
+
+  test('should fall back to account-scoped token when site has no published deploy', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const { siteInfo, accountAIGatewayToken, routes } = createAccountScopedAIGatewayTestData()
+      const checkFunction = createAIGatewayCheckFunction()
+
+      await builder
+        .withContentFile({
+          path: checkFunction.path,
+          content: checkFunction.content,
+        })
+        .build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        await withDevServer(
+          {
+            cwd: builder.directory,
+            offline: false,
+            env: {
+              NETLIFY_API_URL: apiUrl,
+              NETLIFY_SITE_ID: siteInfo.id,
+              NETLIFY_AUTH_TOKEN: 'fake-token',
+            },
+          },
+          async (server) => {
+            const response = await fetch(`${server.url}${checkFunction.urlPath}`)
+            const result = (await response.json()) as { hasAIGateway: boolean; aiGatewayValue: string | null }
+
+            t.expect(response.status).toBe(200)
+            assertAIGatewayValue(t, result, accountAIGatewayToken.token, accountAIGatewayToken.url)
+          },
+        )
+      })
+    })
+  })
+
+  test('should fall back to account-scoped token when site-scoped token fails', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const { siteInfo: baseSiteInfo } = createAIGatewayTestData()
+      const siteInfo = { ...baseSiteInfo }
+      const checkFunction = createAIGatewayCheckFunction()
+
+      const accountAIGatewayToken = {
+        token: 'account-fallback-token-789',
+        url: 'https://ai.netlify.com/.netlify/ai/',
+      }
+
+      const routes = [
+        { path: 'sites/test-site-id', response: siteInfo },
+        { path: 'sites/test-site-id/service-instances', response: [] },
+        { path: 'accounts', response: [{ id: 'account-id-123', slug: siteInfo.account_slug }] },
+        { path: 'accounts/test-account/env', response: [] },
+        { path: 'sites/test-site-id/ai-gateway/token', status: 404, response: { message: 'Not Found' } },
+        { path: 'accounts/account-id-123/ai-gateway/token', response: accountAIGatewayToken },
+        { path: 'ai-gateway/providers', response: { providers: {} } },
+      ]
+
+      await builder
+        .withContentFile({
+          path: checkFunction.path,
+          content: checkFunction.content,
+        })
+        .build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        await withDevServer(
+          {
+            cwd: builder.directory,
+            offline: false,
+            env: {
+              NETLIFY_API_URL: apiUrl,
+              NETLIFY_SITE_ID: siteInfo.id,
+              NETLIFY_AUTH_TOKEN: 'fake-token',
+            },
+          },
+          async (server) => {
+            const response = await fetch(`${server.url}${checkFunction.urlPath}`)
+            const result = (await response.json()) as { hasAIGateway: boolean; aiGatewayValue: string | null }
+
+            t.expect(response.status).toBe(200)
+            assertAIGatewayValue(t, result, accountAIGatewayToken.token, accountAIGatewayToken.url)
           },
         )
       })

@@ -1,17 +1,6 @@
-import { OptionValues, InvalidArgumentError } from 'commander'
+import { OptionValues } from 'commander'
 import BaseCommand from '../base-command.js'
-
-const MAX_SITE_NAME_LENGTH = 63
-
-// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-const validateName = function (value) {
-  // netlify sites:create --name <A string of more than 63 words>
-  if (typeof value === 'string' && value.length > MAX_SITE_NAME_LENGTH) {
-    throw new InvalidArgumentError(`--name should be less than 64 characters, input length: ${value.length}`)
-  }
-
-  return value
-}
+import { validateSiteName } from '../../utils/validation.js'
 
 const sites = (_options: OptionValues, command: BaseCommand) => {
   command.help()
@@ -24,16 +13,23 @@ export const createSitesCreateCommand = (program: BaseCommand) => {
       `Create an empty project (advanced)
 Create a blank project that isn't associated with any git remote. Will link the project to the current working directory.`,
     )
-    .option('-n, --name <name>', 'name of project', validateName)
+    .option('-n, --name <name>', 'name of project', validateSiteName)
     .option('-a, --account-slug <slug>', 'account slug to create the project under')
     .option('-c, --with-ci', 'initialize CI hooks during project creation')
     .option('-m, --manual', 'force manual CI setup.  Used --with-ci flag')
     .option('--disable-linking', 'create the project without linking it to current directory')
+    .option('-p, --prompt <prompt>', 'description of the site to create (delegates to `netlify create`)')
+    .option('--json', 'Output project data as JSON')
     .addHelpText(
       'after',
       `Create a blank project that isn't associated with any git remote. Will link the project to the current working directory.`,
     )
     .action(async (options: OptionValues, command: BaseCommand) => {
+      if (options.prompt) {
+        const { createAction } = await import('../create/create-action.js')
+        await createAction('', options, command)
+        return
+      }
       const { sitesCreate } = await import('./sites-create.js')
       await sitesCreate(options, command)
     })
@@ -49,6 +45,17 @@ export const createSitesCommand = (program: BaseCommand) => {
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { sitesList } = await import('./sites-list.js')
       await sitesList(options, command)
+    })
+
+  program
+    .command('sites:search')
+    .description('Search for projects by name')
+    .argument('<search-term>', 'Full or partial project name to search for')
+    .option('--json', 'Output project data as JSON')
+    .addExamples(['netlify sites:search my-project', 'netlify sites:search "partial name" --json'])
+    .action(async (searchTerm: string, options: OptionValues, command: BaseCommand) => {
+      const { sitesSearch } = await import('./sites-search.js')
+      await sitesSearch(searchTerm, options, command)
     })
 
   program

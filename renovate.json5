@@ -11,11 +11,22 @@
   "postUpdateOptions": ["npmDedupe"],
   "packageRules": [
     {
+      "description": "Open PRs immediately for @netlify/ packages without a schedule",
+      "matchPackagePatterns": ["^@netlify/"],
+      "schedule": ["at any time"]
+    },
+    {
       "matchFileNames": ["site/package.json"],
       "semanticCommitType": "chore",
       "addLabels": ["website"],
       "semanticCommitScope": "website",
       "additionalBranchPrefix": "website-"
+    },
+    // Reduce noise by grouping `site/package.json` non-major updates together
+    {
+      "matchFileNames": ["site/package.json"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "website non-major dependencies"
     },
     {
       "matchFileNames": ["tests/**/package.json"],
@@ -36,7 +47,7 @@
       "extends": [":pinAllExceptPeerDependencies"]
     },
     {
-      "matchFileNames": ["package.json", "site/package.json"],
+      "matchFileNames": ["package.json"],
       "extends": [":pinAllExceptPeerDependencies"]
     },
     {

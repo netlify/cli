@@ -22,6 +22,7 @@ const createStripAnsiControlCharsStream = (): Transform =>
 const cleanupWork: (() => Promise<void>)[] = []
 
 let cleanupStarted = false
+let cleanupRegistered = false
 
 const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined } = {}) => {
   // If cleanup has started, then wherever started it will be responsible for exiting
@@ -34,6 +35,24 @@ const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined }
       process.exit(exitCode)
     }
   }
+}
+
+const ensureCleanupOnExit = () => {
+  if (!cleanupRegistered) {
+    cleanupRegistered = true
+    processOnExit(async () => {
+      await cleanupBeforeExit({})
+    })
+  }
+}
+
+/**
+ * Registers a cleanup function to run before the process exits. The process
+ * will call `process.exit()` after all registered cleanup functions complete.
+ */
+export const runBeforeProcessExit = (fn: () => Promise<void>) => {
+  cleanupWork.push(fn)
+  ensureCleanupOnExit()
 }
 
 // TODO(serhalp): Move (or at least rename). This sounds like a generic shell util but it's specific
@@ -111,9 +130,7 @@ export const runCommand = (
 
     await cleanupBeforeExit({ exitCode: 1 })
   })
-  processOnExit(async () => {
-    await cleanupBeforeExit({})
-  })
+  ensureCleanupOnExit()
 
   return commandProcess
 }

@@ -1,11 +1,19 @@
+import { execFile as execFileCb } from 'child_process'
+import { createReadStream, createWriteStream } from 'fs'
+import { mkdir, unlink } from 'fs/promises'
 import path from 'path'
+import { pipeline } from 'stream/promises'
 import process from 'process'
+import { promisify } from 'util'
+import { createGunzip } from 'zlib'
 
-import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-release-fetch'
 import { isexe } from 'isexe'
+import { unpackTar } from 'modern-tar/fs'
+import semver from 'semver'
 
 import { NETLIFYDEVWARN, logAndThrowError, getTerminalLink, log } from '../utils/command-helpers.js'
-import execa from '../utils/execa.js'
+
+const execFile = promisify(execFileCb)
 
 const isWindows = () => process.platform === 'win32'
 
@@ -13,12 +21,78 @@ const getRepository = ({ packageName }: { packageName: string }) => `netlify/${p
 
 export const getExecName = ({ execName }: { execName: string }) => (isWindows() ? `${execName}.exe` : execName)
 
-const getOptions = () => {
-  // this is used in out CI tests to avoid hitting GitHub API limit
-  // when calling gh-release-fetch
+const getGitHubHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = { Accept: 'application/vnd.github.v3+json' }
   if (process.env.NETLIFY_TEST_GITHUB_TOKEN) {
-    return {
-      headers: { Authorization: `token ${process.env.NETLIFY_TEST_GITHUB_TOKEN}` },
+    headers.Authorization = `token ${process.env.NETLIFY_TEST_GITHUB_TOKEN}`
+  }
+  return headers
+}
+
+const resolveLatestTag = async (repository: string): Promise<string> => {
+  const response = await fetch(`https://api.github.com/repos/${repository}/releases/latest`, {
+    headers: getGitHubHeaders(),
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch latest release for ${repository}: ${String(response.status)}`)
+  }
+  const data = (await response.json()) as { tag_name: string }
+  return data.tag_name
+}
+
+const newerVersion = (latestVersion: string, currentVersion: string): boolean => {
+  if (!latestVersion) return false
+  if (!currentVersion) return true
+  const latest = latestVersion.replace(/^v/, '')
+  const current = currentVersion.replace(/^v/, '')
+  return semver.gt(latest, current)
+}
+
+const updateAvailable = async (repository: string, currentVersion: string): Promise<boolean> => {
+  const latestTag = await resolveLatestTag(repository)
+  return newerVersion(latestTag, currentVersion)
+}
+
+const downloadAndExtract = async (url: string, destination: string): Promise<void> => {
+  const response = await fetch(url, {
+    headers: getGitHubHeaders(),
+    redirect: 'follow',
+  })
+  if (!response.ok) {
+    throw Object.assign(new Error(`Download failed: ${String(response.status)}`), { statusCode: response.status })
+  }
+  if (!response.body) {
+    throw new Error('Empty response body')
+  }
+
+  await mkdir(destination, { recursive: true })
+
+  if (url.endsWith('.zip')) {
+    const tmpFile = path.join(destination, '_download.zip')
+    const fileStream = createWriteStream(tmpFile)
+    await pipeline(response.body, fileStream)
+    try {
+      if (isWindows()) {
+        await execFile('powershell.exe', [
+          '-NoProfile',
+          '-Command',
+          `Expand-Archive -Force -LiteralPath '${tmpFile}' -DestinationPath '${destination}'`,
+        ])
+      } else {
+        await execFile('unzip', ['-o', tmpFile, '-d', destination])
+      }
+    } finally {
+      await unlink(tmpFile)
+    }
+  } else {
+    const tmpFile = path.join(destination, '_download.tar.gz')
+    const fileStream = createWriteStream(tmpFile)
+    await pipeline(response.body, fileStream)
+    try {
+      const extractStream = unpackTar(destination)
+      await pipeline(createReadStream(tmpFile), createGunzip(), extractStream)
+    } finally {
+      await unlink(tmpFile)
     }
   }
 }
@@ -35,9 +109,7 @@ const isVersionOutdated = async ({
   if (latestVersion) {
     return newerVersion(latestVersion, currentVersion)
   }
-  const options = getOptions()
-  const outdated = await updateAvailable(getRepository({ packageName }), currentVersion, options)
-  return outdated
+  return await updateAvailable(getRepository({ packageName }), currentVersion)
 }
 
 export const shouldFetchLatestVersion = async ({
@@ -62,7 +134,7 @@ export const shouldFetchLatestVersion = async ({
     return true
   }
 
-  const { stdout } = await execa(execPath, execArgs)
+  const { stdout } = await execFile(execPath, execArgs)
 
   if (!stdout) {
     return false
@@ -118,23 +190,13 @@ export const fetchLatestVersion = async ({
   const arch = getArch()
   const platform = win ? 'windows' : process.platform
   const pkgName = `${execName}-${platform}-${arch}.${extension}`
+  const repository = getRepository({ packageName })
 
-  const release = {
-    repository: getRepository({ packageName }),
-    package: pkgName,
-    destination,
-    extract: true,
-  }
-
-  const options = getOptions()
-  const fetch = latestVersion
-    ? // @ts-expect-error(serhalp) -- Either `gh-release-fetch` is not typed correctly or `options.headers` is useless
-      fetchVersion({ ...release, version: latestVersion }, options)
-    : // @ts-expect-error(serhalp) -- Either `gh-release-fetch` is not typed correctly or `options.version` should be passed
-      fetchLatest(release, options)
+  const version = latestVersion ?? (await resolveLatestTag(repository))
+  const url = `https://github.com/${repository}/releases/download/${version}/${pkgName}`
 
   try {
-    await fetch
+    await downloadAndExtract(url, destination)
   } catch (error_) {
     if (error_ != null && typeof error_ === 'object' && 'statusCode' in error_ && error_.statusCode === 404) {
       const createIssueLink = new URL('https://github.com/netlify/cli/issues/new')

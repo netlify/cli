@@ -1,6 +1,6 @@
 import process from 'process'
 
-import { Option } from 'commander'
+import { Option, CommanderError } from 'commander'
 import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
@@ -21,14 +21,18 @@ import {
 import execa from '../utils/execa.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
+import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import { isInteractive } from '../utils/scripted-commands.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
 import { createAgentsCommand } from './agents/index.js'
 import { createApiCommand } from './api/index.js'
 import BaseCommand from './base-command.js'
+import { createClaimCommand } from './claim/index.js'
 import { createBlobsCommand } from './blobs/blobs.js'
 import { createBuildCommand } from './build/index.js'
 import { createCloneCommand } from './clone/index.js'
+import { createCreateCommand } from './create/index.js'
 import { createCompletionCommand } from './completion/index.js'
 import { createDeployCommand } from './deploy/index.js'
 import { createDevCommand } from './dev/index.js'
@@ -46,6 +50,7 @@ import { createServeCommand } from './serve/index.js'
 import { createSitesCommand } from './sites/index.js'
 import { createStatusCommand } from './status/index.js'
 import { createSwitchCommand } from './switch/index.js'
+import { createTeamsCommand } from './teams/index.js'
 import { AddressInUseError } from './types.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
@@ -177,6 +182,16 @@ const mainCommand = async function (options, command) {
   const allCommands = command.commands.map((cmd) => cmd.name())
   const suggestion = closest(command.args[0], allCommands)
 
+  // In non-interactive environments (CI/CD, scripts), show the suggestion
+  // without prompting, and display full help for available commands
+  if (!isInteractive()) {
+    log(`\nDid you mean ${chalk.blue(suggestion)}?`)
+    log()
+    command.outputHelp({ error: true })
+    log()
+    return logAndThrowError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+  }
+
   const applySuggestion = await new Promise((resolve) => {
     const prompt = inquirer.prompt({
       type: 'confirm',
@@ -215,6 +230,7 @@ export const createMainCommand = (): BaseCommand => {
   createApiCommand(program)
   createBlobsCommand(program)
   createBuildCommand(program)
+  createClaimCommand(program)
   createCompletionCommand(program)
   createDeployCommand(program)
   createDevExecCommand(program)
@@ -224,6 +240,7 @@ export const createMainCommand = (): BaseCommand => {
   createRecipesCommand(program)
   createInitCommand(program)
   createCloneCommand(program)
+  createCreateCommand(program)
   createLinkCommand(program)
   createLoginCommand(program)
   createLogoutCommand(program)
@@ -232,6 +249,7 @@ export const createMainCommand = (): BaseCommand => {
   createSitesCommand(program)
   createStatusCommand(program)
   createSwitchCommand(program)
+  createTeamsCommand(program)
   createUnlinkCommand(program)
   createWatchCommand(program)
   createLogsCommand(program)
@@ -255,7 +273,10 @@ export const createMainCommand = (): BaseCommand => {
       const cliDocsEntrypointUrl = 'https://developers.netlify.com/cli'
       const docsUrl = 'https://docs.netlify.com'
       const bugsUrl = pkg.bugs?.url ?? ''
-      return `→ For more help with the CLI, visit ${NETLIFY_CYAN(
+      return `To get started run: ${NETLIFY_CYAN('netlify login')}
+To ask a human for credentials: ${NETLIFY_CYAN('netlify login --request <msg>')}
+
+→ For more help with the CLI, visit ${NETLIFY_CYAN(
         terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl, { fallback: false }),
       )}
 → For help with Netlify, visit ${NETLIFY_CYAN(terminalLink(docsUrl, docsUrl, { fallback: false }))}
@@ -266,6 +287,13 @@ export const createMainCommand = (): BaseCommand => {
         write(` ${chalk.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)
         write(` ${chalk.red(BANG)}   See more help with --help\n`)
       },
+    })
+    .exitOverride(function (this: BaseCommand, error: CommanderError) {
+      if (isOptionError(error)) {
+        handleOptionError(this)
+      }
+
+      throw error
     })
     .action(mainCommand)
 

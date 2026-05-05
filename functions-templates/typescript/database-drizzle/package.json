@@ -1,0 +1,25 @@
+{
+  "name": "{{name}}",
+  "version": "1.0.0",
+  "description": "netlify functions:create - query Netlify Database with Drizzle ORM",
+  "main": "{{name}}.mts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "typescript",
+    "database",
+    "drizzle"
+  ],
+  "author": "Netlify",
+  "license": "MIT",
+  "dependencies": {
+    "@netlify/database": "latest",
+    "@netlify/functions": "^5.2.0",
+    "@types/node": "^22.0.0",
+    "drizzle-orm": "beta",
+    "typescript": "^4.5.5"
+  }
+}
