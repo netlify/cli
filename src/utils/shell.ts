@@ -68,6 +68,9 @@ export const runCommand = (
   const { cwd, env = {}, spinner } = options
   const commandProcess = execa.command(command, {
     preferLocal: true,
+    // Command strings in netlify.toml may use shell operators like `&&`.
+    // execa.command() does not interpret these unless shell mode is enabled.
+    shell: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
     env: {
