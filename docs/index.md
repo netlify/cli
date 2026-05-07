@@ -24,10 +24,19 @@ Manage Netlify AI agent tasks
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
+| [`agents:archive`](/commands/agents#agentsarchive) | Archive an agent task  |
+| [`agents:commit`](/commands/agents#agentscommit) | Commit an agent task's changes directly to a branch  |
 | [`agents:create`](/commands/agents#agentscreate) | Create and run a new agent task on your site  |
+| [`agents:diff`](/commands/agents#agentsdiff) | Print the unified diff produced by an agent task  |
+| [`agents:follow-up`](/commands/agents#agentsfollow-up) | Send a follow-up prompt to an existing agent task  |
 | [`agents:list`](/commands/agents#agentslist) | List agent tasks for the current site  |
+| [`agents:open`](/commands/agents#agentsopen) | Open the agent task preview, dashboard, or pull request in a browser  |
+| [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent task  |
+| [`agents:publish`](/commands/agents#agentspublish) | Publish an agent task's changes to production  |
+| [`agents:redeploy`](/commands/agents#agentsredeploy) | Create a redeploy session that reapplies an existing diff (no AI inference)  |
+| [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent task to a specific session (sessions after it are discarded)  |
 | [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent task  |
-| [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent task  |
+| [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent task or session  |
 
 
 ### [api](/commands/api)
