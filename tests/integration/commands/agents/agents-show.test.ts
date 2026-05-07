@@ -69,6 +69,11 @@ describe('agents:show command', () => {
         method: 'GET' as const,
         response: mockAgentRunner,
       },
+      {
+        path: 'agent_runners/test_id/sessions',
+        method: 'GET' as const,
+        response: [mockAgentSession],
+      },
     ]
 
     await withSiteBuilder(t, async (builder) => {
@@ -79,9 +84,9 @@ describe('agents:show command', () => {
           ['agents:show', 'test_id', '--json'],
           getCLIOptions({ apiUrl, builder }),
           true, // parseJson
-        )) as typeof mockAgentRunner
+        )) as typeof mockAgentRunner & { sessions: (typeof mockAgentSession)[] }
 
-        expect(cliResponse).toEqual(mockAgentRunner)
+        expect(cliResponse).toEqual({ ...mockAgentRunner, sessions: [mockAgentSession] })
       })
     })
   })

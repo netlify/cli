@@ -126,11 +126,10 @@ describe('agents:list command', () => {
 
       await withMockApi(routes, async ({ apiUrl, requests }) => {
         const cliResponse = (await callCli(
-          ['agents:list', '--status', 'running'],
+          ['agents:list', '--status', 'live'],
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        // Check that the status filter was sent in the request
         const agentRequest = requests.find((r) => r.path.includes('agent_runners'))
         expect(agentRequest).toBeDefined()
 
