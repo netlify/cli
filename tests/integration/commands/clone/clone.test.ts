@@ -1,6 +1,6 @@
 import { sep } from 'node:path'
 
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import js from 'dedent'
 import stripAnsi from 'strip-ansi'
 
@@ -11,33 +11,29 @@ import { createMock } from '../../utils/mock-execa.js'
 import execa from 'execa'
 import { cliPath } from '../../utils/cli-path.js'
 
+const EXECA_MOCK_SOURCE = js`
+  module.exports = function execa(command, args) {
+    // Mock git clone command
+    if (command === 'git' && args[0] === 'clone') {
+      const targetDir = args[2]
+      return require('fs/promises').mkdir(targetDir, { recursive: true })
+        .then(() => {
+          const stdout = 'Mocked git clone received: ' + command + ' ' + args.join(' ')
+          console.log(stdout)
+          return { stdout, stderr: '' }
+        })
+    }
+    // For any other command, use the real execa
+    // Normalize paths for Windows
+    const realExeca = require('${require.resolve('execa').split(sep).join('/')}')
+    // execa's APi is... really weird
+    const result = Promise.resolve(realExeca(command, args))
+    result.unref = () => {}
+    return result
+  }
+`
+
 describe.concurrent('clone command', () => {
-  let execaMock: Awaited<ReturnType<typeof createMock>>[0]
-
-  beforeEach(async () => {
-    ;[execaMock] = await createMock(js`
-      module.exports = function execa(command, args) {
-        // Mock git clone command
-        if (command === 'git' && args[0] === 'clone') {
-          const targetDir = args[2]
-          return require('fs/promises').mkdir(targetDir, { recursive: true })
-            .then(() => {
-              const stdout = 'Mocked git clone received: ' + command + ' ' + args.join(' ')
-              console.log(stdout)
-              return { stdout, stderr: '' }
-            })
-        }
-        // For any other command, use the real execa
-        // Normalize paths for Windows
-        const realExeca = require('${require.resolve('execa').split(sep).join('/')}')
-        // execa's APi is... really weird
-        const result = Promise.resolve(realExeca(command, args))
-        result.unref = () => {}
-        return result
-      }
-    `)
-  })
-
   const SITE_INFO_FIXTURE = {
     id: 'site_id',
     name: 'test-site',
@@ -68,6 +64,7 @@ describe.concurrent('clone command', () => {
   it.todo('prints an error and exits if not authenticated')
 
   it("clones a repo and links it to the one project connected to that repo's HTTPS URL", async (t) => {
+    const [execaMock] = await createMock(EXECA_MOCK_SOURCE)
     const routes = [...API_ROUTES_FIXTURE]
     const questions = [
       {
@@ -132,6 +129,7 @@ To unlink this project, run: netlify unlink`)
   })
 
   it('clones into the provided `[targetDir]` if arg is provided', async (t) => {
+    const [execaMock] = await createMock(EXECA_MOCK_SOURCE)
     const routes = [...API_ROUTES_FIXTURE]
     const questions: never[] = [] // no interactive prompts at all
 
@@ -185,6 +183,7 @@ To unlink this project, run: netlify unlink`)
   })
 
   it('clones into the entered target dir if user enters one when prompted', async (t) => {
+    const [execaMock] = await createMock(EXECA_MOCK_SOURCE)
     const routes = [...API_ROUTES_FIXTURE]
     const questions = [
       {
@@ -249,6 +248,7 @@ To unlink this project, run: netlify unlink`)
   })
 
   it('links to project with given `--id` when provided', async (t) => {
+    const [execaMock] = await createMock(EXECA_MOCK_SOURCE)
     const otherSiteInfo = {
       id: 'other-site-id',
       name: 'other-site',
@@ -306,6 +306,7 @@ To unlink this project, run: netlify unlink`)
   })
 
   it('links to project with given `--name` when provided', async (t) => {
+    const [execaMock] = await createMock(EXECA_MOCK_SOURCE)
     const otherSiteInfo = {
       id: 'other-site-id',
       name: 'other-site',
@@ -367,6 +368,7 @@ To unlink this project, run: netlify unlink`)
   })
 
   it('prompts user when multiple projects match git repo HTTPS URL', async (t) => {
+    const [execaMock] = await createMock(EXECA_MOCK_SOURCE)
     const otherSiteInfo = {
       id: 'other-site-id',
       name: 'other-site',
@@ -425,6 +427,7 @@ To unlink this project, run: netlify unlink`)
   })
 
   it('prints an error and exits when no project is connected to the git repo HTTPS URL', async (t) => {
+    const [execaMock] = await createMock(EXECA_MOCK_SOURCE)
     const otherSiteInfo = {
       id: 'other-site-id',
       name: 'other-site',
@@ -485,6 +488,7 @@ Run git remote -v to see a list of your git remotes.`)
   })
 
   it('prints an error and exits given an invalid git repo specifier', async (t) => {
+    const [execaMock] = await createMock(EXECA_MOCK_SOURCE)
     const routes = [
       {
         path: 'sites',
