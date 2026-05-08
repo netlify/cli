@@ -28,8 +28,8 @@ export default defineConfig({
       },
     },
     sequence: {
-      // Distributes files across `--shard` buckets by line count so the heaviest
-      // test files don't pile into the same shard. See tests/integration/sequencer.ts.
+      // Round-robin sharding instead of vitest's hash-based default, so the
+      // slow files (e.g. dev/*) don't all land in the same shard.
       sequencer: BalancedShardSequencer,
     },
     coverage: {
