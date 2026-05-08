@@ -4,6 +4,10 @@ name: Integration Tests
 on:
   pull_request:
     branches: ['**']
+  push:
+    # TEMP: vaibhavacharya/ci-speed-opt added for one-time end-to-end validation
+    # of the warm-cache job on a feature branch. Revert to `[main]` before merge.
+    branches: [main, vaibhavacharya/ci-speed-opt]
 
 jobs:
   setup:
@@ -61,10 +65,67 @@ jobs:
           joined=$(IFS=,; echo "${entries[*]}")
           echo "value={\"include\":[$joined]}" >> "$GITHUB_OUTPUT"
 
+  warm-cache:
+    name: Warm vitest duration cache
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve primary Node.js version
+        id: node-version
+        run: echo "value=$(yq eval '.primary_node_version' .github/test-matrix.yml)" >> "$GITHUB_OUTPUT"
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ steps.node-version.outputs.value }}
+          cache: npm
+          check-latest: true
+
+      - name: Install PNPM
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.14.2 --activate
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: 2.6.6
+
+      - name: Install core dependencies
+        run: npm ci --no-audit
+
+      - name: Build project
+        run: npm run build
+
+      - name: Prepare tests
+        run: npm run test:init
+
+      - name: Run tests
+        run: npm run test:integration
+        env:
+          NETLIFY_TEST_ACCOUNT_SLUG: 'netlify-integration-testing'
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN || 'fake-token' }}
+          NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHOKIDAR_INTERVAL: 20
+          CHOKIDAR_USEPOLLING: 1
+
+      - name: Save vitest duration cache
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: node_modules/.vite/vitest
+          key: vitest-cache-${{ github.sha }}
+
   integration:
     name: Integration
     needs: setup
-    if: needs.setup.outputs.has-code-changes == 'true'
+    if: github.event_name == 'pull_request' && needs.setup.outputs.has-code-changes == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     strategy:
@@ -109,6 +170,16 @@ jobs:
 
       - name: Prepare tests
         run: npm run test:init
+
+      # Restore historical per-file durations written by the warm-cache job on
+      # main pushes. Used by tests/integration/sequencer.ts to balance shards.
+      # Cold start (no cache yet) silently degrades to file-count distribution.
+      - name: Restore vitest duration cache
+        uses: actions/cache/restore@v4
+        with:
+          path: node_modules/.vite/vitest
+          key: vitest-cache-do-not-match
+          restore-keys: vitest-cache-
 
       - name: Tests
         run: npm run test:integration -- --coverage --shard=${{ matrix.shard }}

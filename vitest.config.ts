@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitest/config'
 
+import { BalancedShardSequencer } from './tests/integration/sequencer.js'
+
 export default defineConfig({
   test: {
     include: ['tests/**/*.test.js', 'tests/**/*.test.ts'],
@@ -24,6 +26,11 @@ export default defineConfig({
       threads: {
         singleThread: true,
       },
+    },
+    sequence: {
+      // Distributes files across `--shard` buckets by line count so the heaviest
+      // test files don't pile into the same shard. See tests/integration/sequencer.ts.
+      sequencer: BalancedShardSequencer,
     },
     coverage: {
       provider: 'v8',
