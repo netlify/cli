@@ -135,18 +135,23 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
   }
 }
 
+const AGENT_LOOKUP_CONCURRENCY = 10
+
 const fetchLatestAgentByRunner = async (
   api: ReturnType<typeof createAgentsApi>,
   runners: AgentRunner[],
 ): Promise<Map<string, string>> => {
   const result = new Map<string, string>()
-  await Promise.allSettled(
-    runners.map(async (runner) => {
-      const sessions = await api.listAgentRunnerSessions(runner.id, { page: 1, per_page: 1 })
-      const agent = sessions[0]?.agent_config?.agent
-      if (agent) result.set(runner.id, agent)
-    }),
-  )
+  for (let start = 0; start < runners.length; start += AGENT_LOOKUP_CONCURRENCY) {
+    const batch = runners.slice(start, start + AGENT_LOOKUP_CONCURRENCY)
+    await Promise.allSettled(
+      batch.map(async (runner) => {
+        const sessions = await api.listAgentRunnerSessions(runner.id, { page: 1, per_page: 1 })
+        const agent = sessions[0]?.agent_config?.agent
+        if (agent) result.set(runner.id, agent)
+      }),
+    )
+  }
   return result
 }
 

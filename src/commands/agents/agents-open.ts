@@ -9,6 +9,8 @@ import { createAgentsApi } from './api.js'
 const VALID_TARGETS = ['preview', 'dashboard', 'pr'] as const
 type OpenTarget = (typeof VALID_TARGETS)[number]
 
+const isOpenTarget = (input: string): input is OpenTarget => (VALID_TARGETS as readonly string[]).includes(input)
+
 interface AgentOpenOptions extends OptionValues {
   json?: boolean
 }
@@ -21,10 +23,11 @@ export const agentsOpen = async (
 ) => {
   if (!id) return logAndThrowError('Agent task ID is required')
 
-  const target: OpenTarget = (targetArg ?? 'preview') as OpenTarget
-  if (!VALID_TARGETS.includes(target)) {
-    return logAndThrowError(`Invalid target "${target}". Choose one of: ${VALID_TARGETS.join(', ')}`)
+  const candidate = targetArg ?? 'preview'
+  if (!isOpenTarget(candidate)) {
+    return logAndThrowError(`Invalid target "${candidate}". Choose one of: ${VALID_TARGETS.join(', ')}`)
   }
+  const target: OpenTarget = candidate
 
   await command.authenticate()
   const { siteInfo } = command.netlify

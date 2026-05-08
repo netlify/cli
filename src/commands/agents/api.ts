@@ -199,6 +199,8 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
   let providersCache: AiGatewayProvidersResponse | null = null
   const listAiGatewayProviders = async (): Promise<AiGatewayProvidersResponse> => {
     if (providersCache) return providersCache
+    // Public endpoint by design — no auth header. The provider+model list is meant
+    // for external clients to discover the agent → provider → model relationship.
     const response = await fetch(`${baseUrl}/ai-gateway/providers`)
     if (!response.ok) await throwForStatus(response)
     providersCache = (await response.json()) as AiGatewayProvidersResponse

@@ -338,8 +338,10 @@ const takeSnapshot = (runner: AgentRunner, sessions: AgentRunnerSession[]): Watc
 const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) => {
   const renderer = new WatchRenderer()
   let previous: WatchSnapshot | null = null
-  let lastRunner: AgentRunner = await api.getAgentRunner(id)
-  let lastSessions: AgentRunnerSession[] = await api.listAgentRunnerSessions(id, { page: 1, per_page: 100 })
+  let [lastRunner, lastSessions] = await Promise.all([
+    api.getAgentRunner(id),
+    api.listAgentRunnerSessions(id, { page: 1, per_page: 100 }),
+  ])
 
   log(`${chalk.cyan('Watching')} agent task ${chalk.bold(id)} ${chalk.dim('(Ctrl+C to stop)')}`)
   log()
@@ -357,10 +359,15 @@ const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) 
         break
       }
       await sleep(POLL_INTERVAL_MS)
-      ;[lastRunner, lastSessions] = await Promise.all([
-        api.getAgentRunner(id),
-        api.listAgentRunnerSessions(id, { page: 1, per_page: 100 }),
-      ])
+      try {
+        ;[lastRunner, lastSessions] = await Promise.all([
+          api.getAgentRunner(id),
+          api.listAgentRunnerSessions(id, { page: 1, per_page: 100 }),
+        ])
+      } catch (error_) {
+        const error = error_ as Error
+        renderer.print(`${chalk.yellow('!')} ${chalk.dim(`poll failed: ${error.message} — retrying`)}`)
+      }
     }
   } finally {
     renderer.stop()

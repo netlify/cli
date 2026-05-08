@@ -21,9 +21,10 @@ export const agentsRedeploy = async (id: string, options: AgentRedeployOptions, 
     const lookupSpinner = startSpinner({ text: 'Finding latest completed session...' })
     try {
       const perPage = 100
+      const maxPages = 10
       let page = 1
       let latestDone: { id: string } | undefined
-      while (!latestDone) {
+      while (!latestDone && page <= maxPages) {
         const sessions = await api.listAgentRunnerSessions(id, { page, per_page: perPage })
         latestDone = sessions.find((session) => session.state === 'done')
         if (latestDone || sessions.length < perPage) break
