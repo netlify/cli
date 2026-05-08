@@ -28,8 +28,6 @@ export default defineConfig({
       },
     },
     sequence: {
-      // Round-robin sharding instead of vitest's hash-based default, so the
-      // slow files (e.g. dev/*) don't all land in the same shard.
       sequencer: BalancedShardSequencer,
     },
     coverage: {

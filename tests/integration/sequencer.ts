@@ -1,11 +1,8 @@
 import { BaseSequencer, type TestSpecification } from 'vitest/node'
 
 /**
- * Distributes test files across `--shard` buckets via alphabetical round-robin.
- * The default sha1-hash sharding clusters slow files (e.g. all `dev/*` tests)
- * into the same shard. Round-robin breaks those clusters up so each shard ends
- * up with roughly the same total runtime without needing historical timing
- * data. See vitest-dev/vitest#9184 for prior art on duration-aware sharding.
+ * Round-robin sharding so slow files (e.g. all `dev/*` tests) don't cluster in
+ * the same shard like they do under vitest's default sha1-hash distribution.
  */
 export class BalancedShardSequencer extends BaseSequencer {
   shard(files: TestSpecification[]): Promise<TestSpecification[]> {
