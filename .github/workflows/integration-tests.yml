@@ -116,7 +116,9 @@ jobs:
           CHOKIDAR_USEPOLLING: 1
 
       - name: Save vitest duration cache
-        if: success()
+        # Save even if some tests fail; vitest writes per-file durations as it
+        # goes, and the sequencer ignores zero-duration entries.
+        if: always()
         uses: actions/cache/save@v4
         with:
           path: node_modules/.vite/vitest
