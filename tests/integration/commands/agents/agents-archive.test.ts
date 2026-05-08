@@ -22,7 +22,7 @@ describe('agents:archive command', () => {
     { path: 'accounts', response: [{ slug: 'test-account' }] },
   ]
 
-  test('should archive an agent task', async (t) => {
+  test('should archive an agent task with --yes', async (t) => {
     const routes = [
       ...baseRoutes,
       {
@@ -36,10 +36,25 @@ describe('agents:archive command', () => {
       await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = (await callCli(['agents:archive', 'test_id'], getCLIOptions({ apiUrl, builder }))) as string
+        const cliResponse = (await callCli(
+          ['agents:archive', 'test_id', '--yes'],
+          getCLIOptions({ apiUrl, builder }),
+        )) as string
 
         expect(cliResponse).toContain('Agent task archived.')
         expect(cliResponse).toContain('Task ID: test_id')
+      })
+    })
+  })
+
+  test('should refuse to archive without --yes when stdin is not a TTY', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(baseRoutes, async ({ apiUrl }) => {
+        await expect(callCli(['agents:archive', 'test_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
+          'Refusing to archive without --yes when stdin is not a TTY',
+        )
       })
     })
   })
@@ -84,9 +99,9 @@ describe('agents:archive command', () => {
       await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        await expect(callCli(['agents:archive', 'test_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to archive: Not found',
-        )
+        await expect(
+          callCli(['agents:archive', 'test_id', '--yes'], getCLIOptions({ apiUrl, builder })),
+        ).rejects.toThrow('Failed to archive: Not found')
       })
     })
   })
@@ -110,7 +125,7 @@ describe('agents:archive command', () => {
       await withMockApi([], async ({ apiUrl }) => {
         await expect(
           callCli(
-            ['agents:archive', 'test_id'],
+            ['agents:archive', 'test_id', '--yes'],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: undefined } }),
           ),
         ).rejects.toThrow("You don't appear to be in a folder that is linked to a project")

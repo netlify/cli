@@ -231,10 +231,14 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .command('agents:archive')
     .argument('<id>', 'agent task ID')
     .description('Archive an agent task')
+    .option('-y, --yes', 'skip confirmation prompt')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
-    .addExamples(['netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a'])
+    .addExamples([
+      'netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a',
+      'netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a --yes',
+    ])
     .action(async (id: string, options: OptionValues, command: BaseCommand) => {
       const { agentsArchive } = await import('./agents-archive.js')
       await agentsArchive(id, options, command)

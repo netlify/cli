@@ -129,7 +129,7 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
     filters: ListAgentRunnerSessionsFilters = {},
   ): Promise<AgentRunnerSession[]> => {
     const page = filters.page ?? 1
-    const perPage = filters.per_page ?? 5
+    const perPage = filters.per_page ?? DEFAULT_PER_PAGE
     const params = buildSearchParams({ ...filters, page, per_page: perPage })
     return requestJson<AgentRunnerSession[]>(`/agent_runners/${id}/sessions?${params.toString()}`, getInit())
   }

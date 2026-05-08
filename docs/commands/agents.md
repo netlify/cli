@@ -73,6 +73,7 @@ netlify agents:archive
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
+- `yes` (*boolean*) - skip confirmation prompt
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
@@ -80,6 +81,7 @@ netlify agents:archive
 
 ```bash
 netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a
+netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a --yes
 ```
 
 ---
