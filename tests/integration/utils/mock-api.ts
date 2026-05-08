@@ -66,6 +66,10 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
           return
         }
         addRequest(requests, req)
+        if (typeof response === 'function') {
+          response(req, res)
+          return
+        }
         res.status(status)
         res.json(response)
       },
