@@ -82,11 +82,6 @@ describe('agents:follow-up command', () => {
     const routes = [
       ...baseRoutes,
       {
-        path: 'agent_runners/ai-gateway/providers',
-        method: 'GET' as const,
-        response: { providers: {} },
-      },
-      {
         path: 'agent_runners/test_id/sessions',
         method: 'POST' as const,
         response: mockAgentSession,

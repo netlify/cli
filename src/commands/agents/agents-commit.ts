@@ -16,9 +16,9 @@ export const agentsCommit = async (id: string, options: AgentCommitOptions, comm
   await command.authenticate()
   const api = createAgentsApi(command.netlify)
 
-  let targetBranch = options.branch
+  let targetBranch = options.branch?.trim()
   if (!targetBranch) {
-    if (!process.stdout.isTTY) {
+    if (!process.stdin.isTTY) {
       return logAndThrowError('--branch is required when stdin is not a TTY')
     }
     const { branchInput } = await inquirer.prompt<{ branchInput: string }>([

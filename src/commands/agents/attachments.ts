@@ -48,11 +48,27 @@ export const uploadAttachments = async (
     })
 
     const body = await fs.readFile(file.path)
-    const putResponse = await fetch(uploadUrl, {
-      method: 'PUT',
-      body: new Uint8Array(body),
-      headers: { 'Content-Type': file.contentType },
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      controller.abort()
+    }, 60_000)
+    let putResponse: Response
+    try {
+      putResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: new Uint8Array(body),
+        headers: { 'Content-Type': file.contentType },
+        signal: controller.signal,
+      })
+    } catch (error_) {
+      const error = error_ as Error
+      if (error.name === 'AbortError') {
+        throw new Error(`Upload of ${file.filename} timed out after 60s`)
+      }
+      throw error
+    } finally {
+      clearTimeout(timeout)
+    }
     if (!putResponse.ok) {
       throw new Error(
         `Failed to upload ${file.filename}: HTTP ${putResponse.status.toString()} ${putResponse.statusText}`,

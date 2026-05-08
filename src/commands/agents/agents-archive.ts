@@ -17,7 +17,7 @@ export const agentsArchive = async (id: string, options: AgentArchiveOptions, co
   const api = createAgentsApi(command.netlify)
 
   if (!options.yes && !options.json) {
-    if (!process.stdout.isTTY) {
+    if (!process.stdin.isTTY) {
       return logAndThrowError('Refusing to archive without --yes when stdin is not a TTY')
     }
     const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([

@@ -184,7 +184,7 @@ export const createAgentsCommand = (program: BaseCommand) => {
   program
     .command('agents:commit')
     .argument('<id>', 'agent task ID')
-    .description("Commit an agent task's changes directly to a branch")
+    .description('Commit an agent task’s changes directly to a branch')
     .option('-b, --branch <branch>', 'target branch to commit to')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
@@ -198,7 +198,7 @@ export const createAgentsCommand = (program: BaseCommand) => {
   program
     .command('agents:publish')
     .argument('<id>', 'agent task ID')
-    .description("Publish an agent task's changes to production")
+    .description('Publish an agent task’s changes to production')
     .option('-y, --yes', 'skip confirmation prompt')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')

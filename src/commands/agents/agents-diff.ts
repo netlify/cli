@@ -17,11 +17,10 @@ interface AgentDiffOptions extends OptionValues {
 
 const parsePositiveInt = (input: string | undefined, name: string): number | undefined => {
   if (input === undefined) return undefined
-  const value = Number.parseInt(input, 10)
-  if (!Number.isInteger(value) || value <= 0) {
+  if (!/^[1-9]\d*$/.test(input)) {
     throw new Error(`--${name} must be a positive integer`)
   }
-  return value
+  return Number.parseInt(input, 10)
 }
 
 export const agentsDiff = async (id: string, options: AgentDiffOptions, command: BaseCommand) => {

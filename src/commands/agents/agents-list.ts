@@ -33,11 +33,10 @@ const toUnixSeconds = (input?: string): number | undefined => {
 
 const parsePositiveInt = (input: string | undefined, name: string): number | undefined => {
   if (input === undefined) return undefined
-  const value = Number.parseInt(input, 10)
-  if (!Number.isInteger(value) || value <= 0) {
+  if (!/^[1-9]\d*$/.test(input)) {
     throw new Error(`--${name} must be a positive integer`)
   }
-  return value
+  return Number.parseInt(input, 10)
 }
 
 const buildFilters = (options: AgentListOptions): ListAgentRunnersFilters => {
@@ -151,13 +150,15 @@ const fetchLatestAgentByRunner = async (
   return result
 }
 
+const escapeRegex = (input: string): string => input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 const colorizeStatuses = (tableOutput: string, runners: AgentRunner[]): string => {
   let output = tableOutput
   const statuses = new Set(runners.map((runner) => runner.state ?? 'unknown'))
   for (const status of statuses) {
     const plain = status.toUpperCase()
     const colored = formatStatus(status)
-    output = output.replace(new RegExp(`\\b${plain}\\b`, 'g'), colored)
+    output = output.replace(new RegExp(`\\b${escapeRegex(plain)}\\b`, 'g'), colored)
   }
   return output
 }

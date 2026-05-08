@@ -19,7 +19,7 @@ export const agentsRevert = async (id: string, options: AgentRevertOptions, comm
   const api = createAgentsApi(command.netlify)
 
   if (!options.yes && !options.json) {
-    if (!process.stdout.isTTY) {
+    if (!process.stdin.isTTY) {
       return logAndThrowError('Refusing to revert without --yes when stdin is not a TTY')
     }
     const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([

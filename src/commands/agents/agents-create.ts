@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync, spawnSync } from 'child_process'
 
 import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
@@ -66,8 +66,11 @@ const detectLocalGit = (): LocalGitInfo => {
     try {
       const upstream = run('git rev-parse --abbrev-ref --symbolic-full-name @{u}')
       if (upstream) {
-        const ahead = run(`git rev-list --count ${upstream}..HEAD`)
-        hasUnpushedCommits = Number.parseInt(ahead, 10) > 0
+        const result = spawnSync('git', ['rev-list', '--count', `${upstream}..HEAD`], {
+          stdio: ['ignore', 'pipe', 'ignore'],
+          encoding: 'utf8',
+        })
+        hasUnpushedCommits = Number.parseInt(result.stdout.trim(), 10) > 0
       }
     } catch {
       // No upstream configured: can't tell.

@@ -20,9 +20,16 @@ export const agentsRedeploy = async (id: string, options: AgentRedeployOptions, 
   if (!sessionId) {
     const lookupSpinner = startSpinner({ text: 'Finding latest completed session...' })
     try {
-      const sessions = await api.listAgentRunnerSessions(id, { page: 1, per_page: 20 })
+      const perPage = 100
+      let page = 1
+      let latestDone: { id: string } | undefined
+      while (!latestDone) {
+        const sessions = await api.listAgentRunnerSessions(id, { page, per_page: perPage })
+        latestDone = sessions.find((session) => session.state === 'done')
+        if (latestDone || sessions.length < perPage) break
+        page += 1
+      }
       stopSpinner({ spinner: lookupSpinner })
-      const latestDone = sessions.find((session) => session.state === 'done')
       if (!latestDone) {
         return logAndThrowError('No completed session found to redeploy. Pass --session <id> to target a specific one.')
       }

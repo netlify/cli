@@ -18,7 +18,7 @@ export const agentsPublish = async (id: string, options: AgentPublishOptions, co
   const api = createAgentsApi(command.netlify)
 
   if (!options.yes && !options.json) {
-    if (!process.stdout.isTTY) {
+    if (!process.stdin.isTTY) {
       return logAndThrowError('Refusing to publish without --yes when stdin is not a TTY')
     }
     log(chalk.redBright('Warning'), 'You are about to publish agent changes to production.')

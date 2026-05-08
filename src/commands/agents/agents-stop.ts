@@ -126,7 +126,7 @@ const stopSession = async (
 }
 
 const confirmStop = async (message: string): Promise<boolean> => {
-  if (!process.stdout.isTTY) {
+  if (!process.stdin.isTTY) {
     return logAndThrowError('Refusing to stop without --yes when stdin is not a TTY')
   }
   const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([
