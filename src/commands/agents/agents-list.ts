@@ -6,7 +6,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import { createAgentsApi } from './api.js'
 import type { AgentRunner, ListAgentRunnersFilters } from './types.js'
-import { formatDuration, formatStatus, getAgentName, truncateText } from './utils.js'
+import { formatDuration, formatStatus, truncateText } from './utils.js'
 
 interface AgentListOptions extends OptionValues {
   status?: string
@@ -98,20 +98,17 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
       return result.data
     }
 
-    const agentInfo = await fetchLatestAgentByRunner(api, result.data)
-
     const isGitBased = Boolean(siteInfo.build_settings?.repo_branch)
     const scope = options.account ? `account ${options.account}` : siteInfo.name
     const table = new AsciiTable(`Agent Tasks for ${scope}`)
     const baseColumnLabel = isGitBased ? 'BRANCH' : 'BASE'
-    table.setHeading('ID', 'STATUS', 'AGENT', 'PROMPT', baseColumnLabel, 'DURATION', 'CREATED')
+    table.setHeading('ID', 'STATUS', 'PROMPT', baseColumnLabel, 'DURATION', 'CREATED')
 
     for (const runner of result.data) {
       const baseValue = isGitBased ? truncateText(runner.branch ?? 'unknown', 12) : 'Production'
       table.addRow(
         runner.id,
         (runner.state ?? 'unknown').toUpperCase(),
-        getAgentName(agentInfo.get(runner.id) ?? 'unknown'),
         truncateText(runner.title ?? 'No title', 35),
         baseValue,
         runner.done_at ? formatDuration(runner.created_at, runner.done_at) : formatDuration(runner.created_at),
@@ -133,26 +130,6 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     stopSpinner({ spinner, error: true })
     return logAndThrowError(`Failed to list agent tasks: ${error.message}`)
   }
-}
-
-const AGENT_LOOKUP_CONCURRENCY = 10
-
-const fetchLatestAgentByRunner = async (
-  api: ReturnType<typeof createAgentsApi>,
-  runners: AgentRunner[],
-): Promise<Map<string, string>> => {
-  const result = new Map<string, string>()
-  for (let start = 0; start < runners.length; start += AGENT_LOOKUP_CONCURRENCY) {
-    const batch = runners.slice(start, start + AGENT_LOOKUP_CONCURRENCY)
-    await Promise.allSettled(
-      batch.map(async (runner) => {
-        const sessions = await api.listAgentRunnerSessions(runner.id, { page: 1, per_page: 1 })
-        const agent = sessions[0]?.agent_config?.agent
-        if (agent) result.set(runner.id, agent)
-      }),
-    )
-  }
-  return result
 }
 
 const escapeRegex = (input: string): string => input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

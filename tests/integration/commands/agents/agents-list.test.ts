@@ -3,13 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
-import {
-  mockSiteInfo,
-  mockSiteInfoNoRepo,
-  mockAgentRunner,
-  mockAgentRunnerNoRepo,
-  mockAgentSession,
-} from './fixtures.js'
+import { mockSiteInfo, mockSiteInfoNoRepo, mockAgentRunner, mockAgentRunnerNoRepo } from './fixtures.js'
 
 // Mock spinner to avoid UI interference in tests
 vi.mock('../../../../src/lib/spinner.js', () => ({
@@ -37,11 +31,6 @@ describe('agents:list command', () => {
         method: 'GET' as const,
         response: [mockAgentRunner],
       },
-      {
-        path: 'agent_runners/agent_runner_id/sessions',
-        method: 'GET' as const,
-        response: [mockAgentSession],
-      },
     ]
 
     await withSiteBuilder(t, async (builder) => {
@@ -53,7 +42,6 @@ describe('agents:list command', () => {
         expect(cliResponse).toContain('Agent Tasks for site-name')
         expect(cliResponse).toContain('agent_runner_id')
         expect(cliResponse).toContain('NEW')
-        expect(cliResponse).toContain('Claude')
         expect(cliResponse).toContain('Create a login form')
       })
     })
@@ -113,11 +101,6 @@ describe('agents:list command', () => {
         path: 'agent_runners',
         method: 'GET' as const,
         response: [{ ...mockAgentRunner, state: 'running' }],
-      },
-      {
-        path: 'agent_runners/agent_runner_id/sessions',
-        method: 'GET' as const,
-        response: [mockAgentSession],
       },
     ]
 
@@ -182,10 +165,6 @@ describe('agents:list command', () => {
         path: 'agent_runners',
         response: [mockAgentRunnerNoRepo],
       },
-      {
-        path: 'agent_runners/agent_runner_no_repo_id/sessions',
-        response: [mockAgentSession],
-      },
     ]
 
     await withSiteBuilder(t, async (builder) => {
@@ -211,10 +190,6 @@ describe('agents:list command', () => {
       {
         path: 'agent_runners',
         response: [mockAgentRunner],
-      },
-      {
-        path: 'agent_runners/agent_runner_id/sessions',
-        response: [mockAgentSession],
       },
     ]
 
