@@ -107,7 +107,7 @@ describe('agents:show command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:show', 'invalid_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to show agent task: Not found',
+          'Agent task not found: invalid_id',
         )
       })
     })

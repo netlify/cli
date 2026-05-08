@@ -51,7 +51,11 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
 
   const throwForStatus = async (response: Response): Promise<never> => {
     const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-    throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+    const error = new Error(
+      errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`,
+    ) as Error & { status?: number }
+    error.status = response.status
+    throw error
   }
 
   const requestRaw = async <T>(path: string, init: RequestInit, handler: RawResponseHandler<T>): Promise<T> => {

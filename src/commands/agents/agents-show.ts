@@ -100,8 +100,11 @@ const showAgentTask = async (api: AgentsApi, id: string, options: AgentShowOptio
     renderAgentTask(runner, sessions, command)
     return runner
   } catch (error_) {
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
     stopSpinner({ spinner, error: true })
+    if (error.status === 404) {
+      return logAndThrowError(`Agent task not found: ${id}`)
+    }
     return logAndThrowError(`Failed to show agent task: ${error.message}`)
   }
 }
@@ -126,8 +129,11 @@ const showSingleSession = async (
     renderSessionDetail(session, id, command)
     return session
   } catch (error_) {
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
     stopSpinner({ spinner, error: true })
+    if (error.status === 404) {
+      return logAndThrowError(`Session not found: ${sessionId}`)
+    }
     return logAndThrowError(`Failed to show session: ${error.message}`)
   }
 }

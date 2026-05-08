@@ -97,14 +97,14 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     if (valid !== true) return logAndThrowError(valid)
   }
 
-  const finalPrompt = await resolvePrompt(promptArg, options.prompt)
-  const agent = await resolveAgent(options.agent)
+  const finalPrompt = await resolvePrompt(promptArg, options.prompt, options)
+  const agent = await resolveAgent(options.agent, options)
 
   const isGitBased = Boolean(siteInfo.build_settings?.repo_branch)
   let branch: string | undefined
 
   if (isGitBased && !options.fromDeploy) {
-    branch = await resolveBranch(options.branch, siteInfo.build_settings?.repo_branch)
+    branch = await resolveBranch(options.branch, siteInfo.build_settings?.repo_branch, options)
   }
 
   const api = createAgentsApi(command.netlify)
@@ -184,8 +184,17 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
   }
 }
 
-const resolvePrompt = async (promptArg: string, promptFlag?: string): Promise<string> => {
+const isNonInteractive = (options: AgentCreateOptions): boolean => Boolean(options.json)
+
+const resolvePrompt = async (
+  promptArg: string,
+  promptFlag: string | undefined,
+  options: AgentCreateOptions,
+): Promise<string> => {
   if (!promptArg && !promptFlag) {
+    if (isNonInteractive(options)) {
+      return logAndThrowError('A prompt is required. Pass it as the positional argument or via --prompt.')
+    }
     const { promptInput } = await inquirer.prompt<{ promptInput: string }>([
       {
         type: 'input',
@@ -204,8 +213,13 @@ const resolvePrompt = async (promptArg: string, promptFlag?: string): Promise<st
   return final
 }
 
-const resolveAgent = async (agentFlag?: string): Promise<AvailableAgent> => {
+const resolveAgent = async (agentFlag: string | undefined, options: AgentCreateOptions): Promise<AvailableAgent> => {
   if (!agentFlag) {
+    if (isNonInteractive(options)) {
+      return logAndThrowError(
+        `--agent is required. Choose one of: ${AVAILABLE_AGENTS.map((entry) => entry.value).join(', ')}.`,
+      )
+    }
     const { agentInput } = await inquirer.prompt<{ agentInput: AvailableAgent }>([
       {
         type: 'list',
@@ -222,11 +236,20 @@ const resolveAgent = async (agentFlag?: string): Promise<AvailableAgent> => {
   return agentFlag as AvailableAgent
 }
 
-const resolveBranch = async (branchFlag: string | undefined, siteBranch: string | undefined): Promise<string> => {
+const resolveBranch = async (
+  branchFlag: string | undefined,
+  siteBranch: string | undefined,
+  options: AgentCreateOptions,
+): Promise<string> => {
   if (branchFlag) return branchFlag
 
   const localGit = detectLocalGit()
   const defaultBranch = localGit.branch ?? siteBranch
+
+  if (isNonInteractive(options)) {
+    if (defaultBranch) return defaultBranch
+    return logAndThrowError('--branch is required when not running interactively.')
+  }
 
   if (localGit.isInsideRepo) {
     if (localGit.isDirty) {

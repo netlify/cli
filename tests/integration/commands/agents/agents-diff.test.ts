@@ -122,6 +122,11 @@ describe('agents:diff command', () => {
         status: 404,
         response: { error: 'not found' },
       },
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: { id: 'test_id', state: 'done' },
+      },
     ]
 
     await withSiteBuilder(t, async (builder) => {
