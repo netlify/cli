@@ -19,9 +19,9 @@ netlify database
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -55,11 +55,11 @@ netlify database status
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `branch` (*string*) - Netlify branch name to query; defaults to the local development database
 - `json` (*boolean*) - Output result as JSON
 - `show-credentials` (*boolean*) - Include the full connection string (including username and password) in the output
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -83,10 +83,10 @@ netlify database init
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `yes` (*boolean*) - Non-interactive mode. Accepts the defaults for every prompt.
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -108,11 +108,11 @@ netlify database connect
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output query results as JSON. When used without --query, prints the connection details as JSON instead.
 - `query` (*string*) - Execute a single query and exit
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -136,10 +136,10 @@ netlify database reset
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output result as JSON
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `database migrations`
@@ -154,9 +154,9 @@ netlify database migrations
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -179,11 +179,11 @@ netlify database migrations apply
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output result as JSON
 - `to` (*string*) - Target migration name or prefix to apply up to (applies all if omitted)
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `database migrations new`
@@ -198,12 +198,12 @@ netlify database migrations new
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `description` (*string*) - Purpose of the migration (used to generate the file name)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output result as JSON
 - `scheme` (*timestamp | sequential*) - Numbering scheme for migration prefixes
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -225,11 +225,11 @@ netlify database migrations pull
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `branch` (*string*) - Pull migrations for a specific branch (defaults to 'production'; pass --branch with no value to use local git branch)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Skip confirmation prompt
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `json` (*boolean*) - Output result as JSON
 
 **Examples**
@@ -254,11 +254,11 @@ netlify database migrations reset
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `branch` (*string*) - Target a remote preview branch instead of the local development database
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output result as JSON
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
