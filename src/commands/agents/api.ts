@@ -190,6 +190,18 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
   const agentRunnerRevert = (id: string, sessionId: string): Promise<AgentRunner> =>
     requestJson<AgentRunner>(`/agent_runners/${id}/revert`, jsonInit('POST', { session_id: sessionId }))
 
+  const renameAgentRunner = (id: string, title: string): Promise<AgentRunner> =>
+    requestJson<AgentRunner>(`/agent_runners/${id}`, jsonInit('PATCH', { title }))
+
+  const rebaseAgentRunner = (id: string): Promise<AgentRunner> =>
+    requestJson<AgentRunner>(`/agent_runners/${id}/rebase`, jsonInit('POST'))
+
+  const mergeTargetAgentRunner = (id: string): Promise<AgentRunner> =>
+    requestJson<AgentRunner>(`/agent_runners/${id}/merge_target`, jsonInit('POST'))
+
+  const syncGitOriginAgentRunner = (id: string): Promise<AgentRunner> =>
+    requestJson<AgentRunner>(`/agent_runners/${id}/sync_git_origin`, jsonInit('POST'))
+
   const createUploadUrl = (payload: {
     account_id: string
     filename: string
@@ -230,6 +242,10 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
     agentRunnerCommitToBranch,
     agentRunnerPublishToProduction,
     agentRunnerRevert,
+    renameAgentRunner,
+    rebaseAgentRunner,
+    mergeTargetAgentRunner,
+    syncGitOriginAgentRunner,
     createUploadUrl,
     createDeleteUrl,
     listAiGatewayProviders,

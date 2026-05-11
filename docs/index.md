@@ -34,9 +34,11 @@ Manage Netlify AI agent tasks
 | [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent task  |
 | [`agents:publish`](/commands/agents#agentspublish) | Publish an agent task’s changes to production  |
 | [`agents:redeploy`](/commands/agents#agentsredeploy) | Create a redeploy session that reapplies an existing diff (no AI inference)  |
+| [`agents:rename`](/commands/agents#agentsrename) | Rename an agent task  |
 | [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent task to a specific session (sessions after it are discarded)  |
 | [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent task  |
 | [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent task or session  |
+| [`agents:sync`](/commands/agents#agentssync) | Sync an agent task with the latest production code or remote git origin  |
 
 
 ### [api](/commands/api)

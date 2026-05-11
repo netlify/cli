@@ -6,7 +6,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import { createAgentsApi } from './api.js'
 import type { AgentRunner, ListAgentRunnersFilters } from './types.js'
-import { formatDuration, formatStatus, truncateText } from './utils.js'
+import { formatDuration, formatStatus, isListStatusFilter, truncateText, validateListStatusFilter } from './utils.js'
 
 interface AgentListOptions extends OptionValues {
   status?: string
@@ -42,10 +42,9 @@ const parsePositiveInt = (input: string | undefined, name: string): number | und
 const buildFilters = (options: AgentListOptions): ListAgentRunnersFilters => {
   const filters: ListAgentRunnersFilters = {}
   if (options.status) {
-    if (options.status !== 'live' && options.status !== 'error') {
-      throw new Error('--status accepts only "live" or "error"')
-    }
-    filters.state = options.status
+    const valid = validateListStatusFilter(options.status)
+    if (valid !== true) throw new Error(valid)
+    if (isListStatusFilter(options.status)) filters.state = options.status
   }
   if (options.branch) filters.branch = options.branch
   if (options.user) filters.user_id = options.user

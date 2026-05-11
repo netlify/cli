@@ -7,7 +7,7 @@ import { chalk, log, logAndThrowError, logJson } from '../../utils/command-helpe
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import { createAgentsApi } from './api.js'
-import { AVAILABLE_AGENTS, type AvailableAgent, type UserSelectableMode } from './constants.js'
+import { AVAILABLE_AGENTS, type AvailableAgent } from './constants.js'
 import { uploadAttachments, type UploadedAttachment } from './attachments.js'
 import type { CreateAgentRunnerPayload } from './types.js'
 import {
@@ -16,7 +16,6 @@ import {
   formatStatus,
   getAgentName,
   validateAgent,
-  validateMode,
   validatePrompt,
 } from './utils.js'
 
@@ -25,10 +24,8 @@ interface AgentCreateOptions extends OptionValues {
   agent?: string
   branch?: string
   model?: string
-  mode?: string
   fromDeploy?: string
   parent?: string
-  devServerImage?: string
   attach?: string[]
   json?: boolean
 }
@@ -92,11 +89,6 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     return logAndThrowError('Cannot attach files: no account ID is available for this site')
   }
 
-  if (options.mode) {
-    const valid = validateMode(options.mode)
-    if (valid !== true) return logAndThrowError(valid)
-  }
-
   const finalPrompt = await resolvePrompt(promptArg, options.prompt, options)
   const agent = await resolveAgent(options.agent, options)
 
@@ -136,8 +128,6 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     branch,
     deploy_id: options.fromDeploy,
     parent_agent_runner_id: options.parent,
-    mode: options.mode as UserSelectableMode | undefined,
-    dev_server_image: options.devServerImage,
     file_keys: attachments.length > 0 ? attachments.map((entry) => entry.fileKey) : undefined,
   }
 
@@ -157,7 +147,6 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     log(`  Task ID: ${chalk.cyan(agentRunner.id)}`)
     log(`  Prompt: ${chalk.dim(finalPrompt)}`)
     log(`  Agent: ${chalk.cyan(getAgentName(agent))}${options.model ? ` (${options.model})` : ''}`)
-    if (options.mode && options.mode !== 'normal') log(`  Mode: ${chalk.cyan(options.mode)}`)
     if (options.fromDeploy) {
       log(`  Base Deploy: ${chalk.cyan(options.fromDeploy)}`)
     } else if (isGitBased && branch) {

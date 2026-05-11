@@ -1,7 +1,8 @@
 import path from 'path'
 
 import { chalk } from '../../utils/command-helpers.js'
-import { AGENT_TO_PROVIDER, AVAILABLE_AGENTS, STATUS_COLORS, USER_SELECTABLE_MODES } from './constants.js'
+import { AGENT_TO_PROVIDER, AVAILABLE_AGENTS, LIST_STATUS_FILTERS, STATUS_COLORS } from './constants.js'
+import type { ListStatusFilter } from './constants.js'
 import type { AgentsApi } from './api.js'
 import type { AvailableAgent } from './constants.js'
 import type { AgentRunnerSessionUsage } from './types.js'
@@ -56,10 +57,13 @@ export const validateAgent = (agent: string): true | string => {
   return true
 }
 
-export const validateMode = (mode: string): true | string => {
-  if ((USER_SELECTABLE_MODES as readonly string[]).includes(mode)) return true
-  return `Invalid mode. Available modes: ${USER_SELECTABLE_MODES.join(', ')}`
+export const validateListStatusFilter = (status: string): true | string => {
+  if ((LIST_STATUS_FILTERS as readonly string[]).includes(status)) return true
+  return `--status accepts only ${LIST_STATUS_FILTERS.map((entry) => `"${entry}"`).join(', ')}`
 }
+
+export const isListStatusFilter = (status: string): status is ListStatusFilter =>
+  (LIST_STATUS_FILTERS as readonly string[]).includes(status)
 
 export const checkModelAvailability = async (
   api: AgentsApi,

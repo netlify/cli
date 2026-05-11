@@ -1,4 +1,4 @@
-import type { AgentState, SessionState, SessionMode, AvailableAgent } from './constants.js'
+import type { AgentState, ListStatusFilter, SessionState, SessionMode, AvailableAgent } from './constants.js'
 
 export interface AgentConfig {
   agent?: AvailableAgent
@@ -116,8 +116,6 @@ export interface CreateAgentRunnerPayload {
   branch?: string
   deploy_id?: string
   parent_agent_runner_id?: string
-  mode?: SessionMode
-  dev_server_image?: string
   file_keys?: string[]
 }
 
@@ -125,12 +123,11 @@ export interface CreateAgentRunnerSessionPayload {
   prompt: string
   agent?: AvailableAgent
   model?: string
-  dev_server_image?: string
   file_keys?: string[]
 }
 
 export interface ListAgentRunnersFilters {
-  state?: 'live' | 'error'
+  state?: ListStatusFilter
   branch?: string
   result_branch?: string
   user_id?: string

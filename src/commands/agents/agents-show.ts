@@ -87,7 +87,7 @@ const showAgentTask = async (api: AgentsApi, id: string, options: AgentShowOptio
   try {
     const [runner, sessions] = await Promise.all([
       api.getAgentRunner(id),
-      api.listAgentRunnerSessions(id, { page: 1, per_page: 100 }),
+      api.listAgentRunnerSessions(id, { page: 1, per_page: 100, order_by: 'desc' }),
     ])
     stopSpinner({ spinner })
 
@@ -368,7 +368,7 @@ const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) 
       try {
         ;[lastRunner, lastSessions] = await Promise.all([
           api.getAgentRunner(id),
-          api.listAgentRunnerSessions(id, { page: 1, per_page: 100 }),
+          api.listAgentRunnerSessions(id, { page: 1, per_page: 100, order_by: 'desc' }),
         ])
       } catch (error_) {
         const error = error_ as Error

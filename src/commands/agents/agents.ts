@@ -22,8 +22,6 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .option('-b, --branch <branch>', 'git branch to work on')
     .option('--from-deploy <deployId>', 'start the agent from a specific deploy (mutually exclusive with --branch)')
     .option('--parent <id>', 'chain this agent task off of another agent task')
-    .option('--mode <mode>', 'session mode (normal, create, ask)')
-    .option('--dev-server-image <image>', 'custom dev server Docker image')
     .option('--attach <path>', 'attach a file or image (repeatable)', collect, [])
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .option('--json', 'output result as JSON')
@@ -34,7 +32,6 @@ export const createAgentsCommand = (program: BaseCommand) => {
       'netlify agents:create --prompt "Add dark mode" --agent claude',
       'netlify agents:create -p "Update README" -a codex -b feature-branch',
       'netlify agents:create "Triage this error" --attach error.log --attach screenshot.png',
-      'netlify agents:create "Tell me about this codebase" --mode ask',
     ])
     .action(async (prompt: string, options: OptionValues, command: BaseCommand) => {
       const { agentsCreate } = await import('./agents-create.js')
@@ -49,7 +46,6 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .option('-p, --prompt <prompt>', 'follow-up prompt')
     .option('-a, --agent <agent>', 'override agent type for this session')
     .option('-m, --model <model>', 'override model for this session')
-    .option('--dev-server-image <image>', 'custom dev server Docker image')
     .option('--attach <path>', 'attach a file or image (repeatable)', collect, [])
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .option('--json', 'output result as JSON')
@@ -66,7 +62,7 @@ export const createAgentsCommand = (program: BaseCommand) => {
   program
     .command('agents:list')
     .description('List agent tasks for the current site')
-    .option('-s, --status <status>', 'filter by status (live, error)')
+    .option('-s, --status <status>', 'filter by status (running, done, error, archived)')
     .option('-b, --branch <branch>', 'filter by branch')
     .option('-u, --user <userId>', 'filter by user ID')
     .option('-t, --title <text>', 'filter by title (case-insensitive contains)')
@@ -81,7 +77,8 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .hook('preAction', requiresSiteInfoWithProject)
     .addExamples([
       'netlify agents:list',
-      'netlify agents:list --status live',
+      'netlify agents:list --status running',
+      'netlify agents:list --status archived',
       'netlify agents:list --branch main --since 2026-04-01',
       'netlify agents:list --account my-team',
       'netlify agents:list --ndjson',
@@ -261,6 +258,34 @@ export const createAgentsCommand = (program: BaseCommand) => {
       await agentsRedeploy(id, options, command)
     })
 
+  program
+    .command('agents:rename')
+    .argument('<id>', 'agent task ID')
+    .argument('<title>', 'new title for the agent task')
+    .description('Rename an agent task')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples(['netlify agents:rename 60c7c3b3e7b4a0001f5e4b3a "Add dark mode toggle"'])
+    .action(async (id: string, title: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsRename } = await import('./agents-rename.js')
+      await agentsRename(id, title, options, command)
+    })
+
+  program
+    .command('agents:sync')
+    .argument('<id>', 'agent task ID')
+    .description('Sync an agent task with the latest production code or remote git origin')
+    .option('-y, --yes', 'skip confirmation prompt')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples(['netlify agents:sync 60c7c3b3e7b4a0001f5e4b3a', 'netlify agents:sync 60c7c3b3e7b4a0001f5e4b3a --yes'])
+    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsSync } = await import('./agents-sync.js')
+      await agentsSync(id, options, command)
+    })
+
   const name = chalk.greenBright('`agents`')
 
   return program
@@ -273,7 +298,7 @@ Note: Agent tasks execute remotely on Netlify infrastructure, not locally.`,
     )
     .addExamples([
       'netlify agents:create --prompt "Add a contact form"',
-      'netlify agents:list --status live',
+      'netlify agents:list --status running',
       'netlify agents:show 60c7c3b3e7b4a0001f5e4b3a --watch',
       'netlify agents:follow-up 60c7c3b3e7b4a0001f5e4b3a "Also add tests"',
       'netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a',

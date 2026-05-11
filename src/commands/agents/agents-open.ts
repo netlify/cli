@@ -50,12 +50,19 @@ export const agentsOpen = async (
   }
 
   if (target === 'pr') {
-    if (!runner.pr_url) {
-      log(chalk.yellow('No pull request exists for this agent task.'))
-      log(`Create one with: ${chalk.cyan(`netlify agents:pr ${id}`)}`)
+    if (runner.pr_url) return openUrl(runner.pr_url)
+    if (runner.pr_is_being_created) {
+      log(chalk.yellow('A pull request is being created. Try again in a moment.'))
       return
     }
-    return openUrl(runner.pr_url)
+    if (runner.pr_error) {
+      log(chalk.red(`Pull request creation failed: ${runner.pr_error}`))
+      log(`Retry with: ${chalk.cyan(`netlify agents:pr ${id}`)}`)
+      return
+    }
+    log(chalk.yellow('No pull request exists for this agent task.'))
+    log(`Create one with: ${chalk.cyan(`netlify agents:pr ${id}`)}`)
+    return
   }
 
   const previewUrl = runner.latest_session_deploy_url

@@ -21,7 +21,7 @@ interface MockApiOptions {
 
 export interface MockApi {
   apiUrl: string
-  requests: { path: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
+  requests: { path: string; originalUrl: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
   server: Server
   close: () => Promise<void>
 }
@@ -34,6 +34,7 @@ export interface MockApiTestContext {
 const addRequest = (requests: MockApi['requests'], request: express.Request) => {
   requests.push({
     path: request.path,
+    originalUrl: request.originalUrl,
     body: request.body,
     method: request.method,
     headers: request.headers,
@@ -133,7 +134,7 @@ export const withMockApi = async (
   routes: Route[],
   testHandler: (options: {
     apiUrl: string
-    requests: { path: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
+    requests: { path: string; originalUrl: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
   }) => Promise<void>,
   silent = false,
 ) => {

@@ -24,7 +24,8 @@ export const SESSION_MODES = [
   'ask',
   'conflict_resolution',
 ] as const
-export const USER_SELECTABLE_MODES = ['normal', 'create', 'ask'] as const
+
+export const LIST_STATUS_FILTERS = ['running', 'done', 'error', 'archived'] as const
 
 export const STATUS_COLORS = {
   new: chalk.blue,
@@ -43,5 +44,5 @@ export const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024
 export type AgentState = (typeof AGENT_STATES)[number]
 export type SessionState = (typeof SESSION_STATES)[number]
 export type SessionMode = (typeof SESSION_MODES)[number]
-export type UserSelectableMode = (typeof USER_SELECTABLE_MODES)[number]
+export type ListStatusFilter = (typeof LIST_STATUS_FILTERS)[number]
 export type AvailableAgent = (typeof AVAILABLE_AGENTS)[number]['value']

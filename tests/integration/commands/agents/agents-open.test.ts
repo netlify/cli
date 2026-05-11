@@ -140,6 +140,55 @@ describe('agents:open command', () => {
     })
   })
 
+  test('should explain when a PR is being created', async (t) => {
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: { ...mockAgentRunner, pr_is_being_created: true },
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const cliResponse = (await callCli(
+          ['agents:open', 'test_id', 'pr'],
+          getCLIOptions({ apiUrl, builder, env: noBrowserEnv }),
+        )) as string
+
+        expect(cliResponse).toContain('A pull request is being created')
+      })
+    })
+  })
+
+  test('should surface PR creation errors', async (t) => {
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: { ...mockAgentRunner, pr_error: 'Repository not connected' },
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const cliResponse = (await callCli(
+          ['agents:open', 'test_id', 'pr'],
+          getCLIOptions({ apiUrl, builder, env: noBrowserEnv }),
+        )) as string
+
+        expect(cliResponse).toContain('Pull request creation failed: Repository not connected')
+        expect(cliResponse).toContain('netlify agents:pr test_id')
+      })
+    })
+  })
+
   test('should reject invalid targets', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()

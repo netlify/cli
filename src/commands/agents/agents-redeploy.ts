@@ -25,7 +25,7 @@ export const agentsRedeploy = async (id: string, options: AgentRedeployOptions, 
       let page = 1
       let latestDone: { id: string } | undefined
       while (!latestDone && page <= maxPages) {
-        const sessions = await api.listAgentRunnerSessions(id, { page, per_page: perPage })
+        const sessions = await api.listAgentRunnerSessions(id, { page, per_page: perPage, order_by: 'desc' })
         latestDone = sessions.find((session) => session.state === 'done')
         if (latestDone || sessions.length < perPage) break
         page += 1

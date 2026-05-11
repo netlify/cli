@@ -21,7 +21,6 @@ interface AgentFollowUpOptions extends OptionValues {
   prompt?: string
   agent?: string
   model?: string
-  devServerImage?: string
   attach?: string[]
   json?: boolean
 }
@@ -87,7 +86,6 @@ export const agentsFollowUp = async (
     prompt: finalPrompt,
     agent,
     model: options.model,
-    dev_server_image: options.devServerImage,
     file_keys: attachments.length > 0 ? attachments.map((entry) => entry.fileKey) : undefined,
   }
 

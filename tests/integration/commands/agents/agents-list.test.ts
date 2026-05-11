@@ -109,14 +109,27 @@ describe('agents:list command', () => {
 
       await withMockApi(routes, async ({ apiUrl, requests }) => {
         const cliResponse = (await callCli(
-          ['agents:list', '--status', 'live'],
+          ['agents:list', '--status', 'running'],
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
         const agentRequest = requests.find((r) => r.path.includes('agent_runners'))
         expect(agentRequest).toBeDefined()
+        expect(agentRequest?.originalUrl).toContain('state=running')
 
         expect(cliResponse).toContain('RUNNING')
+      })
+    })
+  })
+
+  test('should reject unsupported status values', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(baseRoutes, async ({ apiUrl }) => {
+        await expect(callCli(['agents:list', '--status', 'live'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
+          '--status accepts only "running", "done", "error", "archived"',
+        )
       })
     })
   })
