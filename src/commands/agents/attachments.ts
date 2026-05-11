@@ -33,7 +33,9 @@ export const uploadAttachments = async (
 ): Promise<UploadedAttachment[]> => {
   if (filePaths.length === 0) return []
   if (filePaths.length > MAX_ATTACHMENTS_PER_REQUEST) {
-    throw new Error(`Too many attachments: ${filePaths.length.toString()} given, max is ${MAX_ATTACHMENTS_PER_REQUEST.toString()}`)
+    throw new Error(
+      `Too many attachments: ${filePaths.length.toString()} given, max is ${MAX_ATTACHMENTS_PER_REQUEST.toString()}`,
+    )
   }
 
   const resolved = await Promise.all(

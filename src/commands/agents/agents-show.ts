@@ -428,9 +428,17 @@ const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) 
         consecutiveFailures += 1
         if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
           renderer.stop()
-          return logAndThrowError(`Watch aborted after ${MAX_CONSECUTIVE_FAILURES.toString()} consecutive polling failures: ${error.message}`)
+          return logAndThrowError(
+            `Watch aborted after ${MAX_CONSECUTIVE_FAILURES.toString()} consecutive polling failures: ${error.message}`,
+          )
         }
-        renderer.print(`${chalk.yellow('!')} ${chalk.dim(`poll failed (${consecutiveFailures.toString()}/${MAX_CONSECUTIVE_FAILURES.toString()}): ${error.message}, retrying`)}`)
+        renderer.print(
+          `${chalk.yellow('!')} ${chalk.dim(
+            `poll failed (${consecutiveFailures.toString()}/${MAX_CONSECUTIVE_FAILURES.toString()}): ${
+              error.message
+            }, retrying`,
+          )}`,
+        )
       }
     }
   } finally {

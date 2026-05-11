@@ -30,17 +30,13 @@ describe('agents:rename command', () => {
         path: 'agent_runners/test_id',
         method: 'PATCH' as const,
         response: renamed,
-        validateRequest: (request: { body: string }) => {
-          const body = JSON.parse(request.body) as { title: string }
-          expect(body.title).toBe('New title')
-        },
       },
     ]
 
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
         const cliResponse = (await callCli(
           ['agents:rename', 'test_id', 'New title'],
           getCLIOptions({ apiUrl, builder }),
@@ -48,6 +44,8 @@ describe('agents:rename command', () => {
 
         expect(cliResponse).toContain('Agent task renamed.')
         expect(cliResponse).toContain('Title: New title')
+        const patch = requests.find((r) => r.method === 'PATCH' && r.path.endsWith('/agent_runners/test_id'))
+        expect(patch?.body).toEqual({ title: 'New title' })
       })
     })
   })
@@ -60,23 +58,21 @@ describe('agents:rename command', () => {
         path: 'agent_runners/test_id',
         method: 'PATCH' as const,
         response: renamed,
-        validateRequest: (request: { body: string }) => {
-          const body = JSON.parse(request.body) as { title: string }
-          expect(body.title).toBe('Trimmed title')
-        },
       },
     ]
 
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
         const cliResponse = (await callCli(
           ['agents:rename', 'test_id', '  Trimmed title  '],
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
         expect(cliResponse).toContain('Title: Trimmed title')
+        const patch = requests.find((r) => r.method === 'PATCH' && r.path.endsWith('/agent_runners/test_id'))
+        expect(patch?.body).toEqual({ title: 'Trimmed title' })
       })
     })
   })
@@ -114,17 +110,13 @@ describe('agents:rename command', () => {
         path: 'agent_runners/test_id',
         method: 'PATCH' as const,
         response: renamed,
-        validateRequest: (request: { body: string }) => {
-          const body = JSON.parse(request.body) as { title: string }
-          expect(body.title).toBe('Clean title')
-        },
       },
     ]
 
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
         const tagChar = String.fromCodePoint(0xe0041)
         const cliResponse = (await callCli(
           ['agents:rename', 'test_id', `Clean${tagChar} title`],
@@ -132,6 +124,8 @@ describe('agents:rename command', () => {
         )) as string
 
         expect(cliResponse).toContain('Agent task renamed')
+        const patch = requests.find((r) => r.method === 'PATCH' && r.path.endsWith('/agent_runners/test_id'))
+        expect(patch?.body).toEqual({ title: 'Clean title' })
       })
     })
   })

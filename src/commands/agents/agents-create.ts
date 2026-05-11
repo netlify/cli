@@ -69,7 +69,9 @@ const detectLocalGit = (): LocalGitInfo => {
           stdio: ['ignore', 'pipe', 'ignore'],
           encoding: 'utf8',
         })
-        hasUnpushedCommits = Number.parseInt(result.stdout.trim(), 10) > 0
+        if (result.status === 0) {
+          hasUnpushedCommits = Number.parseInt(result.stdout.trim(), 10) > 0
+        }
       }
     } catch {
       // No upstream configured: can't tell.

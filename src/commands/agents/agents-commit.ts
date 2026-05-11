@@ -29,7 +29,9 @@ export const agentsCommit = async (id: string, options: AgentCommitOptions, comm
   await command.authenticate()
   const { siteInfo } = command.netlify
   if (!siteInfo.build_settings?.repo_url) {
-    return logAndThrowError('This project is not connected to a git repository. Commits are only available for git-backed projects.')
+    return logAndThrowError(
+      'This project is not connected to a git repository. Commits are only available for git-backed projects.',
+    )
   }
   const api = createAgentsApi(command.netlify)
 

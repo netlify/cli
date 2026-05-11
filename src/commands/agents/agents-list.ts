@@ -22,8 +22,13 @@ interface AgentListOptions extends OptionValues {
   account?: string
 }
 
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/
+
 const toUnixSeconds = (input?: string): number | undefined => {
   if (!input) return undefined
+  if (!ISO_DATE_PATTERN.test(input)) {
+    throw new Error(`Invalid date "${input}". Use an ISO timestamp like 2026-05-01T00:00:00Z.`)
+  }
   const parsed = Date.parse(input)
   if (Number.isNaN(parsed)) {
     throw new Error(`Invalid date "${input}". Use an ISO timestamp like 2026-05-01T00:00:00Z.`)
@@ -56,7 +61,9 @@ const buildFilters = (options: AgentListOptions): ListAgentRunnersFilters => {
   filters.page = parsePositiveInt(options.page, 'page')
   const perPage = parsePositiveInt(options.perPage, 'per-page')
   if (perPage !== undefined && perPage > MAX_PER_PAGE) {
-    throw new Error(`--per-page must be ${MAX_PER_PAGE.toString()} or fewer (the server caps at ${MAX_PER_PAGE.toString()})`)
+    throw new Error(
+      `--per-page must be ${MAX_PER_PAGE.toString()} or fewer (the server caps at ${MAX_PER_PAGE.toString()})`,
+    )
   }
   filters.per_page = perPage
   return filters
@@ -103,7 +110,8 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     }
 
     if (result.data.length === 0) {
-      log(chalk.yellow('No agent tasks found for this site.'))
+      const emptyScope = options.account ? `account ${options.account}` : 'this site'
+      log(chalk.yellow(`No agent tasks found for ${emptyScope}.`))
       log()
       log(`Create your first agent task with:`)
       log(`  ${chalk.cyan('netlify agents:create')}`)
@@ -113,11 +121,18 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     const isGitBased = Boolean(siteInfo.build_settings?.repo_branch)
     const scope = options.account ? `account ${options.account}` : siteInfo.name
     const table = new AsciiTable(`Agent Tasks for ${scope}`)
-    const baseColumnLabel = isGitBased ? 'BRANCH' : 'BASE'
+    // Account-wide listing spans multiple sites, so we can't infer a single base column from the linked site.
+    const baseColumnLabel = options.account ? 'BRANCH/BASE' : isGitBased ? 'BRANCH' : 'BASE'
     table.setHeading('ID', 'STATUS', 'PROMPT', baseColumnLabel, 'DURATION', 'CREATED')
 
     for (const runner of result.data) {
-      const baseValue = isGitBased ? truncateText(runner.branch ?? 'unknown', 12) : 'Production'
+      const baseValue = options.account
+        ? runner.branch
+          ? truncateText(runner.branch, 12)
+          : 'Production'
+        : isGitBased
+        ? truncateText(runner.branch ?? 'unknown', 12)
+        : 'Production'
       table.addRow(
         runner.id,
         (runner.state ?? 'unknown').toUpperCase(),

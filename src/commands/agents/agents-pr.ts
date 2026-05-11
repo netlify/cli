@@ -14,7 +14,9 @@ export const agentsPullRequest = async (id: string, options: AgentPrOptions, com
   await command.authenticate()
   const { siteInfo } = command.netlify
   if (!siteInfo.build_settings?.repo_url) {
-    return logAndThrowError('This project is not connected to a git repository. Pull requests are only available for git-backed projects.')
+    return logAndThrowError(
+      'This project is not connected to a git repository. Pull requests are only available for git-backed projects.',
+    )
   }
   const api = createAgentsApi(command.netlify)
 
