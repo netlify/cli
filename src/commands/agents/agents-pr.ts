@@ -12,6 +12,10 @@ interface AgentPrOptions extends OptionValues {
 export const agentsPullRequest = async (id: string, options: AgentPrOptions, command: BaseCommand) => {
   if (!id) return logAndThrowError('Agent task ID is required')
   await command.authenticate()
+  const { siteInfo } = command.netlify
+  if (!siteInfo.build_settings?.repo_url) {
+    return logAndThrowError('This project is not connected to a git repository. Pull requests are only available for git-backed projects.')
+  }
   const api = createAgentsApi(command.netlify)
 
   const spinner = startSpinner({ text: 'Creating pull request...' })
@@ -37,7 +41,8 @@ export const agentsPullRequest = async (id: string, options: AgentPrOptions, com
     return runner
   } catch (error_) {
     stopSpinner({ spinner, error: true })
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
+    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
     return logAndThrowError(`Failed to create pull request: ${error.message}`)
   }
 }

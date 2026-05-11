@@ -27,6 +27,10 @@ const pickDefaultBranch = (runner: AgentRunner): { branch: string; reason: strin
 export const agentsCommit = async (id: string, options: AgentCommitOptions, command: BaseCommand) => {
   if (!id) return logAndThrowError('Agent task ID is required')
   await command.authenticate()
+  const { siteInfo } = command.netlify
+  if (!siteInfo.build_settings?.repo_url) {
+    return logAndThrowError('This project is not connected to a git repository. Commits are only available for git-backed projects.')
+  }
   const api = createAgentsApi(command.netlify)
 
   let targetBranch = options.branch?.trim()

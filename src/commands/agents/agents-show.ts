@@ -6,7 +6,7 @@ import type BaseCommand from '../base-command.js'
 import { createAgentsApi, type AgentsApi } from './api.js'
 import { TERMINAL_AGENT_STATES, TERMINAL_SESSION_STATES } from './constants.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
-import { formatDate, formatDuration, formatStatus, formatUsage, getAgentName } from './utils.js'
+import { formatDate, formatDuration, formatPrState, formatStatus, formatUsage, getAgentName } from './utils.js'
 
 interface AgentShowOptions extends OptionValues {
   json?: boolean
@@ -148,6 +148,7 @@ const renderAgentTask = (runner: AgentRunner, sessions: AgentRunnerSession[], co
   log(`  Task ID: ${chalk.cyan(runner.id)}`)
   log(`  Status: ${formatStatus(runner.state ?? 'unknown')}`)
   log(`  Site: ${chalk.cyan(siteInfo.name)} (${site.id ?? ''})`)
+  if (runner.sha) log(`  Start commit: ${chalk.cyan(runner.sha.slice(0, 7))}`)
   if (runner.user) log(`  Created by: ${runner.user.full_name ?? 'Anonymous'}`)
   if (runner.contributors && runner.contributors.length > 1) {
     log(`  Contributors: ${runner.contributors.map((entry) => entry.full_name ?? 'Anonymous').join(', ')}`)
@@ -191,11 +192,12 @@ const renderAgentTask = (runner: AgentRunner, sessions: AgentRunnerSession[], co
     }
   }
 
-  if (runner.pr_url || runner.pr_error) {
+  if (runner.pr_url || runner.pr_error || runner.pr_is_being_created) {
     log()
     log(chalk.bold('Pull Request:'))
     if (runner.pr_url) log(`  URL: ${chalk.blue(runner.pr_url)}`)
-    if (runner.pr_state) log(`  State: ${chalk.cyan(runner.pr_state)}`)
+    if (runner.pr_state) log(`  State: ${chalk.cyan(formatPrState(runner.pr_state))}`)
+    if (runner.pr_is_being_created) log(`  ${chalk.yellow('Status:')} being created`)
     if (runner.pr_error) log(`  ${chalk.red('Error:')} ${runner.pr_error}`)
   }
 
@@ -239,6 +241,8 @@ const renderSessionInline = (session: AgentRunnerSession, index: number, total: 
   log(header)
   const meta: string[] = [formatStatus(session.state)]
   if (session.mode && session.mode !== 'normal') meta.push(chalk.dim(`mode: ${session.mode}`))
+  if (session.is_published) meta.push(chalk.green('PUBLISHED'))
+  if (session.is_discarded) meta.push(chalk.gray('DISCARDED'))
   if (session.done_at) {
     meta.push(chalk.dim(`took ${formatDuration(session.created_at, session.done_at)}`))
   } else if (session.state === 'running') {
@@ -246,6 +250,7 @@ const renderSessionInline = (session: AgentRunnerSession, index: number, total: 
   }
   log(`     ${meta.join(' • ')}`)
   log(`     ${chalk.dim('id:')} ${session.id}`)
+  if (session.user) log(`     ${chalk.dim('by:')} ${session.user.full_name ?? 'Anonymous'}`)
   if (session.state === 'running' && session.current_task) {
     log(`     ${chalk.dim('current:')} ${chalk.yellow(session.current_task)}`)
   }
@@ -281,9 +286,15 @@ const renderSessionDetail = (session: AgentRunnerSession, runnerId: string, comm
   log(`  Session ID: ${chalk.cyan(session.id)}`)
   log(`  Task ID: ${chalk.cyan(runnerId)}`)
   log(`  Status: ${formatStatus(session.state)}`)
+  if (session.is_published) log(`  ${chalk.green('Published to production')}`)
+  if (session.is_discarded) log(`  ${chalk.gray('Discarded (a later revert reset to an earlier session)')}`)
   if (session.mode) log(`  Mode: ${chalk.cyan(session.mode)}`)
+  if (session.user) log(`  Author: ${chalk.cyan(session.user.full_name ?? 'Anonymous')}`)
   if (session.agent_config?.agent) log(`  Agent: ${chalk.cyan(getAgentName(session.agent_config.agent))}`)
   if (session.agent_config?.model) log(`  Model: ${chalk.cyan(session.agent_config.model)}`)
+  if (session.state === 'running' && session.current_task) {
+    log(`  Current Task: ${chalk.yellow(session.current_task)}`)
+  }
 
   log()
   log(chalk.bold('Prompt:'))

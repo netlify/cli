@@ -21,12 +21,13 @@ const pickStrategy = (runner: AgentRunner): SyncStrategy | null => {
   return null
 }
 
-const describeStrategy = (strategy: SyncStrategy): string => {
+const describeStrategy = (strategy: SyncStrategy, runner: AgentRunner): string => {
+  const target = runner.branch ? ` (target: ${runner.branch})` : ''
   switch (strategy) {
     case 'sync_git_origin':
-      return 'sync with the remote git origin (code origin changed)'
+      return `sync with the remote git origin${target}`
     case 'merge_target':
-      return 'merge the latest target branch into this agent run'
+      return `merge the latest target branch into this agent run${target}`
     case 'rebase':
       return 'reapply changes on top of the latest production deploy'
   }
@@ -74,7 +75,7 @@ export const agentsSync = async (id: string, options: AgentSyncOptions, command:
       {
         type: 'confirm',
         name: 'confirmed',
-        message: `Sync agent task ${id}? This will ${describeStrategy(strategy)}.`,
+        message: `Sync agent task ${id}? This will ${describeStrategy(strategy, runner)}.`,
         default: false,
       },
     ])
@@ -91,7 +92,7 @@ export const agentsSync = async (id: string, options: AgentSyncOptions, command:
       return updated
     }
 
-    log(`${chalk.green('✓')} Sync started: ${describeStrategy(strategy)}.`)
+    log(`${chalk.green('✓')} Sync started: ${describeStrategy(strategy, runner)}.`)
     log(`  Task ID: ${chalk.cyan(updated.id)}`)
     log()
     log(`Watch progress: ${chalk.cyan(`netlify agents:show ${updated.id} --watch`)}`)

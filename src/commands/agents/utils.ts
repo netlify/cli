@@ -39,6 +39,15 @@ export const formatStatus = (status: string): string => {
   return colorFn(status.toUpperCase())
 }
 
+const PR_STATE_LABELS: Record<string, string> = {
+  open: 'Open',
+  draft: 'Draft',
+  closed: 'Closed',
+  merged: 'Merged',
+}
+
+export const formatPrState = (state: string): string => PR_STATE_LABELS[state.toLowerCase()] ?? state
+
 export const validatePrompt = (input: string): true | string => {
   if (!input || input.trim().length === 0) {
     return 'Please provide a prompt for the agent'
