@@ -239,3 +239,26 @@ export const tryAndLogOutput = async (func: () => Promise<void>, outputBuffer: u
     throw error
   }
 }
+
+export const rebuildAndWaitForReload = async (
+  server: Pick<DevServer, 'waitForLogMatching'>,
+  rebuild: () => Promise<unknown>,
+  match: string,
+  timeoutMs?: number,
+): Promise<void> => {
+  const waiting = server.waitForLogMatching(match, timeoutMs)
+  await rebuild()
+  await waiting
+}
+
+export const waitFor = async (
+  predicate: () => Promise<boolean> | boolean,
+  { intervalMs = 100, timeoutMs = 10_000 }: { intervalMs?: number; timeoutMs?: number } = {},
+): Promise<void> => {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (await predicate()) return
+    await new Promise<void>((resolve) => setTimeout(resolve, intervalMs))
+  }
+  throw new Error(`waitFor timed out after ${timeoutMs.toString()}ms`)
+}

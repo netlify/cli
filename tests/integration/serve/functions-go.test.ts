@@ -1,12 +1,9 @@
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { tryAndLogOutput, withDevServer } from '../utils/dev-server.js'
+import { rebuildAndWaitForReload, tryAndLogOutput, withDevServer } from '../utils/dev-server.js'
 import { createMock as createExecaMock } from '../utils/mock-execa.js'
-import { pause } from '../utils/pause.js'
 import { withSiteBuilder } from '../utils/site-builder.js'
-
-const WAIT_WRITE = 1000
 
 describe.concurrent('serve/functions-go', () => {
   test('Updates a Go function when a file is modified', async (t) => {
@@ -89,13 +86,14 @@ describe.concurrent('serve/functions-go', () => {
               t.expect(response).toEqual(originalBody)
             }, outputBuffer)
 
-            await pause(WAIT_WRITE)
-
-            await builder
-              .withContentFile({ path: 'functions/go-func/main.go', content: `<updated mock main.go>` })
-              .build()
-
-            await waitForLogMatching('Reloaded function go-func')
+            await rebuildAndWaitForReload(
+              { waitForLogMatching },
+              () =>
+                builder
+                  .withContentFile({ path: 'functions/go-func/main.go', content: `<updated mock main.go>` })
+                  .build(),
+              'Reloaded function go-func',
+            )
 
             const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/go-func`).then((res) =>
               res.text(),

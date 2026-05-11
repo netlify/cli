@@ -7,15 +7,13 @@ import { describe, test } from 'vitest'
 import js from 'dedent'
 import ts from 'dedent'
 
-import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.js'
+import { rebuildAndWaitForReload, tryAndLogOutput, waitFor, withDevServer } from '../../utils/dev-server.js'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
-
-const WAIT_WRITE = 3000
 
 describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
   test('Updates a JavaScript function when its main file is modified', async (t) => {
@@ -48,20 +46,21 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('Hello')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
-
-        await builder
-          .withFunction({
-            path: 'hello.js',
-            handler: async () =>
-              Promise.resolve({
-                statusCode: 200,
-                body: 'Goodbye',
-              }),
-          })
-          .build()
-
-        await waitForLogMatching('Reloaded function hello')
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withFunction({
+                path: 'hello.js',
+                handler: async () =>
+                  Promise.resolve({
+                    statusCode: 200,
+                    body: 'Goodbye',
+                  }),
+              })
+              .build(),
+          'Reloaded function hello',
+        )
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`)
 
@@ -115,35 +114,36 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('Modern Web Development on the JAMStack')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withContentFile({
+                path: 'functions/hello.ts',
+                content: ts`
+                  interface Book {
+                    title: string
+                    author: string
+                  }
 
-        await builder
-          .withContentFile({
-            path: 'functions/hello.ts',
-            content: ts`
-              interface Book {
-                title: string
-                author: string
-              }
+                  const handler = async () => {
+                    const book1: Book = {
+                      title: 'Modern Web Development on the Jamstack',
+                      author: 'Mathias Biilmann & Phil Hawksworth'
+                    }
 
-              const handler = async () => {
-                const book1: Book = {
-                  title: 'Modern Web Development on the Jamstack',
-                  author: 'Mathias Biilmann & Phil Hawksworth'
-                }
+                    return {
+                      statusCode: 200,
+                      body: book1.title
+                    }
+                  }
 
-                return {
-                  statusCode: 200,
-                  body: book1.title
-                }
-              }
-
-              export { handler }
-            `,
-          })
-          .build()
-
-        await waitForLogMatching('Reloaded function hello')
+                  export { handler }
+                `,
+              })
+              .build(),
+          'Reloaded function hello',
+        )
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`)
 
@@ -180,18 +180,22 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('WOOF!')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
-
-        await builder
-          .withContentFile({ path: 'functions/lib/util.js', content: js`exports.bark = () => 'WOOF WOOF!'` })
-          .build()
+        const rebuild = () =>
+          builder
+            .withContentFile({ path: 'functions/lib/util.js', content: js`exports.bark = () => 'WOOF WOOF!'` })
+            .build()
 
         if (args.includes('esbuild')) {
-          await waitForLogMatching('Reloaded function hello')
+          await rebuildAndWaitForReload({ waitForLogMatching }, rebuild, 'Reloaded function hello')
         } else {
-          // no message printed when using not esbuild
-          await pause(WAIT_WRITE)
+          await rebuild()
         }
+
+        await waitFor(
+          async () =>
+            (await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) => res.text())) ===
+            'WOOF WOOF!',
+        )
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -258,20 +262,21 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('Modern Web Development on the JAMStack')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withContentFile({
+                path: 'functions/lib/util.ts',
+                content: ts`
+                  const title: string = 'Modern Web Development on the Jamstack'
 
-        await builder
-          .withContentFile({
-            path: 'functions/lib/util.ts',
-            content: ts`
-              const title: string = 'Modern Web Development on the Jamstack'
-
-              export { title }
-            `,
-          })
-          .build()
-
-        await waitForLogMatching('Reloaded function hello')
+                  export { title }
+                `,
+              })
+              .build(),
+          'Reloaded function hello',
+        )
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -304,20 +309,21 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           t.expect(unauthenticatedResponse.status).toBe(404)
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
-
-        await builder
-          .withFunction({
-            path: 'hello.js',
-            handler: async () =>
-              Promise.resolve({
-                statusCode: 200,
-                body: 'Hello',
-              }),
-          })
-          .build()
-
-        await waitForLogMatching('Loaded function hello')
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withFunction({
+                path: 'hello.js',
+                handler: async () =>
+                  Promise.resolve({
+                    statusCode: 200,
+                    body: 'Hello',
+                  }),
+              })
+              .build(),
+          'Loaded function hello',
+        )
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -359,35 +365,36 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           t.expect(unauthenticatedResponse.status).toBe(404)
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withContentFile({
+                path: 'functions/hello.ts',
+                content: ts`
+                  interface Book {
+                    title: string
+                    author: string
+                  }
 
-        await builder
-          .withContentFile({
-            path: 'functions/hello.ts',
-            content: ts`
-              interface Book {
-                title: string
-                author: string
-              }
+                  const handler = async () => {
+                    const book1: Book = {
+                      title: 'Modern Web Development on the Jamstack',
+                      author: 'Mathias Biilmann & Phil Hawksworth'
+                    }
 
-              const handler = async () => {
-                const book1: Book = {
-                  title: 'Modern Web Development on the Jamstack',
-                  author: 'Mathias Biilmann & Phil Hawksworth'
-                }
+                    return {
+                      statusCode: 200,
+                      body: book1.title
+                    }
+                  }
 
-                return {
-                  statusCode: 200,
-                  body: book1.title
-                }
-              }
-
-              export { handler }
-            `,
-          })
-          .build()
-
-        await waitForLogMatching('Loaded function hello')
+                  export { handler }
+                `,
+              })
+              .build(),
+          'Loaded function hello',
+        )
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -428,15 +435,16 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('Hello')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
-
-        await builder
-          .withoutFile({
-            path: 'functions/hello.js',
-          })
-          .build()
-
-        await waitForLogMatching('Removed function hello')
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withoutFile({
+                path: 'functions/hello.js',
+              })
+              .build(),
+          'Removed function hello',
+        )
 
         const { status } = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`)
 
@@ -516,19 +524,22 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
-        await builder
-          .withFunction({
-            path: 'hello.js',
-            pathPrefix: '.netlify/functions-internal',
-            handler: async () =>
-              Promise.resolve({
-                statusCode: 200,
-                body: 'Internal',
-              }),
-          })
-          .build()
-
-        await pause(WAIT_WRITE)
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withFunction({
+                path: 'hello.js',
+                pathPrefix: '.netlify/functions-internal',
+                handler: async () =>
+                  Promise.resolve({
+                    statusCode: 200,
+                    body: 'Internal',
+                  }),
+              })
+              .build(),
+          'Loaded function hello',
+        )
 
         await tryAndLogOutput(async () => {
           t.expect(
@@ -536,21 +547,22 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('Internal')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
-
-        await builder
-          .withFunction({
-            path: 'hello.js',
-            pathPrefix: '.netlify/functions-internal',
-            handler: async () =>
-              Promise.resolve({
-                statusCode: 200,
-                body: 'Internal updated',
-              }),
-          })
-          .build()
-
-        await waitForLogMatching('Reloaded function hello')
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withFunction({
+                path: 'hello.js',
+                pathPrefix: '.netlify/functions-internal',
+                handler: async () =>
+                  Promise.resolve({
+                    statusCode: 200,
+                    body: 'Internal updated',
+                  }),
+              })
+              .build(),
+          'Reloaded function hello',
+        )
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -603,29 +615,30 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('User')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
-
-        await builder
-          .withFunction({
-            path: 'hello.js',
-            handler: async () =>
-              Promise.resolve({
-                statusCode: 200,
-                body: 'User updated',
-              }),
-          })
-          .withFunction({
-            path: 'hello.js',
-            pathPrefix: '.netlify/functions-internal',
-            handler: async () =>
-              Promise.resolve({
-                statusCode: 200,
-                body: 'Internal updated',
-              }),
-          })
-          .build()
-
-        await waitForLogMatching('Reloaded function hello')
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withFunction({
+                path: 'hello.js',
+                handler: async () =>
+                  Promise.resolve({
+                    statusCode: 200,
+                    body: 'User updated',
+                  }),
+              })
+              .withFunction({
+                path: 'hello.js',
+                pathPrefix: '.netlify/functions-internal',
+                handler: async () =>
+                  Promise.resolve({
+                    statusCode: 200,
+                    body: 'Internal updated',
+                  }),
+              })
+              .build(),
+          'Reloaded function hello',
+        )
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -979,7 +992,8 @@ describe.concurrent('serving functions', () => {
         })
         .build()
 
-      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
           const [responseHelloNameOne, responseHelloNameTwo] = await Promise.all([
             fetch(`http://localhost:${port.toString()}/.netlify/functions/hello?name=one`).then((res) => res.text()),
@@ -989,24 +1003,24 @@ describe.concurrent('serving functions', () => {
           t.expect(responseHelloNameTwo).toEqual('two')
         }, outputBuffer)
 
-        await builder
-          .withContentFiles([
-            {
-              path: 'files/one.json',
-              content: JSON.stringify({ data: 'three' }),
-            },
-            {
-              path: 'files/two.json',
-              content: JSON.stringify({ data: 'four' }),
-            },
-          ])
-          .build()
+        await rebuildAndWaitForReload(
+          { waitForLogMatching },
+          () =>
+            builder
+              .withContentFiles([
+                {
+                  path: 'files/one.json',
+                  content: JSON.stringify({ data: 'three' }),
+                },
+                {
+                  path: 'files/two.json',
+                  content: JSON.stringify({ data: 'four' }),
+                },
+              ])
+              .build(),
+          'Reloaded function hello',
+        )
 
-        // wait for the watcher to rebuild the function
-        const delay = 1000
-        await pause(delay)
-
-        t.expect(outputBuffer.some((buffer) => /.*Reloaded function hello.*/.test(buffer.toString()))).toBe(true)
         await tryAndLogOutput(async () => {
           const [responseHelloNameOne, responseHelloNameTwo] = await Promise.all([
             fetch(`http://localhost:${port.toString()}/.netlify/functions/hello?name=one`).then((res) => res.text()),
