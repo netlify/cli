@@ -5,10 +5,23 @@ import { chalk, log, logAndThrowError, logJson } from '../../utils/command-helpe
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import { createAgentsApi } from './api.js'
+import type { AgentRunner } from './types.js'
 
 interface AgentCommitOptions extends OptionValues {
   branch?: string
   json?: boolean
+}
+
+const pickDefaultBranch = (runner: AgentRunner): { branch: string; reason: string } | null => {
+  const prState = runner.pr_state
+  const hasOpenPr = runner.pr_url && (prState === 'open' || prState === 'draft')
+  if (hasOpenPr && runner.pr_branch) {
+    return { branch: runner.pr_branch, reason: 'updating the existing pull request' }
+  }
+  if (runner.branch) {
+    return { branch: runner.branch, reason: "committing to this agent task's branch" }
+  }
+  return null
 }
 
 export const agentsCommit = async (id: string, options: AgentCommitOptions, command: BaseCommand) => {
@@ -17,19 +30,40 @@ export const agentsCommit = async (id: string, options: AgentCommitOptions, comm
   const api = createAgentsApi(command.netlify)
 
   let targetBranch = options.branch?.trim()
+
   if (!targetBranch) {
-    if (!process.stdin.isTTY) {
-      return logAndThrowError('--branch is required when stdin is not a TTY')
+    const lookupSpinner = startSpinner({ text: 'Looking up agent task...' })
+    let runner: AgentRunner
+    try {
+      runner = await api.getAgentRunner(id)
+      stopSpinner({ spinner: lookupSpinner })
+    } catch (error_) {
+      stopSpinner({ spinner: lookupSpinner, error: true })
+      const error = error_ as Error & { status?: number }
+      if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
+      return logAndThrowError(`Failed to fetch agent task: ${error.message}`)
     }
-    const { branchInput } = await inquirer.prompt<{ branchInput: string }>([
-      {
-        type: 'input',
-        name: 'branchInput',
-        message: 'Which branch should the agent commit to?',
-        validate: (input: string) => (input.trim().length > 0 ? true : 'Branch name is required'),
-      },
-    ])
-    targetBranch = branchInput.trim()
+
+    const suggestion = pickDefaultBranch(runner)
+    if (!suggestion) {
+      return logAndThrowError('Could not determine a target branch. Pass --branch <name>.')
+    }
+
+    if (options.json || !process.stdin.isTTY) {
+      targetBranch = suggestion.branch
+    } else {
+      log(chalk.dim(`Default: ${suggestion.branch} (${suggestion.reason})`))
+      const { branchInput } = await inquirer.prompt<{ branchInput: string }>([
+        {
+          type: 'input',
+          name: 'branchInput',
+          message: 'Which branch should the agent commit to?',
+          default: suggestion.branch,
+          validate: (input: string) => (input.trim().length > 0 ? true : 'Branch name is required'),
+        },
+      ])
+      targetBranch = branchInput.trim()
+    }
   }
 
   const spinner = startSpinner({ text: `Committing to ${targetBranch}...` })

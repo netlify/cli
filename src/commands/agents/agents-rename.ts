@@ -4,6 +4,7 @@ import { chalk, log, logAndThrowError, logJson } from '../../utils/command-helpe
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import { createAgentsApi } from './api.js'
+import { sanitizeRunnerTitle, validateRunnerTitle } from './utils.js'
 
 interface AgentRenameOptions extends OptionValues {
   json?: boolean
@@ -11,15 +12,16 @@ interface AgentRenameOptions extends OptionValues {
 
 export const agentsRename = async (id: string, title: string, options: AgentRenameOptions, command: BaseCommand) => {
   if (!id) return logAndThrowError('Agent task ID is required')
-  const trimmed = title.trim()
-  if (!trimmed) return logAndThrowError('A non-empty title is required')
+  const valid = validateRunnerTitle(title)
+  if (valid !== true) return logAndThrowError(valid)
+  const sanitized = sanitizeRunnerTitle(title)
 
   await command.authenticate()
   const api = createAgentsApi(command.netlify)
 
   const spinner = startSpinner({ text: 'Renaming agent task...' })
   try {
-    const runner = await api.renameAgentRunner(id, trimmed)
+    const runner = await api.renameAgentRunner(id, sanitized)
     stopSpinner({ spinner })
 
     if (options.json) {
@@ -29,7 +31,7 @@ export const agentsRename = async (id: string, title: string, options: AgentRena
 
     log(`${chalk.green('✓')} Agent task renamed.`)
     log(`  Task ID: ${chalk.cyan(runner.id)}`)
-    log(`  Title: ${chalk.cyan(runner.title ?? trimmed)}`)
+    log(`  Title: ${chalk.cyan(runner.title ?? sanitized)}`)
     return runner
   } catch (error_) {
     stopSpinner({ spinner, error: true })

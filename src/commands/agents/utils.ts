@@ -49,6 +49,23 @@ export const validatePrompt = (input: string): true | string => {
   return true
 }
 
+export const TITLE_MAX_LENGTH = 200
+
+const UNICODE_TAG_PATTERN = /[\u{E0000}-\u{E007F}]/gu
+const CONTROL_CHAR_PATTERN = /\p{Cc}/gu
+
+export const sanitizePromptText = (text: string): string => text.replace(UNICODE_TAG_PATTERN, '')
+
+export const sanitizeRunnerTitle = (title: string): string =>
+  sanitizePromptText(title).replace(CONTROL_CHAR_PATTERN, '').trim()
+
+export const validateRunnerTitle = (title: string): true | string => {
+  const sanitized = sanitizeRunnerTitle(title)
+  if (!sanitized) return 'A non-empty title is required'
+  if (sanitized.length > TITLE_MAX_LENGTH) return `Title must be ${TITLE_MAX_LENGTH.toString()} characters or fewer`
+  return true
+}
+
 export const validateAgent = (agent: string): true | string => {
   const validAgents = AVAILABLE_AGENTS.map((entry) => entry.value) as string[]
   if (!validAgents.includes(agent)) {

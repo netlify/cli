@@ -22,10 +22,22 @@ describe('agents:publish command', () => {
     { path: 'accounts', response: [{ slug: 'test-account' }] },
   ]
 
+  const runnerInSync = {
+    ...mockAgentRunner,
+    rebase_available: false,
+    merge_target_available: false,
+    needs_git_sync: false,
+  }
+
   test('should publish to production with --yes', async (t) => {
-    const runnerWithCommit = { ...mockAgentRunner, merge_commit_sha: 'def5678' }
+    const runnerWithCommit = { ...runnerInSync, merge_commit_sha: 'def5678' }
     const routes = [
       ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: runnerInSync,
+      },
       {
         path: 'agent_runners/test_id/publish_to_production',
         method: 'POST' as const,
@@ -50,10 +62,19 @@ describe('agents:publish command', () => {
   })
 
   test('should refuse to publish without --yes when stdin is not a TTY', async (t) => {
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: runnerInSync,
+      },
+    ]
+
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
-      await withMockApi(baseRoutes, async ({ apiUrl }) => {
+      await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:publish', 'test_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
           'Refusing to publish without --yes when stdin is not a TTY',
         )
@@ -65,9 +86,14 @@ describe('agents:publish command', () => {
     const routes = [
       ...baseRoutes,
       {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: runnerInSync,
+      },
+      {
         path: 'agent_runners/test_id/publish_to_production',
         method: 'POST' as const,
-        response: mockAgentRunner,
+        response: runnerInSync,
       },
     ]
 
@@ -79,9 +105,61 @@ describe('agents:publish command', () => {
           ['agents:publish', 'test_id', '--json'],
           getCLIOptions({ apiUrl, builder }),
           true,
-        )) as typeof mockAgentRunner
+        )) as typeof runnerInSync
 
-        expect(cliResponse).toEqual(mockAgentRunner)
+        expect(cliResponse).toEqual(runnerInSync)
+      })
+    })
+  })
+
+  test('should refuse to publish an out-of-date run without --force', async (t) => {
+    const staleRunner = { ...mockAgentRunner, rebase_available: true }
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: staleRunner,
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        await expect(
+          callCli(['agents:publish', 'test_id', '--yes'], getCLIOptions({ apiUrl, builder })),
+        ).rejects.toThrow('Refusing to publish out-of-date run without --force')
+      })
+    })
+  })
+
+  test('should publish an out-of-date run with --force', async (t) => {
+    const staleRunner = { ...mockAgentRunner, rebase_available: true }
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: staleRunner,
+      },
+      {
+        path: 'agent_runners/test_id/publish_to_production',
+        method: 'POST' as const,
+        response: { ...staleRunner, merge_commit_sha: 'abc' },
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const cliResponse = (await callCli(
+          ['agents:publish', 'test_id', '--force', '--yes'],
+          getCLIOptions({ apiUrl, builder }),
+        )) as string
+
+        expect(cliResponse).toContain('Published agent task to production!')
       })
     })
   })
@@ -89,6 +167,11 @@ describe('agents:publish command', () => {
   test('should handle API errors', async (t) => {
     const routes = [
       ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: runnerInSync,
+      },
       {
         path: 'agent_runners/test_id/publish_to_production',
         method: 'POST' as const,

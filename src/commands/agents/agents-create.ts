@@ -15,6 +15,7 @@ import {
   formatBytes,
   formatStatus,
   getAgentName,
+  sanitizePromptText,
   validateAgent,
   validatePrompt,
 } from './utils.js'
@@ -122,7 +123,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
   }
 
   const payload: CreateAgentRunnerPayload = {
-    prompt: finalPrompt,
+    prompt: sanitizePromptText(finalPrompt),
     agent,
     model: options.model,
     branch,

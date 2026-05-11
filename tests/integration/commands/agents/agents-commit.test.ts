@@ -125,14 +125,61 @@ describe('agents:commit command', () => {
     })
   })
 
-  test('should require --branch when stdin is not a TTY', async (t) => {
+  test('should default to runner.branch when --branch is omitted', async (t) => {
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: { ...mockAgentRunner, branch: 'feature-x' },
+      },
+      {
+        path: 'agent_runners/test_id/commit',
+        method: 'POST' as const,
+        response: { ...mockAgentRunner, merge_commit_sha: 'abc' },
+      },
+    ]
+
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
-      await withMockApi(baseRoutes, async ({ apiUrl }) => {
-        await expect(callCli(['agents:commit', 'test_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          '--branch is required when stdin is not a TTY',
-        )
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
+        await callCli(['agents:commit', 'test_id', '--json'], getCLIOptions({ apiUrl, builder }))
+        const commitRequest = requests.find((r) => r.path.endsWith('/commit') && r.method === 'POST')
+        expect(commitRequest?.body).toEqual({ target_branch: 'feature-x' })
+      })
+    })
+  })
+
+  test('should default to runner.pr_branch when an open PR exists', async (t) => {
+    const runnerWithPr = {
+      ...mockAgentRunner,
+      branch: 'feature-x',
+      pr_branch: 'pr-branch',
+      pr_url: 'https://github.com/x/y/pull/1',
+      pr_state: 'open',
+    }
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: runnerWithPr,
+      },
+      {
+        path: 'agent_runners/test_id/commit',
+        method: 'POST' as const,
+        response: { ...runnerWithPr, merge_commit_sha: 'abc' },
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
+        await callCli(['agents:commit', 'test_id', '--json'], getCLIOptions({ apiUrl, builder }))
+        const commitRequest = requests.find((r) => r.path.endsWith('/commit') && r.method === 'POST')
+        expect(commitRequest?.body).toEqual({ target_branch: 'pr-branch' })
       })
     })
   })

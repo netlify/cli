@@ -13,6 +13,7 @@ import {
   formatBytes,
   formatStatus,
   getAgentName,
+  sanitizePromptText,
   validateAgent,
   validatePrompt,
 } from './utils.js'
@@ -83,7 +84,7 @@ export const agentsFollowUp = async (
   }
 
   const payload: CreateAgentRunnerSessionPayload = {
-    prompt: finalPrompt,
+    prompt: sanitizePromptText(finalPrompt),
     agent,
     model: options.model,
     file_keys: attachments.length > 0 ? attachments.map((entry) => entry.fileKey) : undefined,

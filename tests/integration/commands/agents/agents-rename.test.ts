@@ -93,6 +93,49 @@ describe('agents:rename command', () => {
     })
   })
 
+  test('should reject titles longer than 200 chars', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(baseRoutes, async ({ apiUrl }) => {
+        const longTitle = 'a'.repeat(201)
+        await expect(
+          callCli(['agents:rename', 'test_id', longTitle], getCLIOptions({ apiUrl, builder })),
+        ).rejects.toThrow('Title must be 200 characters or fewer')
+      })
+    })
+  })
+
+  test('should strip hidden Unicode tag characters before sending', async (t) => {
+    const renamed = { ...mockAgentRunner, title: 'Clean title' }
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'PATCH' as const,
+        response: renamed,
+        validateRequest: (request: { body: string }) => {
+          const body = JSON.parse(request.body) as { title: string }
+          expect(body.title).toBe('Clean title')
+        },
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const tagChar = String.fromCodePoint(0xe0041)
+        const cliResponse = (await callCli(
+          ['agents:rename', 'test_id', `Clean${tagChar} title`],
+          getCLIOptions({ apiUrl, builder }),
+        )) as string
+
+        expect(cliResponse).toContain('Agent task renamed')
+      })
+    })
+  })
+
   test('should surface 404 when the task is missing', async (t) => {
     const routes = [
       ...baseRoutes,

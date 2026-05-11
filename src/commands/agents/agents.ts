@@ -197,12 +197,14 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .argument('<id>', 'agent task ID')
     .description('Publish an agent task’s changes to production')
     .option('-y, --yes', 'skip confirmation prompt')
+    .option('--force', 'publish even when the run is out of sync with production')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
     .addExamples([
       'netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a',
       'netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a --yes',
+      'netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a --force',
     ])
     .action(async (id: string, options: OptionValues, command: BaseCommand) => {
       const { agentsPublish } = await import('./agents-publish.js')

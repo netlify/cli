@@ -168,7 +168,7 @@ const renderAgentTask = (runner: AgentRunner, sessions: AgentRunnerSession[], co
 
   log()
   log(chalk.bold('Task:'))
-  log(`  Prompt: ${chalk.dim(runner.title ?? 'No title')}`)
+  log(`  Title: ${chalk.dim(runner.title ?? 'No title')}`)
   if (runner.current_task) log(`  Current Task: ${chalk.yellow(runner.current_task)}`)
 
   log()
@@ -204,6 +204,19 @@ const renderAgentTask = (runner: AgentRunner, sessions: AgentRunnerSession[], co
     log(chalk.bold('Branch Commit:'))
     if (runner.merge_commit_sha) log(`  SHA: ${chalk.cyan(runner.merge_commit_sha)}`)
     if (runner.merge_commit_error) log(`  ${chalk.red('Error:')} ${runner.merge_commit_error}`)
+  }
+
+  if (runner.needs_git_sync || runner.rebase_available || runner.merge_target_available) {
+    log()
+    log(chalk.bold('Sync needed:'))
+    if (runner.needs_git_sync) {
+      log(`  ${chalk.yellow('!')} Code origin changed since this run started.`)
+    } else if (runner.merge_target_available) {
+      log(`  ${chalk.yellow('!')} The target branch has new commits.`)
+    } else if (runner.rebase_available) {
+      log(`  ${chalk.yellow('!')} Production has moved on since this run started.`)
+    }
+    log(`  Run: ${chalk.cyan(`netlify agents:sync ${runner.id}`)}`)
   }
 
   log()

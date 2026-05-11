@@ -56,7 +56,7 @@ describe('agents:show command', () => {
         expect(cliResponse).toContain('Site: site-name')
         expect(cliResponse).toContain('Agent: Claude')
         expect(cliResponse).toContain('Branch: main')
-        expect(cliResponse).toContain('Prompt: Create a login form')
+        expect(cliResponse).toContain('Title: Create a login form')
       })
     })
   })
