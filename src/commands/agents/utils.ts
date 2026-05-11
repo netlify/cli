@@ -116,6 +116,11 @@ export const getAgentName = (agent: string): string => {
   return entry ? entry.name : agent
 }
 
+const NETLIFY_WEB_UI = (process.env.NETLIFY_WEB_UI ?? 'https://app.netlify.com').replace(/\/+$/, '')
+
+export const buildAgentDashboardUrl = (siteName: string, agentId: string): string =>
+  `${NETLIFY_WEB_UI}/projects/${siteName}/agent-runs/${agentId}`
+
 export const formatBytes = (bytes: number): string => {
   if (bytes < 1024) return `${bytes.toString()} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`

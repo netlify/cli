@@ -6,7 +6,15 @@ import type BaseCommand from '../base-command.js'
 import { createAgentsApi, type AgentsApi } from './api.js'
 import { TERMINAL_AGENT_STATES, TERMINAL_SESSION_STATES } from './constants.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
-import { formatDate, formatDuration, formatPrState, formatStatus, formatUsage, getAgentName } from './utils.js'
+import {
+  buildAgentDashboardUrl,
+  formatDate,
+  formatDuration,
+  formatPrState,
+  formatStatus,
+  formatUsage,
+  getAgentName,
+} from './utils.js'
 
 interface AgentShowOptions extends OptionValues {
   json?: boolean
@@ -233,7 +241,7 @@ const renderAgentTask = (runner: AgentRunner, sessions: AgentRunnerSession[], co
   if (runner.latest_session_deploy_url) {
     log(`  Open preview: ${chalk.cyan(`netlify agents:open ${runner.id}`)}`)
   }
-  log(`  View in browser: ${chalk.blue(`https://app.netlify.com/projects/${siteInfo.name}/agent-runs/${runner.id}`)}`)
+  log(`  View in browser: ${chalk.blue(buildAgentDashboardUrl(siteInfo.name, runner.id))}`)
 }
 
 const renderSessionInline = (session: AgentRunnerSession, index: number, total: number) => {
@@ -344,7 +352,7 @@ const renderSessionDetail = (session: AgentRunnerSession, runnerId: string, comm
   }
 
   log()
-  log(`  View in browser: ${chalk.blue(`https://app.netlify.com/projects/${siteInfo.name}/agent-runs/${runnerId}`)}`)
+  log(`  View in browser: ${chalk.blue(buildAgentDashboardUrl(siteInfo.name, runnerId))}`)
 }
 
 interface WatchSnapshot {
@@ -390,6 +398,8 @@ const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) 
   log(`${chalk.cyan('Watching')} agent task ${chalk.bold(id)} ${chalk.dim('(Ctrl+C to stop)')}`)
   log()
 
+  const MAX_CONSECUTIVE_FAILURES = 10
+  let consecutiveFailures = 0
   renderer.start()
   try {
     for (;;) {
@@ -408,14 +418,19 @@ const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) 
           api.getAgentRunner(id),
           api.listAgentRunnerSessions(id, { page: 1, per_page: 100, order_by: 'desc' }),
         ])
+        consecutiveFailures = 0
       } catch (error_) {
         const error = error_ as Error & { status?: number }
         if (error.status === 404) {
           renderer.stop()
-          log(chalk.yellow(`! Agent task ${id} is no longer accessible (may have been archived or deleted).`))
-          return lastRunner
+          return logAndThrowError(`Agent task ${id} is no longer accessible (archived or deleted).`)
         }
-        renderer.print(`${chalk.yellow('!')} ${chalk.dim(`poll failed: ${error.message}, retrying`)}`)
+        consecutiveFailures += 1
+        if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+          renderer.stop()
+          return logAndThrowError(`Watch aborted after ${MAX_CONSECUTIVE_FAILURES.toString()} consecutive polling failures: ${error.message}`)
+        }
+        renderer.print(`${chalk.yellow('!')} ${chalk.dim(`poll failed (${consecutiveFailures.toString()}/${MAX_CONSECUTIVE_FAILURES.toString()}): ${error.message}, retrying`)}`)
       }
     }
   } finally {

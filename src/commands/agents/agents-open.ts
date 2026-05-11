@@ -5,6 +5,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import openBrowser from '../../utils/open-browser.js'
 import type BaseCommand from '../base-command.js'
 import { createAgentsApi } from './api.js'
+import { buildAgentDashboardUrl } from './utils.js'
 
 const VALID_TARGETS = ['preview', 'dashboard', 'pr'] as const
 type OpenTarget = (typeof VALID_TARGETS)[number]
@@ -32,7 +33,7 @@ export const agentsOpen = async (
   await command.authenticate()
   const { siteInfo } = command.netlify
   const api = createAgentsApi(command.netlify)
-  const dashboardUrl = `https://app.netlify.com/projects/${siteInfo.name}/agent-runs/${id}`
+  const dashboardUrl = buildAgentDashboardUrl(siteInfo.name, id)
 
   if (target === 'dashboard') {
     return openUrl(dashboardUrl)

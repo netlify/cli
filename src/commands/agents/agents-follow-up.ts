@@ -43,6 +43,9 @@ export const agentsFollowUp = async (
 
   let finalPrompt = promptArg || options.prompt
   if (!finalPrompt) {
+    if (options.json) {
+      return logAndThrowError('A prompt is required. Pass it as the positional argument or via --prompt.')
+    }
     const { promptInput } = await inquirer.prompt<{ promptInput: string }>([
       {
         type: 'input',

@@ -176,7 +176,7 @@ netlify agents:diff
 - `cumulative` (*boolean*) - with --session, show the cumulative diff up through that session
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `no-color` (*boolean*) - disable color in the output
-- `no-strip-binary` (*boolean*) - include raw binary content in the diff (off by default)
+- `no-strip-binary` (*boolean*) - include raw binary content in the diff (binary is stripped by default)
 - `page` (*string*) - page number (1-based)
 - `per-page` (*string*) - files per page (max 100)
 - `debug` (*boolean*) - Print debugging information
@@ -348,6 +348,7 @@ netlify agents:publish
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - publish even when the run is out of sync with production
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
 - `yes` (*boolean*) - skip confirmation prompt
@@ -357,6 +358,7 @@ netlify agents:publish
 ```bash
 netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a
 netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a --yes
+netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a --force
 ```
 
 ---

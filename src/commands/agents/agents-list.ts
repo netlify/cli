@@ -124,7 +124,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
         truncateText(runner.title ?? 'No title', 35),
         baseValue,
         runner.done_at ? formatDuration(runner.created_at, runner.done_at) : formatDuration(runner.created_at),
-        new Date(runner.created_at).toLocaleDateString(),
+        new Date(runner.created_at).toISOString().slice(0, 10),
       )
     }
 

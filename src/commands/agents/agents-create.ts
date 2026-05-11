@@ -11,6 +11,7 @@ import { AVAILABLE_AGENTS, type AvailableAgent } from './constants.js'
 import { uploadAttachments, type UploadedAttachment } from './attachments.js'
 import type { CreateAgentRunnerPayload } from './types.js'
 import {
+  buildAgentDashboardUrl,
   checkModelAvailability,
   formatBytes,
   formatStatus,
@@ -162,7 +163,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     log(chalk.bold('Monitor progress:'))
     log(`  Watch: ${chalk.cyan(`netlify agents:show ${agentRunner.id} --watch`)}`)
     log(`  Show:  ${chalk.cyan(`netlify agents:show ${agentRunner.id}`)}`)
-    log(`  Browser: ${chalk.blue(`https://app.netlify.com/projects/${siteInfo.name}/agent-runs/${agentRunner.id}`)}`)
+    log(`  Browser: ${chalk.blue(buildAgentDashboardUrl(siteInfo.name, agentRunner.id))}`)
     log()
     log(chalk.dim('The agent task runs remotely on Netlify infrastructure and may take a few minutes.'))
 

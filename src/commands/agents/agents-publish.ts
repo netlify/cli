@@ -6,6 +6,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import { createAgentsApi } from './api.js'
 import type { AgentRunner } from './types.js'
+import { buildAgentDashboardUrl } from './utils.js'
 
 interface AgentPublishOptions extends OptionValues {
   json?: boolean
@@ -58,8 +59,11 @@ export const agentsPublish = async (id: string, options: AgentPublishOptions, co
           name: 'action',
           message: 'How would you like to proceed?',
           choices: [
-            { name: 'Sync with production first (recommended)', value: 'sync' },
-            { name: 'Publish anyway', value: 'publish' },
+            {
+              name: 'Sync with production now, then re-run publish manually (recommended)',
+              value: 'sync',
+            },
+            { name: 'Publish anyway (use the current diff as-is)', value: 'publish' },
             { name: 'Cancel', value: 'cancel' },
           ],
           default: 'sync',
@@ -68,9 +72,12 @@ export const agentsPublish = async (id: string, options: AgentPublishOptions, co
       if (action === 'cancel') return exit()
       if (action === 'sync') {
         const { agentsSync } = await import('./agents-sync.js')
-        return agentsSync(id, { yes: true }, command)
+        await agentsSync(id, { yes: true }, command)
+        log()
+        log(chalk.dim(`After the sync completes, re-run: ${chalk.cyan(`netlify agents:publish ${id}`)}`))
+        return
       }
-      // action === 'publish' falls through
+      // action === 'publish' falls through to the publish call below
     } else {
       return logAndThrowError('Refusing to publish out-of-date run without --force')
     }
@@ -109,7 +116,7 @@ export const agentsPublish = async (id: string, options: AgentPublishOptions, co
     log()
     log(`  Task ID: ${chalk.cyan(updated.id)}`)
     if (updated.merge_commit_sha) log(`  Commit: ${chalk.cyan(updated.merge_commit_sha)}`)
-    log(`  Browser: ${chalk.blue(`https://app.netlify.com/projects/${siteInfo.name}/agent-runs/${updated.id}`)}`)
+    log(`  Browser: ${chalk.blue(buildAgentDashboardUrl(siteInfo.name, updated.id))}`)
     return updated
   } catch (error_) {
     stopSpinner({ spinner, error: true })

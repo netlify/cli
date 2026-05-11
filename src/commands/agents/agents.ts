@@ -150,7 +150,7 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .option('--per-page <n>', 'files per page (max 100)')
     .option('--session <sid>', 'show a single session diff instead of the task aggregate')
     .option('--cumulative', 'with --session, show the cumulative diff up through that session')
-    .option('--no-strip-binary', 'include raw binary content in the diff (off by default)')
+    .option('--no-strip-binary', 'include raw binary content in the diff (binary is stripped by default)')
     .option('--no-color', 'disable color in the output')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
