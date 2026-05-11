@@ -40,6 +40,7 @@ export const TERMINAL_AGENT_STATES = ['done', 'error', 'cancelled', 'archived'] 
 export const TERMINAL_SESSION_STATES = ['done', 'error', 'cancelled'] as const
 
 export const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024
+export const MAX_ATTACHMENTS_PER_REQUEST = 20
 
 export type AgentState = (typeof AGENT_STATES)[number]
 export type SessionState = (typeof SESSION_STATES)[number]

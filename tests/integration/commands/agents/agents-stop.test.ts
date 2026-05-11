@@ -147,7 +147,7 @@ describe('agents:stop command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:stop', 'invalid_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to fetch agent task: Not found',
+          'Agent task not found: invalid_id',
         )
       })
     })

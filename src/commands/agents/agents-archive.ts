@@ -47,7 +47,8 @@ export const agentsArchive = async (id: string, options: AgentArchiveOptions, co
     return result
   } catch (error_) {
     stopSpinner({ spinner, error: true })
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
+    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
     return logAndThrowError(`Failed to archive: ${error.message}`)
   }
 }

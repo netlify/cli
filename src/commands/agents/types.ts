@@ -88,6 +88,7 @@ export interface AgentRunnerSession {
   updated_at: string
   done_at?: string
   title?: string
+  current_task?: string
   prompt: string
   agent_config?: AgentConfig
   result?: string

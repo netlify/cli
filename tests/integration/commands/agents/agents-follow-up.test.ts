@@ -171,6 +171,64 @@ describe('agents:follow-up command', () => {
     })
   })
 
+  test('should carry over agent and model from the latest done session', async (t) => {
+    const lastSession = {
+      ...mockAgentSession,
+      id: 'prev_id',
+      state: 'done',
+      agent_config: { agent: 'codex', model: 'gpt-4.1' },
+    }
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id/sessions',
+        method: 'GET' as const,
+        response: [lastSession],
+      },
+      {
+        path: 'agent_runners/test_id/sessions',
+        method: 'POST' as const,
+        response: { ...mockAgentSession, agent_config: { agent: 'codex', model: 'gpt-4.1' } },
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
+        await callCli(['agents:follow-up', 'test_id', 'Update README'], getCLIOptions({ apiUrl, builder }))
+        const sessionRequest = requests.find((r) => r.path.endsWith('/sessions') && r.method === 'POST')
+        expect(sessionRequest?.body).toMatchObject({
+          prompt: 'Update README',
+          agent: 'codex',
+          model: 'gpt-4.1',
+        })
+      })
+    })
+  })
+
+  test('should refuse to send a follow-up while the latest session is still running', async (t) => {
+    const activeSession = { ...mockAgentSession, state: 'running' }
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id/sessions',
+        method: 'GET' as const,
+        response: [activeSession],
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        await expect(
+          callCli(['agents:follow-up', 'test_id', 'Add tests'], getCLIOptions({ apiUrl, builder })),
+        ).rejects.toThrow('Cannot create a follow-up while a session is still active')
+      })
+    })
+  })
+
   test('should require agent ID argument', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()

@@ -39,6 +39,8 @@ const parsePositiveInt = (input: string | undefined, name: string): number | und
   return Number.parseInt(input, 10)
 }
 
+const MAX_PER_PAGE = 100
+
 const buildFilters = (options: AgentListOptions): ListAgentRunnersFilters => {
   const filters: ListAgentRunnersFilters = {}
   if (options.status) {
@@ -52,7 +54,11 @@ const buildFilters = (options: AgentListOptions): ListAgentRunnersFilters => {
   filters.from = toUnixSeconds(options.since)
   filters.to = toUnixSeconds(options.until)
   filters.page = parsePositiveInt(options.page, 'page')
-  filters.per_page = parsePositiveInt(options.perPage, 'per-page')
+  const perPage = parsePositiveInt(options.perPage, 'per-page')
+  if (perPage !== undefined && perPage > MAX_PER_PAGE) {
+    throw new Error(`--per-page must be ${MAX_PER_PAGE.toString()} or fewer (the server caps at ${MAX_PER_PAGE.toString()})`)
+  }
+  filters.per_page = perPage
   return filters
 }
 
@@ -67,6 +73,13 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     filters = buildFilters(options)
   } catch (error_) {
     return logAndThrowError((error_ as Error).message)
+  }
+
+  if (options.account) {
+    const droppedFilters = ['branch', 'since', 'until'].filter((key) => options[key as keyof AgentListOptions])
+    if (droppedFilters.length > 0) {
+      log(chalk.yellow(`⚠ --${droppedFilters.join(', --')} are ignored when --account is set.`))
+    }
   }
 
   const spinner = startSpinner({ text: 'Fetching agent tasks...' })

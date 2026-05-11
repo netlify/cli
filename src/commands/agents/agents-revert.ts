@@ -49,7 +49,8 @@ export const agentsRevert = async (id: string, options: AgentRevertOptions, comm
     return runner
   } catch (error_) {
     stopSpinner({ spinner, error: true })
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
+    if (error.status === 404) return logAndThrowError(`Agent task or session not found: ${id} / ${options.session}`)
     return logAndThrowError(`Failed to revert: ${error.message}`)
   }
 }

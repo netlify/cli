@@ -6,7 +6,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import { createAgentsApi } from './api.js'
 import { uploadAttachments, type UploadedAttachment } from './attachments.js'
-import { type AvailableAgent } from './constants.js'
+import { AVAILABLE_AGENTS, TERMINAL_SESSION_STATES, type AvailableAgent } from './constants.js'
 import type { CreateAgentRunnerSessionPayload } from './types.js'
 import {
   checkModelAvailability,
@@ -56,14 +56,39 @@ export const agentsFollowUp = async (
   const promptValid = validatePrompt(finalPrompt)
   if (promptValid !== true) return logAndThrowError(promptValid)
 
-  let agent: AvailableAgent | undefined
+  let lastSessionAgent: AvailableAgent | undefined
+  let lastSessionModel: string | undefined
+  let recent: import('./types.js').AgentRunnerSession | undefined
+  try {
+    const recentSessions = await api.listAgentRunnerSessions(id, { page: 1, per_page: 1, order_by: 'desc' })
+    if (recentSessions.length > 0) recent = recentSessions[0]
+  } catch {
+    // If lookup fails, fall through and let the create call surface the real error.
+  }
+
+  if (recent && !TERMINAL_SESSION_STATES.includes(recent.state as (typeof TERMINAL_SESSION_STATES)[number])) {
+    log(chalk.yellow('A session is already running on this task. Wait for it to finish or stop it first:'))
+    log(`  ${chalk.cyan(`netlify agents:stop ${id}`)}`)
+    return logAndThrowError('Cannot create a follow-up while a session is still active')
+  }
+
+  if (recent) {
+    const previousAgent = recent.agent_config?.agent
+    if (previousAgent && AVAILABLE_AGENTS.some((entry) => entry.value === previousAgent)) {
+      lastSessionAgent = previousAgent
+    }
+    if (recent.agent_config?.model) lastSessionModel = recent.agent_config.model
+  }
+
+  let agent: AvailableAgent | undefined = lastSessionAgent
   if (options.agent) {
     const valid = validateAgent(options.agent)
     if (valid !== true) return logAndThrowError(valid)
     agent = options.agent as AvailableAgent
   }
-  if (options.model && agent) {
-    const valid = await checkModelAvailability(api, agent, options.model)
+  const model = options.model ?? lastSessionModel
+  if (model && agent) {
+    const valid = await checkModelAvailability(api, agent, model)
     if (valid !== true) log(chalk.yellow(`⚠ ${valid}`))
   }
 
@@ -86,7 +111,7 @@ export const agentsFollowUp = async (
   const payload: CreateAgentRunnerSessionPayload = {
     prompt: sanitizePromptText(finalPrompt),
     agent,
-    model: options.model,
+    model,
     file_keys: attachments.length > 0 ? attachments.map((entry) => entry.fileKey) : undefined,
   }
 
@@ -106,7 +131,7 @@ export const agentsFollowUp = async (
     log(`  Task ID: ${chalk.cyan(id)}`)
     log(`  Session ID: ${chalk.cyan(session.id)}`)
     log(`  Prompt: ${chalk.dim(finalPrompt)}`)
-    if (agent) log(`  Agent: ${chalk.cyan(getAgentName(agent))}${options.model ? ` (${options.model})` : ''}`)
+    if (agent) log(`  Agent: ${chalk.cyan(getAgentName(agent))}${model ? ` (${model})` : ''}`)
     log(`  Status: ${formatStatus(session.state)}`)
     log()
     log(chalk.bold('Monitor progress:'))
@@ -115,7 +140,8 @@ export const agentsFollowUp = async (
     return session
   } catch (error_) {
     stopSpinner({ spinner, error: true })
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
+    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
     if (error.message.toLowerCase().includes('active session')) {
       log()
       log(chalk.yellow('A session is already running on this task. Wait for it to finish or stop it first:'))

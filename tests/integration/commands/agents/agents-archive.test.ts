@@ -84,7 +84,7 @@ describe('agents:archive command', () => {
     })
   })
 
-  test('should handle archive failure', async (t) => {
+  test('should handle archive failure when the task is missing', async (t) => {
     const routes = [
       ...baseRoutes,
       {
@@ -101,7 +101,29 @@ describe('agents:archive command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(
           callCli(['agents:archive', 'test_id', '--yes'], getCLIOptions({ apiUrl, builder })),
-        ).rejects.toThrow('Failed to archive: Not found')
+        ).rejects.toThrow('Agent task not found: test_id')
+      })
+    })
+  })
+
+  test('should surface other archive failures generically', async (t) => {
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id/archive',
+        method: 'POST' as const,
+        status: 500,
+        response: { error: 'something exploded' },
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        await expect(
+          callCli(['agents:archive', 'test_id', '--yes'], getCLIOptions({ apiUrl, builder })),
+        ).rejects.toThrow('Failed to archive: something exploded')
       })
     })
   })

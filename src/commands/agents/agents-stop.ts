@@ -34,7 +34,8 @@ const stopRunner = async (api: ReturnType<typeof createAgentsApi>, id: string, o
     stopSpinner({ spinner: fetchSpinner })
   } catch (error_) {
     stopSpinner({ spinner: fetchSpinner, error: true })
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
+    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
     return logAndThrowError(`Failed to fetch agent task: ${error.message}`)
   }
 
@@ -88,7 +89,8 @@ const stopSession = async (
     stopSpinner({ spinner: fetchSpinner })
   } catch (error_) {
     stopSpinner({ spinner: fetchSpinner, error: true })
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
+    if (error.status === 404) return logAndThrowError(`Agent task or session not found: ${id} / ${sessionId}`)
     return logAndThrowError(`Failed to fetch session: ${error.message}`)
   }
 

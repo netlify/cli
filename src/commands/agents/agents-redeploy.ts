@@ -63,7 +63,8 @@ export const agentsRedeploy = async (id: string, options: AgentRedeployOptions, 
     return session
   } catch (error_) {
     stopSpinner({ spinner, error: true })
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
+    if (error.status === 404) return logAndThrowError(`Agent task or session not found: ${id} / ${sessionId}`)
     return logAndThrowError(`Failed to redeploy: ${error.message}`)
   }
 }

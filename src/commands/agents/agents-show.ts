@@ -246,8 +246,14 @@ const renderSessionInline = (session: AgentRunnerSession, index: number, total: 
   }
   log(`     ${meta.join(' • ')}`)
   log(`     ${chalk.dim('id:')} ${session.id}`)
+  if (session.state === 'running' && session.current_task) {
+    log(`     ${chalk.dim('current:')} ${chalk.yellow(session.current_task)}`)
+  }
   if (session.deploy_url) log(`     ${chalk.dim('preview:')} ${chalk.blue(session.deploy_url)}`)
   if (session.commit_sha) log(`     ${chalk.dim('commit:')} ${chalk.cyan(session.commit_sha)}`)
+  if (session.attached_file_keys && session.attached_file_keys.length > 0) {
+    log(`     ${chalk.dim('attachments:')} ${session.attached_file_keys.length.toString()} file(s)`)
+  }
 
   if (session.steps && session.steps.length > 0) {
     log(`     ${chalk.dim('Steps:')}`)
@@ -357,10 +363,18 @@ const takeSnapshot = (runner: AgentRunner, sessions: AgentRunnerSession[]): Watc
 const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) => {
   const renderer = new WatchRenderer()
   let previous: WatchSnapshot | null = null
-  let [lastRunner, lastSessions] = await Promise.all([
-    api.getAgentRunner(id),
-    api.listAgentRunnerSessions(id, { page: 1, per_page: 100 }),
-  ])
+  let lastRunner: AgentRunner
+  let lastSessions: AgentRunnerSession[]
+  try {
+    ;[lastRunner, lastSessions] = await Promise.all([
+      api.getAgentRunner(id),
+      api.listAgentRunnerSessions(id, { page: 1, per_page: 100, order_by: 'desc' }),
+    ])
+  } catch (error_) {
+    const error = error_ as Error & { status?: number }
+    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
+    return logAndThrowError(`Failed to watch agent task: ${error.message}`)
+  }
 
   log(`${chalk.cyan('Watching')} agent task ${chalk.bold(id)} ${chalk.dim('(Ctrl+C to stop)')}`)
   log()
@@ -384,8 +398,13 @@ const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) 
           api.listAgentRunnerSessions(id, { page: 1, per_page: 100, order_by: 'desc' }),
         ])
       } catch (error_) {
-        const error = error_ as Error
-        renderer.print(`${chalk.yellow('!')} ${chalk.dim(`poll failed: ${error.message} — retrying`)}`)
+        const error = error_ as Error & { status?: number }
+        if (error.status === 404) {
+          renderer.stop()
+          log(chalk.yellow(`! Agent task ${id} is no longer accessible (may have been archived or deleted).`))
+          return lastRunner
+        }
+        renderer.print(`${chalk.yellow('!')} ${chalk.dim(`poll failed: ${error.message}, retrying`)}`)
       }
     }
   } finally {
