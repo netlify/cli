@@ -17,7 +17,10 @@ const cleanupOrphans = async (api: AgentsApi, accountId: string, fileKeys: strin
   await Promise.allSettled(
     fileKeys.map(async (fileKey) => {
       try {
-        const { delete_url: deleteUrl } = await api.createDeleteUrl({ account_id: accountId, file_key: fileKey })
+        const { delete_url: deleteUrl } = await api.createAgentRunnerDeleteUrl({
+          account_id: accountId,
+          file_key: fileKey,
+        })
         await fetch(deleteUrl, { method: 'DELETE' })
       } catch {
         // Best-effort cleanup; if it fails, the orphan is the user's tenant problem.
@@ -60,7 +63,7 @@ export const uploadAttachments = async (
   const uploaded: UploadedAttachment[] = []
   try {
     for (const file of resolved) {
-      const { upload_url: uploadUrl, file_key: fileKey } = await api.createUploadUrl({
+      const { upload_url: uploadUrl, file_key: fileKey } = await api.createAgentRunnerUploadUrl({
         account_id: accountId,
         filename: file.filename,
         content_type: file.contentType,

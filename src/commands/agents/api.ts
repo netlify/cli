@@ -1,3 +1,7 @@
+// TODO: Migrate to @netlify/api once these endpoints are public.
+// They are marked x-internal in bitballoon (#21736).
+// Method names mirror the bitballoon @operation_id to keep the future swap quick.
+
 import type BaseCommand from '../base-command.js'
 import { parseLinkHeader } from './utils.js'
 import type {
@@ -122,7 +126,7 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
     return requestJson<AgentRunner>(`/agent_runners?${params.toString()}`, jsonInit('POST', payload))
   }
 
-  const stopAgentRunner = (id: string): Promise<void> =>
+  const deleteAgentRunner = (id: string): Promise<void> =>
     requestNoContent(`/agent_runners/${id}`, { method: 'DELETE', headers: baseHeaders() })
 
   const archiveAgentRunner = (id: string): Promise<void> =>
@@ -147,7 +151,7 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
   ): Promise<AgentRunnerSession> =>
     requestJson<AgentRunnerSession>(`/agent_runners/${id}/sessions`, jsonInit('POST', payload))
 
-  const stopAgentRunnerSession = (id: string, sessionId: string): Promise<void> =>
+  const deleteAgentRunnerSession = (id: string, sessionId: string): Promise<void> =>
     requestNoContent(`/agent_runners/${id}/sessions/${sessionId}`, {
       method: 'DELETE',
       headers: baseHeaders(),
@@ -187,11 +191,11 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
   const agentRunnerPublishToProduction = (id: string): Promise<AgentRunner> =>
     requestJson<AgentRunner>(`/agent_runners/${id}/publish_to_production`, jsonInit('POST'))
 
-  const agentRunnerRevert = (id: string, sessionId: string): Promise<AgentRunner> =>
+  const revertAgentRunner = (id: string, sessionId: string): Promise<AgentRunner> =>
     requestJson<AgentRunner>(`/agent_runners/${id}/revert`, jsonInit('POST', { session_id: sessionId }))
 
-  const renameAgentRunner = (id: string, title: string): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}`, jsonInit('PATCH', { title }))
+  const updateAgentRunner = (id: string, payload: { title?: string; base_deploy_id?: string }): Promise<AgentRunner> =>
+    requestJson<AgentRunner>(`/agent_runners/${id}`, jsonInit('PATCH', payload))
 
   const rebaseAgentRunner = (id: string): Promise<AgentRunner> =>
     requestJson<AgentRunner>(`/agent_runners/${id}/rebase`, jsonInit('POST'))
@@ -202,14 +206,14 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
   const syncGitOriginAgentRunner = (id: string): Promise<AgentRunner> =>
     requestJson<AgentRunner>(`/agent_runners/${id}/sync_git_origin`, jsonInit('POST'))
 
-  const createUploadUrl = (payload: {
+  const createAgentRunnerUploadUrl = (payload: {
     account_id: string
     filename: string
     content_type: string
   }): Promise<UploadUrlResponse> =>
     requestJson<UploadUrlResponse>(`/agent_runners/upload_url`, jsonInit('POST', payload))
 
-  const createDeleteUrl = (payload: { account_id: string; file_key: string }): Promise<DeleteUrlResponse> =>
+  const createAgentRunnerDeleteUrl = (payload: { account_id: string; file_key: string }): Promise<DeleteUrlResponse> =>
     requestJson<DeleteUrlResponse>(`/agent_runners/delete_url`, jsonInit('POST', payload))
 
   let providersCache: AiGatewayProvidersResponse | null = null
@@ -228,12 +232,13 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
     listAgentRunnersForAccount,
     getAgentRunner,
     createAgentRunner,
-    stopAgentRunner,
+    updateAgentRunner,
+    deleteAgentRunner,
     archiveAgentRunner,
     listAgentRunnerSessions,
     getAgentRunnerSession,
     createAgentRunnerSession,
-    stopAgentRunnerSession,
+    deleteAgentRunnerSession,
     redeployAgentRunnerSession,
     getAgentRunnerDiff,
     getSessionResultDiff: (id: string, sessionId: string) => getSessionDiff(id, sessionId, 'result'),
@@ -241,13 +246,12 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
     agentRunnerPullRequest,
     agentRunnerCommitToBranch,
     agentRunnerPublishToProduction,
-    agentRunnerRevert,
-    renameAgentRunner,
+    revertAgentRunner,
     rebaseAgentRunner,
     mergeTargetAgentRunner,
     syncGitOriginAgentRunner,
-    createUploadUrl,
-    createDeleteUrl,
+    createAgentRunnerUploadUrl,
+    createAgentRunnerDeleteUrl,
     listAiGatewayProviders,
   }
 }

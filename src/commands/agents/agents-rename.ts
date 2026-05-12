@@ -21,7 +21,7 @@ export const agentsRename = async (id: string, title: string, options: AgentRena
 
   const spinner = startSpinner({ text: 'Renaming agent task...' })
   try {
-    const runner = await api.renameAgentRunner(id, sanitized)
+    const runner = await api.updateAgentRunner(id, { title: sanitized })
     stopSpinner({ spinner })
 
     if (options.json) {

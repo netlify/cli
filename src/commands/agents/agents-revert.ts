@@ -35,7 +35,7 @@ export const agentsRevert = async (id: string, options: AgentRevertOptions, comm
 
   const spinner = startSpinner({ text: 'Reverting agent task...' })
   try {
-    const runner = await api.agentRunnerRevert(id, options.session)
+    const runner = await api.revertAgentRunner(id, options.session)
     stopSpinner({ spinner })
 
     if (options.json) {

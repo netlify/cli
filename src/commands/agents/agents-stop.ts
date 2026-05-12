@@ -51,7 +51,7 @@ const stopRunner = async (api: ReturnType<typeof createAgentsApi>, id: string, o
 
   const stopSpin = startSpinner({ text: 'Stopping agent task...' })
   try {
-    await api.stopAgentRunner(id)
+    await api.deleteAgentRunner(id)
     stopSpinner({ spinner: stopSpin })
   } catch (error_) {
     stopSpinner({ spinner: stopSpin, error: true })
@@ -106,7 +106,7 @@ const stopSession = async (
 
   const stopSpin = startSpinner({ text: 'Stopping session...' })
   try {
-    await api.stopAgentRunnerSession(id, sessionId)
+    await api.deleteAgentRunnerSession(id, sessionId)
     stopSpinner({ spinner: stopSpin })
   } catch (error_) {
     stopSpinner({ spinner: stopSpin, error: true })
