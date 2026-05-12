@@ -153,8 +153,13 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
 
     return result.data
   } catch (error_) {
-    const error = error_ as Error
+    const error = error_ as Error & { status?: number }
     stopSpinner({ spinner, error: true })
+    if (options.account && error.status === 404) {
+      return logAndThrowError(
+        `Agent tasks are not available for account "${options.account}". Check that the slug is correct and that your account has access to agent tasks.`,
+      )
+    }
     return logAndThrowError(`Failed to list agent tasks: ${error.message}`)
   }
 }
