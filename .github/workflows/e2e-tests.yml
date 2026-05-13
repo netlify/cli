@@ -92,13 +92,7 @@ jobs:
           cache: npm
           check-latest: true
 
-      # Let corepack manage npm, pnpm, and yarn versions on Windows.
-      - name: Enable corepack (Windows)
-        if: matrix.os == 'windows-2025'
-        run: corepack enable
-
-      - name: Setup pnpm (non-Windows)
-        if: matrix.os != 'windows-2025'
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
