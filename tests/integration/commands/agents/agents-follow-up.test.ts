@@ -42,7 +42,7 @@ describe('agents:follow-up command', () => {
         )) as string
 
         expect(cliResponse).toContain('Follow-up session created!')
-        expect(cliResponse).toContain('Task ID: test_id')
+        expect(cliResponse).toContain('Run ID: test_id')
         expect(cliResponse).toContain('Session ID: session_id')
         expect(cliResponse).toContain('Prompt: Also add tests')
 

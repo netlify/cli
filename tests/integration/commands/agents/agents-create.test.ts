@@ -45,8 +45,8 @@ describe('agents:create command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Agent task created successfully!')
-        expect(cliResponse).toContain('Task ID: agent_runner_id')
+        expect(cliResponse).toContain('Agent run created successfully!')
+        expect(cliResponse).toContain('Run ID: agent_runner_id')
         expect(cliResponse).toContain('Prompt: Create a login form')
         expect(cliResponse).toContain('Agent: Claude')
         expect(cliResponse).toContain('Branch: main')
@@ -111,7 +111,7 @@ describe('agents:create command', () => {
 
         const result = await childProcess
 
-        expect(result.stdout).toContain('Agent task created successfully!')
+        expect(result.stdout).toContain('Agent run created successfully!')
         expect(result.stdout).toContain('Prompt: Build a contact form')
         const post = requests.find((r) => r.method === 'POST' && r.path.endsWith('/agent_runners'))
         expect(post?.body).toMatchObject({ prompt: 'Build a contact form', branch: 'main' })
@@ -208,8 +208,8 @@ describe('agents:create command', () => {
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'zip_site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
 
-        expect(stdout).toContain('Agent task created successfully!')
-        expect(stdout).toContain('Task ID: agent_runner_no_repo_id')
+        expect(stdout).toContain('Agent run created successfully!')
+        expect(stdout).toContain('Run ID: agent_runner_no_repo_id')
         expect(stdout).toContain('Prompt: Add a contact form')
         expect(stdout).toContain('Agent: Claude')
         expect(stdout).toContain('Base: Latest production deployment')
@@ -244,7 +244,7 @@ describe('agents:create command', () => {
           },
         )
 
-        expect(stdout).toContain('Agent task created successfully!')
+        expect(stdout).toContain('Agent run created successfully!')
         expect(stdout).toContain('Branch: feature-branch')
         expect(stdout).not.toContain('Base: Latest production deployment')
         const post = requests.find((r) => r.method === 'POST' && r.path.endsWith('/agent_runners'))
@@ -281,7 +281,7 @@ describe('agents:create command', () => {
 
         const result = await childProcess
 
-        expect(result.stdout).toContain('Agent task created successfully!')
+        expect(result.stdout).toContain('Agent run created successfully!')
         expect(result.stdout).toContain('Branch: develop')
         const post = requests.find((r) => r.method === 'POST' && r.path.endsWith('/agent_runners'))
         expect(post?.body).toMatchObject({ branch: 'develop' })

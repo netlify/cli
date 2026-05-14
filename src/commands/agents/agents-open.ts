@@ -22,7 +22,7 @@ export const agentsOpen = async (
   _options: AgentOpenOptions,
   command: BaseCommand,
 ) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
 
   const candidate = targetArg ?? 'preview'
   if (!isOpenTarget(candidate)) {
@@ -39,7 +39,7 @@ export const agentsOpen = async (
     return openUrl(dashboardUrl)
   }
 
-  const spinner = startSpinner({ text: 'Looking up agent task...' })
+  const spinner = startSpinner({ text: 'Looking up agent run...' })
   let runner
   try {
     runner = await api.getAgentRunner(id)
@@ -47,8 +47,8 @@ export const agentsOpen = async (
   } catch (error_) {
     stopSpinner({ spinner, error: true })
     const error = error_ as Error & { status?: number }
-    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
-    return logAndThrowError(`Failed to fetch agent task: ${error.message}`)
+    if (error.status === 404) return logAndThrowError(`Agent run not found: ${id}`)
+    return logAndThrowError(`Failed to fetch agent run: ${error.message}`)
   }
 
   if (target === 'pr') {
@@ -62,7 +62,7 @@ export const agentsOpen = async (
       log(`Retry with: ${chalk.cyan(`netlify agents:pr ${id}`)}`)
       return
     }
-    log(chalk.yellow('No pull request exists for this agent task.'))
+    log(chalk.yellow('No pull request exists for this agent run.'))
     log(`Create one with: ${chalk.cyan(`netlify agents:pr ${id}`)}`)
     return
   }

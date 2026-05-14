@@ -89,7 +89,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     }
   }
 
-  const spinner = startSpinner({ text: 'Fetching agent tasks...' })
+  const spinner = startSpinner({ text: 'Fetching agent runs...' })
 
   try {
     const result = options.account
@@ -111,16 +111,16 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
 
     if (result.data.length === 0) {
       const emptyScope = options.account ? `account ${options.account}` : 'this site'
-      log(chalk.yellow(`No agent tasks found for ${emptyScope}.`))
+      log(chalk.yellow(`No agent runs found for ${emptyScope}.`))
       log()
-      log(`Create your first agent task with:`)
+      log(`Create your first agent run with:`)
       log(`  ${chalk.cyan('netlify agents:create')}`)
       return result.data
     }
 
     const isGitBased = Boolean(siteInfo.build_settings?.repo_branch)
     const scope = options.account ? `account ${options.account}` : siteInfo.name
-    const table = new AsciiTable(`Agent Tasks for ${scope}`)
+    const table = new AsciiTable(`Agent Runs for ${scope}`)
     // Account-wide listing spans multiple sites, so we can't infer a single base column from the linked site.
     const baseColumnLabel = options.account ? 'BRANCH/BASE' : isGitBased ? 'BRANCH' : 'BASE'
     table.setHeading('ID', 'STATUS', 'PROMPT', baseColumnLabel, 'DURATION', 'CREATED')
@@ -157,10 +157,10 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     stopSpinner({ spinner, error: true })
     if (options.account && error.status === 404) {
       return logAndThrowError(
-        `Agent tasks are not available for account "${options.account}". Check that the slug is correct and that your account has access to agent tasks.`,
+        `Agent runs are not available for account "${options.account}". Check that the slug is correct and that your account has access to agent runs.`,
       )
     }
-    return logAndThrowError(`Failed to list agent tasks: ${error.message}`)
+    return logAndThrowError(`Failed to list agent runs: ${error.message}`)
   }
 }
 
@@ -188,9 +188,9 @@ const formatPaginationFooter = (
   if (total != null) {
     const start = (page - 1) * perPage + 1
     const end = (page - 1) * perPage + shown
-    lines.push(`Showing ${start.toString()}-${end.toString()} of ${total.toString()} task(s)`)
+    lines.push(`Showing ${start.toString()}-${end.toString()} of ${total.toString()} run(s)`)
   } else {
-    lines.push(`Showing ${shown.toString()} task(s)`)
+    lines.push(`Showing ${shown.toString()} run(s)`)
   }
   if (hasNext) {
     lines.push(`Use --page ${(page + 1).toString()} to see the next page`)

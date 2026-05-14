@@ -32,7 +32,7 @@ export const agentsFollowUp = async (
   options: AgentFollowUpOptions,
   command: BaseCommand,
 ) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
   await command.authenticate()
   const { siteInfo } = command.netlify
   const api = createAgentsApi(command.netlify)
@@ -70,7 +70,7 @@ export const agentsFollowUp = async (
   }
 
   if (recent && !TERMINAL_SESSION_STATES.includes(recent.state as (typeof TERMINAL_SESSION_STATES)[number])) {
-    log(chalk.yellow('A session is already running on this task. Wait for it to finish or stop it first:'))
+    log(chalk.yellow('A session is already running on this run. Wait for it to finish or stop it first:'))
     log(`  ${chalk.cyan(`netlify agents:stop ${id}`)}`)
     return logAndThrowError('Cannot create a follow-up while a session is still active')
   }
@@ -131,7 +131,7 @@ export const agentsFollowUp = async (
     log(`${chalk.green('✓')} Follow-up session created!`)
     log()
     log(chalk.bold('Details:'))
-    log(`  Task ID: ${chalk.cyan(id)}`)
+    log(`  Run ID: ${chalk.cyan(id)}`)
     log(`  Session ID: ${chalk.cyan(session.id)}`)
     log(`  Prompt: ${chalk.dim(finalPrompt)}`)
     if (agent) log(`  Agent: ${chalk.cyan(getAgentName(agent))}${model ? ` (${model})` : ''}`)
@@ -144,10 +144,10 @@ export const agentsFollowUp = async (
   } catch (error_) {
     stopSpinner({ spinner, error: true })
     const error = error_ as Error & { status?: number }
-    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
+    if (error.status === 404) return logAndThrowError(`Agent run not found: ${id}`)
     if (error.message.toLowerCase().includes('active session')) {
       log()
-      log(chalk.yellow('A session is already running on this task. Wait for it to finish or stop it first:'))
+      log(chalk.yellow('A session is already running on this run. Wait for it to finish or stop it first:'))
       log(`  ${chalk.cyan(`netlify agents:stop ${id}`)}`)
     }
     return logAndThrowError(`Failed to send follow-up: ${error.message}`)

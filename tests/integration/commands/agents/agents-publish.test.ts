@@ -54,8 +54,8 @@ describe('agents:publish command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Published agent task to production!')
-        expect(cliResponse).toContain('Task ID: agent_runner_id')
+        expect(cliResponse).toContain('Published agent run to production!')
+        expect(cliResponse).toContain('Run ID: agent_runner_id')
         expect(cliResponse).toContain('Commit: def5678')
       })
     })
@@ -159,7 +159,7 @@ describe('agents:publish command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Published agent task to production!')
+        expect(cliResponse).toContain('Published agent run to production!')
       })
     })
   })

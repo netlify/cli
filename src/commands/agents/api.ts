@@ -2,7 +2,7 @@
 // They are marked x-internal in bitballoon (#21736).
 // Method names mirror the bitballoon @operation_id to keep the future swap quick.
 
-import type BaseCommand from '../base-command.js'
+import type { NetlifyOptions } from '../types.js'
 import { parseLinkHeader } from './utils.js'
 import type {
   AgentRunner,
@@ -17,8 +17,6 @@ import type {
   PaginatedResult,
   UploadUrlResponse,
 } from './types.js'
-
-type NetlifyContext = BaseCommand['netlify']
 
 const DEFAULT_PER_PAGE = 100
 
@@ -43,9 +41,9 @@ const readPagination = (response: Response, page: number, perPage: number): { to
   return { total: Number.isFinite(total) ? total : undefined, hasNext }
 }
 
-export const createAgentsApi = (netlify: NetlifyContext) => {
+export const createAgentsApi = (netlify: NetlifyOptions) => {
   const { api, apiOpts } = netlify
-  const baseUrl = `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1`
+  const baseUrl = api.basePath
 
   const baseHeaders = (extra: Record<string, string> = {}): Record<string, string> => ({
     Authorization: `Bearer ${api.accessToken ?? ''}`,
@@ -151,12 +149,6 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
   ): Promise<AgentRunnerSession> =>
     requestJson<AgentRunnerSession>(`/agent_runners/${id}/sessions`, jsonInit('POST', payload))
 
-  const deleteAgentRunnerSession = (id: string, sessionId: string): Promise<void> =>
-    requestNoContent(`/agent_runners/${id}/sessions/${sessionId}`, {
-      method: 'DELETE',
-      headers: baseHeaders(),
-    })
-
   const redeployAgentRunnerSession = (id: string, sessionId: string): Promise<AgentRunnerSession> =>
     requestJson<AgentRunnerSession>(`/agent_runners/${id}/sessions/${sessionId}/redeploy`, jsonInit('POST'))
 
@@ -238,7 +230,6 @@ export const createAgentsApi = (netlify: NetlifyContext) => {
     listAgentRunnerSessions,
     getAgentRunnerSession,
     createAgentRunnerSession,
-    deleteAgentRunnerSession,
     redeployAgentRunnerSession,
     getAgentRunnerDiff,
     getSessionResultDiff: (id: string, sessionId: string) => getSessionDiff(id, sessionId, 'result'),

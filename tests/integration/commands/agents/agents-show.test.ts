@@ -50,8 +50,8 @@ describe('agents:show command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:show', 'test_id'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent Task Details')
-        expect(cliResponse).toContain('Task ID: agent_runner_id')
+        expect(cliResponse).toContain('Agent Run Details')
+        expect(cliResponse).toContain('Run ID: agent_runner_id')
         expect(cliResponse).toContain('Status: NEW')
         expect(cliResponse).toContain('Site: site-name')
         expect(cliResponse).toContain('Agent: Claude')
@@ -107,7 +107,7 @@ describe('agents:show command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:show', 'invalid_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Agent task not found: invalid_id',
+          'Agent run not found: invalid_id',
         )
       })
     })
@@ -141,7 +141,7 @@ describe('agents:show command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:show', 'test_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to show agent task: Unauthorized',
+          'Failed to show agent run: Unauthorized',
         )
       })
     })
@@ -189,8 +189,8 @@ describe('agents:show command', () => {
           getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: 'zip_site_id' } }),
         )) as string
 
-        expect(cliResponse).toContain('Agent Task Details')
-        expect(cliResponse).toContain('Task ID: agent_runner_no_repo_id')
+        expect(cliResponse).toContain('Agent Run Details')
+        expect(cliResponse).toContain('Run ID: agent_runner_no_repo_id')
         expect(cliResponse).toContain('Base: Latest production deployment')
         expect(cliResponse).not.toContain('Branch:')
         expect(cliResponse).not.toContain('Result Branch:')
@@ -220,8 +220,8 @@ describe('agents:show command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Agent Task Details')
-        expect(cliResponse).toContain('Task ID: agent_runner_id')
+        expect(cliResponse).toContain('Agent Run Details')
+        expect(cliResponse).toContain('Run ID: agent_runner_id')
         expect(cliResponse).toContain('Branch: main')
         expect(cliResponse).not.toContain('Base: Latest production deployment')
       })

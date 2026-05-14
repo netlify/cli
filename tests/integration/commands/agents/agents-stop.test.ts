@@ -48,8 +48,8 @@ describe('agents:stop command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Agent task stopped successfully!')
-        expect(cliResponse).toContain('Task ID: test_id')
+        expect(cliResponse).toContain('Agent run stopped successfully!')
+        expect(cliResponse).toContain('Run ID: test_id')
         expect(cliResponse).toContain('Previous Status: RUNNING')
         expect(cliResponse).toContain('New Status: CANCELLED')
       })
@@ -73,7 +73,7 @@ describe('agents:stop command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:stop', 'test_id'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent task is already done')
+        expect(cliResponse).toContain('Agent run is already done')
       })
     })
   })
@@ -95,7 +95,7 @@ describe('agents:stop command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:stop', 'test_id'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent task is already cancelled')
+        expect(cliResponse).toContain('Agent run is already cancelled')
       })
     })
   })
@@ -147,7 +147,7 @@ describe('agents:stop command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:stop', 'invalid_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Agent task not found: invalid_id',
+          'Agent run not found: invalid_id',
         )
       })
     })
@@ -181,7 +181,7 @@ describe('agents:stop command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:stop', 'test_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to fetch agent task: Unauthorized',
+          'Failed to fetch agent run: Unauthorized',
         )
       })
     })

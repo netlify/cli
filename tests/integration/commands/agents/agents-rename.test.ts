@@ -22,7 +22,7 @@ describe('agents:rename command', () => {
     { path: 'accounts', response: [{ slug: 'test-account' }] },
   ]
 
-  test('should rename an agent task', async (t) => {
+  test('should rename an agent run', async (t) => {
     const renamed = { ...mockAgentRunner, title: 'New title' }
     const routes = [
       ...baseRoutes,
@@ -42,7 +42,7 @@ describe('agents:rename command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Agent task renamed.')
+        expect(cliResponse).toContain('Agent run renamed.')
         expect(cliResponse).toContain('Title: New title')
         const patch = requests.find((r) => r.method === 'PATCH' && r.path.endsWith('/agent_runners/test_id'))
         expect(patch?.body).toEqual({ title: 'New title' })
@@ -123,7 +123,7 @@ describe('agents:rename command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Agent task renamed')
+        expect(cliResponse).toContain('Agent run renamed')
         const patch = requests.find((r) => r.method === 'PATCH' && r.path.endsWith('/agent_runners/test_id'))
         expect(patch?.body).toEqual({ title: 'Clean title' })
       })
@@ -147,7 +147,7 @@ describe('agents:rename command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(
           callCli(['agents:rename', 'missing_id', 'Title'], getCLIOptions({ apiUrl, builder })),
-        ).rejects.toThrow('Agent task not found: missing_id')
+        ).rejects.toThrow('Agent run not found: missing_id')
       })
     })
   })

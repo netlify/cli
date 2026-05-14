@@ -13,7 +13,7 @@ interface AgentRevertOptions extends OptionValues {
 }
 
 export const agentsRevert = async (id: string, options: AgentRevertOptions, command: BaseCommand) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
   if (!options.session) return logAndThrowError('--session <id> is required: revert targets a specific session')
   await command.authenticate()
   const api = createAgentsApi(command.netlify)
@@ -26,14 +26,14 @@ export const agentsRevert = async (id: string, options: AgentRevertOptions, comm
       {
         type: 'confirm',
         name: 'confirmed',
-        message: `Revert agent task ${id} to session ${options.session}? Sessions after that will be discarded.`,
+        message: `Revert agent run ${id} to session ${options.session}? Sessions after that will be discarded.`,
         default: false,
       },
     ])
     if (!confirmed) return exit()
   }
 
-  const spinner = startSpinner({ text: 'Reverting agent task...' })
+  const spinner = startSpinner({ text: 'Reverting agent run...' })
   try {
     const runner = await api.revertAgentRunner(id, options.session)
     stopSpinner({ spinner })
@@ -43,14 +43,14 @@ export const agentsRevert = async (id: string, options: AgentRevertOptions, comm
       return runner
     }
 
-    log(`${chalk.green('✓')} Agent task reverted!`)
-    log(`  Task ID: ${chalk.cyan(runner.id)}`)
+    log(`${chalk.green('✓')} Agent run reverted!`)
+    log(`  Run ID: ${chalk.cyan(runner.id)}`)
     log(`  Reverted to session: ${chalk.cyan(options.session)}`)
     return runner
   } catch (error_) {
     stopSpinner({ spinner, error: true })
     const error = error_ as Error & { status?: number }
-    if (error.status === 404) return logAndThrowError(`Agent task or session not found: ${id} / ${options.session}`)
+    if (error.status === 404) return logAndThrowError(`Agent run or session not found: ${id} / ${options.session}`)
     return logAndThrowError(`Failed to revert: ${error.message}`)
   }
 }

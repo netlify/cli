@@ -41,7 +41,7 @@ describe('agents:revert command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Agent task reverted!')
+        expect(cliResponse).toContain('Agent run reverted!')
         expect(cliResponse).toContain('Reverted to session: session_id')
 
         const revertRequest = requests.find((r) => r.path.endsWith('/revert') && r.method === 'POST')

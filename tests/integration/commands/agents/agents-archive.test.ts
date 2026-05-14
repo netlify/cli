@@ -22,7 +22,7 @@ describe('agents:archive command', () => {
     { path: 'accounts', response: [{ slug: 'test-account' }] },
   ]
 
-  test('should archive an agent task with --yes', async (t) => {
+  test('should archive an agent run with --yes', async (t) => {
     const routes = [
       ...baseRoutes,
       {
@@ -41,8 +41,8 @@ describe('agents:archive command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Agent task archived.')
-        expect(cliResponse).toContain('Task ID: test_id')
+        expect(cliResponse).toContain('Agent run archived.')
+        expect(cliResponse).toContain('Run ID: test_id')
       })
     })
   })
@@ -101,7 +101,7 @@ describe('agents:archive command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(
           callCli(['agents:archive', 'test_id', '--yes'], getCLIOptions({ apiUrl, builder })),
-        ).rejects.toThrow('Agent task not found: test_id')
+        ).rejects.toThrow('Agent run not found: test_id')
       })
     })
   })

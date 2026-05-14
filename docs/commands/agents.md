@@ -2,16 +2,16 @@
 title: Netlify CLI agents command
 sidebar:
   label: agents
-description: Manage Netlify AI agent tasks for automated development workflows
+description: Manage Netlify AI agent runs for automated development workflows
 ---
 
 # `agents`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Manage Netlify AI agent tasks
+Manage Netlify AI agent runs
 The `agents` command will help you run AI agents on your Netlify sites to automate development tasks
 
-Note: Agent tasks execute remotely on Netlify infrastructure, not locally.
+Note: Agent runs execute remotely on Netlify infrastructure, not locally.
 
 **Usage**
 
@@ -21,27 +21,27 @@ netlify agents
 
 **Flags**
 
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`agents:archive`](/commands/agents#agentsarchive) | Archive an agent task  |
-| [`agents:commit`](/commands/agents#agentscommit) | Commit an agent task’s changes directly to a branch  |
-| [`agents:create`](/commands/agents#agentscreate) | Create and run a new agent task on your site  |
-| [`agents:diff`](/commands/agents#agentsdiff) | Print the unified diff produced by an agent task  |
-| [`agents:follow-up`](/commands/agents#agentsfollow-up) | Send a follow-up prompt to an existing agent task  |
-| [`agents:list`](/commands/agents#agentslist) | List agent tasks for the current site  |
-| [`agents:open`](/commands/agents#agentsopen) | Open the agent task preview, dashboard, or pull request in a browser  |
-| [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent task  |
-| [`agents:publish`](/commands/agents#agentspublish) | Publish an agent task’s changes to production  |
-| [`agents:redeploy`](/commands/agents#agentsredeploy) | Create a redeploy session that reapplies an existing diff (no AI inference)  |
-| [`agents:rename`](/commands/agents#agentsrename) | Rename an agent task  |
-| [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent task to a specific session (sessions after it are discarded)  |
-| [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent task  |
-| [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent task or session  |
-| [`agents:sync`](/commands/agents#agentssync) | Sync an agent task with the latest production code or remote git origin  |
+| [`agents:archive`](/commands/agents#agentsarchive) | Archive an agent run  |
+| [`agents:commit`](/commands/agents#agentscommit) | Commit an agent run’s changes directly to a branch  |
+| [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
+| [`agents:diff`](/commands/agents#agentsdiff) | Print the code changes produced by an agent run  |
+| [`agents:follow-up`](/commands/agents#agentsfollow-up) | Send a follow-up prompt to an existing agent run  |
+| [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
+| [`agents:open`](/commands/agents#agentsopen) | Open the agent run preview, dashboard, or pull request in a browser  |
+| [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent run  |
+| [`agents:publish`](/commands/agents#agentspublish) | Publish an agent run’s changes to production  |
+| [`agents:redeploy`](/commands/agents#agentsredeploy) | Redeploy an agent run by reapplying its existing changes (no AI inference)  |
+| [`agents:rename`](/commands/agents#agentsrename) | Rename an agent run  |
+| [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent run to a specific session (sessions after it are discarded)  |
+| [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
+| [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
+| [`agents:sync`](/commands/agents#agentssync) | Bring an agent run up to date with the latest code from its base branch  |
 
 
 **Examples**
@@ -58,7 +58,7 @@ netlify agents:open 60c7c3b3e7b4a0001f5e4b3a
 ---
 ## `agents:archive`
 
-Archive an agent task
+Archive an agent run
 
 **Usage**
 
@@ -68,16 +68,16 @@ netlify agents:archive
 
 **Arguments**
 
-- id - agent task ID
+- id - agent run ID
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
 - `yes` (*boolean*) - skip confirmation prompt
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -89,7 +89,7 @@ netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a --yes
 ---
 ## `agents:commit`
 
-Commit an agent task’s changes directly to a branch
+Commit an agent run’s changes directly to a branch
 
 **Usage**
 
@@ -99,15 +99,15 @@ netlify agents:commit
 
 **Arguments**
 
-- id - agent task ID
+- id - agent run ID
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `branch` (*string*) - target branch to commit to
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `project` (*string*) - project ID or name (if not in a linked directory)
 
 **Examples**
@@ -119,7 +119,7 @@ netlify agents:commit 60c7c3b3e7b4a0001f5e4b3a --branch staging
 ---
 ## `agents:create`
 
-Create and run a new agent task on your site
+Create and start a new agent run on your site
 
 **Usage**
 
@@ -140,7 +140,7 @@ netlify agents:create
 - `from-deploy` (*string*) - start the agent from a specific deploy (mutually exclusive with --branch)
 - `json` (*boolean*) - output result as JSON
 - `model` (*string*) - model to use for the agent
-- `parent` (*string*) - chain this agent task off of another agent task
+- `parent` (*string*) - chain this agent run off of another agent run
 - `project` (*string*) - project ID or name (if not in a linked directory)
 - `prompt` (*string*) - agent prompt
 - `debug` (*boolean*) - Print debugging information
@@ -159,7 +159,7 @@ netlify agents:create "Triage this error" --attach error.log --attach screenshot
 ---
 ## `agents:diff`
 
-Print the unified diff produced by an agent task
+Print the code changes produced by an agent run
 
 **Usage**
 
@@ -169,7 +169,7 @@ netlify agents:diff
 
 **Arguments**
 
-- id - agent task ID
+- id - agent run ID
 
 **Flags**
 
@@ -182,7 +182,7 @@ netlify agents:diff
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `project` (*string*) - project ID or name (if not in a linked directory)
-- `session` (*string*) - show a single session diff instead of the task aggregate
+- `session` (*string*) - show a single session diff instead of the run aggregate
 
 **Examples**
 
@@ -196,7 +196,7 @@ netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --no-color | less
 ---
 ## `agents:follow-up`
 
-Send a follow-up prompt to an existing agent task
+Send a follow-up prompt to an existing agent run
 
 **Usage**
 
@@ -206,7 +206,7 @@ netlify agents:follow-up
 
 **Arguments**
 
-- id - agent task ID to follow up on
+- id - agent run ID to follow up on
 - prompt - the follow-up prompt
 
 **Flags**
@@ -231,7 +231,7 @@ netlify agents:follow-up 60c7c3b3e7b4a0001f5e4b3a -p "Fix the lint error"
 ---
 ## `agents:list`
 
-List agent tasks for the current site
+List agent runs for the current site
 
 **Usage**
 
@@ -241,7 +241,7 @@ netlify agents:list
 
 **Flags**
 
-- `account` (*string*) - list tasks across an account instead of just this site
+- `account` (*string*) - list runs across an account instead of just this site
 - `branch` (*string*) - filter by branch
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
@@ -249,12 +249,12 @@ netlify agents:list
 - `page` (*string*) - page number (1-based)
 - `per-page` (*string*) - items per page (max 100)
 - `project` (*string*) - project ID or name (if not in a linked directory)
-- `since` (*string*) - only show tasks created on or after this ISO timestamp
+- `since` (*string*) - only show runs created on or after this ISO timestamp
 - `status` (*string*) - filter by status (running, done, error, archived)
 - `title` (*string*) - filter by title (case-insensitive contains)
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `until` (*string*) - only show tasks created on or before this ISO timestamp
+- `until` (*string*) - only show runs created on or before this ISO timestamp
 - `user` (*string*) - filter by user ID
 
 **Examples**
@@ -271,7 +271,7 @@ netlify agents:list --ndjson
 ---
 ## `agents:open`
 
-Open the agent task preview, dashboard, or pull request in a browser
+Open the agent run preview, dashboard, or pull request in a browser
 
 **Usage**
 
@@ -281,15 +281,15 @@ netlify agents:open
 
 **Arguments**
 
-- id - agent task ID to open
+- id - agent run ID to open
 - target - what to open: preview (default), dashboard, or pr
 
 **Flags**
 
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `project` (*string*) - project ID or name (if not in a linked directory)
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `project` (*string*) - project ID or name (if not in a linked directory)
 
 **Examples**
 
@@ -302,7 +302,7 @@ netlify agents:open 60c7c3b3e7b4a0001f5e4b3a pr
 ---
 ## `agents:pr`
 
-Open a pull request for an agent task
+Open a pull request for an agent run
 
 **Usage**
 
@@ -312,15 +312,15 @@ netlify agents:pr
 
 **Arguments**
 
-- id - agent task ID
+- id - agent run ID
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -331,7 +331,7 @@ netlify agents:pr 60c7c3b3e7b4a0001f5e4b3a
 ---
 ## `agents:publish`
 
-Publish an agent task’s changes to production
+Publish an agent run’s changes to production
 
 **Usage**
 
@@ -341,17 +341,17 @@ netlify agents:publish
 
 **Arguments**
 
-- id - agent task ID
+- id - agent run ID
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - publish even when the run is out of sync with production
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
 - `yes` (*boolean*) - skip confirmation prompt
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -364,7 +364,7 @@ netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a --force
 ---
 ## `agents:redeploy`
 
-Create a redeploy session that reapplies an existing diff (no AI inference)
+Redeploy an agent run by reapplying its existing changes (no AI inference)
 
 **Usage**
 
@@ -374,16 +374,16 @@ netlify agents:redeploy
 
 **Arguments**
 
-- id - agent task ID
+- id - agent run ID
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
 - `session` (*string*) - redeploy a specific session (defaults to the latest completed one)
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -395,7 +395,7 @@ netlify agents:redeploy 60c7c3b3e7b4a0001f5e4b3a --session 70d8...
 ---
 ## `agents:rename`
 
-Rename an agent task
+Rename an agent run
 
 **Usage**
 
@@ -405,16 +405,16 @@ netlify agents:rename
 
 **Arguments**
 
-- id - agent task ID
-- title - new title for the agent task
+- id - agent run ID
+- title - new title for the agent run
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -425,7 +425,7 @@ netlify agents:rename 60c7c3b3e7b4a0001f5e4b3a "Add dark mode toggle"
 ---
 ## `agents:revert`
 
-Revert an agent task to a specific session (sessions after it are discarded)
+Revert an agent run to a specific session (sessions after it are discarded)
 
 **Usage**
 
@@ -435,17 +435,17 @@ netlify agents:revert
 
 **Arguments**
 
-- id - agent task ID
+- id - agent run ID
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
 - `session` (*string*) - session ID to revert to
 - `yes` (*boolean*) - skip confirmation prompt
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -456,7 +456,7 @@ netlify agents:revert 60c7c3b3e7b4a0001f5e4b3a --session 70d8...
 ---
 ## `agents:show`
 
-Show details of a specific agent task
+Show details of a specific agent run
 
 **Usage**
 
@@ -466,17 +466,17 @@ netlify agents:show
 
 **Arguments**
 
-- id - agent task ID to show
+- id - agent run ID to show
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
-- `session` (*string*) - show details of a specific session within the task
-- `watch` (*boolean*) - poll until the task reaches a terminal state
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `session` (*string*) - show details of a specific session within the run
+- `watch` (*boolean*) - poll until the run reaches a terminal state
 
 **Examples**
 
@@ -489,7 +489,7 @@ netlify agents:show 60c7c3b3e7b4a0001f5e4b3a --session 70d8...
 ---
 ## `agents:stop`
 
-Stop a running agent task or session
+Stop a running agent run
 
 **Usage**
 
@@ -499,29 +499,28 @@ netlify agents:stop
 
 **Arguments**
 
-- id - agent task ID to stop
+- id - agent run ID to stop
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
-- `session` (*string*) - stop a single session instead of the entire task
 - `yes` (*boolean*) - skip confirmation prompt
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
 ```bash
 netlify agents:stop 60c7c3b3e7b4a0001f5e4b3a
-netlify agents:stop 60c7c3b3e7b4a0001f5e4b3a --session 70d8... --yes
+netlify agents:stop 60c7c3b3e7b4a0001f5e4b3a --yes
 ```
 
 ---
 ## `agents:sync`
 
-Sync an agent task with the latest production code or remote git origin
+Bring an agent run up to date with the latest code from its base branch
 
 **Usage**
 
@@ -531,16 +530,16 @@ netlify agents:sync
 
 **Arguments**
 
-- id - agent task ID
+- id - agent run ID
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
 - `yes` (*boolean*) - skip confirmation prompt
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

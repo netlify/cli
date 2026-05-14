@@ -32,7 +32,7 @@ describe('agents:diff command', () => {
     { path: 'accounts', response: [{ slug: 'test-account' }] },
   ]
 
-  test('should print the agent task diff', async (t) => {
+  test('should print the agent run diff', async (t) => {
     const routes = [
       ...baseRoutes,
       {
@@ -138,7 +138,7 @@ describe('agents:diff command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('No diff available for this agent task.')
+        expect(cliResponse).toContain('No diff available for this agent run.')
       })
     })
   })

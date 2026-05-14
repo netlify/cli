@@ -134,7 +134,7 @@ describe('agents:open command', () => {
           getCLIOptions({ apiUrl, builder, env: noBrowserEnv }),
         )) as string
 
-        expect(cliResponse).toContain('No pull request exists for this agent task')
+        expect(cliResponse).toContain('No pull request exists for this agent run')
         expect(cliResponse).toContain('netlify agents:pr test_id')
       })
     })

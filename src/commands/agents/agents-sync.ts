@@ -45,11 +45,11 @@ const runStrategy = (api: AgentsApi, strategy: SyncStrategy, id: string): Promis
 }
 
 export const agentsSync = async (id: string, options: AgentSyncOptions, command: BaseCommand) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
   await command.authenticate()
   const api = createAgentsApi(command.netlify)
 
-  const lookupSpinner = startSpinner({ text: 'Checking agent task state...' })
+  const lookupSpinner = startSpinner({ text: 'Checking agent run state...' })
   let runner: AgentRunner
   try {
     runner = await api.getAgentRunner(id)
@@ -57,13 +57,13 @@ export const agentsSync = async (id: string, options: AgentSyncOptions, command:
   } catch (error_) {
     stopSpinner({ spinner: lookupSpinner, error: true })
     const error = error_ as Error & { status?: number }
-    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
-    return logAndThrowError(`Failed to fetch agent task: ${error.message}`)
+    if (error.status === 404) return logAndThrowError(`Agent run not found: ${id}`)
+    return logAndThrowError(`Failed to fetch agent run: ${error.message}`)
   }
 
   const strategy = pickStrategy(runner)
   if (!strategy) {
-    log(chalk.yellow('Nothing to sync — this agent task is already up to date.'))
+    log(chalk.yellow('Nothing to sync — this agent run is already up to date.'))
     return runner
   }
 
@@ -75,14 +75,14 @@ export const agentsSync = async (id: string, options: AgentSyncOptions, command:
       {
         type: 'confirm',
         name: 'confirmed',
-        message: `Sync agent task ${id}? This will ${describeStrategy(strategy, runner)}.`,
+        message: `Sync agent run ${id}? This will ${describeStrategy(strategy, runner)}.`,
         default: false,
       },
     ])
     if (!confirmed) return exit()
   }
 
-  const spinner = startSpinner({ text: 'Syncing agent task...' })
+  const spinner = startSpinner({ text: 'Syncing agent run...' })
   try {
     const updated = await runStrategy(api, strategy, id)
     stopSpinner({ spinner })
@@ -93,7 +93,7 @@ export const agentsSync = async (id: string, options: AgentSyncOptions, command:
     }
 
     log(`${chalk.green('✓')} Sync started: ${describeStrategy(strategy, runner)}.`)
-    log(`  Task ID: ${chalk.cyan(updated.id)}`)
+    log(`  Run ID: ${chalk.cyan(updated.id)}`)
     log()
     log(`Watch progress: ${chalk.cyan(`netlify agents:show ${updated.id} --watch`)}`)
     return updated

@@ -39,7 +39,7 @@ describe('agents:list command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:list'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent Tasks for site-name')
+        expect(cliResponse).toContain('Agent Runs for site-name')
         expect(cliResponse).toContain('agent_runner_id')
         expect(cliResponse).toContain('NEW')
         expect(cliResponse).toContain('Create a login form')
@@ -63,7 +63,7 @@ describe('agents:list command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:list'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('No agent tasks found for this site')
+        expect(cliResponse).toContain('No agent runs found for this site')
         expect(cliResponse).toContain('netlify agents:create')
       })
     })
@@ -150,7 +150,7 @@ describe('agents:list command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:list'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to list agent tasks: Unauthorized',
+          'Failed to list agent runs: Unauthorized',
         )
       })
     })
@@ -189,7 +189,7 @@ describe('agents:list command', () => {
           getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: 'zip_site_id' } }),
         )) as string
 
-        expect(cliResponse).toContain('Agent Tasks for zip-site')
+        expect(cliResponse).toContain('Agent Runs for zip-site')
         expect(cliResponse).toContain('BASE') // Should show BASE column header for non-git sites
         expect(cliResponse).toContain('Production') // Should show Production as base
         expect(cliResponse).not.toContain('BRANCH') // Should not show BRANCH column header
@@ -212,7 +212,7 @@ describe('agents:list command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:list'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent Tasks for site-name')
+        expect(cliResponse).toContain('Agent Runs for site-name')
         expect(cliResponse).toContain('BRANCH') // Should show BRANCH column header for git sites
         expect(cliResponse).toContain('main') // Should show actual branch name
         expect(cliResponse).not.toContain('BASE') // Should not show BASE column header

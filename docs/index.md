@@ -20,25 +20,25 @@ netlify [command] help
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
 ### [agents](/commands/agents)
 
-Manage Netlify AI agent tasks
+Manage Netlify AI agent runs
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`agents:archive`](/commands/agents#agentsarchive) | Archive an agent task  |
-| [`agents:commit`](/commands/agents#agentscommit) | Commit an agent task’s changes directly to a branch  |
-| [`agents:create`](/commands/agents#agentscreate) | Create and run a new agent task on your site  |
-| [`agents:diff`](/commands/agents#agentsdiff) | Print the unified diff produced by an agent task  |
-| [`agents:follow-up`](/commands/agents#agentsfollow-up) | Send a follow-up prompt to an existing agent task  |
-| [`agents:list`](/commands/agents#agentslist) | List agent tasks for the current site  |
-| [`agents:open`](/commands/agents#agentsopen) | Open the agent task preview, dashboard, or pull request in a browser  |
-| [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent task  |
-| [`agents:publish`](/commands/agents#agentspublish) | Publish an agent task’s changes to production  |
-| [`agents:redeploy`](/commands/agents#agentsredeploy) | Create a redeploy session that reapplies an existing diff (no AI inference)  |
-| [`agents:rename`](/commands/agents#agentsrename) | Rename an agent task  |
-| [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent task to a specific session (sessions after it are discarded)  |
-| [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent task  |
-| [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent task or session  |
-| [`agents:sync`](/commands/agents#agentssync) | Sync an agent task with the latest production code or remote git origin  |
+| [`agents:archive`](/commands/agents#agentsarchive) | Archive an agent run  |
+| [`agents:commit`](/commands/agents#agentscommit) | Commit an agent run’s changes directly to a branch  |
+| [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
+| [`agents:diff`](/commands/agents#agentsdiff) | Print the code changes produced by an agent run  |
+| [`agents:follow-up`](/commands/agents#agentsfollow-up) | Send a follow-up prompt to an existing agent run  |
+| [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
+| [`agents:open`](/commands/agents#agentsopen) | Open the agent run preview, dashboard, or pull request in a browser  |
+| [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent run  |
+| [`agents:publish`](/commands/agents#agentspublish) | Publish an agent run’s changes to production  |
+| [`agents:redeploy`](/commands/agents#agentsredeploy) | Redeploy an agent run by reapplying its existing changes (no AI inference)  |
+| [`agents:rename`](/commands/agents#agentsrename) | Rename an agent run  |
+| [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent run to a specific session (sessions after it are discarded)  |
+| [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
+| [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
+| [`agents:sync`](/commands/agents#agentssync) | Bring an agent run up to date with the latest code from its base branch  |
 
 
 ### [api](/commands/api)

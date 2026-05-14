@@ -160,7 +160,7 @@ describe('agents:sync command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(
           callCli(['agents:sync', 'missing_id', '--yes'], getCLIOptions({ apiUrl, builder })),
-        ).rejects.toThrow('Agent task not found: missing_id')
+        ).rejects.toThrow('Agent run not found: missing_id')
       })
     })
   })

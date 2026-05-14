@@ -12,7 +12,7 @@ interface AgentRedeployOptions extends OptionValues {
 }
 
 export const agentsRedeploy = async (id: string, options: AgentRedeployOptions, command: BaseCommand) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
   await command.authenticate()
   const api = createAgentsApi(command.netlify)
 
@@ -54,7 +54,7 @@ export const agentsRedeploy = async (id: string, options: AgentRedeployOptions, 
 
     log(`${chalk.green('✓')} Redeploy session created!`)
     log()
-    log(`  Task ID: ${chalk.cyan(id)}`)
+    log(`  Run ID: ${chalk.cyan(id)}`)
     log(`  Session ID: ${chalk.cyan(session.id)}`)
     log(`  Source Session: ${chalk.dim(sessionId)}`)
     log(`  Status: ${formatStatus(session.state)}`)
@@ -64,7 +64,7 @@ export const agentsRedeploy = async (id: string, options: AgentRedeployOptions, 
   } catch (error_) {
     stopSpinner({ spinner, error: true })
     const error = error_ as Error & { status?: number }
-    if (error.status === 404) return logAndThrowError(`Agent task or session not found: ${id} / ${sessionId}`)
+    if (error.status === 404) return logAndThrowError(`Agent run or session not found: ${id} / ${sessionId}`)
     return logAndThrowError(`Failed to redeploy: ${error.message}`)
   }
 }

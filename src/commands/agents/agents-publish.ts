@@ -24,12 +24,12 @@ const describeOutOfSync = (runner: AgentRunner): string => {
 }
 
 export const agentsPublish = async (id: string, options: AgentPublishOptions, command: BaseCommand) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
   await command.authenticate()
   const { siteInfo } = command.netlify
   const api = createAgentsApi(command.netlify)
 
-  const lookupSpinner = startSpinner({ text: 'Checking agent task state...' })
+  const lookupSpinner = startSpinner({ text: 'Checking agent run state...' })
   let runner: AgentRunner
   try {
     runner = await api.getAgentRunner(id)
@@ -37,8 +37,8 @@ export const agentsPublish = async (id: string, options: AgentPublishOptions, co
   } catch (error_) {
     stopSpinner({ spinner: lookupSpinner, error: true })
     const error = error_ as Error & { status?: number }
-    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
-    return logAndThrowError(`Failed to fetch agent task: ${error.message}`)
+    if (error.status === 404) return logAndThrowError(`Agent run not found: ${id}`)
+    return logAndThrowError(`Failed to fetch agent run: ${error.message}`)
   }
 
   const outOfSync = isOutOfSync(runner)
@@ -48,7 +48,7 @@ export const agentsPublish = async (id: string, options: AgentPublishOptions, co
         `Refusing to publish: ${describeOutOfSync(runner)}. Run netlify agents:sync ${id} first, or pass --force.`,
       )
     }
-    log(chalk.yellow(`! This agent task is out of date: ${describeOutOfSync(runner)}.`))
+    log(chalk.yellow(`! This agent run is out of date: ${describeOutOfSync(runner)}.`))
     log(`  Sync first: ${chalk.cyan(`netlify agents:sync ${id}`)}`)
     log(`  Or override: pass ${chalk.cyan('--force')} to publish the existing diff as-is`)
     if (!options.yes) {
@@ -89,13 +89,13 @@ export const agentsPublish = async (id: string, options: AgentPublishOptions, co
     }
     log(chalk.redBright('Warning'), 'You are about to publish agent changes to production.')
     log(`         Site: ${chalk.bold(siteInfo.name)}`)
-    log(`         Task: ${chalk.bold(id)}`)
+    log(`         Run: ${chalk.bold(id)}`)
     log()
     const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([
       {
         type: 'confirm',
         name: 'confirmed',
-        message: `Publish agent task ${id} to production?`,
+        message: `Publish agent run ${id} to production?`,
         default: false,
       },
     ])
@@ -112,9 +112,9 @@ export const agentsPublish = async (id: string, options: AgentPublishOptions, co
       return updated
     }
 
-    log(`${chalk.green('✓')} Published agent task to production!`)
+    log(`${chalk.green('✓')} Published agent run to production!`)
     log()
-    log(`  Task ID: ${chalk.cyan(updated.id)}`)
+    log(`  Run ID: ${chalk.cyan(updated.id)}`)
     if (updated.merge_commit_sha) log(`  Commit: ${chalk.cyan(updated.merge_commit_sha)}`)
     log(`  Browser: ${chalk.blue(buildAgentDashboardUrl(siteInfo.name, updated.id))}`)
     return updated

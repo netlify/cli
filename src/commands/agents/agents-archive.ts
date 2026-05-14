@@ -12,7 +12,7 @@ interface AgentArchiveOptions extends OptionValues {
 }
 
 export const agentsArchive = async (id: string, options: AgentArchiveOptions, command: BaseCommand) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
   await command.authenticate()
   const api = createAgentsApi(command.netlify)
 
@@ -24,14 +24,14 @@ export const agentsArchive = async (id: string, options: AgentArchiveOptions, co
       {
         type: 'confirm',
         name: 'confirmed',
-        message: `Archive agent task ${id}?`,
+        message: `Archive agent run ${id}?`,
         default: false,
       },
     ])
     if (!confirmed) return exit()
   }
 
-  const spinner = startSpinner({ text: 'Archiving agent task...' })
+  const spinner = startSpinner({ text: 'Archiving agent run...' })
   try {
     await api.archiveAgentRunner(id)
     stopSpinner({ spinner })
@@ -42,13 +42,13 @@ export const agentsArchive = async (id: string, options: AgentArchiveOptions, co
       return result
     }
 
-    log(`${chalk.green('✓')} Agent task archived.`)
-    log(`  Task ID: ${chalk.cyan(id)}`)
+    log(`${chalk.green('✓')} Agent run archived.`)
+    log(`  Run ID: ${chalk.cyan(id)}`)
     return result
   } catch (error_) {
     stopSpinner({ spinner, error: true })
     const error = error_ as Error & { status?: number }
-    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
+    if (error.status === 404) return logAndThrowError(`Agent run not found: ${id}`)
     return logAndThrowError(`Failed to archive: ${error.message}`)
   }
 }

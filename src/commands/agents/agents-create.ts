@@ -135,7 +135,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     file_keys: attachments.length > 0 ? attachments.map((entry) => entry.fileKey) : undefined,
   }
 
-  const createSpinner = startSpinner({ text: 'Creating agent task...' })
+  const createSpinner = startSpinner({ text: 'Creating agent run...' })
   try {
     const agentRunner = await api.createAgentRunner(site.id ?? '', payload)
     stopSpinner({ spinner: createSpinner })
@@ -145,10 +145,10 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
       return agentRunner
     }
 
-    log(`${chalk.green('✓')} Agent task created successfully!`)
+    log(`${chalk.green('✓')} Agent run created successfully!`)
     log()
     log(chalk.bold('Details:'))
-    log(`  Task ID: ${chalk.cyan(agentRunner.id)}`)
+    log(`  Run ID: ${chalk.cyan(agentRunner.id)}`)
     log(`  Prompt: ${chalk.dim(finalPrompt)}`)
     log(`  Agent: ${chalk.cyan(getAgentName(agent))}${options.model ? ` (${options.model})` : ''}`)
     if (options.fromDeploy) {
@@ -158,7 +158,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     } else {
       log(`  Base: ${chalk.cyan('Latest production deployment')}`)
     }
-    if (options.parent) log(`  Parent Task: ${chalk.cyan(options.parent)}`)
+    if (options.parent) log(`  Parent Run: ${chalk.cyan(options.parent)}`)
     if (attachments.length > 0) log(`  Attachments: ${attachments.length.toString()} file(s)`)
     log(`  Status: ${formatStatus(agentRunner.state ?? 'new')}`)
     log()
@@ -167,13 +167,13 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     log(`  Show:  ${chalk.cyan(`netlify agents:show ${agentRunner.id}`)}`)
     log(`  Browser: ${chalk.blue(buildAgentDashboardUrl(siteInfo.name, agentRunner.id))}`)
     log()
-    log(chalk.dim('The agent task runs remotely on Netlify infrastructure and may take a few minutes.'))
+    log(chalk.dim('The agent run runs remotely on Netlify infrastructure and may take a few minutes.'))
 
     return agentRunner
   } catch (error_) {
     stopSpinner({ spinner: createSpinner, error: true })
     const error = error_ as Error
-    return logAndThrowError(`Failed to create agent task: ${error.message}`)
+    return logAndThrowError(`Failed to create agent run: ${error.message}`)
   }
 }
 

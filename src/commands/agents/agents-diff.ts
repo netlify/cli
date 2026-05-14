@@ -29,14 +29,14 @@ const verifyRunnerExists = async (api: AgentsApi, id: string): Promise<void> => 
   } catch (error_) {
     const error = error_ as Error & { status?: number }
     if (error.status === 404) {
-      throw new Error(`Agent task not found: ${id}`)
+      throw new Error(`Agent run not found: ${id}`)
     }
     throw error
   }
 }
 
 export const agentsDiff = async (id: string, options: AgentDiffOptions, command: BaseCommand) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
   await command.authenticate()
   const api = createAgentsApi(command.netlify)
 
@@ -61,7 +61,7 @@ export const agentsDiff = async (id: string, options: AgentDiffOptions, command:
     } catch (error_) {
       stopSpinner({ spinner, error: true })
       const error = error_ as Error
-      if (error.message.startsWith('Agent task not found:')) {
+      if (error.message.startsWith('Agent run not found:')) {
         return logAndThrowError(error.message)
       }
       return logAndThrowError(`Failed to fetch diff: ${error.message}`)
@@ -77,7 +77,7 @@ export const agentsDiff = async (id: string, options: AgentDiffOptions, command:
     return logAndThrowError((error_ as Error).message)
   }
 
-  const spinner = startSpinner({ text: 'Fetching agent task diff...' })
+  const spinner = startSpinner({ text: 'Fetching agent run diff...' })
   try {
     const result = await api.getAgentRunnerDiff(id, {
       page,
@@ -88,7 +88,7 @@ export const agentsDiff = async (id: string, options: AgentDiffOptions, command:
 
     if (!result.data) {
       await verifyRunnerExists(api, id)
-      log(chalk.yellow('No diff available for this agent task.'))
+      log(chalk.yellow('No diff available for this agent run.'))
       return
     }
 
@@ -101,7 +101,7 @@ export const agentsDiff = async (id: string, options: AgentDiffOptions, command:
   } catch (error_) {
     stopSpinner({ spinner, error: true })
     const error = error_ as Error
-    if (error.message.startsWith('Agent task not found:')) {
+    if (error.message.startsWith('Agent run not found:')) {
       return logAndThrowError(error.message)
     }
     return logAndThrowError(`Failed to fetch diff: ${error.message}`)

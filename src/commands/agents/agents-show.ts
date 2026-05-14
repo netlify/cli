@@ -72,7 +72,7 @@ class WatchRenderer {
 }
 
 export const agentsShow = async (id: string, options: AgentShowOptions, command: BaseCommand) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
   await command.authenticate()
   const api = createAgentsApi(command.netlify)
 
@@ -91,7 +91,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
 }
 
 const showAgentTask = async (api: AgentsApi, id: string, options: AgentShowOptions, command: BaseCommand) => {
-  const spinner = startSpinner({ text: 'Fetching agent task details...' })
+  const spinner = startSpinner({ text: 'Fetching agent run details...' })
   try {
     const [runner, sessions] = await Promise.all([
       api.getAgentRunner(id),
@@ -111,9 +111,9 @@ const showAgentTask = async (api: AgentsApi, id: string, options: AgentShowOptio
     const error = error_ as Error & { status?: number }
     stopSpinner({ spinner, error: true })
     if (error.status === 404) {
-      return logAndThrowError(`Agent task not found: ${id}`)
+      return logAndThrowError(`Agent run not found: ${id}`)
     }
-    return logAndThrowError(`Failed to show agent task: ${error.message}`)
+    return logAndThrowError(`Failed to show agent run: ${error.message}`)
   }
 }
 
@@ -149,11 +149,11 @@ const showSingleSession = async (
 const renderAgentTask = (runner: AgentRunner, sessions: AgentRunnerSession[], command: BaseCommand) => {
   const { siteInfo, site } = command.netlify
 
-  log(chalk.bold('Agent Task Details'))
+  log(chalk.bold('Agent Run Details'))
   log()
 
   log(chalk.bold('Basic Information:'))
-  log(`  Task ID: ${chalk.cyan(runner.id)}`)
+  log(`  Run ID: ${chalk.cyan(runner.id)}`)
   log(`  Status: ${formatStatus(runner.state ?? 'unknown')}`)
   log(`  Site: ${chalk.cyan(siteInfo.name)} (${site.id ?? ''})`)
   if (runner.sha) log(`  Start commit: ${chalk.cyan(runner.sha.slice(0, 7))}`)
@@ -176,7 +176,7 @@ const renderAgentTask = (runner: AgentRunner, sessions: AgentRunnerSession[], co
   }
 
   log()
-  log(chalk.bold('Task:'))
+  log(chalk.bold('Run:'))
   log(`  Title: ${chalk.dim(runner.title ?? 'No title')}`)
   if (runner.current_task) log(`  Current Task: ${chalk.yellow(runner.current_task)}`)
 
@@ -292,7 +292,7 @@ const renderSessionDetail = (session: AgentRunnerSession, runnerId: string, comm
   log(chalk.bold('Session Details'))
   log()
   log(`  Session ID: ${chalk.cyan(session.id)}`)
-  log(`  Task ID: ${chalk.cyan(runnerId)}`)
+  log(`  Run ID: ${chalk.cyan(runnerId)}`)
   log(`  Status: ${formatStatus(session.state)}`)
   if (session.is_published) log(`  ${chalk.green('Published to production')}`)
   if (session.is_discarded) log(`  ${chalk.gray('Discarded (a later revert reset to an earlier session)')}`)
@@ -391,11 +391,11 @@ const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) 
     ])
   } catch (error_) {
     const error = error_ as Error & { status?: number }
-    if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
-    return logAndThrowError(`Failed to watch agent task: ${error.message}`)
+    if (error.status === 404) return logAndThrowError(`Agent run not found: ${id}`)
+    return logAndThrowError(`Failed to watch agent run: ${error.message}`)
   }
 
-  log(`${chalk.cyan('Watching')} agent task ${chalk.bold(id)} ${chalk.dim('(Ctrl+C to stop)')}`)
+  log(`${chalk.cyan('Watching')} agent run ${chalk.bold(id)} ${chalk.dim('(Ctrl+C to stop)')}`)
   log()
 
   const MAX_CONSECUTIVE_FAILURES = 10
@@ -423,7 +423,7 @@ const watchAgentTask = async (api: AgentsApi, id: string, command: BaseCommand) 
         const error = error_ as Error & { status?: number }
         if (error.status === 404) {
           renderer.stop()
-          return logAndThrowError(`Agent task ${id} is no longer accessible (archived or deleted).`)
+          return logAndThrowError(`Agent run ${id} is no longer accessible (archived or deleted).`)
         }
         consecutiveFailures += 1
         if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {

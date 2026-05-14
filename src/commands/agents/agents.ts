@@ -15,13 +15,13 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .command('agents:create')
     .alias('agents:run')
     .argument('[prompt]', 'the prompt for the agent to execute')
-    .description('Create and run a new agent task on your site')
+    .description('Create and start a new agent run on your site')
     .option('-p, --prompt <prompt>', 'agent prompt')
     .option('-a, --agent <agent>', 'agent type (claude, codex, gemini)')
     .option('-m, --model <model>', 'model to use for the agent')
     .option('-b, --branch <branch>', 'git branch to work on')
     .option('--from-deploy <deployId>', 'start the agent from a specific deploy (mutually exclusive with --branch)')
-    .option('--parent <id>', 'chain this agent task off of another agent task')
+    .option('--parent <id>', 'chain this agent run off of another agent run')
     .option('--attach <path>', 'attach a file or image (repeatable)', collect, [])
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .option('--json', 'output result as JSON')
@@ -40,9 +40,9 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:follow-up')
-    .argument('<id>', 'agent task ID to follow up on')
+    .argument('<id>', 'agent run ID to follow up on')
     .argument('[prompt]', 'the follow-up prompt')
-    .description('Send a follow-up prompt to an existing agent task')
+    .description('Send a follow-up prompt to an existing agent run')
     .option('-p, --prompt <prompt>', 'follow-up prompt')
     .option('-a, --agent <agent>', 'override agent type for this session')
     .option('-m, --model <model>', 'override model for this session')
@@ -61,16 +61,16 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:list')
-    .description('List agent tasks for the current site')
+    .description('List agent runs for the current site')
     .option('-s, --status <status>', 'filter by status (running, done, error, archived)')
     .option('-b, --branch <branch>', 'filter by branch')
     .option('-u, --user <userId>', 'filter by user ID')
     .option('-t, --title <text>', 'filter by title (case-insensitive contains)')
-    .option('--since <iso>', 'only show tasks created on or after this ISO timestamp')
-    .option('--until <iso>', 'only show tasks created on or before this ISO timestamp')
+    .option('--since <iso>', 'only show runs created on or after this ISO timestamp')
+    .option('--until <iso>', 'only show runs created on or before this ISO timestamp')
     .option('--page <n>', 'page number (1-based)')
     .option('--per-page <n>', 'items per page (max 100)')
-    .option('--account <slug>', 'list tasks across an account instead of just this site')
+    .option('--account <slug>', 'list runs across an account instead of just this site')
     .option('--json', 'output result as JSON')
     .option('--ndjson', 'output one JSON object per line')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
@@ -90,10 +90,10 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:show')
-    .argument('<id>', 'agent task ID to show')
-    .description('Show details of a specific agent task')
-    .option('-w, --watch', 'poll until the task reaches a terminal state')
-    .option('--session <sid>', 'show details of a specific session within the task')
+    .argument('<id>', 'agent run ID to show')
+    .description('Show details of a specific agent run')
+    .option('-w, --watch', 'poll until the run reaches a terminal state')
+    .option('--session <sid>', 'show details of a specific session within the run')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
@@ -109,17 +109,13 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:stop')
-    .argument('<id>', 'agent task ID to stop')
-    .description('Stop a running agent task or session')
-    .option('--session <sid>', 'stop a single session instead of the entire task')
+    .argument('<id>', 'agent run ID to stop')
+    .description('Stop a running agent run')
     .option('-y, --yes', 'skip confirmation prompt')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
-    .addExamples([
-      'netlify agents:stop 60c7c3b3e7b4a0001f5e4b3a',
-      'netlify agents:stop 60c7c3b3e7b4a0001f5e4b3a --session 70d8... --yes',
-    ])
+    .addExamples(['netlify agents:stop 60c7c3b3e7b4a0001f5e4b3a', 'netlify agents:stop 60c7c3b3e7b4a0001f5e4b3a --yes'])
     .action(async (id: string, options: OptionValues, command: BaseCommand) => {
       const { agentsStop } = await import('./agents-stop.js')
       await agentsStop(id, options, command)
@@ -127,9 +123,9 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:open')
-    .argument('<id>', 'agent task ID to open')
+    .argument('<id>', 'agent run ID to open')
     .argument('[target]', 'what to open: preview (default), dashboard, or pr', 'preview')
-    .description('Open the agent task preview, dashboard, or pull request in a browser')
+    .description('Open the agent run preview, dashboard, or pull request in a browser')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
     .addExamples([
@@ -144,11 +140,11 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:diff')
-    .argument('<id>', 'agent task ID')
-    .description('Print the unified diff produced by an agent task')
+    .argument('<id>', 'agent run ID')
+    .description('Print the code changes produced by an agent run')
     .option('--page <n>', 'page number (1-based)')
     .option('--per-page <n>', 'files per page (max 100)')
-    .option('--session <sid>', 'show a single session diff instead of the task aggregate')
+    .option('--session <sid>', 'show a single session diff instead of the run aggregate')
     .option('--cumulative', 'with --session, show the cumulative diff up through that session')
     .option('--no-strip-binary', 'include raw binary content in the diff (binary is stripped by default)')
     .option('--no-color', 'disable color in the output')
@@ -167,8 +163,8 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:pr')
-    .argument('<id>', 'agent task ID')
-    .description('Open a pull request for an agent task')
+    .argument('<id>', 'agent run ID')
+    .description('Open a pull request for an agent run')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
@@ -180,8 +176,8 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:commit')
-    .argument('<id>', 'agent task ID')
-    .description('Commit an agent task’s changes directly to a branch')
+    .argument('<id>', 'agent run ID')
+    .description('Commit an agent run’s changes directly to a branch')
     .option('-b, --branch <branch>', 'target branch to commit to')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
@@ -194,8 +190,8 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:publish')
-    .argument('<id>', 'agent task ID')
-    .description('Publish an agent task’s changes to production')
+    .argument('<id>', 'agent run ID')
+    .description('Publish an agent run’s changes to production')
     .option('-y, --yes', 'skip confirmation prompt')
     .option('--force', 'publish even when the run is out of sync with production')
     .option('--json', 'output result as JSON')
@@ -213,8 +209,8 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:revert')
-    .argument('<id>', 'agent task ID')
-    .description('Revert an agent task to a specific session (sessions after it are discarded)')
+    .argument('<id>', 'agent run ID')
+    .description('Revert an agent run to a specific session (sessions after it are discarded)')
     .requiredOption('--session <sid>', 'session ID to revert to')
     .option('-y, --yes', 'skip confirmation prompt')
     .option('--json', 'output result as JSON')
@@ -228,8 +224,8 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:archive')
-    .argument('<id>', 'agent task ID')
-    .description('Archive an agent task')
+    .argument('<id>', 'agent run ID')
+    .description('Archive an agent run')
     .option('-y, --yes', 'skip confirmation prompt')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
@@ -245,8 +241,8 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:redeploy')
-    .argument('<id>', 'agent task ID')
-    .description('Create a redeploy session that reapplies an existing diff (no AI inference)')
+    .argument('<id>', 'agent run ID')
+    .description('Redeploy an agent run by reapplying its existing changes (no AI inference)')
     .option('--session <sid>', 'redeploy a specific session (defaults to the latest completed one)')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
@@ -262,9 +258,9 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:rename')
-    .argument('<id>', 'agent task ID')
-    .argument('<title>', 'new title for the agent task')
-    .description('Rename an agent task')
+    .argument('<id>', 'agent run ID')
+    .argument('<title>', 'new title for the agent run')
+    .description('Rename an agent run')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
@@ -276,8 +272,8 @@ export const createAgentsCommand = (program: BaseCommand) => {
 
   program
     .command('agents:sync')
-    .argument('<id>', 'agent task ID')
-    .description('Sync an agent task with the latest production code or remote git origin')
+    .argument('<id>', 'agent run ID')
+    .description('Bring an agent run up to date with the latest code from its base branch')
     .option('-y, --yes', 'skip confirmation prompt')
     .option('--json', 'output result as JSON')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
@@ -293,10 +289,10 @@ export const createAgentsCommand = (program: BaseCommand) => {
   return program
     .command('agents')
     .description(
-      `Manage Netlify AI agent tasks
+      `Manage Netlify AI agent runs
 The ${name} command will help you run AI agents on your Netlify sites to automate development tasks
 
-Note: Agent tasks execute remotely on Netlify infrastructure, not locally.`,
+Note: Agent runs execute remotely on Netlify infrastructure, not locally.`,
     )
     .addExamples([
       'netlify agents:create --prompt "Add a contact form"',

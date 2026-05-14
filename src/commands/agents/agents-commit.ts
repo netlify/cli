@@ -19,13 +19,13 @@ const pickDefaultBranch = (runner: AgentRunner): { branch: string; reason: strin
     return { branch: runner.pr_branch, reason: 'updating the existing pull request' }
   }
   if (runner.branch) {
-    return { branch: runner.branch, reason: "committing to this agent task's branch" }
+    return { branch: runner.branch, reason: "committing to this agent run's branch" }
   }
   return null
 }
 
 export const agentsCommit = async (id: string, options: AgentCommitOptions, command: BaseCommand) => {
-  if (!id) return logAndThrowError('Agent task ID is required')
+  if (!id) return logAndThrowError('Agent run ID is required')
   await command.authenticate()
   const { siteInfo } = command.netlify
   if (!siteInfo.build_settings?.repo_url) {
@@ -38,7 +38,7 @@ export const agentsCommit = async (id: string, options: AgentCommitOptions, comm
   let targetBranch = options.branch?.trim()
 
   if (!targetBranch) {
-    const lookupSpinner = startSpinner({ text: 'Looking up agent task...' })
+    const lookupSpinner = startSpinner({ text: 'Looking up agent run...' })
     let runner: AgentRunner
     try {
       runner = await api.getAgentRunner(id)
@@ -46,8 +46,8 @@ export const agentsCommit = async (id: string, options: AgentCommitOptions, comm
     } catch (error_) {
       stopSpinner({ spinner: lookupSpinner, error: true })
       const error = error_ as Error & { status?: number }
-      if (error.status === 404) return logAndThrowError(`Agent task not found: ${id}`)
-      return logAndThrowError(`Failed to fetch agent task: ${error.message}`)
+      if (error.status === 404) return logAndThrowError(`Agent run not found: ${id}`)
+      return logAndThrowError(`Failed to fetch agent run: ${error.message}`)
     }
 
     const suggestion = pickDefaultBranch(runner)
