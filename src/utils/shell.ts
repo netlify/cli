@@ -12,6 +12,22 @@ import { processOnExit } from './dev.js'
 const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
   value instanceof Error && Object.hasOwn(value, 'code')
 
+type CommandResult = {
+  exitCode?: number
+  message?: string
+  shortMessage?: string
+  stderr?: string
+  stdout?: string
+}
+
+const isCommandResult = (value: unknown): value is CommandResult => typeof value === 'object' && value !== null
+
+const getCommandName = (command: string) => {
+  const match = /^(?:"([^"]+)"|'([^']+)'|(\S+))/.exec(command.trim())
+
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? command
+}
+
 const createStripAnsiControlCharsStream = (): Transform =>
   new Transform({
     transform(chunk, _encoding, callback) {
@@ -68,8 +84,6 @@ export const runCommand = (
   const { cwd, env = {}, spinner } = options
   const commandProcess = execa.command(command, {
     preferLocal: true,
-    // Command strings in netlify.toml may use shell operators like `&&`.
-    // execa.command() does not interpret these unless shell mode is enabled.
     shell: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
@@ -114,7 +128,7 @@ export const runCommand = (
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   commandProcess.then(async () => {
     const result = await commandProcess
-    const [commandWithoutArgs] = command.split(' ')
+    const commandWithoutArgs = getCommandName(command)
     if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
       log(
         `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
@@ -150,10 +164,13 @@ const isNonExistingCommandError = ({ command, error: commandError }: { command: 
     return false
   }
 
-  // this only works on English versions of Windows
-  return (
-    commandError instanceof Error &&
-    typeof commandError.message === 'string' &&
-    commandError.message.includes('is not recognized as an internal or external command')
-  )
+  if (!isCommandResult(commandError)) {
+    return false
+  }
+
+  const output = [commandError.message, commandError.shortMessage, commandError.stderr, commandError.stdout]
+    .filter((value): value is string => typeof value === 'string')
+    .join('\n')
+
+  return commandError.exitCode === 127 || output.includes('is not recognized as an internal or external command')
 }
