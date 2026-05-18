@@ -146,8 +146,8 @@ describe.concurrent('frameworks/framework-detection', () => {
       } catch (err) {
         t.expect(err).toHaveProperty('stdout')
         const output = normalizeSnapshot((err as execa.ExecaReturnValue).stdout, { duration: true, filePath: true })
-        t.expect(output).toMatch(/\nfirst\s*\r?\n\s*second\r?\n/i)
-        t.expect(output).not.toMatch(/\nfirst\s*&&\s*echo\s+second\r?\n/i)
+        t.expect(output).toMatch(/\nfirst[^\S\r\n]*\r?\n[^\S\r\n]*second\r?\n/i)
+        t.expect(output).not.toMatch(/\nfirst[^\S\r\n]*&&[^\S\r\n]*echo[^\S\r\n]+second\r?\n/i)
       }
     })
   })
