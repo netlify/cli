@@ -20,7 +20,14 @@ type CommandResult = {
   stdout?: string
 }
 
-const isCommandResult = (value: unknown): value is CommandResult => typeof value === 'object' && value !== null
+const isCommandResult = (value: unknown): value is CommandResult =>
+  typeof value === 'object' &&
+  value !== null &&
+  (typeof (value as CommandResult).exitCode === 'number' ||
+    typeof (value as CommandResult).message === 'string' ||
+    typeof (value as CommandResult).shortMessage === 'string' ||
+    typeof (value as CommandResult).stderr === 'string' ||
+    typeof (value as CommandResult).stdout === 'string')
 
 const getCommandName = (command: string) => {
   const match = /^(?:"([^"]+)"|'([^']+)'|(\S+))/.exec(command.trim())
