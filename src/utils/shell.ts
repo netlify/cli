@@ -35,6 +35,9 @@ const getCommandName = (command: string) => {
   return match?.[1] ?? match?.[2] ?? match?.[3] ?? command
 }
 
+const canReportMissingCommandName = (command: string) =>
+  !/(?:&&|\|\||[|;<>])/.test(command) && !/^\s*[\w.-]+=/.test(command)
+
 const createStripAnsiControlCharsStream = (): Transform =>
   new Transform({
     transform(chunk, _encoding, callback) {
@@ -136,7 +139,11 @@ export const runCommand = (
   commandProcess.then(async () => {
     const result = await commandProcess
     const commandWithoutArgs = getCommandName(command)
-    if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
+    if (
+      result.failed &&
+      canReportMissingCommandName(command) &&
+      isNonExistingCommandError({ command: commandWithoutArgs, error: result })
+    ) {
       log(
         `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
           `'${commandWithoutArgs}'`,
