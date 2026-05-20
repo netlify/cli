@@ -105,11 +105,8 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
         )} including the error details below.\n`,
       )
 
-      // print the error regardless of systemInfo
       console.log(chalk.dim(err.stack || err))
 
-      // systemInfo sometimes could get stuck resulting in exit() never called
-      // we now prevent that by bailing early so the CLI quits in time
       const systemInfo = await Promise.race([
         getSystemInfo().catch(() => ''),
         new Promise<string>((resolve) =>
