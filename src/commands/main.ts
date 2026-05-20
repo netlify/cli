@@ -95,9 +95,8 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
       )} including the error details below.\n`,
     )
 
-    const systemInfo = await getSystemInfo()
-
     console.log(chalk.dim(err.stack || err))
+    const systemInfo = await getSystemInfo()
     console.log(chalk.dim(systemInfo))
     reportError(err, { severity: 'error' })
   }
