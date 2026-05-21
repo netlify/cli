@@ -94,6 +94,12 @@ export const createDevCommand = (program: BaseCommand) => {
         .argParser(validateShortFlagArgs),
     )
     .addOption(new Option('--skip-gitignore', 'skip adding .netlify to .gitignore file'))
+    .option(
+      '--watch-ignore <path>',
+      'exclude a path from file watching. accepts a file path or a directory path; ignored directories exclude their entire subtree and cannot be partially re-included. can be specified multiple times.',
+      (value: string, previous: string[]) => [...previous, value],
+      [] as string[],
+    )
     .addExamples([
       'netlify dev',
       'netlify dev -d public',
@@ -106,6 +112,8 @@ export const createDevCommand = (program: BaseCommand) => {
       'netlify dev --edge-inspect-brk',
       'netlify dev --edge-inspect-brk=127.0.0.1:9229',
       'netlify dev --skip-gitignore # skip adding .netlify to .gitignore',
+      'netlify dev --watch-ignore src/posts # exclude a content directory from file watching',
+      'netlify dev --watch-ignore src/posts --watch-ignore content # exclude multiple directories',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
     .addHelpText('after', () => {
