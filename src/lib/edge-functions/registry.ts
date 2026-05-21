@@ -741,7 +741,7 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
 
     const ignored: (string | RegExp)[] = [
       toIgnoredRegex(this.servePath),
-      toIgnoredRegex(this.publishDir),
+      ...(this.publishDir !== this.projectDir ? [toIgnoredRegex(this.publishDir)] : []),
       ...this.watchIgnore.map(toIgnoredEntry),
       this.internalImportMapPath,
     ]

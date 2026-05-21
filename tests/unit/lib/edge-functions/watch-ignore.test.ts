@@ -93,6 +93,23 @@ describe('toIgnoredRegex', () => {
     expect(publishDirRegex.test('/project/my.build (v2)/index.html')).toBe(true)
     expect(publishDirRegex.test('/projectXmyYbuild-v2/index.html')).toBe(false)
   })
+
+  test('omits publishDir from ignored when it equals projectDir', async () => {
+    // When no publish dir is configured, settings.dist falls back to the working
+    // directory itself. Ignoring projectDir would block all file watching, so we
+    // skip adding it in that case.
+    const registry = makeRegistry({
+      projectDir: '/project',
+      servePath: '/project/.netlify/edge-functions-serve',
+      publishDir: '/project',
+      watchIgnore: [],
+    })
+    const ignored = await captureIgnored(registry)
+    // Only servePath regex + internalImportMapPath — no publishDir entry
+    expect(ignored).toHaveLength(2)
+    expect(ignored[0]).toBeInstanceOf(RegExp)
+    expect(typeof ignored[1]).toBe('string')
+  })
 })
 
 describe('toIgnoredEntry (watchIgnore entries)', () => {
