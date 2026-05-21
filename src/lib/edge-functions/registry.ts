@@ -739,17 +739,14 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
       return toIgnoredRegex(p)
     }
 
+    const NON_IMPORTABLE_EDGE_ASSET_EXTENSIONS = /\.(?!(js|mjs|cjs|ts|tsx|jsx|json|wasm)$)[^./]+$/i
+
     const ignored: (string | RegExp)[] = [
       toIgnoredRegex(this.servePath),
       toIgnoredRegex(this.publishDir),
       ...this.watchIgnore.map(toIgnoredEntry),
       this.internalImportMapPath,
-      // Edge functions can only import JS/TS/JSON/WASM files, so there is no
-      // need to watch markdown, images, CSS, and other static assets. The regex
-      // matches paths ending in a non-importable file extension. The negative
-      // lookahead prevents matching the allowed extensions; [^./]+ prevents
-      // inadvertently matching directories whose names contain dots (e.g. "v2.0").
-      /\.(?!(js|mjs|cjs|ts|tsx|jsx|json|wasm)$)[^./]+$/i,
+      NON_IMPORTABLE_EDGE_ASSET_EXTENSIONS,
     ]
     const watcher = await watchDebounced(this.projectDir, {
       ignored,
