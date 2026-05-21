@@ -210,7 +210,8 @@ const mainCommand = async function (options, command) {
     log()
     command.outputHelp({ error: true })
     log()
-    return logAndThrowError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    logError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    exit(1)
   }
 
   const applySuggestion = await new Promise((resolve) => {
@@ -235,7 +236,8 @@ const mainCommand = async function (options, command) {
   log()
 
   if (!applySuggestion) {
-    return logAndThrowError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    logError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    exit(1)
   }
 
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })
