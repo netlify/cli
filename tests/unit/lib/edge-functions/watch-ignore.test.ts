@@ -155,71 +155,13 @@ describe('internalImportMapPath is kept as a plain string', () => {
       watchIgnore: [],
     })
     const ignored = await captureIgnored(registry)
-    // servePath regex, publishDir regex, internalImportMapPath string, extension regex
+    // servePath regex, publishDir regex, internalImportMapPath string
     const importMapEntry = ignored[2]
     expect(typeof importMapEntry).toBe('string')
     expect(importMapEntry).toBe(join('/project', '.netlify', 'edge-functions-import-map.json'))
   })
 })
 
-describe('extension filter regex', () => {
-  test('ignores non-importable file extensions', async () => {
-    const registry = makeRegistry({
-      projectDir: '/project',
-      servePath: '/project/.netlify/edge-functions-serve',
-      publishDir: '/project/_site',
-      watchIgnore: [],
-    })
-    const ignored = await captureIgnored(registry)
-    const extensionFilter = ignored[ignored.length - 1] as RegExp
-    for (const ext of ['md', 'html', 'css', 'scss', 'jpg', 'png', 'svg', 'txt']) {
-      expect(extensionFilter.test(`/project/src/file.${ext}`), `.${ext}`).toBe(true)
-    }
-  })
-
-  test('does not ignore importable file extensions', async () => {
-    const registry = makeRegistry({
-      projectDir: '/project',
-      servePath: '/project/.netlify/edge-functions-serve',
-      publishDir: '/project/_site',
-      watchIgnore: [],
-    })
-    const ignored = await captureIgnored(registry)
-    const extensionFilter = ignored[ignored.length - 1] as RegExp
-    for (const ext of ['js', 'mjs', 'cjs', 'ts', 'tsx', 'jsx', 'json', 'wasm']) {
-      expect(extensionFilter.test(`/project/src/file.${ext}`), `.${ext}`).toBe(false)
-    }
-  })
-
-  test('matches a path whose last segment looks like a non-importable extension (known limitation)', async () => {
-    // A bare path like "/project/v2.0" ends with ".0" which the regex cannot
-    // distinguish from a file extension — it will match and be ignored.
-    // Directories with dotted names (e.g. "v2.0") should be excluded via
-    // --watch-ignore if this causes problems.
-    const registry = makeRegistry({
-      projectDir: '/project',
-      servePath: '/project/.netlify/edge-functions-serve',
-      publishDir: '/project/_site',
-      watchIgnore: [],
-    })
-    const ignored = await captureIgnored(registry)
-    const extensionFilter = ignored[ignored.length - 1] as RegExp
-    expect(extensionFilter.test('/project/v2.0')).toBe(true)
-  })
-
-  test('does not ignore a file nested under a dotted directory name', async () => {
-    // Even though "/project/v2.0" itself matches, a .ts file inside it does not.
-    const registry = makeRegistry({
-      projectDir: '/project',
-      servePath: '/project/.netlify/edge-functions-serve',
-      publishDir: '/project/_site',
-      watchIgnore: [],
-    })
-    const ignored = await captureIgnored(registry)
-    const extensionFilter = ignored[ignored.length - 1] as RegExp
-    expect(extensionFilter.test('/project/v2.0/handler.ts')).toBe(false)
-  })
-})
 
 describe('constructor path resolution', () => {
   const makeOptions = (overrides: { publishDir?: string; watchIgnore?: string[] } = {}) => ({

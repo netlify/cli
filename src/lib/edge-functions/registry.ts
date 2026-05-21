@@ -739,14 +739,11 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
       return toIgnoredRegex(p)
     }
 
-    const NON_IMPORTABLE_EDGE_ASSET_EXTENSIONS = /\.(?!(js|mjs|cjs|ts|tsx|jsx|json|wasm)$)[^./]+$/i
-
     const ignored: (string | RegExp)[] = [
       toIgnoredRegex(this.servePath),
       toIgnoredRegex(this.publishDir),
       ...this.watchIgnore.map(toIgnoredEntry),
       this.internalImportMapPath,
-      NON_IMPORTABLE_EDGE_ASSET_EXTENSIONS,
     ]
     const watcher = await watchDebounced(this.projectDir, {
       ignored,
