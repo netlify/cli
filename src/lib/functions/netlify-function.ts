@@ -314,7 +314,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   }
 
   /**
-   * Matches all routes agains the incoming request. If a match is found, then the matched route is returned.
+   * Matches all routes against the incoming request. If a match is found, then the matched route is returned.
    * @returns matched route
    */
   async matchURLPath(rawPath: string, method: string, hasStaticFile: () => Promise<boolean>) {
