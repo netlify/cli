@@ -22,12 +22,7 @@ vi.mock('@netlify/dev-utils', async (importOriginal) => {
 
 // Creates a partial registry via Object.create so the constructor is bypassed,
 // then populates the private fields needed by setupWatcherForDirectory.
-const makeRegistry = (fields: {
-  projectDir: string
-  servePath: string
-  publishDir: string
-  watchIgnore: string[]
-}) => {
+const makeRegistry = (fields: { projectDir: string; servePath: string; publishDir: string; watchIgnore: string[] }) => {
   const registry = Object.create(EdgeFunctionsRegistryImpl.prototype) as EdgeFunctionsRegistryImpl
   Object.assign(registry, {
     ...fields,
@@ -162,7 +157,6 @@ describe('internalImportMapPath is kept as a plain string', () => {
   })
 })
 
-
 describe('constructor path resolution', () => {
   const makeOptions = (overrides: { publishDir?: string; watchIgnore?: string[] } = {}) => ({
     aiGatewayContext: null,
@@ -207,7 +201,10 @@ describe('constructor path resolution', () => {
 
   test('resolves relative watchIgnore paths against projectDir', () => {
     const registry = new EdgeFunctionsRegistryImpl(makeOptions({ watchIgnore: ['src/posts', 'content'] }))
-    expect((registry as unknown as RegistryPrivateState).watchIgnore).toEqual(['/project/src/posts', '/project/content'])
+    expect((registry as unknown as RegistryPrivateState).watchIgnore).toEqual([
+      '/project/src/posts',
+      '/project/content',
+    ])
   })
 
   test('keeps absolute watchIgnore paths unchanged', () => {
@@ -218,9 +215,10 @@ describe('constructor path resolution', () => {
   })
 
   test('handles a mix of relative and absolute watchIgnore paths', () => {
-    const registry = new EdgeFunctionsRegistryImpl(
-      makeOptions({ watchIgnore: ['src/posts', '/absolute/content'] }),
-    )
-    expect((registry as unknown as RegistryPrivateState).watchIgnore).toEqual(['/project/src/posts', '/absolute/content'])
+    const registry = new EdgeFunctionsRegistryImpl(makeOptions({ watchIgnore: ['src/posts', '/absolute/content'] }))
+    expect((registry as unknown as RegistryPrivateState).watchIgnore).toEqual([
+      '/project/src/posts',
+      '/absolute/content',
+    ])
   })
 })
