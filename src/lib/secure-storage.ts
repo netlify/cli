@@ -1,8 +1,16 @@
 import { getAPIToken, getGlobalConfigStore, type GlobalConfigStore } from '@netlify/dev-utils'
 
+import { isInteractive } from '../utils/scripted-commands.js'
+import { track } from '../utils/telemetry/index.js'
+
 const SERVICE_NAME = 'netlify-cli'
-const SECURE_STORAGE_ENABLED_KEY = 'secureStorage.enabled'
 const SMOKETEST_ACCOUNT = '__netlify_cli_smoketest__'
+
+// Setting this env var falls back to the legacy behavior of storing the auth token
+// in plaintext in the global netlify config file. Intended as a temporary escape hatch.
+export const LEGACY_STORAGE_ENV_VAR = 'NETLIFY_USE_LEGACY_AUTH_STORAGE'
+
+export type TokenStorageMode = 'keychain' | 'legacy'
 
 type KeyringModule = typeof import('@napi-rs/keyring')
 
@@ -25,6 +33,9 @@ const createEntry = async (userId: string) => {
   }
 }
 
+export const isLegacyAuthStorageForced = (): boolean =>
+  process.env[LEGACY_STORAGE_ENV_VAR] != null && process.env[LEGACY_STORAGE_ENV_VAR] !== ''
+
 export const isKeychainAvailable = async (): Promise<boolean> => {
   const keyring = await loadKeyring()
   if (!keyring) return false
@@ -38,13 +49,6 @@ export const isKeychainAvailable = async (): Promise<boolean> => {
   } catch {
     return false
   }
-}
-
-export const isSecureStorageEnabled = (globalConfig: GlobalConfigStore): boolean =>
-  Boolean(globalConfig.get(SECURE_STORAGE_ENABLED_KEY))
-
-export const setSecureStorageEnabledFlag = (globalConfig: GlobalConfigStore, enabled: boolean): void => {
-  globalConfig.set(SECURE_STORAGE_ENABLED_KEY, enabled)
 }
 
 export const storeTokenInKeychain = async (userId: string, token: string): Promise<boolean> => {
@@ -78,17 +82,78 @@ export const deleteTokenFromKeychain = async (userId: string): Promise<boolean> 
   }
 }
 
+const trackStored = (mode: TokenStorageMode, migrated: boolean, keychainFailed = false): void => {
+  void track('user_authTokenStored', { mode, migrated, ...(keychainFailed ? { keychainFailed: true } : {}) })
+}
+
+const trackRead = (mode: TokenStorageMode): void => {
+  void track('user_authTokenRead', { mode })
+}
+
+const attemptSilentMigration = async (
+  userId: string,
+  token: string,
+  globalConfig: GlobalConfigStore,
+): Promise<boolean> => {
+  if (!isInteractive()) return false
+  const ok = await storeTokenInKeychain(userId, token)
+  if (!ok) {
+    trackStored('legacy', false, true)
+    return false
+  }
+  globalConfig.set(`users.${userId}.auth.token`, undefined)
+  trackStored('keychain', true)
+  return true
+}
+
 export const getStoredAPIToken = async (): Promise<{ token: string | undefined; fromKeychain: boolean }> => {
   const globalConfig = await getGlobalConfigStore()
+  const userId = globalConfig.get('userId') as string | undefined
 
-  if (isSecureStorageEnabled(globalConfig)) {
-    const userId = globalConfig.get('userId') as string | undefined
-    if (userId) {
-      const secureToken = await getTokenFromKeychain(userId)
-      if (secureToken) return { token: secureToken, fromKeychain: true }
+  if (isLegacyAuthStorageForced()) {
+    const token = await getAPIToken()
+    if (token) trackRead('legacy')
+    return { token, fromKeychain: false }
+  }
+
+  if (userId) {
+    const keychainToken = await getTokenFromKeychain(userId)
+    if (keychainToken) {
+      trackRead('keychain')
+      return { token: keychainToken, fromKeychain: true }
     }
   }
 
-  const token = await getAPIToken()
-  return { token, fromKeychain: false }
+  const legacyToken = await getAPIToken()
+  if (!legacyToken) {
+    return { token: undefined, fromKeychain: false }
+  }
+
+  if (userId) {
+    const migrated = await attemptSilentMigration(userId, legacyToken, globalConfig)
+    if (migrated) {
+      return { token: legacyToken, fromKeychain: true }
+    }
+  }
+  trackRead('legacy')
+  return { token: legacyToken, fromKeychain: false }
+}
+
+export const writeAuthTokenForStorage = async (
+  userId: string,
+  accessToken: string,
+): Promise<{ mode: TokenStorageMode; keychainFailed: boolean }> => {
+  if (isLegacyAuthStorageForced()) {
+    trackStored('legacy', false)
+    return { mode: 'legacy', keychainFailed: false }
+  }
+
+  const ok = await storeTokenInKeychain(userId, accessToken)
+  if (ok) {
+    trackStored('keychain', false)
+    return { mode: 'keychain', keychainFailed: false }
+  }
+
+  trackStored('legacy', false, true)
+  return { mode: 'legacy', keychainFailed: true }
 }

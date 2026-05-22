@@ -18,7 +18,7 @@ import merge from 'lodash/merge.js'
 import pick from 'lodash/pick.js'
 
 import { getAgent } from '../lib/http-agent.js'
-import { isSecureStorageEnabled, storeTokenInKeychain } from '../lib/secure-storage.js'
+import { writeAuthTokenForStorage } from '../lib/secure-storage.js'
 import {
   NETLIFY_CYAN,
   USER_AGENT,
@@ -191,21 +191,15 @@ export type BaseOptionValues = {
 export async function storeToken(
   globalConfig: Awaited<ReturnType<typeof getGlobalConfigStore>>,
   { userId, name, email, accessToken }: { userId: string; name?: string; email?: string; accessToken: string },
-) {
-  let tokenForConfig: string | undefined = accessToken
-  if (isSecureStorageEnabled(globalConfig)) {
-    const storedInKeychain = await storeTokenInKeychain(userId, accessToken)
-    if (storedInKeychain) {
-      tokenForConfig = undefined
-    }
-  }
+): Promise<{ mode: 'keychain' | 'legacy'; keychainFailed: boolean }> {
+  const result = await writeAuthTokenForStorage(userId, accessToken)
 
   const userData = merge(globalConfig.get(`users.${userId}`), {
     id: userId,
     name,
     email,
     auth: {
-      token: tokenForConfig,
+      token: result.mode === 'keychain' ? undefined : accessToken,
       github: {
         user: undefined,
         token: undefined,
@@ -214,6 +208,7 @@ export async function storeToken(
   })
   globalConfig.set('userId', userId)
   globalConfig.set(`users.${userId}`, userData)
+  return result
 }
 
 /** Base command class that provides tracking and config initialization */
@@ -560,7 +555,14 @@ export default class BaseCommand extends Command {
       return logAndThrowError('Could not retrieve user ID from Netlify API')
     }
 
-    await storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
+    const { keychainFailed } = await storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
+    if (keychainFailed) {
+      warn(
+        `Could not store the auth token in your OS keychain. Falling back to the plaintext config file. Set ${chalk.cyanBright(
+          'NETLIFY_USE_LEGACY_AUTH_STORAGE=1',
+        )} to silence this and always use the plaintext config file.`,
+      )
+    }
 
     await identify({
       name,

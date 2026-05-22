@@ -161,13 +161,11 @@ Create and modify files in a project using pre-defined recipes
 
 ### [secure-storage](/commands/secure-storage)
 
-Control whether the Netlify auth token is stored in your OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service) instead of in plaintext in the global netlify config file
+Inspect where the Netlify auth token is stored on this machine. By default tokens are stored in your OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service)
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`secure-storage:disable`](/commands/secure-storage#secure-storagedisable) | Disable secure storage of the Netlify auth token  |
-| [`secure-storage:enable`](/commands/secure-storage#secure-storageenable) | Enable secure storage of the Netlify auth token in the OS keychain  |
-| [`secure-storage:status`](/commands/secure-storage#secure-storagestatus) | Show the current secure storage status  |
+| [`secure-storage:status`](/commands/secure-storage#secure-storagestatus) | Show where the Netlify auth token is stored on this machine  |
 
 
 ### [serve](/commands/serve)

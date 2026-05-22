@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   globalConfigGet: vi.fn(),
   globalConfigSet: vi.fn(),
   getAPIToken: vi.fn(),
+  isInteractive: vi.fn(),
+  track: vi.fn(),
 }))
 
 vi.mock('@napi-rs/keyring', () => {
@@ -36,12 +38,22 @@ vi.mock('@netlify/dev-utils', () => ({
   }),
 }))
 
+vi.mock('../../../src/utils/scripted-commands.js', () => ({
+  isInteractive: mocks.isInteractive,
+}))
+
+vi.mock('../../../src/utils/telemetry/index.js', () => ({
+  track: mocks.track,
+}))
+
 const importFresh = async () => {
   vi.resetModules()
   return await import('../../../src/lib/secure-storage.js')
 }
 
 describe('secure-storage', () => {
+  const originalEnv = process.env.NETLIFY_USE_LEGACY_AUTH_STORAGE
+
   beforeEach(() => {
     mocks.entrySetPassword.mockReset()
     mocks.entryGetPassword.mockReset()
@@ -50,32 +62,36 @@ describe('secure-storage', () => {
     mocks.globalConfigGet.mockReset()
     mocks.globalConfigSet.mockReset()
     mocks.getAPIToken.mockReset()
+    mocks.isInteractive.mockReset()
+    mocks.track.mockReset()
+    delete process.env.NETLIFY_USE_LEGACY_AUTH_STORAGE
   })
 
   afterEach(() => {
+    if (originalEnv !== undefined) {
+      process.env.NETLIFY_USE_LEGACY_AUTH_STORAGE = originalEnv
+    } else {
+      delete process.env.NETLIFY_USE_LEGACY_AUTH_STORAGE
+    }
     vi.clearAllMocks()
   })
 
-  describe('isSecureStorageEnabled', () => {
-    test('returns true when flag is set', async () => {
-      const { isSecureStorageEnabled } = await importFresh()
-      const globalConfig = { get: vi.fn().mockReturnValue(true), set: vi.fn() } as never
-      expect(isSecureStorageEnabled(globalConfig)).toBe(true)
+  describe('isLegacyAuthStorageForced', () => {
+    test('returns true when the env var is set', async () => {
+      process.env.NETLIFY_USE_LEGACY_AUTH_STORAGE = '1'
+      const { isLegacyAuthStorageForced } = await importFresh()
+      expect(isLegacyAuthStorageForced()).toBe(true)
     })
 
-    test('returns false when flag is not set', async () => {
-      const { isSecureStorageEnabled } = await importFresh()
-      const globalConfig = { get: vi.fn().mockReturnValue(undefined), set: vi.fn() } as never
-      expect(isSecureStorageEnabled(globalConfig)).toBe(false)
+    test('returns false when the env var is empty', async () => {
+      process.env.NETLIFY_USE_LEGACY_AUTH_STORAGE = ''
+      const { isLegacyAuthStorageForced } = await importFresh()
+      expect(isLegacyAuthStorageForced()).toBe(false)
     })
-  })
 
-  describe('setSecureStorageEnabledFlag', () => {
-    test('writes the flag to the global config', async () => {
-      const { setSecureStorageEnabledFlag } = await importFresh()
-      const set = vi.fn()
-      setSecureStorageEnabledFlag({ get: vi.fn(), set } as never, true)
-      expect(set).toHaveBeenCalledWith('secureStorage.enabled', true)
+    test('returns false when the env var is unset', async () => {
+      const { isLegacyAuthStorageForced } = await importFresh()
+      expect(isLegacyAuthStorageForced()).toBe(false)
     })
   })
 
@@ -148,23 +164,56 @@ describe('secure-storage', () => {
       const { isKeychainAvailable } = await importFresh()
       await expect(isKeychainAvailable()).resolves.toBe(false)
     })
+  })
 
-    test('returns false when the round-trip returns a different value', async () => {
+  describe('writeAuthTokenForStorage', () => {
+    test('writes to keychain by default', async () => {
       mocks.entrySetPassword.mockReturnValue(undefined)
-      mocks.entryGetPassword.mockReturnValue('something else')
-      mocks.entryDeletePassword.mockReturnValue(true)
-      const { isKeychainAvailable } = await importFresh()
-      await expect(isKeychainAvailable()).resolves.toBe(false)
+      const { writeAuthTokenForStorage } = await importFresh()
+
+      const result = await writeAuthTokenForStorage('user-1', 'tok-1')
+
+      expect(result).toEqual({ mode: 'keychain', keychainFailed: false })
+      expect(mocks.entrySetPassword).toHaveBeenCalledWith('tok-1')
+      expect(mocks.track).toHaveBeenCalledWith(
+        'user_authTokenStored',
+        expect.objectContaining({ mode: 'keychain', migrated: false }),
+      )
+    })
+
+    test('falls back to legacy with a flag when keychain fails', async () => {
+      mocks.entrySetPassword.mockImplementation(() => {
+        throw new Error('AccessDenied')
+      })
+      const { writeAuthTokenForStorage } = await importFresh()
+
+      const result = await writeAuthTokenForStorage('user-1', 'tok-1')
+
+      expect(result).toEqual({ mode: 'legacy', keychainFailed: true })
+      expect(mocks.track).toHaveBeenCalledWith(
+        'user_authTokenStored',
+        expect.objectContaining({ mode: 'legacy', keychainFailed: true }),
+      )
+    })
+
+    test('uses legacy when the env var forces it', async () => {
+      process.env.NETLIFY_USE_LEGACY_AUTH_STORAGE = '1'
+      const { writeAuthTokenForStorage } = await importFresh()
+
+      const result = await writeAuthTokenForStorage('user-1', 'tok-1')
+
+      expect(result).toEqual({ mode: 'legacy', keychainFailed: false })
+      expect(mocks.entrySetPassword).not.toHaveBeenCalled()
+      expect(mocks.track).toHaveBeenCalledWith(
+        'user_authTokenStored',
+        expect.objectContaining({ mode: 'legacy', migrated: false }),
+      )
     })
   })
 
   describe('getStoredAPIToken', () => {
-    test('returns the keychain token when secure storage is enabled and a token is present', async () => {
-      mocks.globalConfigGet.mockImplementation((key: string) => {
-        if (key === 'secureStorage.enabled') return true
-        if (key === 'userId') return 'user-1'
-        return undefined
-      })
+    test('returns the keychain token when present', async () => {
+      mocks.globalConfigGet.mockImplementation((key: string) => (key === 'userId' ? 'user-1' : undefined))
       mocks.entryGetPassword.mockReturnValue('tok-from-keychain')
 
       const { getStoredAPIToken } = await importFresh()
@@ -172,27 +221,86 @@ describe('secure-storage', () => {
 
       expect(result).toEqual({ token: 'tok-from-keychain', fromKeychain: true })
       expect(mocks.getAPIToken).not.toHaveBeenCalled()
+      expect(mocks.track).toHaveBeenCalledWith('user_authTokenRead', { mode: 'keychain' })
     })
 
-    test('falls back to the legacy plaintext token when secure storage is enabled but the keychain has no entry', async () => {
-      mocks.globalConfigGet.mockImplementation((key: string) => {
-        if (key === 'secureStorage.enabled') return true
-        if (key === 'userId') return 'user-1'
-        return undefined
+    test('returns undefined when no token is found anywhere', async () => {
+      mocks.globalConfigGet.mockImplementation((key: string) => (key === 'userId' ? 'user-1' : undefined))
+      mocks.entryGetPassword.mockImplementation(() => {
+        throw new Error('NoEntry')
       })
+      mocks.getAPIToken.mockResolvedValue(undefined)
+
+      const { getStoredAPIToken } = await importFresh()
+      const result = await getStoredAPIToken()
+
+      expect(result).toEqual({ token: undefined, fromKeychain: false })
+    })
+
+    test('auto-migrates a legacy token to the keychain in interactive sessions', async () => {
+      mocks.globalConfigGet.mockImplementation((key: string) => (key === 'userId' ? 'user-1' : undefined))
+      mocks.entryGetPassword.mockImplementation(() => {
+        throw new Error('NoEntry')
+      })
+      mocks.entrySetPassword.mockReturnValue(undefined)
+      mocks.getAPIToken.mockResolvedValue('legacy-tok')
+      mocks.isInteractive.mockReturnValue(true)
+
+      const { getStoredAPIToken } = await importFresh()
+      const result = await getStoredAPIToken()
+
+      expect(result).toEqual({ token: 'legacy-tok', fromKeychain: true })
+      expect(mocks.entrySetPassword).toHaveBeenCalledWith('legacy-tok')
+      expect(mocks.globalConfigSet).toHaveBeenCalledWith('users.user-1.auth.token', undefined)
+      expect(mocks.track).toHaveBeenCalledWith(
+        'user_authTokenStored',
+        expect.objectContaining({ mode: 'keychain', migrated: true }),
+      )
+    })
+
+    test('does not attempt migration in non-interactive sessions', async () => {
+      mocks.globalConfigGet.mockImplementation((key: string) => (key === 'userId' ? 'user-1' : undefined))
       mocks.entryGetPassword.mockImplementation(() => {
         throw new Error('NoEntry')
       })
       mocks.getAPIToken.mockResolvedValue('legacy-tok')
+      mocks.isInteractive.mockReturnValue(false)
 
       const { getStoredAPIToken } = await importFresh()
       const result = await getStoredAPIToken()
 
       expect(result).toEqual({ token: 'legacy-tok', fromKeychain: false })
+      expect(mocks.entrySetPassword).not.toHaveBeenCalled()
+      expect(mocks.globalConfigSet).not.toHaveBeenCalled()
+      expect(mocks.track).toHaveBeenCalledWith('user_authTokenRead', { mode: 'legacy' })
     })
 
-    test('uses the legacy plaintext token when secure storage is disabled', async () => {
-      mocks.globalConfigGet.mockReturnValue(undefined)
+    test('returns the legacy token when migration fails and tracks the failure', async () => {
+      mocks.globalConfigGet.mockImplementation((key: string) => (key === 'userId' ? 'user-1' : undefined))
+      mocks.entryGetPassword.mockImplementation(() => {
+        throw new Error('NoEntry')
+      })
+      mocks.entrySetPassword.mockImplementation(() => {
+        throw new Error('AccessDenied')
+      })
+      mocks.getAPIToken.mockResolvedValue('legacy-tok')
+      mocks.isInteractive.mockReturnValue(true)
+
+      const { getStoredAPIToken } = await importFresh()
+      const result = await getStoredAPIToken()
+
+      expect(result).toEqual({ token: 'legacy-tok', fromKeychain: false })
+      expect(mocks.globalConfigSet).not.toHaveBeenCalled()
+      expect(mocks.track).toHaveBeenCalledWith(
+        'user_authTokenStored',
+        expect.objectContaining({ mode: 'legacy', keychainFailed: true }),
+      )
+      expect(mocks.track).toHaveBeenCalledWith('user_authTokenRead', { mode: 'legacy' })
+    })
+
+    test('skips keychain entirely when legacy mode is forced', async () => {
+      process.env.NETLIFY_USE_LEGACY_AUTH_STORAGE = '1'
+      mocks.globalConfigGet.mockImplementation((key: string) => (key === 'userId' ? 'user-1' : undefined))
       mocks.getAPIToken.mockResolvedValue('legacy-tok')
 
       const { getStoredAPIToken } = await importFresh()
@@ -200,6 +308,7 @@ describe('secure-storage', () => {
 
       expect(result).toEqual({ token: 'legacy-tok', fromKeychain: false })
       expect(mocks.entryGetPassword).not.toHaveBeenCalled()
+      expect(mocks.track).toHaveBeenCalledWith('user_authTokenRead', { mode: 'legacy' })
     })
   })
 })

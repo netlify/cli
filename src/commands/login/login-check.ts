@@ -1,7 +1,7 @@
 import { NetlifyAPI } from '@netlify/api'
 import { OptionValues } from 'commander'
 
-import { log, logAndThrowError, logJson } from '../../utils/command-helpers.js'
+import { chalk, log, logAndThrowError, logJson, warn } from '../../utils/command-helpers.js'
 import { storeToken } from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
 
@@ -45,12 +45,19 @@ export const loginCheck = async (
     return logAndThrowError('Could not retrieve user ID from Netlify API')
   }
 
-  await storeToken(globalConfig, {
+  const { keychainFailed } = await storeToken(globalConfig, {
     userId: user.id,
     name: user.full_name,
     email: user.email,
     accessToken,
   })
+  if (keychainFailed) {
+    warn(
+      `Could not store the auth token in your OS keychain. Falling back to the plaintext config file. Set ${chalk.cyanBright(
+        'NETLIFY_USE_LEGACY_AUTH_STORAGE=1',
+      )} to silence this.`,
+    )
+  }
 
   logJson({
     status: 'authorized',
