@@ -18,6 +18,7 @@ import merge from 'lodash/merge.js'
 import pick from 'lodash/pick.js'
 
 import { getAgent } from '../lib/http-agent.js'
+import { isSecureStorageEnabled, storeTokenInKeychain } from '../lib/secure-storage.js'
 import {
   NETLIFY_CYAN,
   USER_AGENT,
@@ -187,16 +188,24 @@ export type BaseOptionValues = {
   verbose?: boolean
 }
 
-export function storeToken(
+export async function storeToken(
   globalConfig: Awaited<ReturnType<typeof getGlobalConfigStore>>,
   { userId, name, email, accessToken }: { userId: string; name?: string; email?: string; accessToken: string },
 ) {
+  let tokenForConfig: string | undefined = accessToken
+  if (isSecureStorageEnabled(globalConfig)) {
+    const storedInKeychain = await storeTokenInKeychain(userId, accessToken)
+    if (storedInKeychain) {
+      tokenForConfig = undefined
+    }
+  }
+
   const userData = merge(globalConfig.get(`users.${userId}`), {
     id: userId,
     name,
     email,
     auth: {
-      token: accessToken,
+      token: tokenForConfig,
       github: {
         user: undefined,
         token: undefined,
@@ -551,7 +560,7 @@ export default class BaseCommand extends Command {
       return logAndThrowError('Could not retrieve user ID from Netlify API')
     }
 
-    storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
+    await storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
 
     await identify({
       name,

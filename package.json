@@ -56,6 +56,7 @@
   },
   "dependencies": {
     "@fastify/static": "^9.1.1",
+    "@napi-rs/keyring": "^1.3.0",
     "@netlify/ai": "^0.4.1",
     "@netlify/api": "^14.0.19",
     "@netlify/blobs": "^10.7.7",

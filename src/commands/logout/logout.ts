@@ -1,5 +1,6 @@
 import { OptionValues } from 'commander'
 
+import { deleteTokenFromKeychain } from '../../lib/secure-storage.js'
 import { exit, getToken, log } from '../../utils/command-helpers.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
@@ -16,7 +17,11 @@ export const logout = async (_options: OptionValues, command: BaseCommand) => {
 
   await track('user_logout')
 
-  // unset userID without deleting key
+  const userId = command.netlify.globalConfig.get('userId') as string | undefined
+  if (userId) {
+    await deleteTokenFromKeychain(userId)
+    command.netlify.globalConfig.set(`users.${userId}.auth.token`, undefined)
+  }
   command.netlify.globalConfig.set('userId', null)
 
   if (location === 'env') {

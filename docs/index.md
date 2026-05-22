@@ -159,6 +159,17 @@ Create and modify files in a project using pre-defined recipes
 | [`recipes:list`](/commands/recipes#recipeslist) | List the recipes available to create and modify files in a project  |
 
 
+### [secure-storage](/commands/secure-storage)
+
+Control whether the Netlify auth token is stored in your OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service) instead of in plaintext in the global netlify config file
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`secure-storage:disable`](/commands/secure-storage#secure-storagedisable) | Disable secure storage of the Netlify auth token  |
+| [`secure-storage:enable`](/commands/secure-storage#secure-storageenable) | Enable secure storage of the Netlify auth token in the OS keychain  |
+| [`secure-storage:status`](/commands/secure-storage#secure-storagestatus) | Show the current secure storage status  |
+
+
 ### [serve](/commands/serve)
 
 Build the project for production and serve locally. This does not watch the code for changes, so if you need to rebuild your project then you must exit and run `serve` again.
