@@ -195,6 +195,26 @@ describe.concurrent('frameworks/framework-detection', () => {
     },
   )
 
+  test.skipIf(process.platform === 'win32')(
+    'should use generic command failure when an existing command exits with 127',
+    async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.withNetlifyToml({ config: { dev: { command: 'bash -c "exit 127"', targetPort: 3000 } } }).build()
+
+        try {
+          await withDevServer({ cwd: builder.directory }, async () => {}, true)
+          // a failure is expected since this command intentionally exits with 127
+          t.expect.unreachable()
+        } catch (err) {
+          t.expect(err).toHaveProperty('stdout')
+          const output = normalizeSnapshot((err as execa.ExecaReturnValue).stdout, { duration: true, filePath: true })
+          t.expect(output).toContain('Command failed with exit code *')
+          t.expect(output).not.toContain("Please verify 'bash' exists")
+        }
+      })
+    },
+  )
+
   test('should force a specific framework when configured', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'create-react-app' } } }).build()

@@ -38,6 +38,18 @@ const getCommandName = (command: string) => {
 const canReportMissingCommandName = (command: string) =>
   !/(?:&&|\|\||[|;<>])/.test(command) && !/^\s*[\w.-]+=/.test(command)
 
+const isMissingCommandMessage = ({ command, output }: { command: string; output: string }) =>
+  output.split(/\r?\n/).some((line) => {
+    const normalizedLine = line.toLowerCase()
+    const normalizedCommand = command.toLowerCase()
+
+    return (
+      normalizedLine.includes(normalizedCommand) &&
+      (normalizedLine.includes('not found') ||
+        normalizedLine.includes('is not recognized as an internal or external command'))
+    )
+  })
+
 const createStripAnsiControlCharsStream = (): Transform =>
   new Transform({
     transform(chunk, _encoding, callback) {
@@ -186,5 +198,5 @@ const isNonExistingCommandError = ({ command, error: commandError }: { command: 
     .filter((value): value is string => typeof value === 'string')
     .join('\n')
 
-  return commandError.exitCode === 127 || output.includes('is not recognized as an internal or external command')
+  return isMissingCommandMessage({ command, output })
 }
