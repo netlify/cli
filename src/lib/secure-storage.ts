@@ -1,13 +1,17 @@
-import { getAPIToken, getGlobalConfigStore, type GlobalConfigStore } from '@netlify/dev-utils'
+import path from 'path'
 
+import { getAPIToken, getGlobalConfigStore, type GlobalConfigStore } from '@netlify/dev-utils'
+import envPaths from 'env-paths'
+import inquirer from 'inquirer'
+
+import { chalk, log } from '../utils/command-helpers.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { track } from '../utils/telemetry/index.js'
 
 const SERVICE_NAME = 'netlify-cli'
 const SMOKETEST_ACCOUNT = '__netlify_cli_smoketest__'
+const MIGRATION_DECLINED_KEY = 'auth.keychainMigrationDeclined'
 
-// Setting this env var falls back to the legacy behavior of storing the auth token
-// in plaintext in the global netlify config file. Intended as a temporary escape hatch.
 export const LEGACY_STORAGE_ENV_VAR = 'NETLIFY_USE_LEGACY_AUTH_STORAGE'
 
 export type TokenStorageMode = 'keychain' | 'legacy'
@@ -15,6 +19,12 @@ export type TokenStorageMode = 'keychain' | 'legacy'
 type KeyringModule = typeof import('@napi-rs/keyring')
 
 let keyringPromise: Promise<KeyringModule | null> | undefined
+let migrationPromptedThisSession = false
+
+export const getLegacyConfigFilePath = (): string => {
+  const paths = envPaths('netlify', { suffix: '' })
+  return path.join(paths.config, 'config.json')
+}
 
 const loadKeyring = (): Promise<KeyringModule | null> => {
   if (keyringPromise == null) {
@@ -90,18 +100,54 @@ const trackRead = (mode: TokenStorageMode): void => {
   void track('user_authTokenRead', { mode })
 }
 
-const attemptSilentMigration = async (
+const promptForMigration = async (): Promise<boolean> => {
+  log()
+  log(
+    `Your Netlify auth token is currently stored in plaintext at ${chalk.cyanBright(getLegacyConfigFilePath())}.`,
+  )
+  log(`The CLI can move it to your OS keychain (more secure). Your operating system may prompt you to allow access.`)
+  log()
+  try {
+    const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
+      {
+        type: 'confirm',
+        name: 'confirm',
+        message: 'Move the token to the keychain now?',
+        default: true,
+      },
+    ])
+    return confirm
+  } catch {
+    return false
+  }
+}
+
+const attemptMigration = async (
   userId: string,
   token: string,
   globalConfig: GlobalConfigStore,
 ): Promise<boolean> => {
   if (!isInteractive()) return false
+  if (migrationPromptedThisSession) return false
+  if (globalConfig.get(MIGRATION_DECLINED_KEY) === true) return false
+
+  migrationPromptedThisSession = true
+
+  const confirmed = await promptForMigration()
+  if (!confirmed) {
+    globalConfig.set(MIGRATION_DECLINED_KEY, true)
+    void track('user_authTokenMigrationDeclined', {})
+    return false
+  }
+
   const ok = await storeTokenInKeychain(userId, token)
   if (!ok) {
+    log(chalk.yellow('Could not write to the OS keychain. Keeping the token in the config file.'))
     trackStored('legacy', false, true)
     return false
   }
   globalConfig.set(`users.${userId}.auth.token`, undefined)
+  log(chalk.green('Auth token moved to the OS keychain.'))
   trackStored('keychain', true)
   return true
 }
@@ -130,7 +176,7 @@ export const getStoredAPIToken = async (): Promise<{ token: string | undefined; 
   }
 
   if (userId) {
-    const migrated = await attemptSilentMigration(userId, legacyToken, globalConfig)
+    const migrated = await attemptMigration(userId, legacyToken, globalConfig)
     if (migrated) {
       return { token: legacyToken, fromKeychain: true }
     }
@@ -157,3 +203,4 @@ export const writeAuthTokenForStorage = async (
   trackStored('legacy', false, true)
   return { mode: 'legacy', keychainFailed: true }
 }
+

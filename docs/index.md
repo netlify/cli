@@ -159,15 +159,6 @@ Create and modify files in a project using pre-defined recipes
 | [`recipes:list`](/commands/recipes#recipeslist) | List the recipes available to create and modify files in a project  |
 
 
-### [secure-storage](/commands/secure-storage)
-
-Inspect where the Netlify auth token is stored on this machine. By default tokens are stored in your OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service)
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`secure-storage:status`](/commands/secure-storage#secure-storagestatus) | Show where the Netlify auth token is stored on this machine  |
-
-
 ### [serve](/commands/serve)
 
 Build the project for production and serve locally. This does not watch the code for changes, so if you need to rebuild your project then you must exit and run `serve` again.

@@ -46,7 +46,6 @@ import { createLogoutCommand } from './logout/index.js'
 import { createLogsCommand } from './logs/index.js'
 import { createOpenCommand } from './open/index.js'
 import { createRecipesCommand } from './recipes/index.js'
-import { createSecureStorageCommand } from './secure-storage/index.js'
 import { createServeCommand } from './serve/index.js'
 import { createSitesCommand } from './sites/index.js'
 import { createStatusCommand } from './status/index.js'
@@ -269,7 +268,6 @@ export const createMainCommand = (): BaseCommand => {
   createLoginCommand(program)
   createLogoutCommand(program)
   createOpenCommand(program)
-  createSecureStorageCommand(program)
   createServeCommand(program)
   createSitesCommand(program)
   createStatusCommand(program)
