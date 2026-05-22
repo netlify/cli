@@ -35,7 +35,7 @@ const formatTokenStorage = (location: TokenLocation): string => {
 export const status = async (options: OptionValues, command: BaseCommand) => {
   const { accounts, api, globalConfig, site, siteInfo } = command.netlify
   const currentUserId = globalConfig.get('userId') as string | undefined
-  const [accessToken, tokenLocation] = await getToken()
+  const [accessToken, tokenLocation] = await getToken(command.opts().auth as string | undefined)
 
   if (!accessToken) {
     log(`Not logged in. Please log in to see project status.`)
@@ -77,7 +77,6 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     Email: user.email,
     GitHub: ghuser,
     Teams: accounts.map(({ name }) => name),
-    'Auth token storage': formatTokenStorage(tokenLocation),
   }
 
   const cleanAccountData =
@@ -85,7 +84,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     // another lib.
     (clean as unknown as <T extends Record<string | number | symbol, unknown>>(obj: T) => Partial<T>)(accountData)
 
-  log(prettyjson.render(cleanAccountData))
+  log(prettyjson.render({ ...cleanAccountData, 'Auth token storage': formatTokenStorage(tokenLocation) }))
 
   if (!siteId) {
     warn('Did you run `netlify link` yet?')

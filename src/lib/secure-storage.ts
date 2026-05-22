@@ -9,7 +9,6 @@ import { isInteractive } from '../utils/scripted-commands.js'
 import { track } from '../utils/telemetry/index.js'
 
 const SERVICE_NAME = 'netlify-cli'
-const SMOKETEST_ACCOUNT = '__netlify_cli_smoketest__'
 const MIGRATION_DECLINED_KEY = 'auth.keychainMigrationDeclined'
 
 export const LEGACY_STORAGE_ENV_VAR = 'NETLIFY_USE_LEGACY_AUTH_STORAGE'
@@ -45,21 +44,6 @@ const createEntry = async (userId: string) => {
 
 export const isLegacyAuthStorageForced = (): boolean =>
   process.env[LEGACY_STORAGE_ENV_VAR] != null && process.env[LEGACY_STORAGE_ENV_VAR] !== ''
-
-export const isKeychainAvailable = async (): Promise<boolean> => {
-  const keyring = await loadKeyring()
-  if (!keyring) return false
-
-  try {
-    const entry = new keyring.Entry(SERVICE_NAME, SMOKETEST_ACCOUNT)
-    entry.setPassword('ok')
-    const value = entry.getPassword()
-    entry.deletePassword()
-    return value === 'ok'
-  } catch {
-    return false
-  }
-}
 
 export const storeTokenInKeychain = async (userId: string, token: string): Promise<boolean> => {
   const entry = await createEntry(userId)
@@ -122,12 +106,14 @@ const promptForMigration = async (): Promise<boolean> => {
   }
 }
 
+const isMigrationAllowed = (): boolean => isInteractive() || process.env.TESTING_PROMPTS === 'true'
+
 const attemptMigration = async (
   userId: string,
   token: string,
   globalConfig: GlobalConfigStore,
 ): Promise<boolean> => {
-  if (!isInteractive()) return false
+  if (!isMigrationAllowed()) return false
   if (migrationPromptedThisSession) return false
   if (globalConfig.get(MIGRATION_DECLINED_KEY) === true) return false
 
@@ -189,7 +175,7 @@ export const writeAuthTokenForStorage = async (
   userId: string,
   accessToken: string,
 ): Promise<{ mode: TokenStorageMode; keychainFailed: boolean }> => {
-  if (isLegacyAuthStorageForced()) {
+  if (isLegacyAuthStorageForced() || !isMigrationAllowed()) {
     trackStored('legacy', false)
     return { mode: 'legacy', keychainFailed: false }
   }
