@@ -319,7 +319,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     accountId,
     functionsRegistry,
     repositoryRoot,
-    watchIgnore: options.watchIgnore ?? [],
+    watchIgnore: devConfig.watchIgnore ?? [],
     deployEnvironment,
   })
 
