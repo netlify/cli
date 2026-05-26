@@ -4,12 +4,12 @@ import process from 'process'
 import { format, inspect } from 'util'
 
 import type { NetlifyAPI } from '@netlify/api'
-import { getAPIToken } from '@netlify/dev-utils'
 import { Chalk, type ChalkInstance as ChalkInstancePrimitiveType } from 'chalk'
 import type { Option } from 'commander'
 import WSL from 'is-wsl'
 import terminalLink from 'terminal-link'
 
+import { getStoredAPIToken } from '../lib/secure-storage.js'
 import { startSpinner } from '../lib/spinner.js'
 
 import getCLIPackageJson from './get-cli-package-json.js'
@@ -141,10 +141,11 @@ export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> =
   if (NETLIFY_AUTH_TOKEN && NETLIFY_AUTH_TOKEN !== 'null') {
     return [NETLIFY_AUTH_TOKEN, 'env']
   }
-  // 3. If no env var use global user setting
-  const tokenFromConfig = await getAPIToken()
-  if (tokenFromConfig) {
-    return [tokenFromConfig, 'config']
+  // 3. If no env var use global user setting (keychain when secure storage is enabled,
+  //    otherwise the plaintext token in the global config file)
+  const { token, fromKeychain } = await getStoredAPIToken()
+  if (token) {
+    return [token, fromKeychain ? 'keychain' : 'config']
   }
   return [null, 'not found']
 }
