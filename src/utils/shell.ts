@@ -38,6 +38,9 @@ const getCommandName = (command: string) => {
 const canReportMissingCommandName = (command: string) =>
   !/(?:&&|\|\||[|;<>])/.test(command) && !/^\s*[\w.-]+=/.test(command)
 
+const shouldUseShell = (command: string) =>
+  /(?:&&|\|\||[|;<>])/.test(command) || /^\s*[\w.-]+=(?:"[^"]*"|'[^']*'|\S+)\s+\S/.test(command)
+
 const isMissingCommandMessage = ({ command, output }: { command: string; output: string }) =>
   output.split(/\r?\n/).some((line) => {
     const normalizedLine = line.toLowerCase()
@@ -106,7 +109,7 @@ export const runCommand = (
   const { cwd, env = {}, spinner } = options
   const commandProcess = execa.command(command, {
     preferLocal: true,
-    shell: true,
+    shell: shouldUseShell(command),
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
     env: {
