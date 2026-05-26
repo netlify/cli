@@ -29,16 +29,16 @@ const isCommandResult = (value: unknown): value is CommandResult =>
     typeof (value as CommandResult).stderr === 'string' ||
     typeof (value as CommandResult).stdout === 'string')
 
-const getCommandName = (command: string) => {
+export const getCommandName = (command: string) => {
   const match = /^(?:"([^"]+)"|'([^']+)'|(\S+))/.exec(command.trim())
 
   return match?.[1] ?? match?.[2] ?? match?.[3] ?? command
 }
 
-const canReportMissingCommandName = (command: string) =>
+export const canReportMissingCommandName = (command: string) =>
   !/(?:&&|\|\||[|;<>])/.test(command) && !/^\s*[\w.-]+=/.test(command)
 
-const shouldUseShell = (command: string) =>
+export const shouldUseShell = (command: string) =>
   /(?:&&|\|\||[|;<>])/.test(command) || /^\s*[\w.-]+=(?:"[^"]*"|'[^']*'|\S+)\s+\S/.test(command)
 
 const isMissingCommandMessage = ({ command, output }: { command: string; output: string }) =>
@@ -181,7 +181,7 @@ export const runCommand = (
   return commandProcess
 }
 
-const isNonExistingCommandError = ({ command, error: commandError }: { command: string; error: unknown }) => {
+export const isNonExistingCommandError = ({ command, error: commandError }: { command: string; error: unknown }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
   if (isErrnoException(commandError) && commandError.code === 'ENOENT') {

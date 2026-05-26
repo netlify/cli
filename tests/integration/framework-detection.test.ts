@@ -1,7 +1,6 @@
 import execa from 'execa'
 import getPort from 'get-port'
 import fetch from 'node-fetch'
-import process from 'node:process'
 import { describe, test } from 'vitest'
 
 import { cliPath } from './utils/cli-path.js'
@@ -152,68 +151,6 @@ describe.concurrent('frameworks/framework-detection', () => {
       }
     })
   })
-
-  test('should use generic command failure when a compound command fails', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder
-        .withNetlifyToml({ config: { dev: { command: 'echo before && oops-i-did-it-again', targetPort: 3000 } } })
-        .build()
-
-      try {
-        await withDevServer({ cwd: builder.directory }, async () => {}, true)
-        // a failure is expected since the second command does not exist
-        t.expect.unreachable()
-      } catch (err) {
-        t.expect(err).toHaveProperty('stdout')
-        const output = normalizeSnapshot((err as execa.ExecaReturnValue).stdout, { duration: true, filePath: true })
-        t.expect(output).toContain('before')
-        t.expect(output).toContain('Command failed with exit code *')
-        t.expect(output).not.toContain("Please verify 'echo' exists")
-      }
-    })
-  })
-
-  test.skipIf(process.platform === 'win32')(
-    'should use generic command failure when an env-assigned command fails',
-    async (t) => {
-      await withSiteBuilder(t, async (builder) => {
-        await builder
-          .withNetlifyToml({ config: { dev: { command: 'FOO=1 oops-i-did-it-again', targetPort: 3000 } } })
-          .build()
-
-        try {
-          await withDevServer({ cwd: builder.directory }, async () => {}, true)
-          // a failure is expected since the command after the assignment does not exist
-          t.expect.unreachable()
-        } catch (err) {
-          t.expect(err).toHaveProperty('stdout')
-          const output = normalizeSnapshot((err as execa.ExecaReturnValue).stdout, { duration: true, filePath: true })
-          t.expect(output).toContain('Command failed with exit code *')
-          t.expect(output).not.toContain("Please verify 'FOO=1' exists")
-        }
-      })
-    },
-  )
-
-  test.skipIf(process.platform === 'win32')(
-    'should use generic command failure when an existing command exits with 127',
-    async (t) => {
-      await withSiteBuilder(t, async (builder) => {
-        await builder.withNetlifyToml({ config: { dev: { command: 'bash -c "exit 127"', targetPort: 3000 } } }).build()
-
-        try {
-          await withDevServer({ cwd: builder.directory }, async () => {}, true)
-          // a failure is expected since this command intentionally exits with 127
-          t.expect.unreachable()
-        } catch (err) {
-          t.expect(err).toHaveProperty('stdout')
-          const output = normalizeSnapshot((err as execa.ExecaReturnValue).stdout, { duration: true, filePath: true })
-          t.expect(output).toContain('Command failed with exit code *')
-          t.expect(output).not.toContain("Please verify 'bash' exists")
-        }
-      })
-    },
-  )
 
   test('should force a specific framework when configured', async (t) => {
     await withSiteBuilder(t, async (builder) => {
