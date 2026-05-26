@@ -35,7 +35,7 @@ const formatTokenStorage = (location: TokenLocation): string => {
 export const status = async (options: OptionValues, command: BaseCommand) => {
   const { accounts, api, globalConfig, site, siteInfo } = command.netlify
   const currentUserId = globalConfig.get('userId') as string | undefined
-  const [accessToken, tokenLocation] = await getToken(command.opts().auth as string | undefined)
+  const [accessToken, tokenLocation] = await getToken(command.opts<{ auth?: string }>().auth)
 
   if (!accessToken) {
     log(`Not logged in. Please log in to see project status.`)

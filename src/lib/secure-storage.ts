@@ -6,7 +6,7 @@ import inquirer from 'inquirer'
 
 import { chalk, log } from '../utils/command-helpers.js'
 import { isInteractive } from '../utils/scripted-commands.js'
-import { track } from '../utils/telemetry/index.js'
+import { reportError, track } from '../utils/telemetry/index.js'
 
 const SERVICE_NAME = 'netlify-cli'
 const MIGRATION_DECLINED_KEY = 'auth.keychainMigrationDeclined'
@@ -84,28 +84,28 @@ const trackRead = (mode: TokenStorageMode): void => {
   void track('user_authTokenRead', { mode })
 }
 
-const promptForMigration = async (): Promise<boolean> => {
+type PromptOutcome = { kind: 'answered'; confirmed: boolean } | { kind: 'error' }
+
+const promptForMigration = async (): Promise<PromptOutcome> => {
   log()
   log(
     `Your Netlify auth token is currently stored in plaintext at ${chalk.cyanBright(getLegacyConfigFilePath())}.`,
   )
   log(`The CLI can move it to your OS keychain (more secure). Your operating system may prompt you to allow access.`)
   log()
-  try {
-    const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
-      {
-        type: 'confirm',
-        name: 'confirm',
-        message: 'Move the token to the keychain now?',
-        default: true,
-      },
-    ])
-    return confirm
-  } catch {
-    return false
-  }
+  const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
+    {
+      type: 'confirm',
+      name: 'confirm',
+      message: 'Move the token to the keychain now?',
+      default: true,
+    },
+  ])
+  return { kind: 'answered', confirmed: confirm }
 }
 
+// Mirrors the production gate (interactive shell, not in CI) with a TESTING_PROMPTS escape
+// hatch so integration tests can drive the migration prompt via handleQuestions without a pty.
 const isMigrationAllowed = (): boolean => isInteractive() || process.env.TESTING_PROMPTS === 'true'
 
 const attemptMigration = async (
@@ -119,9 +119,23 @@ const attemptMigration = async (
 
   migrationPromptedThisSession = true
 
-  const confirmed = await promptForMigration()
-  if (!confirmed) {
+  let outcome: PromptOutcome
+  try {
+    outcome = await promptForMigration()
+  } catch (error) {
+    void reportError(error, { severity: 'error' })
+    outcome = { kind: 'error' }
+  }
+
+  if (outcome.kind === 'error') return false
+
+  if (!outcome.confirmed) {
     globalConfig.set(MIGRATION_DECLINED_KEY, true)
+    log(
+      chalk.dim(
+        `Got it. The CLI will not ask again. To revisit, run ${chalk.cyanBright('`netlify logout`')} and ${chalk.cyanBright('`netlify login`')}.`,
+      ),
+    )
     void track('user_authTokenMigrationDeclined', {})
     return false
   }
