@@ -333,7 +333,9 @@ export const startFunctionsServer = async (
     siteUrl,
     timeouts,
   } = options
+  process.stderr.write('[diagnose:funcs] enter startFunctionsServer\n')
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root, packagePath: command.workspacePackage })
+  process.stderr.write('[diagnose:funcs] after getInternalFunctionsDir\n')
   const functionsDirectories: string[] = []
   let manifest
 
@@ -342,6 +344,7 @@ export const startFunctionsServer = async (
   // them from source.
   if (loadDistFunctions) {
     const distPath = await getFunctionsDistPath({ base: site.root, packagePath: command.workspacePackage })
+    process.stderr.write(`[diagnose:funcs] after getFunctionsDistPath: ${distPath ?? '(none)'}\n`)
 
     if (distPath) {
       functionsDirectories.push(distPath)
@@ -353,8 +356,9 @@ export const startFunctionsServer = async (
         const data = await fs.readFile(manifestPath, 'utf8')
 
         manifest = JSON.parse(data)
+        process.stderr.write('[diagnose:funcs] manifest loaded\n')
       } catch {
-        // no-op
+        process.stderr.write('[diagnose:funcs] manifest read failed (ok)\n')
       }
     }
   } else {
@@ -376,8 +380,10 @@ export const startFunctionsServer = async (
   } catch {
     // no-op
   }
+  process.stderr.write(`[diagnose:funcs] dirs=${JSON.stringify(functionsDirectories)}\n`)
 
   if (functionsDirectories.length === 0) {
+    process.stderr.write('[diagnose:funcs] no dirs; returning\n')
     return
   }
 
@@ -403,11 +409,15 @@ export const startFunctionsServer = async (
       .map(({ scopes, ...rest }) => rest),
   })
 
+  process.stderr.write('[diagnose:funcs] before registry.scan\n')
   await functionsRegistry.scan(functionsDirectories)
+  process.stderr.write('[diagnose:funcs] after registry.scan\n')
 
   const server = getFunctionsServer({ ...options, functionsRegistry })
+  process.stderr.write('[diagnose:funcs] before startWebServer\n')
 
   await startWebServer({ server, settings, debug })
+  process.stderr.write('[diagnose:funcs] after startWebServer\n')
 
   return functionsRegistry
 }
