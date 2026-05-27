@@ -54,6 +54,7 @@ export const startFrameworkServer = async function ({
       // default ip version based on node version
       const ipVersion = parseInt(process.versions.node.split('.')[0]) >= 18 ? 6 : 4
       port = { open: true, ipVersion }
+      stopSpinner({ spinner })
     } else {
       const waitPortPromise = waitPort(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -81,8 +82,8 @@ export const startFrameworkServer = async function ({
       if (!port.open) {
         throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
       }
+      spinner.success(`${settings.framework || 'framework'} dev server ready on port ${settings.frameworkPort}`)
     }
-    spinner.success(`${settings.framework || 'framework'} dev server ready on port ${settings.frameworkPort}`)
   } catch (error_) {
     stopSpinner({ error: true, spinner })
     log(NETLIFYDEVERR, `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)

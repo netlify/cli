@@ -1,3 +1,4 @@
+import { existsSync } from 'fs'
 import { mkdir, readdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
@@ -9,7 +10,6 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import BaseCommand from '../base-command.js'
 import { generateNextPrefix } from './db-migration-new.js'
-import { carefullyWriteFile, spawnAsync } from './legacy/utils.js'
 import { connectRawClient, describeError } from './util/db-connection.js'
 import {
   DRIZZLE_SCHEMA_TS,
@@ -26,6 +26,7 @@ import { getPackageManager, installPackages, type PackageEntry, type PmInfo } fr
 import { relativeToProject } from './util/paths.js'
 import { PgClientExecutor } from './util/pg-client-executor.js'
 import { formatQueryResult } from './util/psql-formatter.js'
+import { spawnAsync } from './util/spawn-async.js'
 
 export interface DatabaseInitOptions {
   yes?: boolean
@@ -49,6 +50,26 @@ const info = (text: string): void => {
 
 const success = (text: string): void => {
   log(chalk.green(`✓ ${text}`))
+}
+
+const carefullyWriteFile = async (filePath: string, data: string, projectRoot: string) => {
+  if (existsSync(filePath)) {
+    type Answers = {
+      overwrite: boolean
+    }
+    const answers = await inquirer.prompt<Answers>([
+      {
+        type: 'confirm',
+        name: 'overwrite',
+        message: `Overwrite existing file .${filePath.replace(projectRoot, '')}?`,
+      },
+    ])
+    if (answers.overwrite) {
+      await writeFile(filePath, data)
+    }
+  } else {
+    await writeFile(filePath, data)
+  }
 }
 
 const readDirectoryEntries = async (dir: string): Promise<string[]> => {
@@ -175,13 +196,13 @@ const scaffoldStarter = async (
       cwd: projectRoot,
     })
 
-    // The seed's timestamp is generated AFTER drizzle-kit runs, so it
-    // lexicographically sorts after whatever drizzle-kit produced. If they
-    // happen to land in the same second, `create_planets` < `seed_planets`
-    // alphabetically still runs the CREATE TABLE first. We use the same
-    // directory layout drizzle-kit uses so both migrations look consistent
-    // in the migrations/ folder.
-    const seedDirName = `${generateNextPrefix([], 'timestamp')}_${SEED_MIGRATION_NAME}`
+    // The seed's timestamp is generated AFTER drizzle-kit runs. We read the
+    // migrations directory so `generateNextPrefix` can detect a collision and
+    // bump the prefix by one second if the two migrations landed in the same
+    // second — the deploy-time validator rejects duplicate numeric prefixes.
+    const existingMigrations = await readDirectoryEntries(migrationsDirectory)
+    const seedPrefix = generateNextPrefix(existingMigrations, 'timestamp')
+    const seedDirName = `${seedPrefix}_${SEED_MIGRATION_NAME}`
     const seedDir = join(migrationsDirectory, seedDirName)
     await mkdir(seedDir, { recursive: true })
     await writeFile(join(seedDir, 'migration.sql'), DRIZZLE_SEED_SQL, { flag: 'wx' })

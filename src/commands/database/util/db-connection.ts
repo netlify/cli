@@ -120,7 +120,7 @@ export async function connectRawClient(buildDir: string, urlOverride?: string): 
   const connectionString = state.get('dbConnectionString')
   if (!connectionString) {
     await netlifyDev.stop()
-    throw new Error('Local database failed to start. Set EXPERIMENTAL_NETLIFY_DB_ENABLED=1 to enable.')
+    throw new Error('Local database failed to start.')
   }
 
   const client = new Client({ connectionString })
