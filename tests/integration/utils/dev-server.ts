@@ -14,10 +14,16 @@ export const getExecaOptions = ({ cwd, env }: { cwd: string; env: NodeJS.Process
 
   const { LANG, LC_ALL, ...baseEnv } = process.env
 
+  // Diagnostics: surface uncaught exceptions, unhandled rejections, deprecation warnings,
+  // and any process.exit call (with stack trace) from the spawned CLI subprocess. Helps
+  // diagnose the Node 24 serve-mode hang where the subprocess goes silent.
+  const traceFlags = '--trace-warnings --trace-uncaught --trace-exit'
+  const nodeOptions = baseEnv.NODE_OPTIONS ? `${baseEnv.NODE_OPTIONS} ${traceFlags}` : traceFlags
+
   return {
     cwd,
     extendEnv: false,
-    env: { ...baseEnv, BROWSER: 'none', ...env },
+    env: { ...baseEnv, BROWSER: 'none', NODE_OPTIONS: nodeOptions, ...env },
     encoding: 'utf8',
   }
 }
@@ -53,8 +59,9 @@ interface DevServerOptions {
   targetPort?: number
 }
 
-// 240 seconds
-const SERVER_START_TIMEOUT = 24e4
+// 60 seconds. Kept under vitest's 90-second per-test default so the fallback below
+// fires (and dumps the captured server output) before vitest kills the test for timing out.
+const SERVER_START_TIMEOUT = 6e4
 
 const startServer = async ({
   args = [],
@@ -171,12 +178,31 @@ const startServer = async ({
         })
       }
     })
-    ps.catch((error) => !selfKilled && reject(error))
+    // The subprocess can exit cleanly (code 0) without ever emitting
+    // "Local dev server ready" — when that happens the promise above would hang until
+    // SERVER_START_TIMEOUT. Detect both clean and error exits and reject with the
+    // captured output so the failure is visible immediately.
+    ps.then(
+      (result) => {
+        if (!selfKilled) {
+          reject(
+            new Error(
+              `Dev server subprocess exited (code=${result.exitCode}) before "Local dev server ready" was emitted.\nstdout:\n${outputBuffer.join('')}\nstderr:\n${errorBuffer.join('')}`,
+            ),
+          )
+        }
+      },
+      (error: unknown) => {
+        if (!selfKilled) {
+          reject(error instanceof Error ? error : new Error(String(error)))
+        }
+      },
+    )
   })
 
   return await pTimeout(serverPromise, {
     milliseconds: SERVER_START_TIMEOUT,
-    fallback: () => ({ timeout: true, output: outputBuffer.join('') }),
+    fallback: () => ({ timeout: true, output: outputBuffer.join(''), error: errorBuffer.join('') }),
   })
 }
 
@@ -189,7 +215,10 @@ export const startDevServer = async (options: DevServerOptions, expectFailure?: 
       const devServer = await startServer({ ...options, expectFailure })
       // @ts-expect-error TS(2339) FIXME: Property 'timeout' does not exist on type 'DevServ... Remove this comment to see the full error message
       if (devServer.timeout) {
-        throw new Error(`Timed out starting dev server.\nServer Output:\n${devServer.output}`)
+        throw new Error(
+          // @ts-expect-error TS(2339) FIXME: Property 'output'/'error' does not exist...
+          `Timed out starting dev server.\nServer Output:\n${devServer.output}\nServer Error:\n${devServer.error ?? ''}`,
+        )
       }
       // @ts-expect-error TS(2322) FIXME: Type 'DevServer | { timeout: boolean; output: stri... Remove this comment to see the full error message
       return devServer
