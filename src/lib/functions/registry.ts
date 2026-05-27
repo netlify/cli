@@ -538,7 +538,7 @@ export class FunctionsRegistry {
       return !isFound
     })
 
-    process.stderr.write(`[diagnose:scan] after listFunctions; count=${functions.length}\n`)
+    process.stderr.write(`[diagnose:scan] after listFunctions; count=${String(functions.length)}\n`)
     await Promise.all(deletedFunctions.map((func) => this.unregisterFunction(func)))
     process.stderr.write('[diagnose:scan] after unregisterFunctions\n')
 
