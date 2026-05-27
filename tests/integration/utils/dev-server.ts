@@ -14,10 +14,15 @@ export const getExecaOptions = ({ cwd, env }: { cwd: string; env: NodeJS.Process
 
   const { LANG, LC_ALL, ...baseEnv } = process.env
 
-  // Diagnostics: surface uncaught exceptions, unhandled rejections, deprecation warnings,
-  // and any process.exit call (with stack trace) from the spawned CLI subprocess. Helps
-  // diagnose the Node 24 serve-mode hang where the subprocess goes silent.
-  const traceFlags = '--trace-warnings --trace-uncaught --trace-exit'
+  // Diagnostics for the Node 24 serve-mode hang. The trace flags surface any
+  // uncaught exception, deprecation warning, or process.exit. The report flags
+  // make Node emit a full diagnostic report (stacks + libuv handles) on SIGUSR2,
+  // written directly to stderr. The test util sends SIGUSR2 just before the
+  // start-timeout fires so the report captures *what* the process is stuck on.
+  const traceFlags =
+    '--trace-warnings --trace-uncaught --trace-exit ' +
+    '--report-on-signal --report-signal=SIGUSR2 ' +
+    '--report-on-fatalerror --report-uncaught-exception --report-filename=stderr'
   const nodeOptions = baseEnv.NODE_OPTIONS ? `${baseEnv.NODE_OPTIONS} ${traceFlags}` : traceFlags
 
   return {
@@ -202,7 +207,21 @@ const startServer = async ({
 
   return await pTimeout(serverPromise, {
     milliseconds: SERVER_START_TIMEOUT,
-    fallback: () => ({ timeout: true, output: outputBuffer.join(''), error: errorBuffer.join('') }),
+    fallback: async () => {
+      // Ask the (presumed-hung) subprocess to write a Node diagnostic report to its
+      // stderr, then wait briefly for it to land before we report the timeout. The
+      // report contains stack traces of all threads + libuv handle state — i.e. *what*
+      // the process is stuck on.
+      if (ps.pid != null && !ps.killed) {
+        try {
+          process.kill(ps.pid, 'SIGUSR2')
+          await new Promise((resolve) => setTimeout(resolve, 2_000))
+        } catch {
+          // process may have already exited between the check and the kill — ignore
+        }
+      }
+      return { timeout: true, output: outputBuffer.join(''), error: errorBuffer.join('') }
+    },
   })
 }
 
