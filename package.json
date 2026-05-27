@@ -58,7 +58,7 @@
     "@fastify/static": "^9.1.1",
     "@netlify/ai": "^0.4.1",
     "@netlify/api": "^14.0.19",
-    "@netlify/blobs": "^10.7.7",
+    "@netlify/blobs": "10.7.0",
     "@netlify/build": "^35.13.6",
     "@netlify/build-info": "^10.5.1",
     "@netlify/config": "^24.5.1",
@@ -218,6 +218,9 @@
     "typescript-eslint": "~8.45.0",
     "verdaccio": "^6.3.2",
     "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "@netlify/blobs": "10.7.0"
   },
   "packageManager": "npm@10.9.4+sha512.3a7506f37e85c1ba1021baad79f0cd9724748131f321fc117c4dc3ba235ec01be7327584a41d15117c01945560aa9373220628fcc1e1dddd877a5fe9b336a900"
 }
