@@ -471,16 +471,20 @@ export class FunctionsRegistry {
    * care of registering and unregistering functions as they come and go.
    */
   async scan(relativeDirs: (string | undefined)[]) {
+    process.stderr.write('[diagnose:scan] enter\n')
     const directories = relativeDirs
       .filter((dir): dir is string => Boolean(dir))
       .map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
 
     // check after filtering to filter out [undefined] for example
     if (directories.length === 0) {
+      process.stderr.write('[diagnose:scan] no directories; return\n')
       return
     }
 
+    process.stderr.write('[diagnose:scan] before prepareDirectory\n')
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectory(path)))
+    process.stderr.write('[diagnose:scan] before listFunctions\n')
 
     const functions = await this.listFunctions(
       {
@@ -534,7 +538,9 @@ export class FunctionsRegistry {
       return !isFound
     })
 
+    process.stderr.write(`[diagnose:scan] after listFunctions; count=${functions.length}\n`)
     await Promise.all(deletedFunctions.map((func) => this.unregisterFunction(func)))
+    process.stderr.write('[diagnose:scan] after unregisterFunctions\n')
 
     const deletedFunctionNames = new Set(deletedFunctions.map((func) => func.name))
     const addedFunctions = await Promise.all(
@@ -600,7 +606,9 @@ export class FunctionsRegistry {
       this.logEvent('removed', { func })
     })
 
+    process.stderr.write('[diagnose:scan] after registerFunctions\n')
     await Promise.all(directories.map((path) => this.setupDirectoryWatcher(path)))
+    process.stderr.write('[diagnose:scan] after setupDirectoryWatcher; returning\n')
   }
 
   /**
