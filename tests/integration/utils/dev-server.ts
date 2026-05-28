@@ -192,7 +192,11 @@ const startServer = async ({
         if (!selfKilled) {
           reject(
             new Error(
-              `Dev server subprocess exited (code=${result.exitCode}) before "Local dev server ready" was emitted.\nstdout:\n${outputBuffer.join('')}\nstderr:\n${errorBuffer.join('')}`,
+              `Dev server subprocess exited (code=${
+                result.exitCode
+              }) before "Local dev server ready" was emitted.\nstdout:\n${outputBuffer.join(
+                '',
+              )}\nstderr:\n${errorBuffer.join('')}`,
             ),
           )
         }
@@ -218,9 +222,7 @@ const startServer = async ({
           process.kill(ps.pid, 'SIGUSR2')
           await new Promise((resolve) => setTimeout(resolve, 2_000))
           const entries = await readdir(cwd)
-          const reports = entries
-            .filter((name) => name.startsWith('report.') && name.endsWith('.json'))
-            .sort()
+          const reports = entries.filter((name) => name.startsWith('report.') && name.endsWith('.json')).sort()
           if (reports.length > 0) {
             const last = reports[reports.length - 1]
             diagnosticReport = await readFile(path.join(cwd, last), 'utf8')
@@ -251,7 +253,9 @@ export const startDevServer = async (options: DevServerOptions, expectFailure?: 
       if (devServer.timeout) {
         throw new Error(
           // @ts-expect-error TS(2339) FIXME: Property 'output'/'error'/'report' does not exist...
-          `Timed out starting dev server.\nServer Output:\n${devServer.output}\nServer Error:\n${devServer.error ?? ''}\nDiagnostic Report:\n${devServer.report ?? '(none captured)'}`,
+          `Timed out starting dev server.\nServer Output:\n${devServer.output}\nServer Error:\n${
+            devServer.error ?? ''
+          }\nDiagnostic Report:\n${devServer.report ?? '(none captured)'}`,
         )
       }
       // @ts-expect-error TS(2322) FIXME: Type 'DevServer | { timeout: boolean; output: stri... Remove this comment to see the full error message
