@@ -82,7 +82,7 @@ const startServer = async ({
   serve = false,
   skipWaitPort = false,
   targetPort,
-}: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string }> => {
+}: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string; error?: string; report?: string }> => {
   const port = await getPort()
   const host = 'localhost'
   const url = `http://${host}:${port}`
@@ -249,17 +249,14 @@ export const startDevServer = async (options: DevServerOptions, expectFailure?: 
     try {
       // do not use destruction, as we use getters which otherwise would be evaluated here
       const devServer = await startServer({ ...options, expectFailure })
-      // @ts-expect-error TS(2339) FIXME: Property 'timeout' does not exist on type 'DevServ... Remove this comment to see the full error message
-      if (devServer.timeout) {
+      if ('timeout' in devServer && devServer.timeout) {
         throw new Error(
-          // @ts-expect-error TS(2339) FIXME: Property 'output'/'error'/'report' does not exist...
           `Timed out starting dev server.\nServer Output:\n${devServer.output}\nServer Error:\n${
             devServer.error ?? ''
           }\nDiagnostic Report:\n${devServer.report ?? '(none captured)'}`,
         )
       }
-      // @ts-expect-error TS(2322) FIXME: Type 'DevServer | { timeout: boolean; output: stri... Remove this comment to see the full error message
-      return devServer
+      return devServer as DevServer
     } catch (error) {
       if (attempt === maxAttempts || expectFailure) {
         throw error
