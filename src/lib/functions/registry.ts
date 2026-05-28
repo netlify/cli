@@ -392,17 +392,14 @@ export class FunctionsRegistry {
    * Adds a function to the registry
    */
   async registerFunction(name: string, funcBeforeHook: NetlifyFunction<BaseBuildResult>, isReload = false) {
-    process.stderr.write(`[diagnose:reg] enter name=${name} mainFile=${funcBeforeHook.mainFile}\n`)
     const { runtime } = funcBeforeHook
 
     // The `onRegister` hook allows runtimes to modify the function before it's
     // registered, or to prevent it from being registered altogether if the
     // hook returns `null`.
     const func = typeof runtime.onRegister === 'function' ? runtime.onRegister(funcBeforeHook) : funcBeforeHook
-    process.stderr.write(`[diagnose:reg] after onRegister name=${name}\n`)
 
     if (func === null) {
-      process.stderr.write(`[diagnose:reg] onRegister returned null; skip name=${name}\n`)
       return
     }
 
@@ -419,9 +416,7 @@ export class FunctionsRegistry {
     // If the function file is a ZIP, we extract it and rewire its main file to
     // the new location.
     if (extname(func.mainFile) === ZIP_EXTENSION) {
-      process.stderr.write(`[diagnose:reg] before unzipFunction name=${name}\n`)
       const unzippedDirectory = await this.unzipFunction(func)
-      process.stderr.write(`[diagnose:reg] after unzipFunction name=${name} dir=${unzippedDirectory}\n`)
 
       // If there's a manifest file, look up the function in order to extract the build data.
       const manifestEntry = (this.manifest?.functions ?? []).find((manifestFunc) => manifestFunc.name === func.name)
@@ -456,13 +451,10 @@ export class FunctionsRegistry {
         func.mainFile = join(unzippedDirectory, basename(manifestEntry.mainFile))
       }
     } else {
-      process.stderr.write(`[diagnose:reg] before buildFunctionAndWatchFiles name=${name}\n`)
       this.buildFunctionAndWatchFiles(func, !isReload)
-      process.stderr.write(`[diagnose:reg] after buildFunctionAndWatchFiles name=${name}\n`)
     }
 
     this.functions.set(name, func)
-    process.stderr.write(`[diagnose:reg] done name=${name}\n`)
   }
 
   /**
@@ -479,20 +471,16 @@ export class FunctionsRegistry {
    * care of registering and unregistering functions as they come and go.
    */
   async scan(relativeDirs: (string | undefined)[]) {
-    process.stderr.write('[diagnose:scan] enter\n')
     const directories = relativeDirs
       .filter((dir): dir is string => Boolean(dir))
       .map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
 
     // check after filtering to filter out [undefined] for example
     if (directories.length === 0) {
-      process.stderr.write('[diagnose:scan] no directories; return\n')
       return
     }
 
-    process.stderr.write('[diagnose:scan] before prepareDirectory\n')
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectory(path)))
-    process.stderr.write('[diagnose:scan] before listFunctions\n')
 
     const functions = await this.listFunctions(
       {
@@ -546,9 +534,7 @@ export class FunctionsRegistry {
       return !isFound
     })
 
-    process.stderr.write(`[diagnose:scan] after listFunctions; count=${String(functions.length)}\n`)
     await Promise.all(deletedFunctions.map((func) => this.unregisterFunction(func)))
-    process.stderr.write('[diagnose:scan] after unregisterFunctions\n')
 
     const deletedFunctionNames = new Set(deletedFunctions.map((func) => func.name))
     const addedFunctions = await Promise.all(
@@ -614,9 +600,7 @@ export class FunctionsRegistry {
       this.logEvent('removed', { func })
     })
 
-    process.stderr.write('[diagnose:scan] after registerFunctions\n')
     await Promise.all(directories.map((path) => this.setupDirectoryWatcher(path)))
-    process.stderr.write('[diagnose:scan] after setupDirectoryWatcher; returning\n')
   }
 
   /**

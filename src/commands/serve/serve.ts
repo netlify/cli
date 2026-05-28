@@ -135,9 +135,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   // We start by running a build, so we want a Blobs context with API access,
   // which is what build plugins use.
-  process.stderr.write('[diagnose] before getBlobsContextWithAPIAccess\n')
   process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(await getBlobsContextWithAPIAccess(blobsOptions))
-  process.stderr.write('[diagnose] before runBuildTimeline\n')
 
   const { configPath: configPathOverride, generatedFunctions } = await runBuildTimeline({
     command,
@@ -145,18 +143,14 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     options,
     env: {},
   })
-  process.stderr.write('[diagnose] after runBuildTimeline\n')
 
   const mergedConfig = await getFrameworksAPIConfig(config, frameworksAPIPaths.config.path)
-  process.stderr.write('[diagnose] after getFrameworksAPIConfig\n')
 
   // Now we generate a second Blobs context object, this time with edge access
   // for runtime access (i.e. from functions and edge functions).
   const runtimeBlobsContext = await getBlobsContextWithEdgeAccess(blobsOptions)
-  process.stderr.write('[diagnose] after getBlobsContextWithEdgeAccess\n')
 
   process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(runtimeBlobsContext)
-  process.stderr.write('[diagnose] before startFunctionsServer\n')
 
   const functionsRegistry = await startFunctionsServer({
     blobsContext: runtimeBlobsContext,
@@ -178,7 +172,6 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     accountId,
     deployEnvironment: [],
   })
-  process.stderr.write('[diagnose] after startFunctionsServer\n')
 
   // Try to add `.netlify` to `.gitignore`.
   try {
@@ -186,7 +179,6 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   } catch {
     // no-op
   }
-  process.stderr.write('[diagnose] after ensureNetlifyIgnore\n')
 
   // TODO: We should consolidate this with the existing config watcher.
   const getUpdatedConfig = async () => {
@@ -197,7 +189,6 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   }
 
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
-  process.stderr.write('[diagnose] before startProxyServer\n')
   const url = await startProxyServer({
     addonsUrls,
     blobsContext: runtimeBlobsContext,
@@ -221,12 +212,10 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     accountId,
     deployEnvironment: [],
   })
-  process.stderr.write('[diagnose] after startProxyServer\n')
 
   if (devConfig.autoLaunch !== false) {
     await openBrowser({ url, silentBrowserNoneError: true })
   }
-  process.stderr.write('[diagnose] after openBrowser\n')
 
   process.env.URL = url
   process.env.DEPLOY_URL = url

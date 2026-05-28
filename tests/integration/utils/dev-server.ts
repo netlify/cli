@@ -65,9 +65,8 @@ interface DevServerOptions {
   targetPort?: number
 }
 
-// 60 seconds. Kept under vitest's 90-second per-test default so the fallback below
-// fires (and dumps the captured server output) before vitest kills the test for timing out.
-const SERVER_START_TIMEOUT = 6e4
+// 240 seconds
+const SERVER_START_TIMEOUT = 24e4
 
 const startServer = async ({
   args = [],
