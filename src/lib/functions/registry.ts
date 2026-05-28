@@ -6,7 +6,7 @@ import { env } from 'process'
 import type { GeneratedFunction } from '@netlify/build'
 import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
 import { type MemoizeCache, watchDebounced } from '@netlify/dev-utils'
-import { extractZip } from '../../utils/zip.js'
+import extractZip from 'extract-zip'
 
 import {
   chalk,

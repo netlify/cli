@@ -8,7 +8,7 @@ import { pipeline } from 'stream/promises'
 import { promisify } from 'util'
 
 import type { OptionValues } from 'commander'
-import { extractZip } from '../../utils/zip.js'
+import extractZip from 'extract-zip'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
