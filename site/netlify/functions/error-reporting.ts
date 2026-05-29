@@ -15,6 +15,7 @@ const USER_INPUT_ERROR_MESSAGE_PATTERNS: string[] = [
   'could not retrieve project',
   "You don't appear to be in a folder that is linked to a project",
   'EADDRINUSE: address already in use',
+  'for a list of available commands',
 ]
 
 const isUserInputError = (message: unknown): boolean =>
