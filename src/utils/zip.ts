@@ -82,6 +82,11 @@ export const extractZip = async (zipPath: string, { dir }: { dir: string }): Pro
           const dest = path.join(resolvedDir, entry.fileName)
           const destDir = isDir ? dest : path.dirname(dest)
 
+          const lexicalRelative = path.relative(resolvedDir, dest)
+          if (lexicalRelative.split(path.sep).includes('..') || path.isAbsolute(lexicalRelative)) {
+            throw new Error(`Refusing to extract entry outside target directory: ${entry.fileName}`)
+          }
+
           await fs.mkdir(destDir, { recursive: true })
 
           const canonicalDestDir = await fs.realpath(destDir)
@@ -102,6 +107,14 @@ export const extractZip = async (zipPath: string, { dir }: { dir: string }): Pro
             const link = await readStreamToString(readStream)
             await fs.symlink(link, dest)
           } else {
+            try {
+              const existing = await fs.lstat(dest)
+              if (existing.isSymbolicLink()) {
+                await fs.unlink(dest)
+              }
+            } catch (err) {
+              if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+            }
             await pipeline(readStream, createWriteStream(dest, { mode: procMode }))
           }
 
