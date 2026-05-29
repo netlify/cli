@@ -75,8 +75,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
       return true
     }
 
-    // TODO; Update the type and cut a new version of `@netlify/config`.
-    // @ts-expect-error -- `background` is missing from `FunctionsObject` in `@netlify/build/lib/types/config/functions.d.ts`; remove once that type is updated and the dep is bumped.
+    // @ts-expect-error TODO; Update the type and cut a new version of `@netlify/config`.
     if (this.config.functions?.[this.name]?.background === true) {
       return true
     }
