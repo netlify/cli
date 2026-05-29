@@ -1,7 +1,7 @@
+import crypto from 'crypto'
 import { platform } from 'process'
 
 import pWaitFor from 'p-wait-for'
-import { v4 as uuidv4 } from 'uuid'
 
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.js'
 import { getPathInHome } from '../lib/settings.js'
@@ -199,4 +199,4 @@ export const getLiveTunnelSlug = (state: LocalState, override?: string) => {
   return newSlug
 }
 
-const generateRandomSlug = () => uuidv4().slice(0, 8)
+const generateRandomSlug = () => crypto.randomUUID().slice(0, 8)
