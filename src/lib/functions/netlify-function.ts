@@ -64,9 +64,24 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   // main file.
   public readonly srcPath: string
 
-  // Determines whether this is a background function based on the function
-  // name.
-  public readonly isBackground: boolean
+  // Determines whether this is a background function. Checks (in order):
+  //  1. ZISI build data — `invocationMode === 'background'` captures the
+  //     filename suffix AND the in-source `config.background: true`.
+  //  2. The TOML config — `[functions.<name>] background = true`.
+  //  3. The filename suffix as a last-resort fallback (used pre-build and for
+  //     non-ZISI runtimes like Go).
+  get isBackground(): boolean {
+    if (this.buildData?.invocationMode === 'background') {
+      return true
+    }
+
+    // TODO; Update the type and cut a new version of `@netlify/config`.
+    // @ts-expect-error -- `background` is missing from `FunctionsObject` in `@netlify/build/lib/types/config/functions.d.ts`; remove once that type is updated and the dep is bumped.
+    if (this.config.functions?.[this.name]?.background === true) {
+      return true
+    }
+    return this.name.endsWith(BACKGROUND)
+  }
 
   private buildQueue?: Promise<BuildResult> | undefined
   public buildData?: MappedOmit<BuildResult, 'includedFiles' | 'schedule' | 'srcFiles'> | undefined
@@ -122,8 +137,6 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     this.timeoutSynchronous = timeoutSynchronous
     this.settings = settings
     this.srcPath = srcPath
-
-    this.isBackground = name.endsWith(BACKGROUND)
 
     const functionConfig = config.functions?.[name]
     // @ts-expect-error -- XXX(serhalp): fixed in stack PR (bumps to https://github.com/netlify/build/pull/6165)
