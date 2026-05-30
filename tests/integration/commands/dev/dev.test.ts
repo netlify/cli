@@ -382,14 +382,15 @@ describe.concurrent('command/dev', () => {
     t.expect(nodeVer).toBeGreaterThanOrEqual(18)
 
     await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
       const externalServer = startExternalServer({
         host: '127.0.0.1',
-        port: 4567,
+        port: targetPort,
       })
       await builder.build()
 
       await withDevServer(
-        { cwd: builder.directory, command: 'node', framework: '#custom', targetPort: 4567, skipWaitPort: true },
+        { cwd: builder.directory, command: 'node', framework: '#custom', targetPort, skipWaitPort: true },
         async (server) => {
           const response = await fetch(`${server.url}/test`)
           t.expect(response.status).toBe(200)
@@ -828,13 +829,15 @@ describe.concurrent('command/dev', () => {
 
   test('deploy environment variables injected by onDev plugin hooks are injected into functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
+
       await builder
         .withNetlifyToml({
           config: {
             plugins: [{ package: './plugins/plugin' }],
             dev: {
               command: 'node index.mjs',
-              targetPort: 4445,
+              targetPort,
             },
           },
         })
@@ -889,7 +892,7 @@ describe.concurrent('command/dev', () => {
                 res.end();
               })
 
-              server.listen(4445)
+              server.listen(${targetPort.toString()})
               `,
         })
         .build()
