@@ -54,8 +54,11 @@ jobs:
           for combo in "${OS_NODE[@]}"; do
             os="${combo%:*}"
             node="${combo##*:}"
+            # Resolve install version via override map; fall back to the
+            # display value when no override is set.
+            install=$(yq eval ".node_install_overrides[\"$node\"] // \"$node\"" .github/test-matrix.yml)
             for shard in "1/4" "2/4" "3/4" "4/4"; do
-              entries+=("{\"os\":\"$os\",\"node-version\":\"$node\",\"shard\":\"$shard\"}")
+              entries+=("{\"os\":\"$os\",\"node-version\":\"$node\",\"node-install-version\":\"$install\",\"shard\":\"$shard\"}")
             done
           done
           joined=$(IFS=,; echo "${entries[*]}")
@@ -83,12 +86,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-install-version }}
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ matrix.node-install-version }}
           cache: npm
-          check-latest: true
+          check-latest: false
 
       - name: Install PNPM
         run: |
