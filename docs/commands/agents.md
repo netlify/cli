@@ -31,6 +31,7 @@ netlify agents
 | [`agents:commit`](/commands/agents#agentscommit) | Commit an agent run’s changes directly to a branch  |
 | [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
 | [`agents:diff`](/commands/agents#agentsdiff) | Print the code changes produced by an agent run  |
+| [`agents:follow-up`](/commands/agents#agentsfollow-up) | Send a follow-up prompt to an existing agent run  |
 | [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
 | [`agents:open`](/commands/agents#agentsopen) | Open the agent run preview, dashboard, or pull request in a browser  |
 | [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent run  |
@@ -49,6 +50,7 @@ netlify agents
 netlify agents:create --prompt "Add a contact form"
 netlify agents:list --status running
 netlify agents:show 60c7c3b3e7b4a0001f5e4b3a --watch
+netlify agents:follow-up 60c7c3b3e7b4a0001f5e4b3a "Also add tests"
 netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a
 netlify agents:open 60c7c3b3e7b4a0001f5e4b3a
 ```
@@ -189,6 +191,41 @@ netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a
 netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --page 2
 netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --session 70d8... --cumulative
 netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --no-color | less
+```
+
+---
+## `agents:follow-up`
+
+Send a follow-up prompt to an existing agent run
+
+**Usage**
+
+```bash
+netlify agents:follow-up
+```
+
+**Arguments**
+
+- id - agent run ID to follow up on
+- prompt - the follow-up prompt
+
+**Flags**
+
+- `agent` (*string*) - override agent type for this session
+- `attach` (*string*) - attach a file or image (repeatable)
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - output result as JSON
+- `model` (*string*) - override model for this session
+- `project` (*string*) - project ID or name (if not in a linked directory)
+- `prompt` (*string*) - follow-up prompt
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify agents:follow-up 60c7c3b3e7b4a0001f5e4b3a "Also add tests"
+netlify agents:follow-up 60c7c3b3e7b4a0001f5e4b3a -p "Fix the lint error"
 ```
 
 ---

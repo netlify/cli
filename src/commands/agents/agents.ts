@@ -39,6 +39,27 @@ export const createAgentsCommand = (program: BaseCommand) => {
     })
 
   program
+    .command('agents:follow-up')
+    .argument('<id>', 'agent run ID to follow up on')
+    .argument('[prompt]', 'the follow-up prompt')
+    .description('Send a follow-up prompt to an existing agent run')
+    .option('-p, --prompt <prompt>', 'follow-up prompt')
+    .option('-a, --agent <agent>', 'override agent type for this session')
+    .option('-m, --model <model>', 'override model for this session')
+    .option('--attach <path>', 'attach a file or image (repeatable)', collect, [])
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .option('--json', 'output result as JSON')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples([
+      'netlify agents:follow-up 60c7c3b3e7b4a0001f5e4b3a "Also add tests"',
+      'netlify agents:follow-up 60c7c3b3e7b4a0001f5e4b3a -p "Fix the lint error"',
+    ])
+    .action(async (id: string, prompt: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsFollowUp } = await import('./agents-follow-up.js')
+      await agentsFollowUp(id, prompt, options, command)
+    })
+
+  program
     .command('agents:list')
     .description('List agent runs for the current site')
     .option('-s, --status <status>', 'filter by status (running, done, error, archived)')
@@ -277,6 +298,7 @@ Note: Agent runs execute remotely on Netlify infrastructure, not locally.`,
       'netlify agents:create --prompt "Add a contact form"',
       'netlify agents:list --status running',
       'netlify agents:show 60c7c3b3e7b4a0001f5e4b3a --watch',
+      'netlify agents:follow-up 60c7c3b3e7b4a0001f5e4b3a "Also add tests"',
       'netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a',
       'netlify agents:open 60c7c3b3e7b4a0001f5e4b3a',
     ])

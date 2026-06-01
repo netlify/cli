@@ -28,6 +28,7 @@ Manage Netlify AI agent runs
 | [`agents:commit`](/commands/agents#agentscommit) | Commit an agent run’s changes directly to a branch  |
 | [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
 | [`agents:diff`](/commands/agents#agentsdiff) | Print the code changes produced by an agent run  |
+| [`agents:follow-up`](/commands/agents#agentsfollow-up) | Send a follow-up prompt to an existing agent run  |
 | [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
 | [`agents:open`](/commands/agents#agentsopen) | Open the agent run preview, dashboard, or pull request in a browser  |
 | [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent run  |
