@@ -100,6 +100,46 @@ export const createAgentsCommand = (program: BaseCommand) => {
       await agentsStop(id, options, command)
     })
 
+  program
+    .command('agents:open')
+    .argument('<id>', 'agent run ID to open')
+    .argument('[target]', 'what to open: preview (default), dashboard, or pr', 'preview')
+    .description('Open the agent run preview, dashboard, or pull request in a browser')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples([
+      'netlify agents:open 60c7c3b3e7b4a0001f5e4b3a',
+      'netlify agents:open 60c7c3b3e7b4a0001f5e4b3a dashboard',
+      'netlify agents:open 60c7c3b3e7b4a0001f5e4b3a pr',
+    ])
+    .action(async (id: string, target: string | undefined, options: OptionValues, command: BaseCommand) => {
+      const { agentsOpen } = await import('./agents-open.js')
+      await agentsOpen(id, target, options, command)
+    })
+
+  program
+    .command('agents:diff')
+    .argument('<id>', 'agent run ID')
+    .description('Print the code changes produced by an agent run')
+    .option('--page <n>', 'page number (1-based)')
+    .option('--per-page <n>', 'files per page (max 100)')
+    .option('--session <sid>', 'show a single session diff instead of the run aggregate')
+    .option('--cumulative', 'with --session, show the cumulative diff up through that session')
+    .option('--no-strip-binary', 'include raw binary content in the diff (binary is stripped by default)')
+    .option('--no-color', 'disable color in the output')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples([
+      'netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a',
+      'netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --page 2',
+      'netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --session 70d8... --cumulative',
+      'netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --no-color | less',
+    ])
+    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsDiff } = await import('./agents-diff.js')
+      await agentsDiff(id, options, command)
+    })
+
   const name = chalk.greenBright('`agents`')
 
   return program
@@ -114,6 +154,8 @@ Note: Agent runs execute remotely on Netlify infrastructure, not locally.`,
       'netlify agents:create --prompt "Add a contact form"',
       'netlify agents:list --status running',
       'netlify agents:show 60c7c3b3e7b4a0001f5e4b3a --watch',
+      'netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a',
+      'netlify agents:open 60c7c3b3e7b4a0001f5e4b3a',
     ])
     .action(agents)
 }

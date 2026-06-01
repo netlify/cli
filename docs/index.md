@@ -25,7 +25,9 @@ Manage Netlify AI agent runs
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
+| [`agents:diff`](/commands/agents#agentsdiff) | Print the code changes produced by an agent run  |
 | [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
+| [`agents:open`](/commands/agents#agentsopen) | Open the agent run preview, dashboard, or pull request in a browser  |
 | [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
 | [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
 

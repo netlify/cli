@@ -28,7 +28,9 @@ netlify agents
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
+| [`agents:diff`](/commands/agents#agentsdiff) | Print the code changes produced by an agent run  |
 | [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
+| [`agents:open`](/commands/agents#agentsopen) | Open the agent run preview, dashboard, or pull request in a browser  |
 | [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
 | [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
 
@@ -39,6 +41,8 @@ netlify agents
 netlify agents:create --prompt "Add a contact form"
 netlify agents:list --status running
 netlify agents:show 60c7c3b3e7b4a0001f5e4b3a --watch
+netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a
+netlify agents:open 60c7c3b3e7b4a0001f5e4b3a
 ```
 
 ---
@@ -82,6 +86,43 @@ netlify agents:create "Triage this error" --attach error.log --attach screenshot
 ```
 
 ---
+## `agents:diff`
+
+Print the code changes produced by an agent run
+
+**Usage**
+
+```bash
+netlify agents:diff
+```
+
+**Arguments**
+
+- id - agent run ID
+
+**Flags**
+
+- `cumulative` (*boolean*) - with --session, show the cumulative diff up through that session
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `no-color` (*boolean*) - disable color in the output
+- `no-strip-binary` (*boolean*) - include raw binary content in the diff (binary is stripped by default)
+- `page` (*string*) - page number (1-based)
+- `per-page` (*string*) - files per page (max 100)
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `project` (*string*) - project ID or name (if not in a linked directory)
+- `session` (*string*) - show a single session diff instead of the run aggregate
+
+**Examples**
+
+```bash
+netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a
+netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --page 2
+netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --session 70d8... --cumulative
+netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a --no-color | less
+```
+
+---
 ## `agents:list`
 
 List agent runs for the current site
@@ -119,6 +160,37 @@ netlify agents:list --status archived
 netlify agents:list --branch main --since 2026-04-01
 netlify agents:list --account my-team
 netlify agents:list --ndjson
+```
+
+---
+## `agents:open`
+
+Open the agent run preview, dashboard, or pull request in a browser
+
+**Usage**
+
+```bash
+netlify agents:open
+```
+
+**Arguments**
+
+- id - agent run ID to open
+- target - what to open: preview (default), dashboard, or pr
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `project` (*string*) - project ID or name (if not in a linked directory)
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify agents:open 60c7c3b3e7b4a0001f5e4b3a
+netlify agents:open 60c7c3b3e7b4a0001f5e4b3a dashboard
+netlify agents:open 60c7c3b3e7b4a0001f5e4b3a pr
 ```
 
 ---
