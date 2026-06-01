@@ -27,10 +27,12 @@ netlify agents
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
+| [`agents:commit`](/commands/agents#agentscommit) | Commit an agent run’s changes directly to a branch  |
 | [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
 | [`agents:diff`](/commands/agents#agentsdiff) | Print the code changes produced by an agent run  |
 | [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
 | [`agents:open`](/commands/agents#agentsopen) | Open the agent run preview, dashboard, or pull request in a browser  |
+| [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent run  |
 | [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
 | [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
 
@@ -43,6 +45,36 @@ netlify agents:list --status running
 netlify agents:show 60c7c3b3e7b4a0001f5e4b3a --watch
 netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a
 netlify agents:open 60c7c3b3e7b4a0001f5e4b3a
+```
+
+---
+## `agents:commit`
+
+Commit an agent run’s changes directly to a branch
+
+**Usage**
+
+```bash
+netlify agents:commit
+```
+
+**Arguments**
+
+- id - agent run ID
+
+**Flags**
+
+- `branch` (*string*) - target branch to commit to
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - output result as JSON
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `project` (*string*) - project ID or name (if not in a linked directory)
+
+**Examples**
+
+```bash
+netlify agents:commit 60c7c3b3e7b4a0001f5e4b3a --branch staging
 ```
 
 ---
@@ -191,6 +223,35 @@ netlify agents:open
 netlify agents:open 60c7c3b3e7b4a0001f5e4b3a
 netlify agents:open 60c7c3b3e7b4a0001f5e4b3a dashboard
 netlify agents:open 60c7c3b3e7b4a0001f5e4b3a pr
+```
+
+---
+## `agents:pr`
+
+Open a pull request for an agent run
+
+**Usage**
+
+```bash
+netlify agents:pr
+```
+
+**Arguments**
+
+- id - agent run ID
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - output result as JSON
+- `project` (*string*) - project ID or name (if not in a linked directory)
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify agents:pr 60c7c3b3e7b4a0001f5e4b3a
 ```
 
 ---
