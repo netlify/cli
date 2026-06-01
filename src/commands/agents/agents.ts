@@ -140,6 +140,33 @@ export const createAgentsCommand = (program: BaseCommand) => {
       await agentsDiff(id, options, command)
     })
 
+  program
+    .command('agents:pr')
+    .argument('<id>', 'agent run ID')
+    .description('Open a pull request for an agent run')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples(['netlify agents:pr 60c7c3b3e7b4a0001f5e4b3a'])
+    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsPullRequest } = await import('./agents-pr.js')
+      await agentsPullRequest(id, options, command)
+    })
+
+  program
+    .command('agents:commit')
+    .argument('<id>', 'agent run ID')
+    .description('Commit an agent run’s changes directly to a branch')
+    .option('-b, --branch <branch>', 'target branch to commit to')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples(['netlify agents:commit 60c7c3b3e7b4a0001f5e4b3a --branch staging'])
+    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsCommit } = await import('./agents-commit.js')
+      await agentsCommit(id, options, command)
+    })
+
   const name = chalk.greenBright('`agents`')
 
   return program
