@@ -167,6 +167,37 @@ export const createAgentsCommand = (program: BaseCommand) => {
       await agentsCommit(id, options, command)
     })
 
+  program
+    .command('agents:redeploy')
+    .argument('<id>', 'agent run ID')
+    .description('Redeploy an agent run by reapplying its existing changes (no AI inference)')
+    .option('--session <sid>', 'redeploy a specific session (defaults to the latest completed one)')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples([
+      'netlify agents:redeploy 60c7c3b3e7b4a0001f5e4b3a',
+      'netlify agents:redeploy 60c7c3b3e7b4a0001f5e4b3a --session 70d8...',
+    ])
+    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsRedeploy } = await import('./agents-redeploy.js')
+      await agentsRedeploy(id, options, command)
+    })
+
+  program
+    .command('agents:sync')
+    .argument('<id>', 'agent run ID')
+    .description('Bring an agent run up to date with the latest code from its base branch')
+    .option('-y, --yes', 'skip confirmation prompt')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples(['netlify agents:sync 60c7c3b3e7b4a0001f5e4b3a', 'netlify agents:sync 60c7c3b3e7b4a0001f5e4b3a --yes'])
+    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsSync } = await import('./agents-sync.js')
+      await agentsSync(id, options, command)
+    })
+
   const name = chalk.greenBright('`agents`')
 
   return program
