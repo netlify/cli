@@ -24,6 +24,7 @@ Manage Netlify AI agent runs
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
+| [`agents:archive`](/commands/agents#agentsarchive) | Archive an agent run  |
 | [`agents:commit`](/commands/agents#agentscommit) | Commit an agent run’s changes directly to a branch  |
 | [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
 | [`agents:diff`](/commands/agents#agentsdiff) | Print the code changes produced by an agent run  |
@@ -32,6 +33,7 @@ Manage Netlify AI agent runs
 | [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent run  |
 | [`agents:publish`](/commands/agents#agentspublish) | Publish an agent run’s changes to production  |
 | [`agents:redeploy`](/commands/agents#agentsredeploy) | Redeploy an agent run by reapplying its existing changes (no AI inference)  |
+| [`agents:rename`](/commands/agents#agentsrename) | Rename an agent run  |
 | [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent run to a specific session (sessions after it are discarded)  |
 | [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
 | [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
