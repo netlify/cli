@@ -217,7 +217,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "~8.45.0",
     "verdaccio": "^6.3.2",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.0"
   },
   "packageManager": "npm@10.9.4+sha512.3a7506f37e85c1ba1021baad79f0cd9724748131f321fc117c4dc3ba235ec01be7327584a41d15117c01945560aa9373220628fcc1e1dddd877a5fe9b336a900"
 }
