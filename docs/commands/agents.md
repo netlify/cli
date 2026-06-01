@@ -27,6 +27,7 @@ netlify agents
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
+| [`agents:archive`](/commands/agents#agentsarchive) | Archive an agent run  |
 | [`agents:commit`](/commands/agents#agentscommit) | Commit an agent run’s changes directly to a branch  |
 | [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
 | [`agents:diff`](/commands/agents#agentsdiff) | Print the code changes produced by an agent run  |
@@ -35,6 +36,7 @@ netlify agents
 | [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent run  |
 | [`agents:publish`](/commands/agents#agentspublish) | Publish an agent run’s changes to production  |
 | [`agents:redeploy`](/commands/agents#agentsredeploy) | Redeploy an agent run by reapplying its existing changes (no AI inference)  |
+| [`agents:rename`](/commands/agents#agentsrename) | Rename an agent run  |
 | [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent run to a specific session (sessions after it are discarded)  |
 | [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
 | [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
@@ -49,6 +51,37 @@ netlify agents:list --status running
 netlify agents:show 60c7c3b3e7b4a0001f5e4b3a --watch
 netlify agents:diff 60c7c3b3e7b4a0001f5e4b3a
 netlify agents:open 60c7c3b3e7b4a0001f5e4b3a
+```
+
+---
+## `agents:archive`
+
+Archive an agent run
+
+**Usage**
+
+```bash
+netlify agents:archive
+```
+
+**Arguments**
+
+- id - agent run ID
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - output result as JSON
+- `project` (*string*) - project ID or name (if not in a linked directory)
+- `yes` (*boolean*) - skip confirmation prompt
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a
+netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a --yes
 ```
 
 ---
@@ -320,6 +353,36 @@ netlify agents:redeploy
 ```bash
 netlify agents:redeploy 60c7c3b3e7b4a0001f5e4b3a
 netlify agents:redeploy 60c7c3b3e7b4a0001f5e4b3a --session 70d8...
+```
+
+---
+## `agents:rename`
+
+Rename an agent run
+
+**Usage**
+
+```bash
+netlify agents:rename
+```
+
+**Arguments**
+
+- id - agent run ID
+- title - new title for the agent run
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - output result as JSON
+- `project` (*string*) - project ID or name (if not in a linked directory)
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify agents:rename 60c7c3b3e7b4a0001f5e4b3a "Add dark mode toggle"
 ```
 
 ---

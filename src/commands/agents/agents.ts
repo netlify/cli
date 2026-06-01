@@ -202,6 +202,23 @@ export const createAgentsCommand = (program: BaseCommand) => {
     })
 
   program
+    .command('agents:archive')
+    .argument('<id>', 'agent run ID')
+    .description('Archive an agent run')
+    .option('-y, --yes', 'skip confirmation prompt')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples([
+      'netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a',
+      'netlify agents:archive 60c7c3b3e7b4a0001f5e4b3a --yes',
+    ])
+    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsArchive } = await import('./agents-archive.js')
+      await agentsArchive(id, options, command)
+    })
+
+  program
     .command('agents:redeploy')
     .argument('<id>', 'agent run ID')
     .description('Redeploy an agent run by reapplying its existing changes (no AI inference)')
@@ -216,6 +233,20 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .action(async (id: string, options: OptionValues, command: BaseCommand) => {
       const { agentsRedeploy } = await import('./agents-redeploy.js')
       await agentsRedeploy(id, options, command)
+    })
+
+  program
+    .command('agents:rename')
+    .argument('<id>', 'agent run ID')
+    .argument('<title>', 'new title for the agent run')
+    .description('Rename an agent run')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples(['netlify agents:rename 60c7c3b3e7b4a0001f5e4b3a "Add dark mode toggle"'])
+    .action(async (id: string, title: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsRename } = await import('./agents-rename.js')
+      await agentsRename(id, title, options, command)
     })
 
   program
