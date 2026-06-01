@@ -168,6 +168,40 @@ export const createAgentsCommand = (program: BaseCommand) => {
     })
 
   program
+    .command('agents:publish')
+    .argument('<id>', 'agent run ID')
+    .description('Publish an agent run’s changes to production')
+    .option('-y, --yes', 'skip confirmation prompt')
+    .option('--force', 'publish even when the run is out of sync with production')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples([
+      'netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a',
+      'netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a --yes',
+      'netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a --force',
+    ])
+    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsPublish } = await import('./agents-publish.js')
+      await agentsPublish(id, options, command)
+    })
+
+  program
+    .command('agents:revert')
+    .argument('<id>', 'agent run ID')
+    .description('Revert an agent run to a specific session (sessions after it are discarded)')
+    .requiredOption('--session <sid>', 'session ID to revert to')
+    .option('-y, --yes', 'skip confirmation prompt')
+    .option('--json', 'output result as JSON')
+    .option('--project <project>', 'project ID or name (if not in a linked directory)')
+    .hook('preAction', requiresSiteInfoWithProject)
+    .addExamples(['netlify agents:revert 60c7c3b3e7b4a0001f5e4b3a --session 70d8...'])
+    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+      const { agentsRevert } = await import('./agents-revert.js')
+      await agentsRevert(id, options, command)
+    })
+
+  program
     .command('agents:redeploy')
     .argument('<id>', 'agent run ID')
     .description('Redeploy an agent run by reapplying its existing changes (no AI inference)')

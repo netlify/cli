@@ -33,7 +33,9 @@ netlify agents
 | [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
 | [`agents:open`](/commands/agents#agentsopen) | Open the agent run preview, dashboard, or pull request in a browser  |
 | [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent run  |
+| [`agents:publish`](/commands/agents#agentspublish) | Publish an agent run’s changes to production  |
 | [`agents:redeploy`](/commands/agents#agentsredeploy) | Redeploy an agent run by reapplying its existing changes (no AI inference)  |
+| [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent run to a specific session (sessions after it are discarded)  |
 | [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
 | [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
 | [`agents:sync`](/commands/agents#agentssync) | Bring an agent run up to date with the latest code from its base branch  |
@@ -257,6 +259,39 @@ netlify agents:pr 60c7c3b3e7b4a0001f5e4b3a
 ```
 
 ---
+## `agents:publish`
+
+Publish an agent run’s changes to production
+
+**Usage**
+
+```bash
+netlify agents:publish
+```
+
+**Arguments**
+
+- id - agent run ID
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - publish even when the run is out of sync with production
+- `json` (*boolean*) - output result as JSON
+- `project` (*string*) - project ID or name (if not in a linked directory)
+- `yes` (*boolean*) - skip confirmation prompt
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a
+netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a --yes
+netlify agents:publish 60c7c3b3e7b4a0001f5e4b3a --force
+```
+
+---
 ## `agents:redeploy`
 
 Redeploy an agent run by reapplying its existing changes (no AI inference)
@@ -285,6 +320,37 @@ netlify agents:redeploy
 ```bash
 netlify agents:redeploy 60c7c3b3e7b4a0001f5e4b3a
 netlify agents:redeploy 60c7c3b3e7b4a0001f5e4b3a --session 70d8...
+```
+
+---
+## `agents:revert`
+
+Revert an agent run to a specific session (sessions after it are discarded)
+
+**Usage**
+
+```bash
+netlify agents:revert
+```
+
+**Arguments**
+
+- id - agent run ID
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - output result as JSON
+- `project` (*string*) - project ID or name (if not in a linked directory)
+- `session` (*string*) - session ID to revert to
+- `yes` (*boolean*) - skip confirmation prompt
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify agents:revert 60c7c3b3e7b4a0001f5e4b3a --session 70d8...
 ```
 
 ---
