@@ -20,14 +20,14 @@ netlify [command] help
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
 ### [agents](/commands/agents)
 
-Manage Netlify AI agent tasks
+Manage Netlify AI agent runs
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`agents:create`](/commands/agents#agentscreate) | Create and run a new agent task on your site  |
-| [`agents:list`](/commands/agents#agentslist) | List agent tasks for the current site  |
-| [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent task  |
-| [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent task  |
+| [`agents:create`](/commands/agents#agentscreate) | Create and start a new agent run on your site  |
+| [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
+| [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
+| [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
 
 
 ### [api](/commands/api)

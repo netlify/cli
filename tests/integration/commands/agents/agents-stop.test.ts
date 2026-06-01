@@ -43,10 +43,13 @@ describe('agents:stop command', () => {
       await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = (await callCli(['agents:stop', 'test_id'], getCLIOptions({ apiUrl, builder }))) as string
+        const cliResponse = (await callCli(
+          ['agents:stop', 'test_id', '--yes'],
+          getCLIOptions({ apiUrl, builder }),
+        )) as string
 
-        expect(cliResponse).toContain('Agent task stopped successfully!')
-        expect(cliResponse).toContain('Task ID: test_id')
+        expect(cliResponse).toContain('Agent run stopped successfully!')
+        expect(cliResponse).toContain('Run ID: test_id')
         expect(cliResponse).toContain('Previous Status: RUNNING')
         expect(cliResponse).toContain('New Status: CANCELLED')
       })
@@ -70,7 +73,7 @@ describe('agents:stop command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:stop', 'test_id'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent task is already completed')
+        expect(cliResponse).toContain('Agent run is already done')
       })
     })
   })
@@ -92,7 +95,7 @@ describe('agents:stop command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:stop', 'test_id'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent task is already cancelled')
+        expect(cliResponse).toContain('Agent run is already cancelled')
       })
     })
   })
@@ -128,6 +131,32 @@ describe('agents:stop command', () => {
     })
   })
 
+  test('should output JSON for an already-terminal run when --json is set', async (t) => {
+    const completedAgent = { ...mockAgentRunner, state: 'done' }
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners/test_id',
+        method: 'GET' as const,
+        response: completedAgent,
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const cliResponse = (await callCli(
+          ['agents:stop', 'test_id', '--json'],
+          getCLIOptions({ apiUrl, builder }),
+          true, // parseJson
+        )) as { state?: string }
+
+        expect(cliResponse.state).toBe('done')
+      })
+    })
+  })
+
   test('should handle agent not found', async (t) => {
     const routes = [
       ...baseRoutes,
@@ -144,7 +173,7 @@ describe('agents:stop command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:stop', 'invalid_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to stop agent task: Not found',
+          'Agent run not found: invalid_id',
         )
       })
     })
@@ -178,7 +207,7 @@ describe('agents:stop command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:stop', 'test_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to stop agent task: Unauthorized',
+          'Failed to fetch agent run: Unauthorized',
         )
       })
     })

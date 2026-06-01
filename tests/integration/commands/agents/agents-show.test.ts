@@ -50,13 +50,13 @@ describe('agents:show command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:show', 'test_id'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent Task Details')
-        expect(cliResponse).toContain('Task ID: agent_runner_id')
+        expect(cliResponse).toContain('Agent Run Details')
+        expect(cliResponse).toContain('Run ID: agent_runner_id')
         expect(cliResponse).toContain('Status: NEW')
         expect(cliResponse).toContain('Site: site-name')
         expect(cliResponse).toContain('Agent: Claude')
         expect(cliResponse).toContain('Branch: main')
-        expect(cliResponse).toContain('Prompt: Create a login form')
+        expect(cliResponse).toContain('Title: Create a login form')
       })
     })
   })
@@ -69,6 +69,11 @@ describe('agents:show command', () => {
         method: 'GET' as const,
         response: mockAgentRunner,
       },
+      {
+        path: 'agent_runners/test_id/sessions',
+        method: 'GET' as const,
+        response: [mockAgentSession],
+      },
     ]
 
     await withSiteBuilder(t, async (builder) => {
@@ -79,9 +84,9 @@ describe('agents:show command', () => {
           ['agents:show', 'test_id', '--json'],
           getCLIOptions({ apiUrl, builder }),
           true, // parseJson
-        )) as typeof mockAgentRunner
+        )) as typeof mockAgentRunner & { sessions: (typeof mockAgentSession)[] }
 
-        expect(cliResponse).toEqual(mockAgentRunner)
+        expect(cliResponse).toEqual({ ...mockAgentRunner, sessions: [mockAgentSession] })
       })
     })
   })
@@ -102,7 +107,7 @@ describe('agents:show command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:show', 'invalid_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to show agent task: Not found',
+          'Agent run not found: invalid_id',
         )
       })
     })
@@ -136,7 +141,7 @@ describe('agents:show command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:show', 'test_id'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to show agent task: Unauthorized',
+          'Failed to show agent run: Unauthorized',
         )
       })
     })
@@ -184,8 +189,8 @@ describe('agents:show command', () => {
           getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: 'zip_site_id' } }),
         )) as string
 
-        expect(cliResponse).toContain('Agent Task Details')
-        expect(cliResponse).toContain('Task ID: agent_runner_no_repo_id')
+        expect(cliResponse).toContain('Agent Run Details')
+        expect(cliResponse).toContain('Run ID: agent_runner_no_repo_id')
         expect(cliResponse).toContain('Base: Latest production deployment')
         expect(cliResponse).not.toContain('Branch:')
         expect(cliResponse).not.toContain('Result Branch:')
@@ -215,8 +220,8 @@ describe('agents:show command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Agent Task Details')
-        expect(cliResponse).toContain('Task ID: agent_runner_id')
+        expect(cliResponse).toContain('Agent Run Details')
+        expect(cliResponse).toContain('Run ID: agent_runner_id')
         expect(cliResponse).toContain('Branch: main')
         expect(cliResponse).not.toContain('Base: Latest production deployment')
       })
