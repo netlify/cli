@@ -30,7 +30,9 @@ Manage Netlify AI agent runs
 | [`agents:list`](/commands/agents#agentslist) | List agent runs for the current site  |
 | [`agents:open`](/commands/agents#agentsopen) | Open the agent run preview, dashboard, or pull request in a browser  |
 | [`agents:pr`](/commands/agents#agentspr) | Open a pull request for an agent run  |
+| [`agents:publish`](/commands/agents#agentspublish) | Publish an agent run’s changes to production  |
 | [`agents:redeploy`](/commands/agents#agentsredeploy) | Redeploy an agent run by reapplying its existing changes (no AI inference)  |
+| [`agents:revert`](/commands/agents#agentsrevert) | Revert an agent run to a specific session (sessions after it are discarded)  |
 | [`agents:show`](/commands/agents#agentsshow) | Show details of a specific agent run  |
 | [`agents:stop`](/commands/agents#agentsstop) | Stop a running agent run  |
 | [`agents:sync`](/commands/agents#agentssync) | Bring an agent run up to date with the latest code from its base branch  |
