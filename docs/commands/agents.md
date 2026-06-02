@@ -21,9 +21,9 @@ netlify agents
 
 **Flags**
 
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -91,12 +91,12 @@ netlify agents:list
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
 - `status` (*string*) - filter by status (new, running, done, error, cancelled)
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -123,11 +123,11 @@ netlify agents:show
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -153,11 +153,11 @@ netlify agents:stop
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `project` (*string*) - project ID or name (if not in a linked directory)
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
