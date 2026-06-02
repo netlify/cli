@@ -51,4 +51,13 @@ describe('shell command helpers', () => {
       }),
     ).toBe(false)
   })
+
+  test('does not classify a missing subcommand as a missing wrapper command', () => {
+    expect(
+      isNonExistingCommandError({
+        command: 'bash',
+        error: { stderr: 'bash: line 1: missing-subcommand: command not found', exitCode: 127 },
+      }),
+    ).toBe(false)
+  })
 })

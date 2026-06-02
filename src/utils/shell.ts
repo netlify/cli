@@ -29,6 +29,8 @@ const isCommandResult = (value: unknown): value is CommandResult =>
     typeof (value as CommandResult).stderr === 'string' ||
     typeof (value as CommandResult).stdout === 'string')
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 export const getCommandName = (command: string) => {
   const match = /^(?:"([^"]+)"|'([^']+)'|(\S+))/.exec(command.trim())
 
@@ -43,14 +45,14 @@ export const shouldUseShell = (command: string) =>
 
 const isMissingCommandMessage = ({ command, output }: { command: string; output: string }) =>
   output.split(/\r?\n/).some((line) => {
-    const normalizedLine = line.toLowerCase()
-    const normalizedCommand = command.toLowerCase()
+    const commandPattern = escapeRegExp(command)
+    const missingCommandPatterns = [
+      new RegExp(`(?:^|:)\\s*${commandPattern}\\s*:\\s*(?:command\\s+)?not found(?:\\s|$)`, 'i'),
+      new RegExp(`(?:^|\\s)command not found:\\s*${commandPattern}(?:\\s|$)`, 'i'),
+      new RegExp(`(?:^|\\s|['"])${commandPattern}['"]?\\s+is not recognized as an internal or external command`, 'i'),
+    ]
 
-    return (
-      normalizedLine.includes(normalizedCommand) &&
-      (normalizedLine.includes('not found') ||
-        normalizedLine.includes('is not recognized as an internal or external command'))
-    )
+    return missingCommandPatterns.some((pattern) => pattern.test(line))
   })
 
 const createStripAnsiControlCharsStream = (): Transform =>

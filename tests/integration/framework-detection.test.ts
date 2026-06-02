@@ -135,9 +135,9 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should support shell operators in `command`', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder
-        .withNetlifyToml({ config: { dev: { command: 'echo first && echo second', targetPort: 3000 } } })
-        .build()
+      const targetPort = await getPort()
+
+      await builder.withNetlifyToml({ config: { dev: { command: 'echo first && echo second', targetPort } } }).build()
 
       try {
         await withDevServer({ cwd: builder.directory }, async () => {}, true)
