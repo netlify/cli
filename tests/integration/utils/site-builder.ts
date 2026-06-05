@@ -1,4 +1,4 @@
-import { createHash } from 'crypto'
+import { createHash, randomUUID } from 'crypto'
 import { copyFile, mkdir, rm, unlink, writeFile } from 'fs/promises'
 import os from 'os'
 import path from 'path'
@@ -13,7 +13,6 @@ import execa from 'execa'
 import serializeJS from 'serialize-javascript'
 import tempDirectory from 'temp-dir'
 import tomlify from 'tomlify-j0.4'
-import { v4 as uuidv4 } from 'uuid'
 import type { TestContext } from 'vitest'
 
 const ensureDir = (directory: string) => mkdir(directory, { recursive: true })
@@ -339,7 +338,7 @@ export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
     tempDirectory,
     `netlify-cli-tests-${process.version}`,
     `${process.pid}`,
-    uuidv4(),
+    randomUUID(),
     truncateSiteName(siteName),
   )
 

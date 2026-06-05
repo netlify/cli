@@ -20,9 +20,13 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
+      - name: Read primary Node version
+        id: node
+        run: echo "version=$(yq eval '.primary_node_version' .github/test-matrix.yml)" >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: ${{ steps.node.outputs.version }}
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
