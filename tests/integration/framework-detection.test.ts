@@ -133,6 +133,25 @@ describe.concurrent('frameworks/framework-detection', () => {
     })
   })
 
+  test('should support shell operators in `command`', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
+
+      await builder.withNetlifyToml({ config: { dev: { command: 'echo first && echo second', targetPort } } }).build()
+
+      try {
+        await withDevServer({ cwd: builder.directory }, async () => {}, true)
+        // a failure is expected since this command does not start a server
+        t.expect.unreachable()
+      } catch (err) {
+        t.expect(err).toHaveProperty('stdout')
+        const output = normalizeSnapshot((err as execa.ExecaReturnValue).stdout, { duration: true, filePath: true })
+        t.expect(output).toMatch(/\nfirst[^\S\r\n]*\r?\n[^\S\r\n]*second\r?\n/i)
+        t.expect(output).not.toMatch(/\nfirst[^\S\r\n]*&&[^\S\r\n]*echo[^\S\r\n]+second\r?\n/i)
+      }
+    })
+  })
+
   test('should force a specific framework when configured', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'create-react-app' } } }).build()
