@@ -947,6 +947,7 @@ export const startProxy = async function ({
   settings,
   siteInfo,
   state,
+  watchIgnore,
   deployEnvironment,
 }: {
   command: BaseCommand
@@ -955,6 +956,7 @@ export const startProxy = async function ({
   disableEdgeFunctions: boolean
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   aiGatewayContext?: AIGatewayContext | null
+  watchIgnore: string[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 } & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
@@ -988,6 +990,7 @@ export const startProxy = async function ({
       repositoryRoot,
       siteInfo,
       state,
+      watchIgnore,
       deployEnvironment,
     })
   }
