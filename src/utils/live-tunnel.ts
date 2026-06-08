@@ -1,4 +1,4 @@
-import crypto from 'crypto'
+import { randomUUID } from 'crypto'
 import { platform } from 'process'
 
 import pWaitFor from 'p-wait-for'
@@ -199,4 +199,4 @@ export const getLiveTunnelSlug = (state: LocalState, override?: string) => {
   return newSlug
 }
 
-const generateRandomSlug = () => crypto.randomUUID().slice(0, 8)
+const generateRandomSlug = () => randomUUID().slice(0, 8)

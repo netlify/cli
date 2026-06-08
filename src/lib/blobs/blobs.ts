@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer'
-import crypto from 'crypto'
+import { randomUUID } from 'crypto'
 import path from 'path'
 
 import { BlobsServer } from '@netlify/blobs/server'
@@ -47,7 +47,7 @@ const printLocalBlobsNotice = () => {
  * for its authentication.
  */
 const initializeBlobsServer = async (projectRoot: string, debug: boolean) => {
-  const token = crypto.randomUUID()
+  const token = randomUUID()
   const directory = path.resolve(projectRoot, getPathInProject(['blobs-serve']))
   const server = new BlobsServer({
     debug,
