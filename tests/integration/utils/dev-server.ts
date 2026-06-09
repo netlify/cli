@@ -1,3 +1,4 @@
+import { readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -14,10 +15,21 @@ export const getExecaOptions = ({ cwd, env }: { cwd: string; env: NodeJS.Process
 
   const { LANG, LC_ALL, ...baseEnv } = process.env
 
+  // Diagnostics for the Node 24 serve-mode hang. The trace flags surface any
+  // uncaught exception, deprecation warning, or process.exit. --report-on-signal
+  // makes Node emit a full diagnostic report (stacks + libuv handles) on SIGUSR2,
+  // written to a file in cwd. The test util sends SIGUSR2 just before the
+  // start-timeout fires so the report captures *what* the process is stuck on.
+  // Note: --report-on-fatalerror, --report-uncaught-exception, and
+  // --report-filename are NOT permitted in NODE_OPTIONS (Worker threads reject
+  // env vars containing them), so we keep this list to the allowed subset.
+  const traceFlags = '--trace-warnings --trace-uncaught --trace-exit --report-on-signal --report-signal=SIGUSR2'
+  const nodeOptions = baseEnv.NODE_OPTIONS ? `${baseEnv.NODE_OPTIONS} ${traceFlags}` : traceFlags
+
   return {
     cwd,
     extendEnv: false,
-    env: { ...baseEnv, BROWSER: 'none', ...env },
+    env: { ...baseEnv, BROWSER: 'none', NODE_OPTIONS: nodeOptions, ...env },
     encoding: 'utf8',
   }
 }
@@ -70,7 +82,7 @@ const startServer = async ({
   serve = false,
   skipWaitPort = false,
   targetPort,
-}: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string }> => {
+}: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string; error?: string; report?: string }> => {
   const port = await getPort()
   const host = 'localhost'
   const url = `http://${host}:${port}`
@@ -171,12 +183,62 @@ const startServer = async ({
         })
       }
     })
-    ps.catch((error) => !selfKilled && reject(error))
+    // The subprocess can exit cleanly (code 0) without ever emitting
+    // "Local dev server ready" — when that happens the promise above would hang until
+    // SERVER_START_TIMEOUT. Detect both clean and error exits and reject with the
+    // captured output so the failure is visible immediately.
+    ps.then(
+      (result) => {
+        if (!selfKilled) {
+          reject(
+            new Error(
+              `Dev server subprocess exited (code=${
+                result.exitCode
+              }) before "Local dev server ready" was emitted.\nstdout:\n${outputBuffer.join(
+                '',
+              )}\nstderr:\n${errorBuffer.join('')}`,
+            ),
+          )
+        }
+      },
+      (error: unknown) => {
+        if (!selfKilled) {
+          reject(error instanceof Error ? error : new Error(String(error)))
+        }
+      },
+    )
   })
 
   return await pTimeout(serverPromise, {
     milliseconds: SERVER_START_TIMEOUT,
-    fallback: () => ({ timeout: true, output: outputBuffer.join('') }),
+    fallback: async () => {
+      // Ask the (presumed-hung) subprocess to write a Node diagnostic report
+      // (stack traces + libuv handle state — i.e. *what* the process is stuck on).
+      // The report is written to a file in the subprocess's cwd; we read it
+      // back below.
+      let diagnosticReport = ''
+      if (ps.pid != null && !ps.killed) {
+        try {
+          process.kill(ps.pid, 'SIGUSR2')
+          await new Promise((resolve) => setTimeout(resolve, 2_000))
+          const entries = await readdir(cwd)
+          const reports = entries.filter((name) => name.startsWith('report.') && name.endsWith('.json')).sort()
+          if (reports.length > 0) {
+            const last = reports[reports.length - 1]
+            diagnosticReport = await readFile(path.join(cwd, last), 'utf8')
+          }
+        } catch {
+          // process may have already exited, or the report write may have failed —
+          // either way we want to fall through and surface what we have
+        }
+      }
+      return {
+        timeout: true,
+        output: outputBuffer.join(''),
+        error: errorBuffer.join(''),
+        report: diagnosticReport,
+      }
+    },
   })
 }
 
@@ -187,12 +249,14 @@ export const startDevServer = async (options: DevServerOptions, expectFailure?: 
     try {
       // do not use destruction, as we use getters which otherwise would be evaluated here
       const devServer = await startServer({ ...options, expectFailure })
-      // @ts-expect-error TS(2339) FIXME: Property 'timeout' does not exist on type 'DevServ... Remove this comment to see the full error message
-      if (devServer.timeout) {
-        throw new Error(`Timed out starting dev server.\nServer Output:\n${devServer.output}`)
+      if ('timeout' in devServer && devServer.timeout) {
+        throw new Error(
+          `Timed out starting dev server.\nServer Output:\n${devServer.output}\nServer Error:\n${
+            devServer.error ?? ''
+          }\nDiagnostic Report:\n${devServer.report ?? '(none captured)'}`,
+        )
       }
-      // @ts-expect-error TS(2322) FIXME: Type 'DevServer | { timeout: boolean; output: stri... Remove this comment to see the full error message
-      return devServer
+      return devServer as DevServer
     } catch (error) {
       if (attempt === maxAttempts || expectFailure) {
         throw error
