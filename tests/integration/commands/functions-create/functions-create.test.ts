@@ -12,6 +12,40 @@ import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/han
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
+import path from 'path'
+import fs from 'fs'
+import { it } from 'vitest'
+import { temporaryDirectory } from 'tempy'
+
+describe('functions:create path traversal', () => {
+  it('rejects --name with path traversal via --url flow', async () => {
+    const tmpDir = temporaryDirectory()
+    const functionsDir = path.join(tmpDir, 'functions')
+    fs.mkdirSync(functionsDir)
+
+    const result = await execa(
+      'netlify',
+      [
+        'functions:create',
+        '--name',
+        '../../evil',
+        '--url',
+        'https://github.com/netlify/netlify-functions-example',
+      ],
+      {
+        cwd: tmpDir,
+        reject: false,
+      },
+    )
+
+    // Should exit with error
+    expect(result.exitCode).not.toBe(0)
+
+    // Should NOT create files outside functions dir
+    expect(fs.existsSync(path.join(tmpDir, '..', '..', 'evil'))).toBe(false)
+  })
+})
+
 describe.concurrent('functions:create command', async () => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/projects/site-name/overview',

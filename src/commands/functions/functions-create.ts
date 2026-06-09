@@ -57,14 +57,22 @@ const MOON_SPINNER = {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'argumentName' implicitly has an 'any' t... Remove this comment to see the full error message
 const getNameFromArgs = async function (argumentName, options, defaultName) {
+  const isValidFunctionName = (name: string) => /^[\w.-]+$/i.test(name)
+
   if (options.name) {
     if (argumentName) {
       throw new Error('function name specified in both flag and arg format, pick one')
+    }
+    if (!isValidFunctionName(options.name)) {
+      throw new Error(`Invalid function name "${options.name}". Name must only contain letters, numbers, hyphens, underscores, or dots.`)
     }
     return options.name
   }
 
   if (argumentName) {
+    if (!isValidFunctionName(argumentName)) {
+      throw new Error(`Invalid function name "${argumentName}". Name must only contain letters, numbers, hyphens, underscores, or dots.`)
+    }
     return argumentName
   }
 
@@ -376,8 +384,12 @@ const downloadFromURL = async function (command, options, argumentName, function
   const [functionName] = options.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
 
-  const fnFolder = path.join(functionsDir, nameToUse)
-  if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
+  const resolvedFunctionsDir = path.resolve(functionsDir)
+  const fnFolder = path.join(resolvedFunctionsDir, nameToUse)
+  if (!fnFolder.startsWith(resolvedFunctionsDir + path.sep)) {
+    log(`${NETLIFYDEVERR} Invalid function name: "${nameToUse}" resolves outside the functions directory.`)
+    process.exit(1)
+  }  if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
     log(
       `${NETLIFYDEVWARN}: A single file version of the function ${nameToUse} already exists at ${fnFolder}.js. Terminating without further action.`,
     )
