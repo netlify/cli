@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/netlify-db'
 
-import { planets } from '../../db/schema'
+import { planets } from '../../../db/schema'
 
 export default async () => {
   try {

@@ -1,5 +1,6 @@
 import { readFile } from 'fs/promises'
-import { join } from 'path'
+import { statSync } from 'fs'
+import { join, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
@@ -48,8 +49,10 @@ interface EdgeFunctionsRegistryOptions {
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   importMapFromTOML?: string
   projectDir: string
+  publishDir: string
   runIsolate: RunIsolate
   servePath: string
+  watchIgnore: string[]
   deployEnvironment: { key: string; value: string; isSecret: boolean }[]
 }
 
@@ -143,6 +146,8 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
   private routes: Route[] = []
   private runIsolate: RunIsolate
   private servePath: string
+  private publishDir: string
+  private watchIgnore: string[]
   private projectDir: string
   private command: BaseCommand
 
@@ -157,8 +162,10 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
     getUpdatedConfig,
     importMapFromTOML,
     projectDir,
+    publishDir,
     runIsolate,
     servePath,
+    watchIgnore,
     deployEnvironment,
   }: EdgeFunctionsRegistryOptions) {
     this.aiGatewayContext = aiGatewayContext
@@ -169,6 +176,8 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
     this.getUpdatedConfig = getUpdatedConfig
     this.runIsolate = runIsolate
     this.servePath = servePath
+    this.publishDir = resolve(projectDir, publishDir)
+    this.watchIgnore = watchIgnore.map((p) => resolve(projectDir, p))
     this.projectDir = projectDir
 
     this.importMapFromTOML = importMapFromTOML
@@ -719,7 +728,23 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
   }
 
   private async setupWatcherForDirectory() {
-    const ignored = [`${this.servePath}/**`, this.internalImportMapPath]
+    const toIgnoredRegex = (dir: string) => new RegExp(`^${dir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(/|$)`)
+
+    const toIgnoredEntry = (p: string): string | RegExp => {
+      try {
+        if (statSync(p).isFile()) return p
+      } catch {
+        // path doesn't exist yet (e.g. publish dir before first build) — treat as directory
+      }
+      return toIgnoredRegex(p)
+    }
+
+    const ignored: (string | RegExp)[] = [
+      toIgnoredRegex(this.servePath),
+      ...(this.publishDir !== this.projectDir ? [toIgnoredRegex(this.publishDir)] : []),
+      ...this.watchIgnore.map(toIgnoredEntry),
+      this.internalImportMapPath,
+    ]
     const watcher = await watchDebounced(this.projectDir, {
       ignored,
       onAdd: () => this.checkForAddedOrDeletedFunctions(),

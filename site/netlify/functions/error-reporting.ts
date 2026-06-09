@@ -11,6 +11,11 @@ const USER_INPUT_ERROR_MESSAGE_PATTERNS: string[] = [
   'When resolving config file',
   'NETLIFY_AUTH_TOKEN is not set',
   'Project not found. Please rerun',
+  'Not authorized to view the currently linked project',
+  'could not retrieve project',
+  "You don't appear to be in a folder that is linked to a project",
+  'EADDRINUSE: address already in use',
+  'for a list of available commands',
 ]
 
 const isUserInputError = (message: unknown): boolean =>

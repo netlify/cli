@@ -188,6 +188,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     projectRoot: command.workingDir,
     apiToken: api.accessToken ?? undefined,
     env,
+    skipGitignore: options.skipGitignore,
   })
 
   if (programmaticNetlifyDev) {
@@ -318,6 +319,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     accountId,
     functionsRegistry,
     repositoryRoot,
+    watchIgnore: devConfig.watchIgnore ?? [],
     deployEnvironment,
   })
 
