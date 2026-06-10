@@ -34,9 +34,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Read primary Node version
+        id: node
+        run: echo "version=$(yq eval '.primary_node_version' .github/test-matrix.yml)" >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: ${{ steps.node.outputs.version }}
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
@@ -44,19 +48,11 @@ jobs:
       - name: Setup npm version
         run: npm install -g npm@10
 
-      # Used by E2E tests
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - name: Install core dependencies
         run: npm ci --no-audit
 
       - name: Build project
         run: npm run build
-
-      - name: Run E2E tests
-        run: npm run test:e2e
 
       - name: Publish netlify-cli package
         run: npm publish --provenance

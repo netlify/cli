@@ -18,4 +18,5 @@ export type DevConfig = NonNullable<NetlifyTOML['dev']> & {
   jwtSecret?: string | undefined
   jwtRolePath?: string | undefined
   pollingStrategies?: string[] | undefined
+  watchIgnore?: string[] | undefined
 }

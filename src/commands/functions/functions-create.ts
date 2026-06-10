@@ -162,7 +162,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
  * @param {'edge' | 'serverless'} funcType
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'languageFromFlag' implicitly has ... Remove this comment to see the full error message
-const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
+const pickTemplate = async function ({ language: languageFromFlag, template: templateFromFlag }, funcType) {
   const specialCommands = [
     new inquirer.Separator(),
     {
@@ -202,6 +202,18 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     templatesForLanguage = await formatRegistryArrayForInquirer(language, funcType)
   } catch {
     return logAndThrowError(`Invalid language: ${language}`)
+  }
+
+  if (templateFromFlag) {
+    const match = templatesForLanguage.find(
+      (entry: { value?: { name?: string } }) => entry.value?.name === templateFromFlag,
+    )
+    if (!match) {
+      return logAndThrowError(
+        `Template "${templateFromFlag}" not found for language "${language}". Run \`netlify functions:create\` without --template to browse available templates.`,
+      )
+    }
+    return match.value
   }
 
   const { chosenTemplate } = await inquirer.prompt({
@@ -741,8 +753,63 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
   return functionPath
 }
 
+// Scans `functions-templates/<lang>` for a template whose `.mjs` metadata
+// `name` matches. Returns its `functionType` and the language folder it lives
+// in, or null if nothing matches. Used to skip the funcType/language prompts
+// when the user passes `--template`.
+const resolveTemplateMetadata = async (
+  templateName: string,
+  languageHint?: string,
+): Promise<{ functionType: 'edge' | 'serverless'; language: string } | null> => {
+  const langs = languageHint
+    ? [languageHint]
+    : (languages.map((lang) => lang.value as string | undefined).filter(Boolean) as string[])
+  for (const lang of langs) {
+    let folders
+    try {
+      folders = await readdir(path.join(templatesDir, lang), { withFileTypes: true })
+    } catch {
+      continue
+    }
+    for (const folder of folders) {
+      if (!folder.isDirectory()) continue
+      try {
+        const templatePath = path.join(templatesDir, lang, folder.name, '.netlify-function-template.mjs')
+        const mod = (await import(pathToFileURL(templatePath).href)) as {
+          default?: { name?: string; functionType?: 'edge' | 'serverless' }
+        }
+        const template = mod.default
+        if (template?.name === templateName && template.functionType) {
+          return { functionType: template.functionType, language: lang }
+        }
+      } catch {
+        // ignore templates we can't load
+      }
+    }
+  }
+  return null
+}
+
 export const functionsCreate = async (name: string, options: OptionValues, command: BaseCommand) => {
-  const functionType = await selectTypeOfFunc()
+  let functionType: 'edge' | 'serverless'
+
+  if (typeof options.template === 'string') {
+    const resolved = await resolveTemplateMetadata(options.template, options.language as string | undefined)
+    if (!resolved) {
+      return logAndThrowError(
+        `Template "${options.template}" not found${
+          options.language ? ` for language "${options.language as string}"` : ''
+        }.`,
+      )
+    }
+    functionType = resolved.functionType
+    if (!options.language) {
+      options.language = resolved.language
+    }
+  } else {
+    functionType = await selectTypeOfFunc()
+  }
+
   const functionsDir =
     functionType === 'edge' ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
 

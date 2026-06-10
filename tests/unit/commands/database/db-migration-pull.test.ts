@@ -50,7 +50,15 @@ import { resolve } from 'path'
 import inquirer from 'inquirer'
 import { migrationPull } from '../../../../src/commands/database/db-migration-pull.js'
 
-const sampleMigrations = [
+interface SampleMigration {
+  version: number
+  name: string
+  path: string
+  content: string
+  applied?: boolean
+}
+
+const sampleMigrations: SampleMigration[] = [
   {
     version: 1,
     name: '0001_create-users',
@@ -86,10 +94,31 @@ function createMockCommand(
   } as unknown as Parameters<typeof migrationPull>[1]
 }
 
-function mockFetchResponse(migrations: typeof sampleMigrations) {
-  mockFetch.mockResolvedValue({
-    ok: true,
-    json: () => Promise.resolve({ migrations }),
+function mockFetchResponse(migrations: SampleMigration[]) {
+  const listItems = migrations.map(({ content: _content, applied = false, ...rest }) => ({ ...rest, applied }))
+  mockFetch.mockImplementation((input: URL | string) => {
+    const url = input instanceof URL ? input : new URL(input)
+    const detailMatch = /\/database\/migrations\/([^/]+)$/.exec(url.pathname)
+    if (detailMatch) {
+      const name = decodeURIComponent(detailMatch[1])
+      const migration = migrations.find((m) => m.name === name)
+      if (!migration) {
+        return Promise.resolve({
+          ok: false,
+          status: 404,
+          text: () => Promise.resolve(`migration "${name}" not found`),
+        })
+      }
+      const { applied: _applied, ...detail } = migration
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(detail),
+      })
+    }
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ migrations: listItems }),
+    })
   })
 }
 
@@ -126,6 +155,64 @@ describe('migrationPull', () => {
     const calledUrl = mockFetch.mock.calls[0][0] as URL
     expect(calledUrl.toString()).toBe('https://api.netlify.com/api/v1/sites/site-123/database/migrations')
     expect(mockFetch.mock.calls[0][1]).toEqual({ headers: { Authorization: 'Bearer test-token' } })
+  })
+
+  test('fetches content for each migration from the detail endpoint', async () => {
+    mockFetchResponse(sampleMigrations)
+
+    await migrationPull({ force: true }, createMockCommand())
+
+    const detailCalls = mockFetch.mock.calls
+      .map((call) => call[0] as URL)
+      .filter((url) => /\/database\/migrations\/[^/]+$/.test(url.pathname))
+
+    expect(detailCalls).toHaveLength(2)
+    expect(detailCalls.map((u) => u.toString()).sort()).toEqual([
+      'https://api.netlify.com/api/v1/sites/site-123/database/migrations/0001_create-users',
+      'https://api.netlify.com/api/v1/sites/site-123/database/migrations/0002_add-posts',
+    ])
+    for (const call of mockFetch.mock.calls) {
+      expect(call[1]).toEqual({ headers: { Authorization: 'Bearer test-token' } })
+    }
+  })
+
+  test('forwards branch to both list and detail endpoints', async () => {
+    mockFetchResponse(sampleMigrations)
+
+    await migrationPull({ branch: 'staging', force: true }, createMockCommand())
+
+    for (const call of mockFetch.mock.calls) {
+      const url = call[0] as URL
+      expect(url.searchParams.get('branch')).toBe('staging')
+    }
+  })
+
+  test('throws with migration name when content fetch fails', async () => {
+    mockFetch.mockImplementation((input: URL | string) => {
+      const url = input instanceof URL ? input : new URL(input)
+      if (/\/database\/migrations\/[^/]+$/.test(url.pathname)) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          text: () => Promise.resolve('internal error'),
+        })
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            migrations: [
+              { version: 1, name: '0001_create-users', path: '0001_create-users/migration.sql', applied: false },
+            ],
+          }),
+      })
+    })
+
+    await expect(migrationPull({ force: true }, createMockCommand())).rejects.toThrow(
+      'Failed to fetch content for migration "0001_create-users" (500): internal error',
+    )
+    expect(mockRm).not.toHaveBeenCalled()
+    expect(mockWriteFile).not.toHaveBeenCalled()
   })
 
   test('logs message and exits when no migrations exist in production', async () => {
@@ -231,6 +318,18 @@ describe('migrationPull', () => {
 
     await expect(migrationPull({ force: true }, createMockCommand())).rejects.toThrow(
       'Failed to fetch migrations (404): database not found',
+    )
+  })
+
+  test('extracts the server `message` from a JSON error body', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 423,
+      text: () => Promise.resolve(JSON.stringify({ code: 423, message: 'database is disabled' })),
+    })
+
+    await expect(migrationPull({ force: true }, createMockCommand())).rejects.toThrow(
+      'Failed to fetch migrations (423): database is disabled',
     )
   })
 
