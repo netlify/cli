@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
@@ -52,6 +52,34 @@ describe('processPayloadFromFlag', () => {
 
   test('returns false when the referenced path does not exist and the string is not valid JSON', async () => {
     await expect(processPayloadFromFlag('does-not-exist.json', workDir)).resolves.toBe(false)
+  })
+
+  test('resolves an extensionless path to the matching .js file (matches require() behavior)', async () => {
+    writeFileSync(join(workDir, 'payload.js'), `module.exports = { resolved: 'js' }\n`)
+
+    await expect(processPayloadFromFlag('payload', workDir)).resolves.toEqual({ resolved: 'js' })
+  })
+
+  test('resolves an extensionless path to the matching .json file', async () => {
+    writeFileSync(join(workDir, 'payload.json'), JSON.stringify({ resolved: 'json' }))
+
+    await expect(processPayloadFromFlag('payload', workDir)).resolves.toEqual({ resolved: 'json' })
+  })
+
+  test('resolves a directory path via its index.js (matches require() behavior)', async () => {
+    const dir = join(workDir, 'payload-dir')
+    mkdirSync(dir)
+    writeFileSync(join(dir, 'index.js'), `module.exports = { resolved: 'dir-index' }\n`)
+
+    await expect(processPayloadFromFlag('payload-dir', workDir)).resolves.toEqual({ resolved: 'dir-index' })
+  })
+
+  test('accepts a BOM-prefixed .json payload (matches require() behavior)', async () => {
+    const BOM = String.fromCharCode(0xfe_ff)
+    const fileName = 'bom-payload.json'
+    writeFileSync(join(workDir, fileName), `${BOM}${JSON.stringify({ bom: true })}`)
+
+    await expect(processPayloadFromFlag(fileName, workDir)).resolves.toEqual({ bom: true })
   })
 
   test('logs and returns false when an imported JS payload throws at load time', async () => {

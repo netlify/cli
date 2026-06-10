@@ -56,6 +56,39 @@ const formatQstring = function (querystring) {
   return ''
 }
 
+const PAYLOAD_EXTENSIONS = ['.js', '.cjs', '.mjs', '.json']
+
+const stripBOM = (content: string): string => (content.charCodeAt(0) === 0xfe_ff ? content.slice(1) : content)
+
+const resolvePayloadPath = (payloadpath: string): string | undefined => {
+  try {
+    const stat = fs.statSync(payloadpath)
+    if (stat.isFile()) return payloadpath
+    if (stat.isDirectory()) {
+      const pkgPath = path.join(payloadpath, 'package.json')
+      if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(stripBOM(fs.readFileSync(pkgPath, 'utf8'))) as { main?: string }
+          if (pkg.main) {
+            const mainPath = path.join(payloadpath, pkg.main)
+            const resolved = resolvePayloadPath(mainPath)
+            if (resolved) return resolved
+          }
+        } catch {}
+      }
+      for (const ext of PAYLOAD_EXTENSIONS) {
+        const candidate = path.join(payloadpath, `index${ext}`)
+        if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate
+      }
+    }
+  } catch {}
+  for (const ext of PAYLOAD_EXTENSIONS) {
+    const candidate = `${payloadpath}${ext}`
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate
+  }
+  return undefined
+}
+
 /**
  * process payloads from flag
  * @param {string} payloadString
@@ -67,16 +100,16 @@ export const processPayloadFromFlag = async function (payloadString, workingDir)
     // case 1: jsonstring
     const parsedJson = tryParseJSON(payloadString)
     if (parsedJson) return parsedJson
-    // case 2: file path to a JSON or JS module
-    const payloadpath = path.join(workingDir, payloadString)
-    const pathexists = fs.existsSync(payloadpath)
-    if (pathexists) {
+    // case 2: file path to a JSON or JS module — mirror Node's require() resolution
+    // (extensionless paths try .js/.cjs/.mjs/.json; directories try package.json#main then index.*)
+    const resolved = resolvePayloadPath(path.join(workingDir, payloadString))
+    if (resolved) {
       try {
-        if (payloadpath.endsWith('.json')) {
-          return JSON.parse(fs.readFileSync(payloadpath, 'utf8'))
+        if (resolved.endsWith('.json')) {
+          return JSON.parse(stripBOM(fs.readFileSync(resolved, 'utf8')))
         }
         // there is code execution potential here
-        const imported = (await import(pathToFileURL(payloadpath).href)) as { default?: unknown }
+        const imported = (await import(pathToFileURL(resolved).href)) as { default?: unknown }
         return imported.default ?? imported
       } catch (error_) {
         console.error(error_)

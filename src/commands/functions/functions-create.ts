@@ -29,7 +29,10 @@ import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import BaseCommand from '../base-command.js'
 
-const readJsonFile = (filePath: string): unknown => JSON.parse(fs.readFileSync(filePath, 'utf8'))
+const readJsonFile = (filePath: string): unknown => {
+  const content = fs.readFileSync(filePath, 'utf8')
+  return JSON.parse(content.charCodeAt(0) === 0xfe_ff ? content.slice(1) : content)
+}
 
 const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../../functions-templates')
 
