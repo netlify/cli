@@ -12,40 +12,6 @@ import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/han
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
-import path from 'path'
-import fs from 'fs'
-import { it } from 'vitest'
-import { temporaryDirectory } from 'tempy'
-
-describe('functions:create path traversal', () => {
-  it('rejects --name with path traversal via --url flow', async () => {
-    const tmpDir = temporaryDirectory()
-    const functionsDir = path.join(tmpDir, 'functions')
-    fs.mkdirSync(functionsDir)
-
-    const result = await execa(
-      'netlify',
-      [
-        'functions:create',
-        '--name',
-        '../../evil',
-        '--url',
-        'https://github.com/netlify/netlify-functions-example',
-      ],
-      {
-        cwd: tmpDir,
-        reject: false,
-      },
-    )
-
-    // Should exit with error
-    expect(result.exitCode).not.toBe(0)
-
-    // Should NOT create files outside functions dir
-    expect(fs.existsSync(path.join(tmpDir, '..', '..', 'evil'))).toBe(false)
-  })
-})
-
 describe.concurrent('functions:create command', async () => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/projects/site-name/overview',
@@ -293,6 +259,98 @@ describe.concurrent('functions:create command', async () => {
         await expect(childProcess).rejects.toThrowError('Invalid language: coffeescript')
 
         expect(await fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.mjs`)).toBe(false)
+      })
+    })
+  })
+
+  test('rejects a --name containing path separators in the --url flow', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(
+          cliPath,
+          [
+            'functions:create',
+            '--name',
+            '../../evil',
+            '--url',
+            'https://github.com/netlify/cli/tree/main/functions-templates/javascript/hello-world',
+          ],
+          getCLIOptions({ apiUrl, builder }),
+        )
+
+        handleQuestions(childProcess, [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue(DOWN),
+          },
+        ])
+
+        await expect(childProcess).rejects.toThrowError('Invalid function name')
+
+        expect(existsSync(join(builder.directory, '..', 'evil'))).toBe(false)
+      })
+    })
+  })
+
+  test('rejects a name that resolves outside the functions directory in the --url flow', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(
+          cliPath,
+          [
+            'functions:create',
+            '--name',
+            '..',
+            '--url',
+            'https://github.com/netlify/cli/tree/main/functions-templates/javascript/hello-world',
+          ],
+          getCLIOptions({ apiUrl, builder }),
+        )
+
+        handleQuestions(childProcess, [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue(DOWN),
+          },
+        ])
+
+        await expect(childProcess).rejects.toThrowError('Invalid function name')
+      })
+    })
+  })
+
+  test('rejects a positional name containing path separators when scaffolding from a template', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(cliPath, ['functions:create', '../../evil'], getCLIOptions({ apiUrl, builder }))
+
+        handleQuestions(childProcess, [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue(DOWN),
+          },
+          {
+            question: 'Select the language of your function',
+            answer: CONFIRM,
+          },
+          {
+            question: 'Pick a template',
+            answer: CONFIRM,
+          },
+        ])
+
+        await expect(childProcess).rejects.toThrowError('Invalid function name')
+
+        expect(existsSync(join(builder.directory, '..', 'evil'))).toBe(false)
       })
     })
   })
