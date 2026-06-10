@@ -126,13 +126,13 @@ describe('redirects', async () => {
         { cwd: builder.directory, env: { NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS: '1' } },
         async ({ outputBuffer, url }) => {
           await fetch(new URL('/from-hidden', url))
-          await t
-            .expect.poll(() => outputBuffer.join(''), { timeout: 5000 })
+          await t.expect
+            .poll(() => outputBuffer.join(''), { timeout: 5000 })
             .toContain('Got request proxy server GET /to')
           t.expect(outputBuffer.join('')).not.toContain('Got request main server')
           await fetch(new URL('/from', url))
-          await t
-            .expect.poll(() => outputBuffer.join(''), { timeout: 5000 })
+          await t.expect
+            .poll(() => outputBuffer.join(''), { timeout: 5000 })
             .toContain('Got request main server HEAD /from\nGot request main server GET /from')
         },
       )
