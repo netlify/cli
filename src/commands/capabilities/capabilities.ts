@@ -1,6 +1,7 @@
 import type { Command, Option, OptionValues } from 'commander'
 
 import { getPathInHome } from '../../lib/settings.js'
+import { exit } from '../../utils/command-helpers.js'
 import { EXIT_CODES } from '../../utils/exit-codes.js'
 import getCLIPackageJson from '../../utils/get-cli-package-json.js'
 import type BaseCommand from '../base-command.js'
@@ -134,5 +135,11 @@ export const capabilities = async (_options: OptionValues, command: BaseCommand)
     root = root.parent
   }
   const manifest = await buildCapabilitiesManifest(root)
+  process.stdout.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EPIPE') {
+      exit(EXIT_CODES.SUCCESS)
+    }
+    throw error
+  })
   process.stdout.write(`${JSON.stringify(manifest, null, 2)}\n`)
 }
