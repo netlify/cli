@@ -11,7 +11,7 @@ const { mockGetToken, mockGetCurrentUser, logMessages, jsonMessages, exitCalls }
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
-  getToken: (...args: unknown[]) => mockGetToken(...args),
+  getToken: (...args: unknown[]) => mockGetToken(...args) as unknown,
   log: (...args: string[]) => {
     logMessages.push(args.join(' '))
   },
@@ -39,7 +39,7 @@ function createMockCommand(overrides: { siteId?: string } = {}) {
     netlify: {
       accounts: [{ name: 'My Team' }],
       api: {
-        getCurrentUser: (...args: unknown[]) => mockGetCurrentUser(...args),
+        getCurrentUser: (...args: unknown[]) => mockGetCurrentUser(...args) as unknown,
       },
       globalConfig: {
         get: vi.fn().mockReturnValue(undefined),

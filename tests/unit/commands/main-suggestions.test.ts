@@ -109,14 +109,14 @@ describe('namespace parent commands reject space-form subcommands', () => {
     vi.restoreAllMocks()
   })
 
-  test('errors with exit 1 and a colon-form did-you-mean for a known subcommand', () => {
+  test('errors with usage exit code 2 and a colon-form did-you-mean for a known subcommand', () => {
     const sites = buildSitesCommand()
     sites.args = ['delete', 'my-site-id']
     mockProcess()
 
     expect(() => {
       sites.rejectSpaceFormSubcommand()
-    }).toThrow('exit(1)')
+    }).toThrow('exit(2)')
 
     const stderr = stderrChunks.join('')
     expect(stderr).toContain("'netlify sites delete' is not a command")
@@ -131,7 +131,7 @@ describe('namespace parent commands reject space-form subcommands', () => {
 
     expect(() => {
       sites.rejectSpaceFormSubcommand()
-    }).toThrow('exit(1)')
+    }).toThrow('exit(2)')
 
     expect(stderrChunks.join('')).toContain('sites:delete')
   })

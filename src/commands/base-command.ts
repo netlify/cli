@@ -42,11 +42,13 @@ import {
   isOptionError,
   suggestUnknownOptionAlternatives,
 } from '../utils/command-error-handler.js'
+import { guardGlobalConfigFile, guardLocalStateFile } from '../utils/config-guard.js'
+import { EXIT_CODES } from '../utils/exit-codes.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
-import { isInteractive } from '../utils/scripted-commands.js'
+import { failOnNonInteractivePrompt, isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
@@ -144,13 +146,14 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
     log()
     log(chalk.cyan(`We've detected multiple projects inside your repository`))
 
-    if (isCI) {
-      throw new Error(
+    if (isCI || !isInteractive()) {
+      return failOnNonInteractivePrompt(
+        'Select the project you want to work with',
         `Projects detected: ${(project.workspace?.packages || [])
           .map((pkg) => pkg.name || pkg.path)
-          .join(
-            ', ',
-          )}. Configure the project you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
+          .join(', ')}. Pass ${chalk.cyanBright('--filter <app>')} or ${chalk.cyanBright(
+          '--cwd <path>',
+        )} to configure the project you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
       )
     }
 
@@ -189,6 +192,7 @@ export type BaseOptionValues = {
   debug?: boolean
   filter?: string
   httpProxy?: string
+  nonInteractive?: boolean
   silent?: string
   verbose?: boolean
 }
@@ -252,6 +256,12 @@ export default class BaseCommand extends Command {
     const commandName = name || ''
     const base = new BaseCommand(commandName)
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
+      .addOption(
+        new Option(
+          '--non-interactive',
+          'Never open prompts; fail with exit code 4 when input would be required',
+        ).hideHelp(true),
+      )
       .addOption(new Option('--cwd <cwd>').hideHelp(true))
       .addOption(
         new Option('--auth <token>', 'Netlify auth token - can be used to run this command without logging in'),
@@ -349,7 +359,7 @@ export default class BaseCommand extends Command {
       )
     }
     process.stderr.write(` ${bang}   Run 'netlify ${this.name()} --help' to see available subcommands.\n`)
-    exit(1)
+    exit(EXIT_CODES.USAGE_ERROR)
   }
 
   /**
@@ -530,12 +540,13 @@ export default class BaseCommand extends Command {
       return token
     }
     if (!isInteractive()) {
-      return logAndThrowError(
-        `Authentication required. NETLIFY_AUTH_TOKEN is not set and ${chalk.cyanBright(
-          '`netlify status`',
-        )} also informs us that you need to use ${chalk.cyanBright(
-          '`netlify login --request <message>`',
-        )} as a next step.`,
+      return failOnNonInteractivePrompt(
+        'Logging in to your Netlify account',
+        `Authentication required. Set the ${chalk.cyanBright(
+          'NETLIFY_AUTH_TOKEN',
+        )} environment variable or pass ${chalk.cyanBright(
+          '--auth <token>',
+        )}, or use ${chalk.cyanBright('`netlify login --request <message>`')} to ask a human for credentials.`,
       )
     }
     const accessToken = await this.expensivelyAuthenticate()
@@ -703,6 +714,8 @@ export default class BaseCommand extends Command {
     // ==================================================
     // Retrieve Site id and build state from the state.json
     // ==================================================
+    guardGlobalConfigFile()
+    await guardLocalStateFile(this.workingDir)
     const state = new LocalState(this.workingDir)
     const [token] = await getToken(flags.auth)
 
@@ -934,4 +947,4 @@ export default class BaseCommand extends Command {
 }
 
 export const getBaseOptionValues = (options: OptionValues): BaseOptionValues =>
-  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'silent', 'verbose'])
+  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'nonInteractive', 'silent', 'verbose'])
