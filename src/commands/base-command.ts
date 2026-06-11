@@ -82,6 +82,7 @@ const HELP_SEPARATOR_WIDTH = 5
  */
 const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set([
   'api',
+  'capabilities',
   'recipes',
   'completion',
   'status',
