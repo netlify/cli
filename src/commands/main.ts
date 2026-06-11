@@ -22,11 +22,7 @@ import execa from '../utils/execa.js'
 import { EXIT_CODES } from '../utils/exit-codes.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
-import {
-  handleOptionError,
-  isOptionError,
-  suggestUnknownOptionAlternatives,
-} from '../utils/command-error-handler.js'
+import { handleOptionError, isOptionError, suggestUnknownOptionAlternatives } from '../utils/command-error-handler.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
@@ -204,7 +200,9 @@ const mainCommand = async function (options, command) {
     command.help()
   }
 
-  process.stderr.write(` ${chalk.yellow(BANG)}   Warning: ${chalk.yellow(command.args[0])} is not a ${command.name()} command.\n`)
+  process.stderr.write(
+    ` ${chalk.yellow(BANG)}   Warning: ${chalk.yellow(command.args[0])} is not a ${command.name()} command.\n`,
+  )
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
   const allCommands = command.commands.map((cmd) => cmd.name())

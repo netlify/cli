@@ -37,11 +37,7 @@ import {
   warn,
   logError,
 } from '../utils/command-helpers.js'
-import {
-  handleOptionError,
-  isOptionError,
-  suggestUnknownOptionAlternatives,
-} from '../utils/command-error-handler.js'
+import { handleOptionError, isOptionError, suggestUnknownOptionAlternatives } from '../utils/command-error-handler.js'
 import { guardGlobalConfigFile, guardLocalStateFile } from '../utils/config-guard.js'
 import { EXIT_CODES } from '../utils/exit-codes.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
@@ -545,9 +541,9 @@ export default class BaseCommand extends Command {
         'Logging in to your Netlify account',
         `Authentication required. Set the ${chalk.cyanBright(
           'NETLIFY_AUTH_TOKEN',
-        )} environment variable or pass ${chalk.cyanBright(
-          '--auth <token>',
-        )}, or use ${chalk.cyanBright('`netlify login --request <message>`')} to ask a human for credentials.`,
+        )} environment variable or pass ${chalk.cyanBright('--auth <token>')}, or use ${chalk.cyanBright(
+          '`netlify login --request <message>`',
+        )} to ask a human for credentials.`,
       )
     }
     const accessToken = await this.expensivelyAuthenticate()

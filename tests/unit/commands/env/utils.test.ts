@@ -21,7 +21,7 @@ const createMockCommand = ({ linkedSiteId, flagSiteId }: { linkedSiteId?: string
       site: { id: linkedSiteId },
       siteInfo: { id: flagSiteId },
     },
-  }) as unknown as BaseCommand
+  } as unknown as BaseCommand)
 
 describe('getEnvSiteId', () => {
   test('returns the linked site id when --site is not passed', () => {

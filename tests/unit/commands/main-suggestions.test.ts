@@ -50,7 +50,9 @@ describe('getUnknownOptionSuggestions', () => {
 
     const lines = getUnknownOptionSuggestions(program, "error: unknown option '--jsno'")
 
-    expect(lines).toContain("'--json' is a flag of: agents:create, deploy, env:list, ... (run 'netlify <command> --help')")
+    expect(lines).toContain(
+      "'--json' is a flag of: agents:create, deploy, env:list, ... (run 'netlify <command> --help')",
+    )
   })
 
   test('at the root, suggests typoed flags that only exist on subcommands', () => {

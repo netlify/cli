@@ -50,6 +50,10 @@ Manage objects in Netlify Blobs
 
 Build on your local machine
 
+### [capabilities](/commands/capabilities)
+
+Print a machine-readable manifest of every command, its flags, exit codes, env vars, and config files
+
 ### [claim](/commands/claim)
 
 Claim an anonymously deployed site and link it to your account
