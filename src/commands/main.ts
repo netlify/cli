@@ -15,13 +15,16 @@ import {
   log,
   NETLIFY_CYAN,
   USER_AGENT,
-  warn,
   logError,
 } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
-import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import {
+  handleOptionError,
+  isOptionError,
+  suggestUnknownOptionAlternatives,
+} from '../utils/command-error-handler.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
@@ -197,19 +200,19 @@ const mainCommand = async function (options, command) {
     command.help()
   }
 
-  warn(`${chalk.yellow(command.args[0])} is not a ${command.name()} command.`)
+  process.stderr.write(` ${chalk.yellow(BANG)}   Warning: ${chalk.yellow(command.args[0])} is not a ${command.name()} command.\n`)
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
   const allCommands = command.commands.map((cmd) => cmd.name())
   const suggestion = closest(command.args[0], allCommands)
 
   // In non-interactive environments (CI/CD, scripts), show the suggestion
-  // without prompting, and display full help for available commands
+  // without prompting, and display full help for available commands.
+  // Diagnostics belong on stderr so stdout stays clean for machine consumers.
   if (!isInteractive()) {
-    log(`\nDid you mean ${chalk.blue(suggestion)}?`)
-    log()
+    process.stderr.write(`\nDid you mean ${chalk.blue(suggestion)}?\n\n`)
     command.outputHelp({ error: true })
-    log()
+    process.stderr.write('\n')
     logError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
     exit(1)
   }
@@ -312,6 +315,7 @@ To ask a human for credentials: ${NETLIFY_CYAN('netlify login --request <msg>')}
       },
     })
     .exitOverride(function (this: BaseCommand, error: CommanderError) {
+      suggestUnknownOptionAlternatives(this, error)
       if (isOptionError(error)) {
         handleOptionError(this)
       }

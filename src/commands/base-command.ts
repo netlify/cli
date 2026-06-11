@@ -11,6 +11,7 @@ import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 import { Command, CommanderError, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
+import { closest, distance } from 'fastest-levenshtein'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
@@ -19,6 +20,7 @@ import pick from 'lodash/pick.js'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
+  BANG,
   NETLIFY_CYAN,
   USER_AGENT,
   chalk,
@@ -35,7 +37,11 @@ import {
   warn,
   logError,
 } from '../utils/command-helpers.js'
-import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import {
+  handleOptionError,
+  isOptionError,
+  suggestUnknownOptionAlternatives,
+} from '../utils/command-error-handler.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
@@ -290,6 +296,7 @@ export default class BaseCommand extends Command {
       // brief error message, making it easier for users in CI/CD environments to
       // understand what went wrong.
       this.exitOverride((error: CommanderError) => {
+        suggestUnknownOptionAlternatives(this, error)
         if (isOptionError(error)) {
           handleOptionError(this)
         }
@@ -304,10 +311,54 @@ export default class BaseCommand extends Command {
   }
 
   #noBaseOptions = false
+
+  get noBaseOptions(): boolean {
+    return this.#noBaseOptions
+  }
+
   /** don't show help options on command overview (mostly used on top commands like `addons` where options only apply on children) */
   noHelpOptions() {
     this.#noBaseOptions = true
     return this
+  }
+
+  /**
+   * Rejects space-form subcommand invocations (e.g. `netlify sites delete`) on namespace
+   * commands with a colon-form did-you-mean (`netlify sites:delete`) instead of silently
+   * succeeding. No-op when no positional arguments were given.
+   */
+  rejectSpaceFormSubcommand(): void {
+    if (this.args.length === 0) {
+      return
+    }
+
+    const attempted = this.args[0]
+    const colonForm = `${this.name()}:${attempted}`
+    const subcommandNames = (this.parent ?? this).commands
+      .map((cmd) => cmd.name())
+      .filter((cmdName) => cmdName.startsWith(`${this.name()}:`))
+    const exactMatch = subcommandNames.find((cmdName) => cmdName === colonForm)
+    const nearest = exactMatch ?? (subcommandNames.length === 0 ? undefined : closest(colonForm, subcommandNames))
+
+    const bang = chalk.red(BANG)
+    process.stderr.write(` ${bang}   Error: 'netlify ${this.name()} ${attempted}' is not a command.\n`)
+    if (nearest !== undefined && (exactMatch !== undefined || distance(colonForm, nearest) <= 3)) {
+      const remainingArgs = this.args.slice(1).join(' ')
+      process.stderr.write(
+        ` ${bang}   Did you mean 'netlify ${nearest}${remainingArgs === '' ? '' : ` ${remainingArgs}`}'?\n`,
+      )
+    }
+    process.stderr.write(` ${bang}   Run 'netlify ${this.name()} --help' to see available subcommands.\n`)
+    exit(1)
+  }
+
+  /**
+   * Action for namespace-only parent commands (e.g. `sites`, `env`): shows help when
+   * called bare, errors with a colon-form suggestion when positional arguments are given.
+   */
+  helpOrRejectExtraArgs(): void {
+    this.rejectSpaceFormSubcommand()
+    this.help()
   }
 
   /** The examples list for the command (used inside doc generation and help page) */
@@ -353,7 +404,6 @@ export default class BaseCommand extends Command {
 
     /** override the longestOptionTermLength to react on hide options flag */
     help.longestOptionTermLength = (command: BaseCommand, helper: Help): number =>
-      // @ts-expect-error TS(2551) FIXME: Property 'noBaseOptions' does not exist on type 'C... Remove this comment to see the full error message
       (command.noBaseOptions === false &&
         helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
       0
@@ -367,9 +417,9 @@ export default class BaseCommand extends Command {
         const bang = isCommand ? `${HELP_$} ` : ''
 
         if (description) {
-          const pad = termWidth + HELP_SEPARATOR_WIDTH
-          const fullText = `${bang}${term.padEnd(pad - (isCommand ? 2 : 0))}${chalk.grey(description)}`
-          return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad)
+          const pad = Math.max(termWidth + HELP_SEPARATOR_WIDTH - (isCommand ? 2 : 0), term.length + 2)
+          const fullText = `${bang}${term.padEnd(pad)}${chalk.grey(description)}`
+          return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad + (isCommand ? 2 : 0))
         }
 
         return `${bang}${term}`

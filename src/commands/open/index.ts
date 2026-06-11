@@ -31,6 +31,7 @@ export const createOpenCommand = (program: BaseCommand) => {
     .option('--admin', 'Open Netlify project')
     .addExamples(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site'])
     .action(async (options: OptionValues, command: BaseCommand) => {
+      command.rejectSpaceFormSubcommand()
       const { open } = await import('./open.js')
       await open(options, command)
     })
