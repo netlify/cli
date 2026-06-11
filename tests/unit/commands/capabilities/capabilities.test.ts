@@ -52,15 +52,16 @@ describe('capabilities', () => {
     expect(second).toBe(first)
   })
 
-  test('commands and flags are sorted alphabetically', async () => {
+  test('commands and flags are sorted alphabetically (locale-independent code unit order)', async () => {
+    const byCodeUnit = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0)
     const manifest = await buildCapabilitiesManifest(createMainCommand())
 
     const names = manifest.commands.map((command) => command.name)
-    expect(names).toEqual([...names].sort((left, right) => left.localeCompare(right)))
+    expect(names).toEqual([...names].sort(byCodeUnit))
 
     manifest.commands.forEach((command) => {
       const flagNames = command.flags.map((flag) => flag.name)
-      expect(flagNames).toEqual([...flagNames].sort((left, right) => left.localeCompare(right)))
+      expect(flagNames).toEqual([...flagNames].sort(byCodeUnit))
     })
   })
 

@@ -39,7 +39,9 @@ interface CommandManifest {
   mutates: null
 }
 
-const byName = (left: { name: string }, right: { name: string }) => left.name.localeCompare(right.name)
+// Deliberately not localeCompare: the manifest must be byte-for-byte identical regardless of the user's locale/ICU
+const byName = (left: { name: string }, right: { name: string }) =>
+  left.name < right.name ? -1 : left.name > right.name ? 1 : 0
 
 const toFlagManifest = (option: Option): FlagManifest => ({
   name: option.long ?? option.flags,
