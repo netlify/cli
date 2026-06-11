@@ -20,6 +20,6 @@
     "@netlify/functions": "^5.3.0",
     "@types/node": "^22.0.0",
     "drizzle-orm": "beta",
-    "typescript": "^4.5.5"
+    "typescript": "^6.0.0"
   }
 }
