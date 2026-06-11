@@ -58,13 +58,33 @@ const collectCommands = (root: Command): Command[] => {
   return collected
 }
 
+const getFullCommandName = (cmd: Command): string => {
+  const names: string[] = []
+  let current = cmd
+  while (current.parent !== null) {
+    names.unshift(current.name())
+    current = current.parent
+  }
+  return names.join(' ')
+}
+
 const toCommandManifest = (cmd: Command): CommandManifest => ({
-  name: cmd.name(),
+  name: getFullCommandName(cmd),
   description: cmd.description(),
   flags: cmd.options.map(toFlagManifest).sort(byName),
   json_output: cmd.options.some((option) => option.long === '--json'),
   mutates: null,
 })
+
+const dedupeByName = (manifests: CommandManifest[]): CommandManifest[] => {
+  const seen = new Map<string, CommandManifest>()
+  manifests.forEach((manifest) => {
+    if (!seen.has(manifest.name)) {
+      seen.set(manifest.name, manifest)
+    }
+  })
+  return [...seen.values()]
+}
 
 const getGlobalFlags = (commands: Command[]): FlagManifest[] => {
   const occurrences = new Map<string, { count: number; option: Option }>()
@@ -96,7 +116,7 @@ export const buildCapabilitiesManifest = async (program: Command) => {
   return {
     contract_version: CONTRACT_VERSION,
     cli_version: version,
-    commands: commands.map(toCommandManifest).sort(byName),
+    commands: dedupeByName(commands.map(toCommandManifest)).sort(byName),
     global_flags: getGlobalFlags(commands),
     exit_codes: EXIT_CODE_DESCRIPTIONS,
     env_vars: ENV_VARS,

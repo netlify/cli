@@ -10,6 +10,16 @@ const OPTION_ERROR_CODES = new Set([
   'commander.excessArguments',
 ])
 
+/** Every Commander error code caused by bad user input; these exit with `EXIT_CODES.USAGE_ERROR` */
+export const USAGE_ERROR_CODES = new Set([
+  ...OPTION_ERROR_CODES,
+  'commander.unknownCommand',
+  'commander.optionMissingArgument',
+  'commander.missingMandatoryOptionValue',
+  'commander.invalidArgument',
+  'commander.conflictingOption',
+])
+
 const UNKNOWN_OPTION_PATTERN = /unknown option '([^']+)'/
 const MAX_FLAG_EDIT_DISTANCE = 2
 const MAX_FLAG_SUGGESTIONS = 3
@@ -34,6 +44,15 @@ export const getUnknownOptionSuggestions = (command: Command, errorMessage: stri
   }
   const unknownFlag = match[1]
   const lines: string[] = []
+
+  const attemptedIndex = command.args.findIndex((arg) => !arg.startsWith('-'))
+  if (attemptedIndex !== -1 && command.parent !== null) {
+    const colonForm = `${command.name()}:${command.args[attemptedIndex]}`
+    if (command.parent.commands.some((cmd) => cmd.name() === colonForm)) {
+      const rest = command.args.filter((_, index) => index !== attemptedIndex).join(' ')
+      return [`Did you mean 'netlify ${colonForm}${rest === '' ? '' : ` ${rest}`}'?`]
+    }
+  }
 
   if (!errorMessage.includes('Did you mean')) {
     const ownFlags = command.options

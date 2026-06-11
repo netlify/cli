@@ -3,10 +3,9 @@ import { CommanderError } from 'commander'
 import { injectForceFlagIfScripted } from './scripted-commands.js'
 import { BaseCommand } from '../commands/index.js'
 import { CI_FORCED_COMMANDS } from '../commands/main.js'
+import { USAGE_ERROR_CODES } from './command-error-handler.js'
 import { exit } from './command-helpers.js'
 import { EXIT_CODES } from './exit-codes.js'
-
-const USAGE_ERROR_CODES = new Set(['commander.unknownCommand', 'commander.unknownOption'])
 
 export const runProgram = async (program: BaseCommand, argv: string[]) => {
   const cmdName = argv[2]
