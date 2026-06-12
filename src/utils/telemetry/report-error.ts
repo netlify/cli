@@ -59,8 +59,12 @@ export const reportError = async function (error, config = {}) {
 
   // spawn detached child process to handle send and wait for the http request to finish
   // otherwise it can get canceled
-  await execa(process.execPath, [join(dirPath, 'request.js'), options], {
-    detached: true,
-    stdio: 'ignore',
-  })
+  try {
+    await execa(process.execPath, [join(dirPath, 'request.js'), options], {
+      detached: true,
+      stdio: 'ignore',
+    })
+  } catch {
+    return
+  }
 }

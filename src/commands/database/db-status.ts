@@ -265,16 +265,16 @@ const renderPretty = (params: RenderParams) => {
     }
   } else {
     primary(STATUS_WARN, 'Netlify Database is not enabled for this project')
-    secondary(`Install the ${chalk.bold(NETLIFY_DATABASE_PACKAGE)} package and deploy your site to automatically`)
+    secondary(`Install the ${NETLIFY_DATABASE_PACKAGE} package and deploy your site to automatically`)
     secondary(`provision a database. Refer to ${DOCS_URL} for more information.`)
   }
   log('')
 
   if (packageInstalled) {
-    primary(STATUS_GOOD, `The ${chalk.bold(NETLIFY_DATABASE_PACKAGE)} package is installed`)
+    primary(STATUS_GOOD, `The ${NETLIFY_DATABASE_PACKAGE} package is installed`)
     secondary(`For a full API reference, visit ${DOCS_URL}`)
   } else {
-    primary(STATUS_WARN, `The ${chalk.bold(NETLIFY_DATABASE_PACKAGE)} package is not installed`)
+    primary(STATUS_WARN, `The ${NETLIFY_DATABASE_PACKAGE} package is not installed`)
     secondary(`Install it with \`npm install ${NETLIFY_DATABASE_PACKAGE}\``)
     secondary(`Refer to ${DOCS_URL} for more information`)
   }
