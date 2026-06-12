@@ -60,6 +60,9 @@ const addDeployHook = async (deployHook: string | undefined): Promise<boolean> =
   return deployHookAdded
 }
 
+const isSupportedProvider = (provider: string | null): provider is 'github' | 'gitlab' =>
+  provider === 'github' || provider === 'gitlab'
+
 export default async function configManual({
   command,
   repoData,
@@ -88,7 +91,7 @@ export default async function configManual({
 
   const repoPath = repoData.repo ?? (await getRepoPath({ repoData }))
   const repo = {
-    provider: repoData.provider ?? 'manual',
+    provider: isSupportedProvider(repoData.provider) ? repoData.provider : 'manual',
     repo_path: repoPath,
     repo_branch: repoData.branch,
     allowed_branches: [repoData.branch],

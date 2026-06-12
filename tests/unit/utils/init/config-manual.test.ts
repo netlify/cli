@@ -137,6 +137,29 @@ describe('config-manual', () => {
       const setupCall = mockSetupSite.mock.calls[0][0] as { repo: { provider: string } }
       expect(setupCall.repo.provider).toBe('manual')
     })
+
+    it('should fallback to manual provider for unknown Git hosts', async () => {
+      const configManual = (await import('../../../../src/utils/init/config-manual.js')).default
+
+      const repoData: RepoData = {
+        name: 'test',
+        owner: 'user',
+        repo: 'user/test',
+        url: 'git@custom-git.example.com:user/test.git',
+        branch: 'main',
+        provider: 'custom-git.example.com',
+        httpsUrl: 'https://custom-git.example.com/user/test',
+      }
+
+      await configManual({
+        command: mockCommand as BaseCommand,
+        repoData,
+        siteId: 'site-123',
+      })
+
+      const setupCall = mockSetupSite.mock.calls[0][0] as { repo: { provider: string } }
+      expect(setupCall.repo.provider).toBe('manual')
+    })
   })
 
   describe('GitHub repository configuration', () => {
