@@ -263,6 +263,98 @@ describe.concurrent('functions:create command', async () => {
     })
   })
 
+  test('rejects a --name containing path separators in the --url flow', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(
+          cliPath,
+          [
+            'functions:create',
+            '--name',
+            '../../evil',
+            '--url',
+            'https://github.com/netlify/cli/tree/main/functions-templates/javascript/hello-world',
+          ],
+          getCLIOptions({ apiUrl, builder }),
+        )
+
+        handleQuestions(childProcess, [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue(DOWN),
+          },
+        ])
+
+        await expect(childProcess).rejects.toThrowError('Invalid function name')
+
+        expect(existsSync(join(builder.directory, '..', 'evil'))).toBe(false)
+      })
+    })
+  })
+
+  test('rejects a name that resolves outside the functions directory in the --url flow', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(
+          cliPath,
+          [
+            'functions:create',
+            '--name',
+            '..',
+            '--url',
+            'https://github.com/netlify/cli/tree/main/functions-templates/javascript/hello-world',
+          ],
+          getCLIOptions({ apiUrl, builder }),
+        )
+
+        handleQuestions(childProcess, [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue(DOWN),
+          },
+        ])
+
+        await expect(childProcess).rejects.toThrowError('Invalid function name')
+      })
+    })
+  })
+
+  test('rejects a positional name containing path separators when scaffolding from a template', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(cliPath, ['functions:create', '../../evil'], getCLIOptions({ apiUrl, builder }))
+
+        handleQuestions(childProcess, [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue(DOWN),
+          },
+          {
+            question: 'Select the language of your function',
+            answer: CONFIRM,
+          },
+          {
+            question: 'Pick a template',
+            answer: CONFIRM,
+          },
+        ])
+
+        await expect(childProcess).rejects.toThrowError('Invalid function name')
+
+        expect(existsSync(join(builder.directory, '..', 'evil'))).toBe(false)
+      })
+    })
+  })
+
   await setupFixtureTests('nx-integrated-monorepo', () => {
     test<FixtureTestContext>('should create a new edge function', async ({ fixture, expect }) => {
       await withMockApi(routes, async ({ apiUrl }) => {
