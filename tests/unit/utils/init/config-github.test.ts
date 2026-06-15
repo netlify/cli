@@ -64,8 +64,7 @@ describe('getGitHubToken', () => {
 
     const token = await getGitHubToken({ globalConfig })
 
-    expect(Octokit).toHaveBeenCalledOnce()
-    expect(Octokit).toHaveBeenCalledWith({ auth: 'token old_token' })
+    expect(Octokit).toHaveBeenCalledExactlyOnceWith({ auth: 'token old_token' })
 
     expect(token).toBe('old_token')
     expect(globalConfig.get(`users.spongebob.auth.github`)).toEqual({
@@ -87,8 +86,7 @@ describe('getGitHubToken', () => {
     })
     const token = await getGitHubToken({ globalConfig })
 
-    expect(Octokit).toHaveBeenCalledOnce()
-    expect(Octokit).toHaveBeenCalledWith({ auth: 'token old_token' })
+    expect(Octokit).toHaveBeenCalledExactlyOnceWith({ auth: 'token old_token' })
 
     expect(token).toBe('new_token')
     expect(globalConfig.get(`users.spongebob.auth.github`)).toEqual({
