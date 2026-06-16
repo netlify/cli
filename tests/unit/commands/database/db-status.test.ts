@@ -1,6 +1,6 @@
 import { relative, sep } from 'path'
 
-import { describe, expect, test, vi, beforeEach, afterEach, afterAll } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
 const {
   mockReaddir,
@@ -253,10 +253,6 @@ beforeEach(() => {
 afterEach(() => {
   delete process.env.NETLIFY_DB_URL
   delete process.env.NETLIFY_DB_BRANCH
-})
-
-afterAll(() => {
-  vi.unstubAllGlobals()
 })
 
 describe('statusDb', () => {
