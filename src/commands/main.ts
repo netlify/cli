@@ -15,13 +15,14 @@ import {
   log,
   NETLIFY_CYAN,
   USER_AGENT,
-  warn,
   logError,
 } from '../utils/command-helpers.js'
+import { guardGlobalConfigFile } from '../utils/config-guard.js'
 import execa from '../utils/execa.js'
+import { EXIT_CODES } from '../utils/exit-codes.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
-import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import { handleOptionError, isOptionError, suggestUnknownOptionAlternatives } from '../utils/command-error-handler.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
@@ -31,6 +32,7 @@ import BaseCommand from './base-command.js'
 import { createClaimCommand } from './claim/index.js'
 import { createBlobsCommand } from './blobs/blobs.js'
 import { createBuildCommand } from './build/index.js'
+import { createCapabilitiesCommand } from './capabilities/index.js'
 import { createCloneCommand } from './clone/index.js'
 import { createCreateCommand } from './create/index.js'
 import { createCompletionCommand } from './completion/index.js'
@@ -155,6 +157,7 @@ ${USER_AGENT}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
 const mainCommand = async function (options, command) {
+  guardGlobalConfigFile()
   const globalConfig = await getGlobalConfigStore()
 
   if (options.telemetryDisable) {
@@ -197,21 +200,23 @@ const mainCommand = async function (options, command) {
     command.help()
   }
 
-  warn(`${chalk.yellow(command.args[0])} is not a ${command.name()} command.`)
+  process.stderr.write(
+    ` ${chalk.yellow(BANG)}   Warning: ${chalk.yellow(command.args[0])} is not a ${command.name()} command.\n`,
+  )
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
   const allCommands = command.commands.map((cmd) => cmd.name())
   const suggestion = closest(command.args[0], allCommands)
 
   // In non-interactive environments (CI/CD, scripts), show the suggestion
-  // without prompting, and display full help for available commands
+  // without prompting, and display full help for available commands.
+  // Diagnostics belong on stderr so stdout stays clean for machine consumers.
   if (!isInteractive()) {
-    log(`\nDid you mean ${chalk.blue(suggestion)}?`)
-    log()
+    process.stderr.write(`\nDid you mean ${chalk.blue(suggestion)}?\n\n`)
     command.outputHelp({ error: true })
-    log()
+    process.stderr.write('\n')
     logError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
-    exit(1)
+    exit(EXIT_CODES.USAGE_ERROR)
   }
 
   const applySuggestion = await new Promise((resolve) => {
@@ -237,7 +242,7 @@ const mainCommand = async function (options, command) {
 
   if (!applySuggestion) {
     logError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
-    exit(1)
+    exit(EXIT_CODES.USAGE_ERROR)
   }
 
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })
@@ -253,6 +258,7 @@ export const createMainCommand = (): BaseCommand => {
   createApiCommand(program)
   createBlobsCommand(program)
   createBuildCommand(program)
+  createCapabilitiesCommand(program)
   createClaimCommand(program)
   createCompletionCommand(program)
   createDeployCommand(program)
@@ -299,6 +305,8 @@ export const createMainCommand = (): BaseCommand => {
       return `To get started run: ${NETLIFY_CYAN('netlify login')}
 To ask a human for credentials: ${NETLIFY_CYAN('netlify login --request <msg>')}
 
+Exit codes: 0 ok, 1 error, 2 usage, 4 needs-input (see ${NETLIFY_CYAN("'netlify capabilities --json'")})
+
 → For more help with the CLI, visit ${NETLIFY_CYAN(
         terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl, { fallback: false }),
       )}
@@ -312,6 +320,7 @@ To ask a human for credentials: ${NETLIFY_CYAN('netlify login --request <msg>')}
       },
     })
     .exitOverride(function (this: BaseCommand, error: CommanderError) {
+      suggestUnknownOptionAlternatives(this, error)
       if (isOptionError(error)) {
         handleOptionError(this)
       }

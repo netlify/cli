@@ -9,7 +9,7 @@ import { startSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
-import { isInteractive } from '../../utils/scripted-commands.js'
+import { failOnNonInteractivePrompt, isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
@@ -371,7 +371,9 @@ To link by project ID:
     })
   } else {
     if (!isInteractive()) {
-      return logAndThrowError(`No project specified. In non-interactive mode, you must specify how to link:
+      return failOnNonInteractivePrompt(
+        'How do you want to link this folder to a project?',
+        `No project specified. In non-interactive mode, you must specify how to link:
 
 Link by project ID:
   ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}
@@ -386,7 +388,8 @@ To search for projects:
   ${chalk.cyanBright(`${netlifyCommand()} sites:search <search-term>`)}
 
 To list all projects:
-  ${chalk.cyanBright(`${netlifyCommand()} sites:list`)}`)
+  ${chalk.cyanBright(`${netlifyCommand()} sites:list`)}`,
+      )
     }
 
     newSiteData = await linkPrompt(command, options)

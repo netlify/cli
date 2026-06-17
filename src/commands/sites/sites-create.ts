@@ -3,7 +3,15 @@ import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 
-import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
+import {
+  chalk,
+  logAndThrowError,
+  log,
+  logJson,
+  prettyJsonRenderOptions,
+  warn,
+  type APIError,
+} from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
@@ -158,11 +166,14 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   const siteUrl = site.ssl_url || site.url
   log(
-    prettyjson.render({
-      'Admin URL': site.admin_url,
-      URL: siteUrl,
-      'Project ID': site.id,
-    }),
+    prettyjson.render(
+      {
+        'Admin URL': site.admin_url,
+        URL: siteUrl,
+        'Project ID': site.id,
+      },
+      prettyJsonRenderOptions(),
+    ),
   )
 
   track('sites_created', {

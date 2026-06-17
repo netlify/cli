@@ -11,6 +11,7 @@ import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 import { Command, CommanderError, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
+import { closest, distance } from 'fastest-levenshtein'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
@@ -19,6 +20,7 @@ import pick from 'lodash/pick.js'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
+  BANG,
   NETLIFY_CYAN,
   USER_AGENT,
   chalk,
@@ -35,12 +37,14 @@ import {
   warn,
   logError,
 } from '../utils/command-helpers.js'
-import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import { handleOptionError, isOptionError, suggestUnknownOptionAlternatives } from '../utils/command-error-handler.js'
+import { guardGlobalConfigFile, guardLocalStateFile } from '../utils/config-guard.js'
+import { EXIT_CODES } from '../utils/exit-codes.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
-import { isInteractive } from '../utils/scripted-commands.js'
+import { failOnNonInteractivePrompt, isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
@@ -74,6 +78,7 @@ const HELP_SEPARATOR_WIDTH = 5
  */
 const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set([
   'api',
+  'capabilities',
   'recipes',
   'completion',
   'status',
@@ -138,13 +143,14 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
     log()
     log(chalk.cyan(`We've detected multiple projects inside your repository`))
 
-    if (isCI) {
-      throw new Error(
+    if (isCI || !isInteractive()) {
+      return failOnNonInteractivePrompt(
+        'Select the project you want to work with',
         `Projects detected: ${(project.workspace?.packages || [])
           .map((pkg) => pkg.name || pkg.path)
-          .join(
-            ', ',
-          )}. Configure the project you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
+          .join(', ')}. Pass ${chalk.cyanBright('--filter <app>')} or ${chalk.cyanBright(
+          '--cwd <path>',
+        )} to configure the project you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
       )
     }
 
@@ -183,6 +189,7 @@ export type BaseOptionValues = {
   debug?: boolean
   filter?: string
   httpProxy?: string
+  nonInteractive?: boolean
   silent?: string
   verbose?: boolean
 }
@@ -246,6 +253,12 @@ export default class BaseCommand extends Command {
     const commandName = name || ''
     const base = new BaseCommand(commandName)
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
+      .addOption(
+        new Option(
+          '--non-interactive',
+          'Never open prompts; fail with exit code 4 when input would be required',
+        ).hideHelp(true),
+      )
       .addOption(new Option('--cwd <cwd>').hideHelp(true))
       .addOption(
         new Option('--auth <token>', 'Netlify auth token - can be used to run this command without logging in'),
@@ -290,6 +303,7 @@ export default class BaseCommand extends Command {
       // brief error message, making it easier for users in CI/CD environments to
       // understand what went wrong.
       this.exitOverride((error: CommanderError) => {
+        suggestUnknownOptionAlternatives(this, error)
         if (isOptionError(error)) {
           handleOptionError(this)
         }
@@ -304,10 +318,54 @@ export default class BaseCommand extends Command {
   }
 
   #noBaseOptions = false
+
+  get noBaseOptions(): boolean {
+    return this.#noBaseOptions
+  }
+
   /** don't show help options on command overview (mostly used on top commands like `addons` where options only apply on children) */
   noHelpOptions() {
     this.#noBaseOptions = true
     return this
+  }
+
+  /**
+   * Rejects space-form subcommand invocations (e.g. `netlify sites delete`) on namespace
+   * commands with a colon-form did-you-mean (`netlify sites:delete`) instead of silently
+   * succeeding. No-op when no positional arguments were given.
+   */
+  rejectSpaceFormSubcommand(): void {
+    if (this.args.length === 0) {
+      return
+    }
+
+    const attempted = this.args[0]
+    const colonForm = `${this.name()}:${attempted}`
+    const subcommandNames = (this.parent ?? this).commands
+      .map((cmd) => cmd.name())
+      .filter((cmdName) => cmdName.startsWith(`${this.name()}:`))
+    const exactMatch = subcommandNames.find((cmdName) => cmdName === colonForm)
+    const nearest = exactMatch ?? (subcommandNames.length === 0 ? undefined : closest(colonForm, subcommandNames))
+
+    const bang = chalk.red(BANG)
+    process.stderr.write(` ${bang}   Error: 'netlify ${this.name()} ${attempted}' is not a command.\n`)
+    if (nearest !== undefined && (exactMatch !== undefined || distance(colonForm, nearest) <= 3)) {
+      const remainingArgs = this.args.slice(1).join(' ')
+      process.stderr.write(
+        ` ${bang}   Did you mean 'netlify ${nearest}${remainingArgs === '' ? '' : ` ${remainingArgs}`}'?\n`,
+      )
+    }
+    process.stderr.write(` ${bang}   Run 'netlify ${this.name()} --help' to see available subcommands.\n`)
+    exit(EXIT_CODES.USAGE_ERROR)
+  }
+
+  /**
+   * Action for namespace-only parent commands (e.g. `sites`, `env`): shows help when
+   * called bare, errors with a colon-form suggestion when positional arguments are given.
+   */
+  helpOrRejectExtraArgs(): void {
+    this.rejectSpaceFormSubcommand()
+    this.help()
   }
 
   /** The examples list for the command (used inside doc generation and help page) */
@@ -353,7 +411,6 @@ export default class BaseCommand extends Command {
 
     /** override the longestOptionTermLength to react on hide options flag */
     help.longestOptionTermLength = (command: BaseCommand, helper: Help): number =>
-      // @ts-expect-error TS(2551) FIXME: Property 'noBaseOptions' does not exist on type 'C... Remove this comment to see the full error message
       (command.noBaseOptions === false &&
         helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
       0
@@ -367,9 +424,9 @@ export default class BaseCommand extends Command {
         const bang = isCommand ? `${HELP_$} ` : ''
 
         if (description) {
-          const pad = termWidth + HELP_SEPARATOR_WIDTH
-          const fullText = `${bang}${term.padEnd(pad - (isCommand ? 2 : 0))}${chalk.grey(description)}`
-          return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad)
+          const pad = Math.max(termWidth + HELP_SEPARATOR_WIDTH - (isCommand ? 2 : 0), term.length + 2)
+          const fullText = `${bang}${term.padEnd(pad)}${chalk.grey(description)}`
+          return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad + (isCommand ? 2 : 0))
         }
 
         return `${bang}${term}`
@@ -480,12 +537,13 @@ export default class BaseCommand extends Command {
       return token
     }
     if (!isInteractive()) {
-      return logAndThrowError(
-        `Authentication required. NETLIFY_AUTH_TOKEN is not set and ${chalk.cyanBright(
-          '`netlify status`',
-        )} also informs us that you need to use ${chalk.cyanBright(
+      return failOnNonInteractivePrompt(
+        'Logging in to your Netlify account',
+        `Authentication required. Set the ${chalk.cyanBright(
+          'NETLIFY_AUTH_TOKEN',
+        )} environment variable or pass ${chalk.cyanBright('--auth <token>')}, or use ${chalk.cyanBright(
           '`netlify login --request <message>`',
-        )} as a next step.`,
+        )} to ask a human for credentials.`,
       )
     }
     const accessToken = await this.expensivelyAuthenticate()
@@ -653,6 +711,8 @@ export default class BaseCommand extends Command {
     // ==================================================
     // Retrieve Site id and build state from the state.json
     // ==================================================
+    guardGlobalConfigFile()
+    await guardLocalStateFile(this.workingDir)
     const state = new LocalState(this.workingDir)
     const [token] = await getToken(flags.auth)
 
@@ -884,4 +944,4 @@ export default class BaseCommand extends Command {
 }
 
 export const getBaseOptionValues = (options: OptionValues): BaseOptionValues =>
-  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'silent', 'verbose'])
+  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'nonInteractive', 'silent', 'verbose'])

@@ -9,11 +9,18 @@ import {
   getToken,
   log,
   logJson,
+  prettyJsonRenderOptions,
   warn,
   type APIError,
 } from '../../utils/command-helpers.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import type BaseCommand from '../base-command.js'
+
+// TODO(R-006): centralize these in the shared exit-code/error-code dictionary in src/utils/command-helpers.ts.
+export const STATUS_ERROR_CODES = {
+  NOT_LOGGED_IN: 'NOT_LOGGED_IN',
+  NOT_LINKED: 'NOT_LINKED',
+} as const
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
   const { accounts, api, globalConfig, site, siteInfo } = command.netlify
@@ -21,6 +28,19 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   const [accessToken] = await getToken()
 
   if (!accessToken) {
+    if (options.json) {
+      logJson({
+        loggedIn: false,
+        linked: false,
+        account: null,
+        siteData: null,
+        error: {
+          code: STATUS_ERROR_CODES.NOT_LOGGED_IN,
+          fix: 'netlify login or NETLIFY_AUTH_TOKEN',
+        },
+      })
+      return exit(1)
+    }
     log(`Not logged in. Please log in to see project status.`)
     log()
     if (!isInteractive()) {
@@ -43,6 +63,18 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     user = await api.getCurrentUser()
   } catch (error_) {
     if ((error_ as APIError).status === 401) {
+      if (options.json) {
+        logJson({
+          loggedIn: false,
+          linked: false,
+          account: null,
+          siteData: null,
+          error: {
+            code: STATUS_ERROR_CODES.NOT_LOGGED_IN,
+            fix: 'netlify login or NETLIFY_AUTH_TOKEN',
+          },
+        })
+      }
       return logAndThrowError(
         'Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.',
       )
@@ -67,9 +99,21 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     // another lib.
     (clean as unknown as <T extends Record<string | number | symbol, unknown>>(obj: T) => Partial<T>)(accountData)
 
-  log(prettyjson.render(cleanAccountData))
+  log(prettyjson.render(cleanAccountData, prettyJsonRenderOptions()))
 
   if (!siteId) {
+    if (options.json) {
+      logJson({
+        loggedIn: true,
+        linked: false,
+        account: cleanAccountData,
+        siteData: null,
+        error: {
+          code: STATUS_ERROR_CODES.NOT_LINKED,
+          fix: 'netlify link',
+        },
+      })
+    }
     warn('Did you run `netlify link` yet?')
     return logAndThrowError(`You don't appear to be in a folder that is linked to a project`)
   }
@@ -85,6 +129,9 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
         'site-url': siteInfo.ssl_url || siteInfo.url,
         'site-id': siteInfo.id,
       },
+      loggedIn: true,
+      linked: true,
+      error: null,
     })
   }
 
@@ -92,13 +139,16 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
  Netlify Project Info  │
 ────────────────────┘`)
   log(
-    prettyjson.render({
-      'Current project': siteInfo.name,
-      'Netlify TOML': site.configPath,
-      'Admin URL': chalk.magentaBright(siteInfo.admin_url),
-      'Project URL': chalk.cyanBright(siteInfo.ssl_url || siteInfo.url),
-      'Project Id': chalk.yellowBright(siteInfo.id),
-    }),
+    prettyjson.render(
+      {
+        'Current project': siteInfo.name,
+        'Netlify TOML': site.configPath,
+        'Admin URL': chalk.magentaBright(siteInfo.admin_url),
+        'Project URL': chalk.cyanBright(siteInfo.ssl_url || siteInfo.url),
+        'Project Id': chalk.yellowBright(siteInfo.id),
+      },
+      prettyJsonRenderOptions(),
+    ),
   )
   log()
 }
