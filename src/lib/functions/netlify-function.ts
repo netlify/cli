@@ -75,7 +75,6 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
       return true
     }
 
-    // @ts-expect-error TODO; Update the type and cut a new version of `@netlify/config`.
     if (this.config.functions?.[this.name]?.background === true) {
       return true
     }
