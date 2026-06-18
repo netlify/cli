@@ -1,2 +1,2 @@
 export { track, identify } from './telemetry.js'
-export { reportError } from './report-error.js'
+export { reportError, setCommandForErrorReporting } from './report-error.js'
