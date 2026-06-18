@@ -44,7 +44,10 @@ jobs:
           for node in $node_versions; do
             OS_NODE+=("ubuntu-latest:$node")
           done
-          if [[ "$HEAD_REF" == release-please--* ]]; then
+          # XXX(serhalp): also run the macOS + Windows matrix on this branch so we can verify the new keychain code
+          # paths before merge.
+          # Revert before merging.
+          if [[ "$HEAD_REF" == release-please--* || "$HEAD_REF" == "feat/native-token-keychain-storage" ]]; then
             for os in $extra_oses; do
               OS_NODE+=("$os:$primary")
             done
