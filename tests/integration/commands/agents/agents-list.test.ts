@@ -3,13 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
-import {
-  mockSiteInfo,
-  mockSiteInfoNoRepo,
-  mockAgentRunner,
-  mockAgentRunnerNoRepo,
-  mockAgentSession,
-} from './fixtures.js'
+import { mockSiteInfo, mockSiteInfoNoRepo, mockAgentRunner, mockAgentRunnerNoRepo } from './fixtures.js'
 
 // Mock spinner to avoid UI interference in tests
 vi.mock('../../../../src/lib/spinner.js', () => ({
@@ -37,11 +31,6 @@ describe('agents:list command', () => {
         method: 'GET' as const,
         response: [mockAgentRunner],
       },
-      {
-        path: 'agent_runners/agent_runner_id/sessions',
-        method: 'GET' as const,
-        response: [mockAgentSession],
-      },
     ]
 
     await withSiteBuilder(t, async (builder) => {
@@ -50,10 +39,9 @@ describe('agents:list command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:list'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent Tasks for site-name')
+        expect(cliResponse).toContain('Agent Runs for site-name')
         expect(cliResponse).toContain('agent_runner_id')
         expect(cliResponse).toContain('NEW')
-        expect(cliResponse).toContain('Claude')
         expect(cliResponse).toContain('Create a login form')
       })
     })
@@ -75,7 +63,7 @@ describe('agents:list command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:list'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('No agent tasks found for this site')
+        expect(cliResponse).toContain('No agent runs found for this site')
         expect(cliResponse).toContain('netlify agents:create')
       })
     })
@@ -114,11 +102,6 @@ describe('agents:list command', () => {
         method: 'GET' as const,
         response: [{ ...mockAgentRunner, state: 'running' }],
       },
-      {
-        path: 'agent_runners/agent_runner_id/sessions',
-        method: 'GET' as const,
-        response: [mockAgentSession],
-      },
     ]
 
     await withSiteBuilder(t, async (builder) => {
@@ -130,11 +113,23 @@ describe('agents:list command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        // Check that the status filter was sent in the request
         const agentRequest = requests.find((r) => r.path.includes('agent_runners'))
         expect(agentRequest).toBeDefined()
+        expect(agentRequest?.originalUrl).toContain('state=running')
 
         expect(cliResponse).toContain('RUNNING')
+      })
+    })
+  })
+
+  test('should reject unsupported status values', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(baseRoutes, async ({ apiUrl }) => {
+        await expect(callCli(['agents:list', '--status', 'live'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
+          '--status accepts only "running", "done", "error", "archived"',
+        )
       })
     })
   })
@@ -155,7 +150,7 @@ describe('agents:list command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(callCli(['agents:list'], getCLIOptions({ apiUrl, builder }))).rejects.toThrow(
-          'Failed to list agent tasks: Unauthorized',
+          'Failed to list agent runs: Unauthorized',
         )
       })
     })
@@ -183,10 +178,6 @@ describe('agents:list command', () => {
         path: 'agent_runners',
         response: [mockAgentRunnerNoRepo],
       },
-      {
-        path: 'agent_runners/agent_runner_no_repo_id/sessions',
-        response: [mockAgentSession],
-      },
     ]
 
     await withSiteBuilder(t, async (builder) => {
@@ -198,7 +189,7 @@ describe('agents:list command', () => {
           getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: 'zip_site_id' } }),
         )) as string
 
-        expect(cliResponse).toContain('Agent Tasks for zip-site')
+        expect(cliResponse).toContain('Agent Runs for zip-site')
         expect(cliResponse).toContain('BASE') // Should show BASE column header for non-git sites
         expect(cliResponse).toContain('Production') // Should show Production as base
         expect(cliResponse).not.toContain('BRANCH') // Should not show BRANCH column header
@@ -213,10 +204,6 @@ describe('agents:list command', () => {
         path: 'agent_runners',
         response: [mockAgentRunner],
       },
-      {
-        path: 'agent_runners/agent_runner_id/sessions',
-        response: [mockAgentSession],
-      },
     ]
 
     await withSiteBuilder(t, async (builder) => {
@@ -225,7 +212,7 @@ describe('agents:list command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = (await callCli(['agents:list'], getCLIOptions({ apiUrl, builder }))) as string
 
-        expect(cliResponse).toContain('Agent Tasks for site-name')
+        expect(cliResponse).toContain('Agent Runs for site-name')
         expect(cliResponse).toContain('BRANCH') // Should show BRANCH column header for git sites
         expect(cliResponse).toContain('main') // Should show actual branch name
         expect(cliResponse).not.toContain('BASE') // Should not show BASE column header

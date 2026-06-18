@@ -45,8 +45,8 @@ describe('agents:create command', () => {
           getCLIOptions({ apiUrl, builder }),
         )) as string
 
-        expect(cliResponse).toContain('Agent task created successfully!')
-        expect(cliResponse).toContain('Task ID: agent_runner_id')
+        expect(cliResponse).toContain('Agent run created successfully!')
+        expect(cliResponse).toContain('Run ID: agent_runner_id')
         expect(cliResponse).toContain('Prompt: Create a login form')
         expect(cliResponse).toContain('Agent: Claude')
         expect(cliResponse).toContain('Branch: main')
@@ -90,18 +90,13 @@ describe('agents:create command', () => {
         path: 'agent_runners',
         method: 'POST' as const,
         response: mockAgentRunner,
-        validateRequest: (request: { body: string }) => {
-          const body = JSON.parse(request.body) as { prompt: string; branch: string }
-          expect(body.prompt).toBe('Build a contact form')
-          expect(body.branch).toBe('main')
-        },
       },
     ]
 
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
         const childProcess = execa(cliPath, ['agents:create', '--agent', 'claude', '--branch', 'main'], {
           cwd: builder.directory,
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
@@ -116,8 +111,10 @@ describe('agents:create command', () => {
 
         const result = await childProcess
 
-        expect(result.stdout).toContain('Agent task created successfully!')
+        expect(result.stdout).toContain('Agent run created successfully!')
         expect(result.stdout).toContain('Prompt: Build a contact form')
+        const post = requests.find((r) => r.method === 'POST' && r.path.endsWith('/agent_runners'))
+        expect(post?.body).toMatchObject({ prompt: 'Build a contact form', branch: 'main' })
       })
     })
   })
@@ -199,30 +196,27 @@ describe('agents:create command', () => {
         path: 'agent_runners',
         method: 'POST' as const,
         response: mockAgentRunnerNoRepo,
-        // Verify that no branch is sent in the request
-        validateRequest: (request: { body: string }) => {
-          const body = JSON.parse(request.body) as { prompt: string; branch?: string }
-          expect(body).not.toHaveProperty('branch')
-          expect(body.prompt).toBe('Add a contact form')
-        },
       },
     ]
 
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
         const { stdout } = await execa(cliPath, ['agents:create', 'Add a contact form', '--agent', 'claude'], {
           cwd: builder.directory,
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'zip_site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
 
-        expect(stdout).toContain('Agent task created successfully!')
-        expect(stdout).toContain('Task ID: agent_runner_no_repo_id')
+        expect(stdout).toContain('Agent run created successfully!')
+        expect(stdout).toContain('Run ID: agent_runner_no_repo_id')
         expect(stdout).toContain('Prompt: Add a contact form')
         expect(stdout).toContain('Agent: Claude')
         expect(stdout).toContain('Base: Latest production deployment')
         expect(stdout).not.toContain('Branch:')
+        const post = requests.find((r) => r.method === 'POST' && r.path.endsWith('/agent_runners'))
+        expect(post?.body).toMatchObject({ prompt: 'Add a contact form' })
+        expect(post?.body).not.toHaveProperty('branch')
       })
     })
   })
@@ -234,19 +228,13 @@ describe('agents:create command', () => {
         path: 'agent_runners',
         method: 'POST' as const,
         response: mockAgentRunner,
-        // Verify that branch is sent in the request
-        validateRequest: (request: { body: string }) => {
-          const body = JSON.parse(request.body) as { prompt: string; branch: string }
-          expect(body.branch).toBe('feature-branch')
-          expect(body.prompt).toBe('Create a dashboard')
-        },
       },
     ]
 
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
         const { stdout } = await execa(
           cliPath,
           ['agents:create', 'Create a dashboard', '--agent', 'claude', '--branch', 'feature-branch'],
@@ -256,9 +244,11 @@ describe('agents:create command', () => {
           },
         )
 
-        expect(stdout).toContain('Agent task created successfully!')
+        expect(stdout).toContain('Agent run created successfully!')
         expect(stdout).toContain('Branch: feature-branch')
         expect(stdout).not.toContain('Base: Latest production deployment')
+        const post = requests.find((r) => r.method === 'POST' && r.path.endsWith('/agent_runners'))
+        expect(post?.body).toMatchObject({ prompt: 'Create a dashboard', branch: 'feature-branch' })
       })
     })
   })
@@ -270,17 +260,13 @@ describe('agents:create command', () => {
         path: 'agent_runners',
         method: 'POST' as const,
         response: { ...mockAgentRunner, branch: 'develop' },
-        validateRequest: (request: { body: string }) => {
-          const body = JSON.parse(request.body) as { branch: string }
-          expect(body.branch).toBe('develop')
-        },
       },
     ]
 
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
         const childProcess = execa(cliPath, ['agents:create', 'Create a form', '--agent', 'claude'], {
           cwd: builder.directory,
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
@@ -295,8 +281,10 @@ describe('agents:create command', () => {
 
         const result = await childProcess
 
-        expect(result.stdout).toContain('Agent task created successfully!')
+        expect(result.stdout).toContain('Agent run created successfully!')
         expect(result.stdout).toContain('Branch: develop')
+        const post = requests.find((r) => r.method === 'POST' && r.path.endsWith('/agent_runners'))
+        expect(post?.body).toMatchObject({ branch: 'develop' })
       })
     })
   })
