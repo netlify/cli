@@ -1,6 +1,5 @@
 // TODO: Migrate to @netlify/api once these endpoints are public.
-// They are marked x-internal in bitballoon (#21736).
-// Method names mirror the bitballoon @operation_id to keep the future swap quick.
+// Method names mirror the backend @operation_id to keep the future swap quick.
 
 import type { NetlifyOptions } from '../types.js'
 import { parseLinkHeader } from './utils.js'
@@ -117,7 +116,7 @@ export const createAgentsApi = (netlify: NetlifyOptions) => {
   }
 
   const getAgentRunner = (id: string): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}`, getInit())
+    requestJson<AgentRunner>(`/agent_runners/${encodeURIComponent(id)}`, getInit())
 
   const createAgentRunner = (siteId: string, payload: CreateAgentRunnerPayload): Promise<AgentRunner> => {
     const params = buildSearchParams({ site_id: siteId })
@@ -125,10 +124,10 @@ export const createAgentsApi = (netlify: NetlifyOptions) => {
   }
 
   const deleteAgentRunner = (id: string): Promise<void> =>
-    requestNoContent(`/agent_runners/${id}`, { method: 'DELETE', headers: baseHeaders() })
+    requestNoContent(`/agent_runners/${encodeURIComponent(id)}`, { method: 'DELETE', headers: baseHeaders() })
 
   const archiveAgentRunner = (id: string): Promise<void> =>
-    requestNoContent(`/agent_runners/${id}/archive`, { method: 'POST', headers: baseHeaders() })
+    requestNoContent(`/agent_runners/${encodeURIComponent(id)}/archive`, { method: 'POST', headers: baseHeaders() })
 
   const listAgentRunnerSessions = async (
     id: string,
@@ -137,27 +136,39 @@ export const createAgentsApi = (netlify: NetlifyOptions) => {
     const page = filters.page ?? 1
     const perPage = filters.per_page ?? DEFAULT_PER_PAGE
     const params = buildSearchParams({ ...filters, page, per_page: perPage })
-    return requestJson<AgentRunnerSession[]>(`/agent_runners/${id}/sessions?${params.toString()}`, getInit())
+    return requestJson<AgentRunnerSession[]>(
+      `/agent_runners/${encodeURIComponent(id)}/sessions?${params.toString()}`,
+      getInit(),
+    )
   }
 
   const getAgentRunnerSession = (id: string, sessionId: string): Promise<AgentRunnerSession> =>
-    requestJson<AgentRunnerSession>(`/agent_runners/${id}/sessions/${sessionId}`, getInit())
+    requestJson<AgentRunnerSession>(
+      `/agent_runners/${encodeURIComponent(id)}/sessions/${encodeURIComponent(sessionId)}`,
+      getInit(),
+    )
 
   const createAgentRunnerSession = (
     id: string,
     payload: CreateAgentRunnerSessionPayload,
   ): Promise<AgentRunnerSession> =>
-    requestJson<AgentRunnerSession>(`/agent_runners/${id}/sessions`, jsonInit('POST', payload))
+    requestJson<AgentRunnerSession>(`/agent_runners/${encodeURIComponent(id)}/sessions`, jsonInit('POST', payload))
 
   const redeployAgentRunnerSession = (id: string, sessionId: string): Promise<AgentRunnerSession> =>
-    requestJson<AgentRunnerSession>(`/agent_runners/${id}/sessions/${sessionId}/redeploy`, jsonInit('POST'))
+    requestJson<AgentRunnerSession>(
+      `/agent_runners/${encodeURIComponent(id)}/sessions/${encodeURIComponent(sessionId)}/redeploy`,
+      jsonInit('POST'),
+    )
 
   const getAgentRunnerDiff = async (id: string, params: DiffParams = {}): Promise<PaginatedResult<string>> => {
     const page = params.page ?? 1
     const perPage = params.per_page ?? DEFAULT_PER_PAGE
     const stripBinary = params.strip_binary ?? true
     const search = buildSearchParams({ page, per_page: perPage, strip_binary: stripBinary })
-    const response = await fetch(`${baseUrl}/agent_runners/${id}/diff?${search.toString()}`, getInit())
+    const response = await fetch(
+      `${baseUrl}/agent_runners/${encodeURIComponent(id)}/diff?${search.toString()}`,
+      getInit(),
+    )
     if (!response.ok) {
       if (response.status === 404) return { data: '', total: 0, page, perPage, hasNext: false }
       await throwForStatus(response)
@@ -168,35 +179,46 @@ export const createAgentsApi = (netlify: NetlifyOptions) => {
   }
 
   const getSessionDiff = async (id: string, sessionId: string, kind: 'result' | 'cumulative'): Promise<string> => {
-    const response = await fetch(`${baseUrl}/agent_runners/${id}/sessions/${sessionId}/diff/${kind}`, getInit())
-    if (response.status === 404) return ''
-    if (!response.ok) await throwForStatus(response)
+    const response = await fetch(
+      `${baseUrl}/agent_runners/${encodeURIComponent(id)}/sessions/${encodeURIComponent(sessionId)}/diff/${kind}`,
+      getInit(),
+    )
+    if (!response.ok) {
+      if (response.status === 404) return ''
+      await throwForStatus(response)
+    }
     return response.text()
   }
 
   const agentRunnerPullRequest = (id: string): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}/pull_request`, jsonInit('POST'))
+    requestJson<AgentRunner>(`/agent_runners/${encodeURIComponent(id)}/pull_request`, jsonInit('POST'))
 
   const agentRunnerCommitToBranch = (id: string, targetBranch: string): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}/commit`, jsonInit('POST', { target_branch: targetBranch }))
+    requestJson<AgentRunner>(
+      `/agent_runners/${encodeURIComponent(id)}/commit`,
+      jsonInit('POST', { target_branch: targetBranch }),
+    )
 
   const agentRunnerPublishToProduction = (id: string): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}/publish_to_production`, jsonInit('POST'))
+    requestJson<AgentRunner>(`/agent_runners/${encodeURIComponent(id)}/publish_to_production`, jsonInit('POST'))
 
   const revertAgentRunner = (id: string, sessionId: string): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}/revert`, jsonInit('POST', { session_id: sessionId }))
+    requestJson<AgentRunner>(
+      `/agent_runners/${encodeURIComponent(id)}/revert`,
+      jsonInit('POST', { session_id: sessionId }),
+    )
 
   const updateAgentRunner = (id: string, payload: { title?: string; base_deploy_id?: string }): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}`, jsonInit('PATCH', payload))
+    requestJson<AgentRunner>(`/agent_runners/${encodeURIComponent(id)}`, jsonInit('PATCH', payload))
 
   const rebaseAgentRunner = (id: string): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}/rebase`, jsonInit('POST'))
+    requestJson<AgentRunner>(`/agent_runners/${encodeURIComponent(id)}/rebase`, jsonInit('POST'))
 
   const mergeTargetAgentRunner = (id: string): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}/merge_target`, jsonInit('POST'))
+    requestJson<AgentRunner>(`/agent_runners/${encodeURIComponent(id)}/merge_target`, jsonInit('POST'))
 
   const syncGitOriginAgentRunner = (id: string): Promise<AgentRunner> =>
-    requestJson<AgentRunner>(`/agent_runners/${id}/sync_git_origin`, jsonInit('POST'))
+    requestJson<AgentRunner>(`/agent_runners/${encodeURIComponent(id)}/sync_git_origin`, jsonInit('POST'))
 
   const createAgentRunnerUploadUrl = (payload: {
     account_id: string

@@ -83,13 +83,13 @@ export const validateAgent = (agent: string): true | string => {
   return true
 }
 
-export const validateListStatusFilter = (status: string): true | string => {
-  if ((LIST_STATUS_FILTERS as readonly string[]).includes(status)) return true
-  return `--status accepts only ${LIST_STATUS_FILTERS.map((entry) => `"${entry}"`).join(', ')}`
-}
-
 export const isListStatusFilter = (status: string): status is ListStatusFilter =>
   (LIST_STATUS_FILTERS as readonly string[]).includes(status)
+
+export const validateListStatusFilter = (status: string): true | string => {
+  if (isListStatusFilter(status)) return true
+  return `--status accepts only ${LIST_STATUS_FILTERS.map((entry) => `"${entry}"`).join(', ')}`
+}
 
 export const checkModelAvailability = async (
   api: AgentsApi,
