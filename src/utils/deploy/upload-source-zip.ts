@@ -1,17 +1,14 @@
-import { execFile } from 'child_process'
-import { readFile, mkdir } from 'fs/promises'
-import { join, dirname } from 'path'
-import { promisify } from 'util'
-import type { PathLike } from 'fs'
-import { platform } from 'os'
+import { mkdir, readFile } from 'node:fs/promises'
+import { join, dirname } from 'node:path'
+import type { PathLike } from 'node:fs'
+import { platform } from 'node:os'
 
+import execa, { ExecaError } from 'execa'
 import fetch from 'node-fetch'
 
 import { log, warn } from '../command-helpers.js'
 import { temporaryDirectory } from '../temporary-file.js'
 import type { DeployEvent } from './status-cb.js'
-
-const execFileAsync = promisify(execFile)
 
 interface UploadSourceZipOptions {
   sourceDir: string
@@ -76,10 +73,20 @@ const createSourceZip = async ({
   const excludeArgs = DEFAULT_IGNORE_PATTERNS.flatMap((pattern) => ['-x', pattern])
 
   // Use system zip command to create the archive
-  await execFileAsync('zip', ['-r', zipPath, '.', ...excludeArgs], {
-    cwd: sourceDir,
-    maxBuffer: 1024 * 1024 * 100, // 100MB buffer
-  })
+  try {
+    await execa('zip', ['-r', '-q', zipPath, '.', ...excludeArgs], {
+      all: true,
+      cwd: sourceDir,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+  } catch (_baseErr) {
+    let message = 'zip command failed'
+    if (_baseErr instanceof Error && 'command' in _baseErr) {
+      const baseErr = _baseErr as ExecaError
+      message = `${baseErr.shortMessage}\n\n${baseErr.stdout}`
+    }
+    throw new Error(message, { cause: _baseErr })
+  }
 
   return zipPath
 }
@@ -161,7 +168,7 @@ export const uploadSourceZip = async ({
     // Clean up temporary zip file
     if (zipPath) {
       try {
-        await import('fs/promises').then((fs) => fs.unlink(zipPath as unknown as PathLike))
+        await (await import('node:fs/promises')).unlink(zipPath as unknown as PathLike)
       } catch {
         // Ignore cleanup errors
       }
