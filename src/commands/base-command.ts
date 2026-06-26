@@ -23,6 +23,7 @@ import {
   USER_AGENT,
   chalk,
   logAndThrowError,
+  logJson,
   exit,
   getToken,
   log,
@@ -40,7 +41,7 @@ import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
 import { isInteractive } from '../utils/scripted-commands.js'
-import { identify, reportError, track } from '../utils/telemetry/index.js'
+import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
 import type { MinimalAccount } from '../utils/types.js'
@@ -269,6 +270,7 @@ export default class BaseCommand extends Command {
     }
 
     base.hook('preAction', async (_parentCommand, actionCommand) => {
+      setCommandForErrorReporting(actionCommand.name())
       if (actionCommand.opts()?.debug) {
         process.env.DEBUG = '*'
       }
@@ -518,7 +520,26 @@ export default class BaseCommand extends Command {
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
     log(`Opening ${authLink}`)
-    await openBrowser({ url: authLink })
+    const browserOpened = await openBrowser({ url: authLink })
+
+    if (!browserOpened && !isInteractive() && ticket.id) {
+      const ticketId = ticket.id
+      logJson({
+        ticket_id: ticketId,
+        url: authLink,
+        check_command: `netlify login --check ${ticketId}`,
+        agent_next_steps:
+          'Give the URL to the user so they can authorize. Then poll the check_command for up to ten minutes to see if the user has logged in, or wait for them to tell you and then use check_command after.',
+      })
+      log(`Ticket ID: ${ticketId}`)
+      log(`Authorize URL: ${authLink}`)
+      log()
+      log(`After authorizing, run: netlify login --check ${ticketId}`)
+      log()
+      log('After user opens the authorization URL and approves, the login will be complete.')
+      return exit()
+    }
+
     log()
     log(`To request authorization from a human, run: ${chalk.cyanBright('netlify login --request "<msg>"')}`)
     log()

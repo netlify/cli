@@ -34,13 +34,17 @@ const parseCommand = function (command) {
       }
     }, {})
 
+  const isTopLevel = command.parent?.name() === "netlify"
+
   return {
-    parent: command.parent?.name() !== "netlify" ? command.parent?.name() : undefined,
+    parent: !isTopLevel ? command.parent?.name() : undefined,
     name: command.name(),
     description: command.description(),
     commands: [
       ...command.commands.filter(cmd => !cmd._hidden).map(cmd => parseCommand(cmd)),
-      ...commands.filter((cmd) => cmd.name().startsWith(`${command.name()}:`) && !cmd._hidden).map(cmd => parseCommand(cmd))
+      ...(isTopLevel
+        ? commands.filter((cmd) => cmd.name().startsWith(`${command.name()}:`) && !cmd._hidden).map(cmd => parseCommand(cmd))
+        : [])
     ],
     examples: command.examples.length !== 0 && command.examples,
     args: args.length !== 0 && args,

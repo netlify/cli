@@ -30,6 +30,7 @@ site/src/**/*.md
 .verdaccio-storage
 .eslintcache
 _test_out/**
+tests/unit/utils/tmp
 *.crt
 *.key
 

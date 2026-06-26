@@ -8,7 +8,30 @@ import { getCLIOptions } from '../../utils/mock-api-vitest.js'
 import { startDeployMockApi } from './deploy-api-routes.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 import type { Route } from '../../utils/mock-api-vitest.js'
+import type { NodeOptions } from 'execa'
 import type express from 'express'
+
+const getUnauthenticatedCLIOptions = ({
+  apiUrl,
+  builder,
+  env = {},
+}: {
+  apiUrl: string
+  builder: { directory: string }
+  env?: Record<string, string>
+}): NodeOptions => ({
+  cwd: builder.directory,
+  extendEnv: false,
+  env: {
+    PATH: process.env.PATH,
+    HOME: builder.directory,
+    APPDATA: builder.directory,
+    NETLIFY_API_URL: apiUrl,
+    NETLIFY_AUTH_TOKEN: '',
+    NETLIFY_SITE_ID: '',
+    ...env,
+  },
+})
 
 const dropDeployResponse = {
   id: 'drop_site_id',
@@ -88,11 +111,7 @@ describe('deploy --allow-anonymous', () => {
 
         const output = (await callCli(
           ['deploy', '--json', '--no-build', '--dir', 'public', '--allow-anonymous'],
-          getCLIOptions({
-            apiUrl: mockApi.apiUrl,
-            builder,
-            env: { NETLIFY_AUTH_TOKEN: '', NETLIFY_SITE_ID: '' },
-          }),
+          getUnauthenticatedCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         )) as string
 
         const deploy = JSON.parse(output) as AnonymousDeployOutput
@@ -124,11 +143,7 @@ describe('deploy --allow-anonymous', () => {
 
         const output = (await callCli(
           ['deploy', '--json', '--no-build', '--dir', 'public', '--allow-anonymous'],
-          getCLIOptions({
-            apiUrl: mockApi.apiUrl,
-            builder,
-            env: { NETLIFY_AUTH_TOKEN: '', NETLIFY_SITE_ID: '' },
-          }),
+          getUnauthenticatedCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         )) as string
 
         const deploy = JSON.parse(output) as AnonymousDeployOutput
@@ -149,11 +164,7 @@ describe('deploy --allow-anonymous', () => {
 
         const output = (await callCli(
           ['deploy', '--json', '--no-build', '--dir', 'public', '--allow-anonymous', '--created-via', 'integration'],
-          getCLIOptions({
-            apiUrl: mockApi.apiUrl,
-            builder,
-            env: { NETLIFY_AUTH_TOKEN: '', NETLIFY_SITE_ID: '' },
-          }),
+          getUnauthenticatedCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         )) as string
 
         const deploy = JSON.parse(output) as AnonymousDeployOutput
@@ -174,11 +185,7 @@ describe('deploy --allow-anonymous', () => {
 
         await callCli(
           ['deploy', '--json', '--no-build', '--dir', 'public', '--allow-anonymous'],
-          getCLIOptions({
-            apiUrl: mockApi.apiUrl,
-            builder,
-            env: { NETLIFY_AUTH_TOKEN: '', NETLIFY_SITE_ID: '' },
-          }),
+          getUnauthenticatedCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         )
 
         const dropTokenReq = mockApi.requests.find((r) => r.path.includes('/drop/token'))
@@ -295,11 +302,7 @@ describe('deploy --allow-anonymous', () => {
 
         const rejected = callCli(
           ['deploy', '--no-build', '--dir', 'public', '--allow-anonymous'],
-          getCLIOptions({
-            apiUrl: mockApi.apiUrl,
-            builder,
-            env: { NETLIFY_AUTH_TOKEN: '', NETLIFY_SITE_ID: '' },
-          }),
+          getUnauthenticatedCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         )
 
         await expect(rejected).rejects.toThrow(/daily limit/)
@@ -328,11 +331,7 @@ describe('deploy --allow-anonymous', () => {
 
         const rejected = callCli(
           ['deploy', '--no-build', '--dir', 'public', '--allow-anonymous'],
-          getCLIOptions({
-            apiUrl: mockApi.apiUrl,
-            builder,
-            env: { NETLIFY_AUTH_TOKEN: '', NETLIFY_SITE_ID: '' },
-          }),
+          getUnauthenticatedCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         )
 
         await expect(rejected).rejects.toThrow(/require authentication/)
@@ -361,11 +360,7 @@ describe('deploy --allow-anonymous', () => {
 
         const rejected = callCli(
           ['deploy', '--no-build', '--dir', 'public', '--allow-anonymous'],
-          getCLIOptions({
-            apiUrl: mockApi.apiUrl,
-            builder,
-            env: { NETLIFY_AUTH_TOKEN: '', NETLIFY_SITE_ID: '' },
-          }),
+          getUnauthenticatedCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         )
 
         await expect(rejected).rejects.toThrow(/require authentication/)
@@ -389,11 +384,7 @@ describe('deploy --allow-anonymous', () => {
 
         const rejected = callCli(
           ['deploy', '--no-build', '--dir', 'public'],
-          getCLIOptions({
-            apiUrl: mockApi.apiUrl,
-            builder,
-            env: { NETLIFY_AUTH_TOKEN: '', NETLIFY_SITE_ID: '', CI: 'true' },
-          }),
+          getUnauthenticatedCLIOptions({ apiUrl: mockApi.apiUrl, builder, env: { CI: 'true' } }),
         )
 
         await expect(rejected).rejects.toThrow(/--allow-anonymous/)

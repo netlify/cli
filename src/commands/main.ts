@@ -73,36 +73,57 @@ export const CI_FORCED_COMMANDS = {
   'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
 }
 
+const SYSTEM_INFO_TIMEOUT = 5_000
+
+let isHandlingUncaughtException = false
+
 process.on('uncaughtException', async (err: AddressInUseError | Error) => {
-  if ('code' in err && err.code === 'EADDRINUSE') {
-    logError(
-      `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
-        `Your serverless functions might be initializing a server\n` +
-        `to listen on specific port without properly closing it.\n\n` +
-        `This behavior is generally not advised\n` +
-        `To resolve this issue, try the following:\n` +
-        `1. If you NEED your serverless function to listen on a specific port,\n` +
-        `use a randomly assigned port as we do not officially support this.\n` +
-        `2. Review your serverless functions for lingering server connections, close them\n` +
-        `3. Check if any other applications are using port ${err.port}\n`,
-    )
-  } else {
-    logError(
-      `${chalk.red(
-        'Netlify CLI has terminated unexpectedly.',
-      )}\n\nPlease report this problem with reproduction steps at ${chalk.underline(
-        'https://ntl.fyi/cli-error',
-      )} including the error details below.\n`,
-    )
-
-    const systemInfo = await getSystemInfo()
-
-    console.log(chalk.dim(err.stack || err))
-    console.log(chalk.dim(systemInfo))
-    reportError(err, { severity: 'error' })
+  if (isHandlingUncaughtException) {
+    process.exit(1)
   }
+  isHandlingUncaughtException = true
 
-  process.exit(1)
+  try {
+    if ('code' in err && err.code === 'EADDRINUSE') {
+      logError(
+        `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
+          `Your serverless functions might be initializing a server\n` +
+          `to listen on specific port without properly closing it.\n\n` +
+          `This behavior is generally not advised\n` +
+          `To resolve this issue, try the following:\n` +
+          `1. If you NEED your serverless function to listen on a specific port,\n` +
+          `use a randomly assigned port as we do not officially support this.\n` +
+          `2. Review your serverless functions for lingering server connections, close them\n` +
+          `3. Check if any other applications are using port ${err.port}\n`,
+      )
+    } else {
+      logError(
+        `${chalk.red(
+          'Netlify CLI has terminated unexpectedly.',
+        )}\n\nPlease report this problem with reproduction steps at ${chalk.underline(
+          'https://ntl.fyi/cli-error',
+        )} including the error details below.\n`,
+      )
+
+      console.log(chalk.dim(err.stack || err))
+
+      const systemInfo = await Promise.race([
+        getSystemInfo().catch(() => ''),
+        new Promise<string>((resolve) =>
+          setTimeout(() => {
+            resolve('')
+          }, SYSTEM_INFO_TIMEOUT),
+        ),
+      ])
+
+      if (systemInfo) {
+        console.log(chalk.dim(systemInfo))
+      }
+      reportError(err, { severity: 'error' })
+    }
+  } finally {
+    process.exit(1)
+  }
 })
 
 const pkg = await getCLIPackageJson()
@@ -189,7 +210,8 @@ const mainCommand = async function (options, command) {
     log()
     command.outputHelp({ error: true })
     log()
-    return logAndThrowError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    logError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    exit(1)
   }
 
   const applySuggestion = await new Promise((resolve) => {
@@ -214,7 +236,8 @@ const mainCommand = async function (options, command) {
   log()
 
   if (!applySuggestion) {
-    return logAndThrowError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    logError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    exit(1)
   }
 
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })

@@ -41,13 +41,23 @@ const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../.
 const languages = [
   { name: 'JavaScript', value: 'javascript' },
   { name: 'TypeScript', value: 'typescript' },
-  { name: 'Go', value: 'go' },
-  { name: 'Rust', value: 'rust' },
 ]
 
 const MOON_SPINNER = {
   interval: 80,
   frames: ['🌑 ', '🌒 ', '🌓 ', '🌔 ', '🌕 ', '🌖 ', '🌗 ', '🌘 '],
+}
+
+const isValidFunctionName = (name: unknown): name is string => typeof name === 'string' && /^[\w.-]+$/i.test(name)
+
+const validateFunctionName = (name: unknown): void => {
+  if (!isValidFunctionName(name)) {
+    throw new Error(
+      `Invalid function name "${String(
+        name,
+      )}". Function names must only contain letters, numbers, hyphens, underscores, or dots.`,
+    )
+  }
 }
 
 /**
@@ -63,10 +73,12 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
     if (argumentName) {
       throw new Error('function name specified in both flag and arg format, pick one')
     }
+    validateFunctionName(options.name)
     return options.name
   }
 
   if (argumentName) {
+    validateFunctionName(argumentName)
     return argumentName
   }
 
@@ -76,7 +88,7 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
       message: 'Name your function:',
       default: defaultName,
       type: 'input',
-      validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
+      validate: (val) => isValidFunctionName(val),
       // make sure it is not undefined and is a valid filename.
       // this has some nuance i have ignored, eg crossenv and i18n concerns
     },
@@ -164,7 +176,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
  * @param {'edge' | 'serverless'} funcType
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'languageFromFlag' implicitly has ... Remove this comment to see the full error message
-const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
+const pickTemplate = async function ({ language: languageFromFlag, template: templateFromFlag }, funcType) {
   const specialCommands = [
     new inquirer.Separator(),
     {
@@ -206,6 +218,18 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     return logAndThrowError(`Invalid language: ${language}`)
   }
 
+  if (templateFromFlag) {
+    const match = templatesForLanguage.find(
+      (entry: { value?: { name?: string } }) => entry.value?.name === templateFromFlag,
+    )
+    if (!match) {
+      return logAndThrowError(
+        `Template "${templateFromFlag}" not found for language "${language}". Run \`netlify functions:create\` without --template to browse available templates.`,
+      )
+    }
+    return match.value
+  }
+
   const { chosenTemplate } = await inquirer.prompt({
     name: 'chosenTemplate',
     message: 'Pick a template',
@@ -236,7 +260,7 @@ const DEFAULT_PRIORITY = 999
 const selectTypeOfFunc = async (): Promise<'edge' | 'serverless'> => {
   const functionTypes = [
     { name: 'Edge function (Deno)', value: 'edge' },
-    { name: 'Serverless function (Node/Go/Rust)', value: 'serverless' },
+    { name: 'Serverless function (Node)', value: 'serverless' },
   ]
 
   const { functionType } = await inquirer.prompt([
@@ -362,11 +386,12 @@ const ensureFunctionDirExists = async function (command) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 const downloadFromURL = async function (command, options, argumentName, functionsDir) {
-  const folderContents = await readRepoURL(options.url)
   const [functionName] = options.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
+  const fnFolder = getSafeFunctionPath(functionsDir, nameToUse)
 
-  const fnFolder = path.join(functionsDir, nameToUse)
+  const folderContents = await readRepoURL(options.url)
+
   if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
     log(
       `${NETLIFYDEVWARN}: A single file version of the function ${nameToUse} already exists at ${fnFolder}.js. Terminating without further action.`,
@@ -384,7 +409,8 @@ const downloadFromURL = async function (command, options, argumentName, function
     folderContents.map(async ({ download_url: downloadUrl, name }) => {
       try {
         const res = await fetch(downloadUrl)
-        const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
+        const fileName = path.basename(name)
+        const finalName = path.basename(fileName, '.js') === functionName ? `${nameToUse}.js` : fileName
         const dest = fs.createWriteStream(path.join(fnFolder, finalName))
         res.body?.pipe(dest)
       } catch (error_) {
@@ -558,14 +584,6 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     log()
     log(chalk.greenBright(`Function created!`))
-
-    if (lang == 'rust') {
-      log(
-        chalk.green(
-          `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your project.`,
-        ),
-      )
-    }
   }
 }
 
@@ -734,16 +752,22 @@ const registerEFInToml = async (funcName, options) => {
   }
 }
 
+const getSafeFunctionPath = (functionsDir: string, name: string): string => {
+  const resolvedFunctionsDir = path.resolve(functionsDir)
+  const functionPath = path.resolve(resolvedFunctionsDir, name)
+  const relativePath = path.relative(resolvedFunctionsDir, functionPath)
+  if (relativePath === '' || relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+    return logAndThrowError(`Invalid function name "${name}": it resolves outside the functions directory.`)
+  }
+  return functionPath
+}
+
 /**
  * we used to allow for a --dir command,
  * but have retired that to force every scaffolded function to be a directory
- * @param {string} functionsDir
- * @param {string} name
- * @returns
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionsDir' implicitly has an 'any' t... Remove this comment to see the full error message
-const ensureFunctionPathIsOk = function (functionsDir, name) {
-  const functionPath = path.join(functionsDir, name)
+const ensureFunctionPathIsOk = function (functionsDir: string, name: string): string {
+  const functionPath = getSafeFunctionPath(functionsDir, name)
   if (fs.existsSync(functionPath)) {
     log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
     process.exit(1)
@@ -751,8 +775,63 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
   return functionPath
 }
 
+// Scans `functions-templates/<lang>` for a template whose `.mjs` metadata
+// `name` matches. Returns its `functionType` and the language folder it lives
+// in, or null if nothing matches. Used to skip the funcType/language prompts
+// when the user passes `--template`.
+const resolveTemplateMetadata = async (
+  templateName: string,
+  languageHint?: string,
+): Promise<{ functionType: 'edge' | 'serverless'; language: string } | null> => {
+  const langs = languageHint
+    ? [languageHint]
+    : (languages.map((lang) => lang.value as string | undefined).filter(Boolean) as string[])
+  for (const lang of langs) {
+    let folders
+    try {
+      folders = await readdir(path.join(templatesDir, lang), { withFileTypes: true })
+    } catch {
+      continue
+    }
+    for (const folder of folders) {
+      if (!folder.isDirectory()) continue
+      try {
+        const templatePath = path.join(templatesDir, lang, folder.name, '.netlify-function-template.mjs')
+        const mod = (await import(pathToFileURL(templatePath).href)) as {
+          default?: { name?: string; functionType?: 'edge' | 'serverless' }
+        }
+        const template = mod.default
+        if (template?.name === templateName && template.functionType) {
+          return { functionType: template.functionType, language: lang }
+        }
+      } catch {
+        // ignore templates we can't load
+      }
+    }
+  }
+  return null
+}
+
 export const functionsCreate = async (name: string, options: OptionValues, command: BaseCommand) => {
-  const functionType = await selectTypeOfFunc()
+  let functionType: 'edge' | 'serverless'
+
+  if (typeof options.template === 'string') {
+    const resolved = await resolveTemplateMetadata(options.template, options.language as string | undefined)
+    if (!resolved) {
+      return logAndThrowError(
+        `Template "${options.template}" not found${
+          options.language ? ` for language "${options.language as string}"` : ''
+        }.`,
+      )
+    }
+    functionType = resolved.functionType
+    if (!options.language) {
+      options.language = resolved.language
+    }
+  } else {
+    functionType = await selectTypeOfFunc()
+  }
+
   const functionsDir =
     functionType === 'edge' ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
 
