@@ -14,8 +14,7 @@ import debug from 'debug'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
-import merge from 'lodash/merge.js'
-import pick from 'lodash/pick.js'
+import { deepMerge, pick } from '../utils/object-utilities.js'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
@@ -191,7 +190,7 @@ export function storeToken(
   globalConfig: Awaited<ReturnType<typeof getGlobalConfigStore>>,
   { userId, name, email, accessToken }: { userId: string; name?: string; email?: string; accessToken: string },
 ) {
-  const userData = merge(globalConfig.get(`users.${userId}`), {
+  const userData = deepMerge(globalConfig.get(`users.${userId}`), {
     id: userId,
     name,
     email,

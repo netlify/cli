@@ -25,7 +25,7 @@ import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
-import throttle from 'lodash/throttle.js'
+import { throttle } from './object-utilities.js'
 import type { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 
