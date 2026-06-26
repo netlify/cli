@@ -40,7 +40,7 @@ import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
 import { isInteractive } from '../utils/scripted-commands.js'
-import { identify, reportError, track } from '../utils/telemetry/index.js'
+import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
 import type { MinimalAccount } from '../utils/types.js'
@@ -269,6 +269,7 @@ export default class BaseCommand extends Command {
     }
 
     base.hook('preAction', async (_parentCommand, actionCommand) => {
+      setCommandForErrorReporting(actionCommand.name())
       if (actionCommand.opts()?.debug) {
         process.env.DEBUG = '*'
       }

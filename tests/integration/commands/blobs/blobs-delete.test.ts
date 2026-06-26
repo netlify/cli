@@ -34,6 +34,7 @@ vi.mock('@netlify/blobs', () => ({
 
 vi.mock('../../../../src/utils/telemetry/report-error.js', () => ({
   reportError: vi.fn(),
+  setCommandForErrorReporting: vi.fn(),
 }))
 
 const routes: Route[] = [
