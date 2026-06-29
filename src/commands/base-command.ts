@@ -14,8 +14,7 @@ import debug from 'debug'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
-import merge from 'lodash/merge.js'
-import pick from 'lodash/pick.js'
+import { deepMerge, pick } from '../utils/object-utilities.js'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
@@ -41,7 +40,7 @@ import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
 import { isInteractive } from '../utils/scripted-commands.js'
-import { identify, reportError, track } from '../utils/telemetry/index.js'
+import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
 import type { MinimalAccount } from '../utils/types.js'
@@ -191,7 +190,7 @@ export function storeToken(
   globalConfig: Awaited<ReturnType<typeof getGlobalConfigStore>>,
   { userId, name, email, accessToken }: { userId: string; name?: string; email?: string; accessToken: string },
 ) {
-  const userData = merge(globalConfig.get(`users.${userId}`), {
+  const userData = deepMerge(globalConfig.get(`users.${userId}`), {
     id: userId,
     name,
     email,
@@ -270,6 +269,7 @@ export default class BaseCommand extends Command {
     }
 
     base.hook('preAction', async (_parentCommand, actionCommand) => {
+      setCommandForErrorReporting(actionCommand.name())
       if (actionCommand.opts()?.debug) {
         process.env.DEBUG = '*'
       }
