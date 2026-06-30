@@ -1,9 +1,7 @@
 import crypto from 'crypto'
-
-import type { NetlifyAPI } from '@netlify/api'
 import { afterAll, expect, test, vi } from 'vitest'
 
-import uploadFiles, { type UploadFileObj } from '../../../../src/utils/deploy/upload-files.js'
+import uploadFiles from '../../../../src/utils/deploy/upload-files.js'
 
 vi.mock('../../../../src/utils/deploy/constants.js', async () => {
   const actual = await vi.importActual('../../../../src/utils/deploy/constants.js')
@@ -29,9 +27,9 @@ test('Adds a retry count to function upload requests', async () => {
 
   const mockApi = {
     uploadDeployFunction,
-  } as unknown as NetlifyAPI
+  }
   const deployId = crypto.randomUUID()
-  const files: UploadFileObj[] = [
+  const files = [
     {
       assetType: 'function',
       filepath: '/some/path/func1.zip',
@@ -64,9 +62,9 @@ test('Does not retry on 400 response from function upload requests', async () =>
 
   const mockApi = {
     uploadDeployFunction,
-  } as unknown as NetlifyAPI
+  }
   const deployId = crypto.randomUUID()
-  const files: UploadFileObj[] = [
+  const files = [
     {
       assetType: 'function',
       filepath: '/some/path/func1.zip',
