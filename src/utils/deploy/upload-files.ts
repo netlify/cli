@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs, { type ReadStream } from 'fs'
 
 import { NetlifyAPI } from '@netlify/api'
 import backoff from 'backoff'
@@ -9,8 +9,9 @@ import type { DeployEvent } from './status-cb.js'
 
 export interface UploadFileObj {
   assetType: 'file' | 'function'
-  body?: any
-  filepath: string
+  body?: unknown
+  filepath?: string
+  hash?: string
   invocationMode?: string
   normalizedPath: string
   runtime?: string
@@ -27,7 +28,7 @@ const uploadFiles = async (
     statusCb,
   }: { concurrentUpload: number; maxRetry: number; statusCb: (status: DeployEvent) => void },
 ) => {
-  if (!concurrentUpload || !statusCb || !maxRetry) throw new Error('Missing required option concurrentUpload')
+  if (!concurrentUpload) throw new Error('Missing required option concurrentUpload')
   statusCb({
     type: 'upload',
     msg: `Uploading ${uploadList.length} files`,
@@ -37,7 +38,8 @@ const uploadFiles = async (
   const uploadFile = async (fileObj: UploadFileObj, index: number) => {
     const { assetType, body, filepath, invocationMode, normalizedPath, runtime, timeout } = fileObj
 
-    const readStreamCtor = () => body ?? fs.createReadStream(filepath)
+    // @ts-expect-error FIXME: filepath is required for fs.createReadStream
+    const readStreamCtor = () => (body as ReadStream | undefined) ?? fs.createReadStream(filepath)
 
     statusCb({
       type: 'upload',
@@ -60,20 +62,18 @@ const uploadFiles = async (
       }
       case 'function': {
         response = await retryUpload((retryCount: number) => {
-          const params: any = {
+          const params = {
             body: readStreamCtor,
             deployId,
             invocationMode,
             timeout,
             name: encodeURI(normalizedPath),
             runtime,
+            ...(retryCount > 0 && { xNfRetryCount: retryCount }),
           }
 
-          if (retryCount > 0) {
-            params.xNfRetryCount = retryCount
-          }
-
-          return api.uploadDeployFunction(params)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return api.uploadDeployFunction(params as any)
         }, maxRetry)
         break
       }
@@ -98,7 +98,7 @@ const uploadFiles = async (
 
 const retryUpload = <T>(uploadFn: (retryCount: number) => Promise<T>, maxRetry: number): Promise<T> =>
   new Promise((resolve, reject) => {
-    let lastError: any
+    let lastError: unknown
 
     const fibonacciBackoff = backoff.fibonacci({
       randomisationFactor: UPLOAD_RANDOM_FACTOR,
@@ -112,17 +112,20 @@ const retryUpload = <T>(uploadFn: (retryCount: number) => Promise<T>, maxRetry: 
 
         resolve(results)
         return
-      } catch (error: any) {
+      } catch (error: unknown) {
         lastError = error
 
+        const errorStatus = (error as { status?: number }).status
+        const errorName = (error as Error).name
+
         // We don't need to retry for 400 or 422 errors
-        if (error.status === 400 || error.status === 422) {
+        if (errorStatus === 400 || errorStatus === 422) {
           reject(error)
           return
         }
 
         // observed errors: 408, 401 (4** swallowed), 502
-        if (error.status > 400 || error.name === 'FetchError') {
+        if ((errorStatus ?? 0) > 400 || errorName === 'FetchError') {
           fibonacciBackoff.backoff()
           return
         }

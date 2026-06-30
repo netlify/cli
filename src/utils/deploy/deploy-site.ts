@@ -24,7 +24,7 @@ import {
   getEdgeFunctionsDistPathIfExists,
   isEdgeFunctionFile,
 } from './process-files.js'
-import uploadFiles from './upload-files.js'
+import uploadFiles, { type UploadFileObj } from './upload-files.js'
 import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
 import type { DeployEvent } from './status-cb.js'
 import { temporaryDirectory } from '../temporary-file.js'
@@ -205,8 +205,8 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'stop',
   })
 
-  const filesUploadList = getUploadList(requiredFiles, filesShaMap)
-  const functionsUploadList = getUploadList(requiredFns, fnShaMap)
+  const filesUploadList = getUploadList(requiredFiles, filesShaMap as Record<string, UploadFileObj[]>)
+  const functionsUploadList = getUploadList(requiredFns, fnShaMap as Record<string, UploadFileObj[]>)
   const uploadList = [...filesUploadList, ...functionsUploadList]
 
   await uploadFiles(api, deployId, uploadList, { concurrentUpload, statusCb, maxRetry })

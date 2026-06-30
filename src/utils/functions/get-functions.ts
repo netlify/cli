@@ -28,9 +28,7 @@ export const getFunctions = async (functionsSrcDir: string, config: { functions?
   }
 
   const functions = await listFunctions(functionsSrcDir, {
-    config: config.functions
-      ? extractSchedule(config.functions as Record<string, { schedule?: string }>)
-      : undefined,
+    config: config.functions ? extractSchedule(config.functions as Record<string, { schedule?: string }>) : undefined,
     parseISC: true,
   })
   const functionsWithProps = functions

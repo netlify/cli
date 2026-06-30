@@ -98,8 +98,10 @@ export const waitForDeploy = async (api: NetlifyAPI, deployId: string, siteId: s
   return deploy
 }
 
+import type { UploadFileObj } from './upload-files.js'
+
 // Transform the fileShaMap and fnShaMap into a generic shaMap that file-uploader.js can use
-export const getUploadList = (required: string[], shaMap: Record<string, any[]> | undefined) => {
-  if (!required || !shaMap) return []
+export const getUploadList = (required: string[], shaMap: Record<string, UploadFileObj[]> | undefined) => {
+  if (!shaMap) return []
   return required.flatMap((sha) => shaMap[sha])
 }
