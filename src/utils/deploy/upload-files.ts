@@ -1,12 +1,32 @@
 import fs from 'fs'
 
+import { NetlifyAPI } from '@netlify/api'
 import backoff from 'backoff'
 import pMap from 'p-map'
 
 import { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } from './constants.js'
+import type { DeployEvent } from './status-cb.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRetry, statusCb }) => {
+export interface UploadFileObj {
+  assetType: 'file' | 'function'
+  body?: any
+  filepath: string
+  invocationMode?: string
+  normalizedPath: string
+  runtime?: string
+  timeout?: number
+}
+
+const uploadFiles = async (
+  api: NetlifyAPI,
+  deployId: string,
+  uploadList: UploadFileObj[],
+  {
+    concurrentUpload,
+    maxRetry,
+    statusCb,
+  }: { concurrentUpload: number; maxRetry: number; statusCb: (status: DeployEvent) => void },
+) => {
   if (!concurrentUpload || !statusCb || !maxRetry) throw new Error('Missing required option concurrentUpload')
   statusCb({
     type: 'upload',
@@ -14,8 +34,7 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
     phase: 'start',
   })
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'fileObj' implicitly has an 'any' type.
-  const uploadFile = async (fileObj, index) => {
+  const uploadFile = async (fileObj: UploadFileObj, index: number) => {
     const { assetType, body, filepath, invocationMode, normalizedPath, runtime, timeout } = fileObj
 
     const readStreamCtor = () => body ?? fs.createReadStream(filepath)
@@ -40,9 +59,8 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
         break
       }
       case 'function': {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'retryCount' implicitly has an 'any' typ... Remove this comment to see the full error message
-        response = await retryUpload((retryCount) => {
-          const params = {
+        response = await retryUpload((retryCount: number) => {
+          const params: any = {
             body: readStreamCtor,
             deployId,
             invocationMode,
@@ -52,7 +70,6 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
           }
 
           if (retryCount > 0) {
-            // @ts-expect-error TS(2339) FIXME: Property 'xNfRetryCount' does not exist on type '{... Remove this comment to see the full error message
             params.xNfRetryCount = retryCount
           }
 
@@ -61,8 +78,7 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
         break
       }
       default: {
-        const error = new Error('File Object missing assetType property')
-        // @ts-expect-error TS(2339) FIXME: Property 'fileObj' does not exist on type 'Error'.
+        const error = new Error('File Object missing assetType property') as Error & { fileObj: UploadFileObj }
         error.fileObj = fileObj
         throw error
       }
@@ -80,11 +96,9 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
   return results
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'uploadFn' implicitly has an 'any' type.
-const retryUpload = (uploadFn, maxRetry) =>
+const retryUpload = <T>(uploadFn: (retryCount: number) => Promise<T>, maxRetry: number): Promise<T> =>
   new Promise((resolve, reject) => {
-    // @ts-expect-error TS(7034) FIXME: Variable 'lastError' implicitly has type 'any' in ... Remove this comment to see the full error message
-    let lastError
+    let lastError: any
 
     const fibonacciBackoff = backoff.fibonacci({
       randomisationFactor: UPLOAD_RANDOM_FACTOR,
@@ -98,18 +112,16 @@ const retryUpload = (uploadFn, maxRetry) =>
 
         resolve(results)
         return
-      } catch (error) {
+      } catch (error: any) {
         lastError = error
 
         // We don't need to retry for 400 or 422 errors
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (error.status === 400 || error.status === 422) {
           reject(error)
           return
         }
 
         // observed errors: 408, 401 (4** swallowed), 502
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (error.status > 400 || error.name === 'FetchError') {
           fibonacciBackoff.backoff()
           return
@@ -130,7 +142,6 @@ const retryUpload = (uploadFn, maxRetry) =>
     fibonacciBackoff.on('ready', tryUpload)
 
     fibonacciBackoff.on('fail', () => {
-      // @ts-expect-error TS(7005) FIXME: Variable 'lastError' implicitly has an 'any' type.
       reject(lastError)
     })
 
