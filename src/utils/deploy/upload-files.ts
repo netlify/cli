@@ -60,6 +60,24 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
         }, maxRetry)
         break
       }
+      case 'edge-function': {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'retryCount' implicitly has an 'any' type.
+        response = await retryUpload((retryCount) => {
+          const params = {
+            body: readStreamCtor,
+            deployId,
+            codeSha: normalizedPath,
+          }
+
+          if (retryCount > 0) {
+            // @ts-expect-error TS(2339) FIXME: Property 'xNfRetryCount' does not exist on type '{... Remove this comment to see the full error message
+            params.xNfRetryCount = retryCount
+          }
+
+          return api.uploadDeployEdgeFunction(params)
+        }, maxRetry)
+        break
+      }
       default: {
         const error = new Error('File Object missing assetType property')
         // @ts-expect-error TS(2339) FIXME: Property 'fileObj' does not exist on type 'Error'.

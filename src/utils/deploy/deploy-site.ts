@@ -15,6 +15,7 @@ import {
   DEFAULT_SYNC_LIMIT,
 } from './constants.js'
 import { hashConfig } from './hash-config.js'
+import hashEdgeFunctions from './hash-edge-functions.js'
 import hashFiles from './hash-files.js'
 import hashFns from './hash-fns.js'
 import {
@@ -104,6 +105,7 @@ export const deploySite = async (
     { files: staticFiles, filesShaMap: staticShaMap },
     { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules },
     configFile,
+    { edgeFunctions, edgeFnShaMap },
   ] = await Promise.all([
     hashFiles({
       assetType,
@@ -125,6 +127,7 @@ export const deploySite = async (
       rootDir: siteRoot,
     }),
     hashConfig({ config }),
+    hashEdgeFunctions(edgeFunctionsDistPath, { hashAlgorithm, statusCb }),
   ])
 
   const files = { ...staticFiles, [configFile.normalizedPath]: configFile.hash }
@@ -181,6 +184,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     body: {
       files,
       functions,
+      edge_functions: edgeFunctions,
       function_schedules: functionSchedules,
       functions_config: fnConfig,
       async: Object.keys(files).length > syncFileLimit,
@@ -195,19 +199,24 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   if (deployParams.body.async) deploy = await waitForDiff(api, deploy.id, siteId, deployTimeout)
 
-  const { required: requiredFiles, required_functions: requiredFns } = deploy
+  const {
+    required: requiredFiles,
+    required_functions: requiredFns,
+    required_edge_functions: requiredEdgeFns,
+  } = deploy
 
   statusCb({
     type: 'create-deploy',
     msg: `CDN requesting ${requiredFiles.length} files${
       Array.isArray(requiredFns) ? ` and ${requiredFns.length} functions` : ''
-    }`,
+    }${Array.isArray(requiredEdgeFns) ? ` and ${requiredEdgeFns.length} edge functions` : ''}`,
     phase: 'stop',
   })
 
   const filesUploadList = getUploadList(requiredFiles, filesShaMap)
   const functionsUploadList = getUploadList(requiredFns, fnShaMap)
-  const uploadList = [...filesUploadList, ...functionsUploadList]
+  const edgeFunctionsUploadList = getUploadList(requiredEdgeFns, edgeFnShaMap)
+  const uploadList = [...filesUploadList, ...functionsUploadList, ...edgeFunctionsUploadList]
 
   await uploadFiles(api, deployId, uploadList, { concurrentUpload, statusCb, maxRetry })
 
