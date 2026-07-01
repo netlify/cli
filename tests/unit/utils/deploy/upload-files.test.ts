@@ -51,6 +51,41 @@ test('Adds a retry count to function upload requests', async () => {
   expect(uploadDeployFunction).toHaveBeenNthCalledWith(3, expect.objectContaining({ xNfRetryCount: 2 }))
 })
 
+test('Adds a retry count to edge function upload requests', async () => {
+  const uploadDeployEdgeFunction = vi.fn()
+  const mockError = new Error('Uh-oh')
+
+  // @ts-expect-error TS(2339) FIXME: Property 'status' does not exist on type 'Error'.
+  mockError.status = 500
+
+  uploadDeployEdgeFunction.mockRejectedValueOnce(mockError)
+  uploadDeployEdgeFunction.mockResolvedValueOnce(undefined)
+
+  const mockApi = {
+    uploadDeployEdgeFunction,
+  }
+  const deployId = crypto.randomUUID()
+  const files = [
+    {
+      assetType: 'edge-function',
+      filepath: '/some/path/abc123.tar.gz',
+      normalizedPath: 'abc123',
+    },
+  ]
+  const options = {
+    concurrentUpload: 1,
+    maxRetry: 3,
+    statusCb: vi.fn(),
+  }
+
+  await uploadFiles(mockApi, deployId, files, options)
+
+  expect(uploadDeployEdgeFunction).toHaveBeenCalledTimes(2)
+  expect(uploadDeployEdgeFunction).toHaveBeenNthCalledWith(1, expect.objectContaining({ codeSha: 'abc123' }))
+  expect(uploadDeployEdgeFunction).toHaveBeenNthCalledWith(1, expect.not.objectContaining({ xNfRetryCount: 1 }))
+  expect(uploadDeployEdgeFunction).toHaveBeenNthCalledWith(2, expect.objectContaining({ xNfRetryCount: 1 }))
+})
+
 test('Does not retry on 400 response from function upload requests', async () => {
   const uploadDeployFunction = vi.fn()
   const mockError = new Error('Uh-oh')
