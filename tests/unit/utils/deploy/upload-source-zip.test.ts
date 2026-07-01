@@ -282,6 +282,54 @@ describe('uploadSourceZip', () => {
     expect(mockCommandHelpers.warn).toHaveBeenCalledWith('Failed to create source zip: zip command failed')
   })
 
+  test('surfaces zip stderr and exit code in the error message', async () => {
+    const mockOs = await import('os')
+    vi.mocked(mockOs.platform).mockReturnValue('darwin')
+
+    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+
+    const mockChildProcess = await import('child_process')
+    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
+    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
+
+    // util.promisify(execFile) rejects with an error carrying `stderr` and `code`.
+    const zipError = Object.assign(new Error('Command failed: zip -r /tmp/x.zip .'), {
+      stderr: 'zip error: Nothing to do! (/tmp/x.zip)',
+      code: 12,
+    })
+    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
+      if (callback) {
+        callback(zipError, '', '')
+      }
+      return {} as ChildProcess
+    })
+
+    vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
+    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
+
+    const mockStatusCb = vi.fn()
+
+    await expect(
+      uploadSourceZip({
+        sourceDir: '/test/source',
+        uploadUrl: 'https://s3.example.com/upload-url',
+        filename: 'test-source.zip',
+        statusCb: mockStatusCb,
+      }),
+    ).rejects.toThrow('Command failed: zip -r /tmp/x.zip .')
+
+    const expectedMsg =
+      'Failed to create source zip: Command failed: zip -r /tmp/x.zip . (zip error: Nothing to do! (/tmp/x.zip); exit code 12)'
+    expect(mockCommandHelpers.warn).toHaveBeenCalledWith(expectedMsg)
+    expect(mockStatusCb).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'source-zip-upload',
+        phase: 'error',
+        msg: expectedMsg,
+      }),
+    )
+  })
+
   test('cleans up zip file even when upload fails', async () => {
     // Ensure OS platform mock returns non-Windows
     const mockOs = await import('os')

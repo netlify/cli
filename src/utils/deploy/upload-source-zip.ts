@@ -121,7 +121,13 @@ export const uploadSourceZip = async ({
     try {
       zipPath = await createSourceZip({ sourceDir, filename, statusCb })
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error)
+      const execError = error as { message?: string; stderr?: string | Buffer; code?: number | string }
+      const stderr = execError.stderr ? String(execError.stderr).trim() : ''
+      const detail = [stderr, execError.code != null ? `exit code ${String(execError.code)}` : '']
+        .filter(Boolean)
+        .join('; ')
+      const baseMsg = error instanceof Error ? error.message : String(error)
+      const errorMsg = detail ? `${baseMsg} (${detail})` : baseMsg
       statusCb({
         type: 'source-zip-upload',
         msg: `Failed to create source zip: ${errorMsg}`,
