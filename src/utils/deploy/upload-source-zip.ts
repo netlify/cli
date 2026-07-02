@@ -83,7 +83,7 @@ const createSourceZip = async ({
     let message = 'zip command failed'
     if (_baseErr instanceof Error && 'command' in _baseErr) {
       const baseErr = _baseErr as ExecaError
-      message = `${baseErr.shortMessage}\n\n${baseErr.all}`
+      message = `${baseErr.shortMessage}\n\n${baseErr.all ?? ''}`
     }
     throw new Error(message, { cause: _baseErr })
   }
