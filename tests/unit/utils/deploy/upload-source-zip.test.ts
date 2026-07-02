@@ -1,15 +1,16 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest'
-import { join } from 'path'
+import { join } from 'node:path'
+
+import type { ExecaReturnValue } from 'execa'
 import type { Response } from 'node-fetch'
-import type { ChildProcess } from 'child_process'
+import { describe, expect, test, vi, beforeEach } from 'vitest'
 
 // Mock all dependencies at the top level
 vi.mock('node-fetch', () => ({
   default: vi.fn(),
 }))
 
-vi.mock('child_process', () => ({
-  execFile: vi.fn(),
+vi.mock('execa', () => ({
+  default: vi.fn(),
 }))
 
 vi.mock('fs/promises', () => ({
@@ -47,7 +48,7 @@ describe('uploadSourceZip', () => {
 
     // Setup mocks using vi.mocked()
     const mockFetch = await import('node-fetch')
-    const mockChildProcess = await import('child_process')
+    const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
@@ -58,11 +59,9 @@ describe('uploadSourceZip', () => {
       statusText: 'OK',
     } as unknown as Response)
 
-    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
-      if (callback) {
-        callback(null, '', '')
-      }
-      return {} as ChildProcess
+    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
+    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
+      return Promise.resolve({} as ExecaReturnValue)
     })
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
@@ -78,14 +77,10 @@ describe('uploadSourceZip', () => {
       statusCb: mockStatusCb,
     })
 
-    expect(mockChildProcess.execFile).toHaveBeenCalledWith(
+    expect(mockExeca.default).toHaveBeenCalledWith(
       'zip',
-      expect.arrayContaining(['-r', expect.stringMatching(/test-source\.zip$/), '.']),
-      expect.objectContaining({
-        cwd: '/test/source',
-        maxBuffer: 104857600,
-      }),
-      expect.any(Function),
+      expect.arrayContaining(['-r', '-q', expect.stringMatching(/test-source\.zip$/), '.']),
+      expect.objectContaining({ cwd: '/test/source' }),
     )
 
     expect(mockFetch.default).toHaveBeenCalledWith(
@@ -116,7 +111,7 @@ describe('uploadSourceZip', () => {
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     const mockFetch = await import('node-fetch')
-    const mockChildProcess = await import('child_process')
+    const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
@@ -127,11 +122,9 @@ describe('uploadSourceZip', () => {
       statusText: 'Forbidden',
     } as unknown as Response)
 
-    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
-      if (callback) {
-        callback(null, '', '')
-      }
-      return {} as ChildProcess
+    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
+    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
+      return Promise.resolve({} as ExecaReturnValue)
     })
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
@@ -168,7 +161,7 @@ describe('uploadSourceZip', () => {
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     const mockFetch = await import('node-fetch')
-    const mockChildProcess = await import('child_process')
+    const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
@@ -179,11 +172,9 @@ describe('uploadSourceZip', () => {
       statusText: 'OK',
     } as unknown as Response)
 
-    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
-      if (callback) {
-        callback(null, '', '')
-      }
-      return {} as ChildProcess
+    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
+    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
+      return Promise.resolve({} as ExecaReturnValue)
     })
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
@@ -199,14 +190,10 @@ describe('uploadSourceZip', () => {
       statusCb: mockStatusCb,
     })
 
-    expect(mockChildProcess.execFile).toHaveBeenCalledWith(
+    expect(mockExeca.default).toHaveBeenCalledWith(
       'zip',
       expect.arrayContaining(['-x', 'node_modules*', '-x', '.git*', '-x', '.netlify*', '-x', '.env']),
-      expect.objectContaining({
-        cwd: '/test/source',
-        maxBuffer: 104857600,
-      }),
-      expect.any(Function),
+      expect.objectContaining({ cwd: '/test/source' }),
     )
   })
 
@@ -245,16 +232,14 @@ describe('uploadSourceZip', () => {
 
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
-    const mockChildProcess = await import('child_process')
+    const mockExeca = await import('execa')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
     // Mock execFile to simulate failure
-    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
-      if (callback) {
-        callback(new Error('zip command failed'), '', 'zip: error creating archive')
-      }
-      return {} as import('child_process').ChildProcess
+    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
+    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
+      return Promise.reject(new Error('zip command failed'))
     })
 
     vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
@@ -290,17 +275,15 @@ describe('uploadSourceZip', () => {
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     const mockFetch = await import('node-fetch')
-    const mockChildProcess = await import('child_process')
+    const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
     // Mock successful zip creation but failed upload
-    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
-      if (callback) {
-        callback(null, '', '')
-      }
-      return {} as import('child_process').ChildProcess
+    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
+    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
+      return Promise.resolve({} as ExecaReturnValue)
     })
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
@@ -337,7 +320,7 @@ describe('uploadSourceZip', () => {
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     const mockFetch = await import('node-fetch')
-    const mockChildProcess = await import('child_process')
+    const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
@@ -349,11 +332,9 @@ describe('uploadSourceZip', () => {
       json: vi.fn().mockResolvedValue({ url: 'https://test-source-zip-url.com' }),
     } as unknown as import('node-fetch').Response)
 
-    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
-      if (callback) {
-        callback(null, '', '')
-      }
-      return {} as import('child_process').ChildProcess
+    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
+    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
+      return {} as ExecaReturnValue
     })
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
@@ -379,7 +360,7 @@ describe('uploadSourceZip', () => {
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     const mockFetch = await import('node-fetch')
-    const mockChildProcess = await import('child_process')
+    const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
@@ -390,11 +371,9 @@ describe('uploadSourceZip', () => {
       statusText: 'OK',
     } as unknown as Response)
 
-    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
-      if (callback) {
-        callback(null, '', '')
-      }
-      return {} as ChildProcess
+    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
+    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
+      return {} as ExecaReturnValue
     })
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
@@ -416,18 +395,15 @@ describe('uploadSourceZip', () => {
     expect(mockFs.mkdir).toHaveBeenCalledWith(join('/tmp/test-temp-dir', 'workspace-snapshots'), { recursive: true })
 
     // Should still call zip command with the full path
-    expect(mockChildProcess.execFile).toHaveBeenCalledWith(
+    expect(mockExeca.default).toHaveBeenCalledWith(
       'zip',
       expect.arrayContaining([
         '-r',
+        '-q',
         join('/tmp/test-temp-dir', 'workspace-snapshots', 'source-abc123-def456.zip'),
         '.',
       ]),
-      expect.objectContaining({
-        cwd: '/test/source',
-        maxBuffer: 104857600,
-      }),
-      expect.any(Function),
+      expect.objectContaining({ cwd: '/test/source' }),
     )
   })
 })
