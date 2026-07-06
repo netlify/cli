@@ -40,7 +40,21 @@ export const apiCommand = async (apiMethodName: string, options: OptionValues, c
 
   let payload
   if (options.data) {
-    payload = typeof options.data === 'string' ? JSON.parse(options.data) : options.data
+    if (typeof options.data === 'string') {
+      try {
+        payload = JSON.parse(options.data)
+      } catch {
+        const received = options.data.length > 80 ? `${options.data.slice(0, 80)}…` : options.data
+        return logAndThrowError(
+          `Invalid JSON provided to the ${chalk.cyanBright('--data')} flag.
+Received: ${received}
+The --data flag expects a JSON object of API parameters, e.g. --data '{"site_id":"123456"}'.
+Note: key=value pairs are not accepted; use JSON syntax instead.`,
+        )
+      }
+    } else {
+      payload = options.data
+    }
   } else {
     payload = {}
   }
@@ -48,6 +62,17 @@ export const apiCommand = async (apiMethodName: string, options: OptionValues, c
     const apiResponse = await apiMethod(payload)
     logJson(apiResponse)
   } catch (error_) {
+    if (error_ instanceof Error && error_.message.includes('Missing required path variable')) {
+      const apiMethods = methods as { operationId: string; parameters: { path?: Record<string, unknown> } }[]
+      const pathVariables = apiMethods.find((method) => method.operationId === apiMethodName)?.parameters.path ?? {}
+      const requiredNames = Object.keys(pathVariables).join(', ')
+      return logAndThrowError(
+        `${error_.message}
+The ${chalk.cyanBright('--data')} flag must include the path variable(s) required by ${apiMethodName}${
+          requiredNames ? `: ${requiredNames}` : ''
+        }, e.g. --data '{"site_id":"123456"}'`,
+      )
+    }
     return logAndThrowError(error_)
   }
 }
