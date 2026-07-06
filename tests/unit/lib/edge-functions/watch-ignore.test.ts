@@ -1,5 +1,5 @@
 import { statSync } from 'fs'
-import { join } from 'path'
+import { join, resolve } from 'path'
 
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
@@ -208,19 +208,19 @@ describe('constructor path resolution', () => {
 
   test('resolves a relative publishDir against projectDir', () => {
     const registry = new EdgeFunctionsRegistryImpl(makeOptions({ publishDir: '_site' }))
-    expect((registry as unknown as RegistryPrivateState).publishDir).toBe('/project/_site')
+    expect((registry as unknown as RegistryPrivateState).publishDir).toBe(resolve('/project', '_site'))
   })
 
   test('keeps an absolute publishDir unchanged', () => {
     const registry = new EdgeFunctionsRegistryImpl(makeOptions({ publishDir: '/other/_site' }))
-    expect((registry as unknown as RegistryPrivateState).publishDir).toBe('/other/_site')
+    expect((registry as unknown as RegistryPrivateState).publishDir).toBe(resolve('/project', '/other/_site'))
   })
 
   test('resolves relative watchIgnore paths against projectDir', () => {
     const registry = new EdgeFunctionsRegistryImpl(makeOptions({ watchIgnore: ['src/posts', 'content'] }))
     expect((registry as unknown as RegistryPrivateState).watchIgnore).toEqual([
-      '/project/src/posts',
-      '/project/content',
+      resolve('/project', 'src/posts'),
+      resolve('/project', 'content'),
     ])
   })
 
@@ -228,14 +228,17 @@ describe('constructor path resolution', () => {
     const registry = new EdgeFunctionsRegistryImpl(
       makeOptions({ watchIgnore: ['/absolute/src/posts', '/other/content'] }),
     )
-    expect((registry as unknown as RegistryPrivateState).watchIgnore).toEqual(['/absolute/src/posts', '/other/content'])
+    expect((registry as unknown as RegistryPrivateState).watchIgnore).toEqual([
+      resolve('/project', '/absolute/src/posts'),
+      resolve('/project', '/other/content'),
+    ])
   })
 
   test('handles a mix of relative and absolute watchIgnore paths', () => {
     const registry = new EdgeFunctionsRegistryImpl(makeOptions({ watchIgnore: ['src/posts', '/absolute/content'] }))
     expect((registry as unknown as RegistryPrivateState).watchIgnore).toEqual([
-      '/project/src/posts',
-      '/absolute/content',
+      resolve('/project', 'src/posts'),
+      resolve('/project', '/absolute/content'),
     ])
   })
 })
