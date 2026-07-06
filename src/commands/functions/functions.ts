@@ -6,7 +6,7 @@ import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
 import type BaseCommand from '../base-command.js'
 
 const functions = (_options: OptionValues, command: BaseCommand) => {
-  command.help()
+  command.helpOrRejectExtraArgs()
 }
 
 export const createFunctionsCommand = (program: BaseCommand) => {

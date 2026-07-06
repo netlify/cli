@@ -3,7 +3,7 @@ import BaseCommand from '../base-command.js'
 import { validateSiteName } from '../../utils/validation.js'
 
 const sites = (_options: OptionValues, command: BaseCommand) => {
-  command.help()
+  command.helpOrRejectExtraArgs()
 }
 
 export const createSitesCreateCommand = (program: BaseCommand) => {

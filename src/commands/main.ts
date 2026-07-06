@@ -21,7 +21,7 @@ import execa from '../utils/execa.js'
 import { EXIT_CODES } from '../utils/exit-codes.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
-import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import { handleOptionError, isOptionError, suggestUnknownOptionAlternatives } from '../utils/command-error-handler.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
@@ -316,6 +316,7 @@ Exit codes: 0 ok, 1 error, 2 usage, 4 needs-input
       },
     })
     .exitOverride(function (this: BaseCommand, error: CommanderError) {
+      suggestUnknownOptionAlternatives(this, error)
       if (isOptionError(error)) {
         handleOptionError(this)
       }
