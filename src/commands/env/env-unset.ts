@@ -4,7 +4,7 @@ import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { SUPPORTED_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
 import BaseCommand from '../base-command.js'
-import { getSiteInfo } from './utils.js'
+import { failNotLinked, getEnvSiteId, getSiteInfo } from './utils.js'
 /**
  * Deletes a given key from the env of a site configured with Envelope
  * @returns {Promise<object>}
@@ -70,12 +70,11 @@ const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
 
 export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
   const { context, force } = options
-  const { api, cachedConfig, site } = command.netlify
-  const siteId = site.id
+  const { api, cachedConfig } = command.netlify
+  const siteId = getEnvSiteId(options, command)
 
   if (!siteId) {
-    log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return failNotLinked(options)
   }
 
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
