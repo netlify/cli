@@ -304,6 +304,11 @@ export default class BaseCommand extends Command {
   }
 
   #noBaseOptions = false
+
+  get noBaseOptions(): boolean {
+    return this.#noBaseOptions
+  }
+
   /** don't show help options on command overview (mostly used on top commands like `addons` where options only apply on children) */
   noHelpOptions() {
     this.#noBaseOptions = true
@@ -353,7 +358,6 @@ export default class BaseCommand extends Command {
 
     /** override the longestOptionTermLength to react on hide options flag */
     help.longestOptionTermLength = (command: BaseCommand, helper: Help): number =>
-      // @ts-expect-error TS(2551) FIXME: Property 'noBaseOptions' does not exist on type 'C... Remove this comment to see the full error message
       (command.noBaseOptions === false &&
         helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
       0
@@ -367,9 +371,9 @@ export default class BaseCommand extends Command {
         const bang = isCommand ? `${HELP_$} ` : ''
 
         if (description) {
-          const pad = termWidth + HELP_SEPARATOR_WIDTH
-          const fullText = `${bang}${term.padEnd(pad - (isCommand ? 2 : 0))}${chalk.grey(description)}`
-          return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad)
+          const pad = Math.max(termWidth + HELP_SEPARATOR_WIDTH - (isCommand ? 2 : 0), term.length + 2)
+          const fullText = `${bang}${term.padEnd(pad)}${chalk.grey(description)}`
+          return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad + (isCommand ? 2 : 0))
         }
 
         return `${bang}${term}`
