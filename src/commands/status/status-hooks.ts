@@ -1,7 +1,7 @@
 import type { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
-import { log } from '../../utils/command-helpers.js'
+import { log, prettyJsonRenderOptions } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 
 interface StatusHook {
@@ -40,5 +40,5 @@ export const statusHooks = async (_options: OptionValues, command: BaseCommand):
   log(`─────────────────┐
 Project Hook Status │
 ─────────────────┘`)
-  log(prettyjson.render(data))
+  log(prettyjson.render(data, prettyJsonRenderOptions()))
 }

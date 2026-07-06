@@ -33,7 +33,15 @@ const safeChalk = function (noColors: boolean) {
   return new Chalk()
 }
 
-export const chalk = safeChalk(argv.includes('--json'))
+/** Honors the NO_COLOR convention (https://no-color.org): any non-empty value disables colors */
+export const shouldDisableColors = (env: NodeJS.ProcessEnv = process.env): boolean => Boolean(env.NO_COLOR)
+
+export const chalk = safeChalk(argv.includes('--json') || shouldDisableColors())
+
+/** Options for `prettyjson.render()` so human-formatted output honors NO_COLOR and --json like `chalk` does */
+export const prettyJsonRenderOptions = (): { noColor: boolean } => ({
+  noColor: argv.includes('--json') || shouldDisableColors(),
+})
 
 export type ChalkInstance = ChalkInstancePrimitiveType
 
