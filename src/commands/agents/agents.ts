@@ -5,7 +5,7 @@ import requiresSiteInfoWithProject from '../../utils/hooks/requires-site-info-wi
 import type BaseCommand from '../base-command.js'
 
 const agents = (_options: OptionValues, command: BaseCommand) => {
-  command.help()
+  command.helpOrRejectExtraArgs()
 }
 
 export const createAgentsCommand = (program: BaseCommand) => {
