@@ -1459,10 +1459,10 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
         expect(normalize(err.stderr, { duration: true, filePath: true })).toEqual(
           expect.stringContaining(
-            'Projects detected: package1, package2. Configure the project you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.',
+            'Projects detected: package1, package2. Pass --filter <app> or --cwd <path> to configure the project you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.',
           ),
         )
-        expect(err.exitCode).toBe(1)
+        expect(err.exitCode).toBe(4)
       } finally {
         expect.assertions(2)
       }
