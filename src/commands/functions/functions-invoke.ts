@@ -1,6 +1,6 @@
 import fs from 'fs'
-import { createRequire } from 'module'
 import path from 'path'
+import { pathToFileURL } from 'url'
 
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
@@ -9,8 +9,6 @@ import fetch from 'node-fetch'
 import { APIError, NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
 import BaseCommand from '../base-command.js'
-
-const require = createRequire(import.meta.url)
 
 // https://docs.netlify.com/functions/trigger-on-events/
 const events = [
@@ -58,26 +56,61 @@ const formatQstring = function (querystring) {
   return ''
 }
 
+const PAYLOAD_EXTENSIONS = ['.js', '.cjs', '.mjs', '.json']
+
+const stripBOM = (content: string): string => (content.charCodeAt(0) === 0xfe_ff ? content.slice(1) : content)
+
+const resolvePayloadPath = (payloadpath: string): string | undefined => {
+  try {
+    const stat = fs.statSync(payloadpath)
+    if (stat.isFile()) return payloadpath
+    if (stat.isDirectory()) {
+      const pkgPath = path.join(payloadpath, 'package.json')
+      if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(stripBOM(fs.readFileSync(pkgPath, 'utf8'))) as { main?: string }
+          if (pkg.main) {
+            const mainPath = path.join(payloadpath, pkg.main)
+            const resolved = resolvePayloadPath(mainPath)
+            if (resolved) return resolved
+          }
+        } catch {}
+      }
+      for (const ext of PAYLOAD_EXTENSIONS) {
+        const candidate = path.join(payloadpath, `index${ext}`)
+        if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate
+      }
+    }
+  } catch {}
+  for (const ext of PAYLOAD_EXTENSIONS) {
+    const candidate = `${payloadpath}${ext}`
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate
+  }
+  return undefined
+}
+
 /**
  * process payloads from flag
  * @param {string} payloadString
  * @param {string} workingDir
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'payloadString' implicitly has an 'any' ... Remove this comment to see the full error message
-const processPayloadFromFlag = function (payloadString, workingDir) {
+export const processPayloadFromFlag = async function (payloadString, workingDir) {
   if (payloadString) {
     // case 1: jsonstring
-    let payload = tryParseJSON(payloadString)
-    if (payload) return payload
-    // case 2: jsonpath
-    const payloadpath = path.join(workingDir, payloadString)
-    const pathexists = fs.existsSync(payloadpath)
-    if (pathexists) {
+    const parsedJson = tryParseJSON(payloadString)
+    if (parsedJson) return parsedJson
+    // case 2: file path to a JSON or JS module — mirror Node's require() resolution
+    // (extensionless paths try .js/.cjs/.mjs/.json; directories try package.json#main then index.*)
+    const resolved = resolvePayloadPath(path.join(workingDir, payloadString))
+    if (resolved) {
       try {
+        if (resolved.endsWith('.json')) {
+          return JSON.parse(stripBOM(fs.readFileSync(resolved, 'utf8')))
+        }
         // there is code execution potential here
-
-        payload = require(payloadpath)
-        return payload
+        const imported = (await import(pathToFileURL(resolved).href)) as { default?: unknown }
+        return imported.default ?? imported
       } catch (error_) {
         console.error(error_)
       }
@@ -219,7 +252,7 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
       // }
     }
   }
-  const payload = processPayloadFromFlag(options.payload, command.workingDir)
+  const payload = await processPayloadFromFlag(options.payload, command.workingDir)
   body = { ...body, ...payload }
 
   try {
