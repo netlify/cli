@@ -9,6 +9,7 @@ import {
   getToken,
   log,
   logJson,
+  prettyJsonRenderOptions,
   warn,
   type APIError,
 } from '../../utils/command-helpers.js'
@@ -67,7 +68,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     // another lib.
     (clean as unknown as <T extends Record<string | number | symbol, unknown>>(obj: T) => Partial<T>)(accountData)
 
-  log(prettyjson.render(cleanAccountData))
+  log(prettyjson.render(cleanAccountData, prettyJsonRenderOptions()))
 
   if (!siteId) {
     warn('Did you run `netlify link` yet?')
@@ -92,13 +93,16 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
  Netlify Project Info  │
 ────────────────────┘`)
   log(
-    prettyjson.render({
-      'Current project': siteInfo.name,
-      'Netlify TOML': site.configPath,
-      'Admin URL': chalk.magentaBright(siteInfo.admin_url),
-      'Project URL': chalk.cyanBright(siteInfo.ssl_url || siteInfo.url),
-      'Project Id': chalk.yellowBright(siteInfo.id),
-    }),
+    prettyjson.render(
+      {
+        'Current project': siteInfo.name,
+        'Netlify TOML': site.configPath,
+        'Admin URL': chalk.magentaBright(siteInfo.admin_url),
+        'Project URL': chalk.cyanBright(siteInfo.ssl_url || siteInfo.url),
+        'Project Id': chalk.yellowBright(siteInfo.id),
+      },
+      prettyJsonRenderOptions(),
+    ),
   )
   log()
 }
