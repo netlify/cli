@@ -15,6 +15,13 @@ node_install_overrides:
 # Used by: unit-tests.yml, integration-tests.yml, e2e-tests.yml
 extra_oses_on_release: ['macOS-latest', 'windows-2025']
 
+# Operating systems added to EVERY PR's matrix (primary Node version only), on
+# top of the always-on Linux coverage. Kept minimal — each entry runs on every
+# PR. Overlap with `extra_oses_on_release` is deduplicated by the consuming
+# workflow. Do NOT include ubuntu here.
+# Used by: unit-tests.yml
+extra_oses_always: ['macOS-latest', 'windows-2025']
+
 # The "primary" Node.js version. Two uses:
 #   1. Paired with each of `extra_oses_on_release` in the full matrix.
 #   2. The pinned version for all single-version workflows.
