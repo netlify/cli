@@ -40,7 +40,6 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
         break
       }
       case 'function': {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'retryCount' implicitly has an 'any' typ... Remove this comment to see the full error message
         response = await retryUpload((retryCount) => {
           const params = {
             body: readStreamCtor,
@@ -57,6 +56,23 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
           }
 
           return api.uploadDeployFunction(params)
+        }, maxRetry)
+        break
+      }
+      case 'edge-function': {
+        response = await retryUpload((retryCount) => {
+          const params = {
+            body: readStreamCtor,
+            deployId,
+            codeSha: normalizedPath,
+          }
+
+          if (retryCount > 0) {
+            // @ts-expect-error TS(2339) FIXME: Property 'xNfRetryCount' does not exist on type '{... Remove this comment to see the full error message
+            params.xNfRetryCount = retryCount
+          }
+
+          return api.uploadDeployEdgeFunction(params)
         }, maxRetry)
         break
       }
@@ -80,8 +96,7 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
   return results
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'uploadFn' implicitly has an 'any' type.
-const retryUpload = (uploadFn, maxRetry) =>
+const retryUpload = (uploadFn: (retryCount: number) => Promise<unknown>, maxRetry: number) =>
   new Promise((resolve, reject) => {
     // @ts-expect-error TS(7034) FIXME: Variable 'lastError' implicitly has type 'any' in ... Remove this comment to see the full error message
     let lastError
