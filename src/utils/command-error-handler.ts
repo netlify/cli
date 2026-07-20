@@ -9,6 +9,16 @@ const OPTION_ERROR_CODES = new Set([
   'commander.excessArguments',
 ])
 
+/** Every Commander error code caused by bad user input; these exit with `EXIT_CODES.USAGE_ERROR` */
+export const USAGE_ERROR_CODES = new Set([
+  ...OPTION_ERROR_CODES,
+  'commander.unknownCommand',
+  'commander.optionMissingArgument',
+  'commander.missingMandatoryOptionValue',
+  'commander.invalidArgument',
+  'commander.conflictingOption',
+])
+
 export const isOptionError = (error: CommanderError): boolean => OPTION_ERROR_CODES.has(error.code)
 
 export const handleOptionError = (command: { outputHelp: (context?: HelpContext) => void }): void => {
