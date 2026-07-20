@@ -35,6 +35,7 @@ import {
   logError,
 } from '../utils/command-helpers.js'
 import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import { guardGlobalConfigFile, guardLocalStateFile } from '../utils/config-guard.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
@@ -657,6 +658,8 @@ export default class BaseCommand extends Command {
     // ==================================================
     // Retrieve Site id and build state from the state.json
     // ==================================================
+    guardGlobalConfigFile()
+    await guardLocalStateFile(this.workingDir)
     const state = new LocalState(this.workingDir)
     const [token] = await getToken(flags.auth)
 
