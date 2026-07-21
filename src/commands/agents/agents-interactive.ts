@@ -3,7 +3,7 @@ import readline from 'readline'
 import type { OptionValues } from 'commander'
 
 import { chalk, exit, log, logAndThrowError } from '../../utils/command-helpers.js'
-import { startSpinner, stopSpinner, type Spinner } from '../../lib/spinner.js'
+import { startSpinner, stopSpinner, clearSpinner, type Spinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
 import { formatStatus, getAgentName, validatePrompt } from './utils.js'
@@ -124,6 +124,20 @@ const waitForSession = async (
   return session
 }
 
+const printStep = (step: { title?: string; message?: string }): void => {
+  const title = step.title?.trim()
+  const message = step.message?.trim()
+
+  if (title) {
+    log(`${chalk.cyan('│')} ${chalk.bold(title)}`)
+    if (message && message !== title) {
+      log(chalk.dim(`│   ${message}`))
+    }
+  } else if (message) {
+    log(`${chalk.cyan('│')} ${message}`)
+  }
+}
+
 const followSession = async (
   ctx: RequestContext,
   runnerId: string,
@@ -133,21 +147,31 @@ const followSession = async (
   let printedSteps = 0
   let session = currentSession
 
-  try {
-    while (!TERMINAL_SESSION_STATES.has(session.state)) {
-      const steps = session.steps ?? []
-      for (const step of steps.slice(printedSteps)) {
-        const label = step.title ?? step.message
-        if (label) {
-          spinner.update({ text: label })
-        }
-      }
-      printedSteps = steps.length
+  const streamSteps = (steps: NonNullable<AgentRunnerSession['steps']>): void => {
+    const fresh = steps.slice(printedSteps)
+    if (fresh.length === 0) {
+      return
+    }
 
+    clearSpinner({ spinner })
+    for (const step of fresh) {
+      printStep(step)
+    }
+    printedSteps = steps.length
+
+    const latest = steps[steps.length - 1]
+    spinner.update({ text: latest.title ?? latest.message ?? 'Working…' })
+  }
+
+  try {
+    streamSteps(session.steps ?? [])
+
+    while (!TERMINAL_SESSION_STATES.has(session.state)) {
       await delay(POLL_INTERVAL_MS)
       const next = await getLatestSession(ctx, runnerId)
       if (next) {
         session = next
+        streamSteps(session.steps ?? [])
       }
     }
 
