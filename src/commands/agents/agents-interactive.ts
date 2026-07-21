@@ -10,6 +10,7 @@ import { formatStatus, getAgentName, validatePrompt } from './utils.js'
 interface AgentInteractiveOptions extends OptionValues {
   agent?: string
   model?: string
+  runId?: string
 }
 
 const POLL_INTERVAL_MS = 3000
@@ -77,6 +78,10 @@ const createFollowUpSession = async (
     body: JSON.stringify(body),
   })
 }
+
+const getRun = async (ctx: RequestContext, runnerId: string): Promise<AgentRunner> =>
+  (await request(ctx, `/api/v1/agent_runners/${runnerId}`)) as AgentRunner
+
 
 const getLatestSession = async (ctx: RequestContext, runnerId: string): Promise<AgentRunnerSession | undefined> => {
   const sessions = (await request(ctx, `/api/v1/agent_runners/${runnerId}/sessions?page=1&per_page=1`)) as
@@ -177,6 +182,7 @@ export const agentsInteractive = async (options: AgentInteractiveOptions, comman
   const model = options.model
   const isGitBased = Boolean(siteInfo.build_settings?.repo_branch)
   const branch = isGitBased ? siteInfo.build_settings?.repo_branch : undefined
+  const attachRunId = options.runId
 
   console.clear()
   log(chalk.bold(`Welcome to the Netlify agent for ${chalk.cyan(siteInfo.name)}.`))
@@ -190,24 +196,42 @@ export const agentsInteractive = async (options: AgentInteractiveOptions, comman
   }
 
   let runner: AgentRunner
-  const createRunSpinner: Spinner = startSpinner({ text: 'Spinning up a new agent run…' })
-  try {
-    runner = await createRun(ctx, siteId, {
-      ...(branch ? { branch } : {}),
-      prompt: initialPrompt,
-      agent,
-      model,
-    })
-    stopSpinner({ spinner: createRunSpinner })
-  } catch (error_) {
-    stopSpinner({ spinner: createRunSpinner, error: true })
-    return logAndThrowError(`Failed to start agent run: ${(error_ as Error).message}`)
+  let firstSessionPredicate: (session: AgentRunnerSession) => boolean
+
+  if (attachRunId) {
+    const attachSpinner: Spinner = startSpinner({ text: `Attaching to agent run ${attachRunId}…` })
+    try {
+      runner = await getRun(ctx, attachRunId)
+      const existingSession = await getLatestSession(ctx, runner.id)
+      const baselineSessionId = existingSession?.id
+      await createFollowUpSession(ctx, runner.id, { prompt: initialPrompt, agent, model })
+      stopSpinner({ spinner: attachSpinner })
+      firstSessionPredicate = (session) => session.id !== baselineSessionId
+    } catch (error_) {
+      stopSpinner({ spinner: attachSpinner, error: true })
+      return logAndThrowError(`Failed to attach to agent run: ${(error_ as Error).message}`)
+    }
+  } else {
+    const createRunSpinner: Spinner = startSpinner({ text: 'Spinning up a new agent run…' })
+    try {
+      runner = await createRun(ctx, siteId, {
+        ...(branch ? { branch } : {}),
+        prompt: initialPrompt,
+        agent,
+        model,
+      })
+      stopSpinner({ spinner: createRunSpinner })
+      firstSessionPredicate = () => true
+    } catch (error_) {
+      stopSpinner({ spinner: createRunSpinner, error: true })
+      return logAndThrowError(`Failed to start agent run: ${(error_ as Error).message}`)
+    }
   }
 
   log(chalk.dim(`Run ${chalk.cyan(runner.id)} — ${formatStatus(runner.state ?? 'new')}`))
 
   try {
-    const firstSession = await waitForSession(ctx, runner.id, () => true)
+    const firstSession = await waitForSession(ctx, runner.id, firstSessionPredicate)
     const completed = await followSession(ctx, runner.id, firstSession)
 
     let previousSessionId = completed.id
