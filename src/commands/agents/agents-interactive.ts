@@ -10,7 +10,7 @@ import { formatStatus, getAgentName, validatePrompt } from './utils.js'
 interface AgentInteractiveOptions extends OptionValues {
   agent?: string
   model?: string
-  runId?: string
+  run?: string
 }
 
 const POLL_INTERVAL_MS = 3000
@@ -182,7 +182,7 @@ export const agentsInteractive = async (options: AgentInteractiveOptions, comman
   const model = options.model
   const isGitBased = Boolean(siteInfo.build_settings?.repo_branch)
   const branch = isGitBased ? siteInfo.build_settings?.repo_branch : undefined
-  const attachRunId = options.runId
+  const attachRunId = options.run
 
   console.clear()
   log(chalk.bold(`Welcome to the Netlify agent for ${chalk.cyan(siteInfo.name)}.`))

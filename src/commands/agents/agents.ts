@@ -38,13 +38,13 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .description('Start an interactive session to build with an agent on your site')
     .option('-a, --agent <agent>', 'agent type (claude, codex, gemini)', 'claude')
     .option('-m, --model <model>', 'model to use for the agent')
-    .option('--run-id <id>', 'attach to an existing agent run instead of starting a new one')
+    .option('--run <id>', 'attach to an existing agent run instead of starting a new one')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
     .addExamples([
       'netlify agents:interactive',
       'netlify agents:interactive --agent claude',
-      'netlify agents:interactive --run-id 60c7c3b3e7b4a0001f5e4b3a',
+      'netlify agents:interactive --run 60c7c3b3e7b4a0001f5e4b3a',
     ])
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { agentsInteractive } = await import('./agents-interactive.js')
