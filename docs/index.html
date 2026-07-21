@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Netlify CLI</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        box-sizing: border-box;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        background: linear-gradient(
+          130deg,
+          #ff004d,
+          #ff8a00,
+          #ffd500,
+          #22c55e,
+          #00b3ff,
+          #6a5cff,
+          #d946ef,
+          #ff004d
+        );
+        background-size: 400% 400%;
+        animation: rainbow 16s ease infinite;
+      }
+
+      @keyframes rainbow {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .card {
+        width: min(46rem, 100%);
+        padding: 2rem 2.25rem;
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 1rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        color: #14171a;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.5rem, 5vw, 2.75rem);
+        font-weight: 700;
+        animation: blink 2.4s ease-in-out infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.15;
+        }
+      }
+
+      h2 {
+        margin: 2rem 0 0.75rem;
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #52525b;
+      }
+
+      pre {
+        margin: 0;
+        padding: 1.25rem 1.5rem;
+        overflow-x: auto;
+        background: #14171a;
+        color: #f4f4f5;
+        border-radius: 0.75rem;
+        font-size: 0.95rem;
+        line-height: 1.7;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        body,
+        h1 {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>The app is the CLI.</h1>
+      <h2>Try the interactive agent</h2>
+      <pre><code>git clone https://github.com/netlify/cli.git
+cd cli
+npm install
+npm run build
+node bin/run.js agents:interactive</code></pre>
+    </main>
+  </body>
+</html>
