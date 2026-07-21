@@ -1,7 +1,8 @@
-import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import readline from 'readline'
 
-import { chalk, log, logAndThrowError } from '../../utils/command-helpers.js'
+import type { OptionValues } from 'commander'
+
+import { chalk, exit, log, logAndThrowError } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner, type Spinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
@@ -160,15 +161,95 @@ const followSession = async (
   return session
 }
 
+const MULTILINE_HINT = 'Enter to submit · Ctrl+Enter or Shift+Enter for a new line'
+const ESC = ''
+const SAVE_CURSOR = `${ESC}7`
+const RESTORE_CURSOR = `${ESC}8`
+const CLEAR_TO_END = `${ESC}[0J`
+
+const readMultilineInput = (message: string): Promise<string> => {
+  const { stdin, stdout } = process
+
+  if (!stdin.isTTY) {
+    return new Promise((resolve) => {
+      const rl = readline.createInterface({ input: stdin })
+      stdout.write(`${message}\n`)
+      rl.once('line', (line) => {
+        rl.close()
+        resolve(line)
+      })
+    })
+  }
+
+  return new Promise((resolve) => {
+    readline.emitKeypressEvents(stdin)
+    const wasRaw = stdin.isRaw
+    stdin.setRawMode(true)
+    stdin.resume()
+
+    stdout.write(`${chalk.bold(message)}\n`)
+    stdout.write(`${chalk.dim(MULTILINE_HINT)}\n`)
+    stdout.write(chalk.cyan('> '))
+    stdout.write(SAVE_CURSOR)
+
+    let buffer = ''
+
+    const render = () => {
+      stdout.write(RESTORE_CURSOR)
+      stdout.write(CLEAR_TO_END)
+      stdout.write(buffer.replace(/\n/g, '\r\n'))
+    }
+
+    const cleanup = () => {
+      stdin.removeListener('keypress', onKeypress)
+      stdin.setRawMode(wasRaw)
+      stdin.pause()
+    }
+
+    const onKeypress = (str: string | undefined, key: readline.Key) => {
+      if (key.ctrl && key.name === 'c') {
+        cleanup()
+        stdout.write('\r\n')
+        exit(130)
+      }
+
+      const isSubmit = key.name === 'return' && !key.ctrl && !key.shift && !key.meta
+      const isNewline =
+        str === '\n' || key.name === 'enter' || (key.name === 'return' && (key.ctrl === true || key.shift === true))
+
+      if (isSubmit) {
+        render()
+        stdout.write('\r\n')
+        cleanup()
+        resolve(buffer)
+        return
+      }
+
+      if (isNewline) {
+        buffer += '\n'
+        render()
+        return
+      }
+
+      if (key.name === 'backspace') {
+        buffer = buffer.slice(0, -1)
+        render()
+        return
+      }
+
+      if (str !== undefined && !key.ctrl && !key.meta) {
+        buffer += str.replace(/\r\n?/g, '\n')
+        render()
+      }
+    }
+
+    stdin.on('keypress', onKeypress)
+  })
+}
+
 const askPrompt = async (message: string): Promise<string> => {
-  const { promptInput } = await inquirer.prompt<{ promptInput: string }>([
-    {
-      type: 'input',
-      name: 'promptInput',
-      message,
-    },
-  ])
-  return promptInput.trim()
+  const input = await readMultilineInput(message)
+  return input.trim()
 }
 
 export const agentsInteractive = async (options: AgentInteractiveOptions, command: BaseCommand) => {
