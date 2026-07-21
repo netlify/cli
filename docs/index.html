@@ -15,6 +15,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 2rem;
+        box-sizing: border-box;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         background: linear-gradient(
           130deg,
@@ -43,15 +45,19 @@
         }
       }
 
-      p {
-        margin: 0;
-        padding: 1.25rem 2rem;
-        font-size: clamp(1.5rem, 5vw, 3rem);
-        font-weight: 700;
-        color: #14171a;
-        background: rgba(255, 255, 255, 0.82);
-        border-radius: 0.75rem;
+      .card {
+        width: min(46rem, 100%);
+        padding: 2rem 2.25rem;
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 1rem;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        color: #14171a;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.5rem, 5vw, 2.75rem);
+        font-weight: 700;
         animation: blink 2.4s ease-in-out infinite;
       }
 
@@ -65,18 +71,42 @@
         }
       }
 
-      @media (prefers-reduced-motion: reduce) {
-        body {
-          animation: none;
-        }
+      h2 {
+        margin: 2rem 0 0.75rem;
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #52525b;
+      }
 
-        p {
+      pre {
+        margin: 0;
+        padding: 1.25rem 1.5rem;
+        overflow-x: auto;
+        background: #14171a;
+        color: #f4f4f5;
+        border-radius: 0.75rem;
+        font-size: 0.95rem;
+        line-height: 1.7;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        body,
+        h1 {
           animation: none;
         }
       }
     </style>
   </head>
   <body>
-    <p>The app is the CLI.</p>
+    <main class="card">
+      <h1>The app is the CLI.</h1>
+      <h2>Try the interactive agent</h2>
+      <pre><code>git clone https://github.com/netlify/cli.git
+cd cli
+npm install
+npm run build
+node bin/run.js agents:interactive</code></pre>
+    </main>
   </body>
 </html>
