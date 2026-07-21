@@ -145,6 +145,7 @@ const followSession = async (
 ): Promise<AgentRunnerSession> => {
   const spinner = startSpinner({ text: 'The agent is getting started…' })
   let printedSteps = 0
+  let lastTask: string | undefined
   let session = currentSession
 
   const streamSteps = (steps: NonNullable<AgentRunnerSession['steps']>): void => {
@@ -163,11 +164,29 @@ const followSession = async (
     spinner.update({ text: latest.title ?? latest.message ?? 'Working…' })
   }
 
+  const streamTask = (task: string | undefined): void => {
+    const trimmed = task?.trim()
+    if (!trimmed || trimmed === lastTask) {
+      return
+    }
+    lastTask = trimmed
+
+    clearSpinner({ spinner })
+    log(`${chalk.cyan('│')} ${trimmed}`)
+    spinner.update({ text: trimmed })
+  }
+
   try {
     streamSteps(session.steps ?? [])
 
     while (!TERMINAL_SESSION_STATES.has(session.state)) {
+      const runner = await getRun(ctx, runnerId).catch(() => undefined)
+      if (runner) {
+        streamTask(runner.current_task)
+      }
+
       await delay(POLL_INTERVAL_MS)
+
       const next = await getLatestSession(ctx, runnerId)
       if (next) {
         session = next
