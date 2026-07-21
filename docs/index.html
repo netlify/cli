@@ -2,7 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Netlify CLI</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        background: linear-gradient(
+          130deg,
+          #ff004d,
+          #ff8a00,
+          #ffd500,
+          #22c55e,
+          #00b3ff,
+          #6a5cff,
+          #d946ef,
+          #ff004d
+        );
+        background-size: 400% 400%;
+        animation: rainbow 16s ease infinite;
+      }
+
+      @keyframes rainbow {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      p {
+        margin: 0;
+        padding: 1.25rem 2rem;
+        font-size: clamp(1.5rem, 5vw, 3rem);
+        font-weight: 700;
+        color: #14171a;
+        background: rgba(255, 255, 255, 0.82);
+        border-radius: 0.75rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        body {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
     <p>The app is the CLI.</p>
