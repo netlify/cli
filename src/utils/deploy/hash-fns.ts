@@ -153,6 +153,18 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
+
+  // ZISI's in-memory FunctionResult only nests bootstrap/runtime version into
+  // buildData when writing the manifest cache. Reconstruct it for direct-zip paths.
+  for (const func of functionZips) {
+    if (!func.buildData) {
+      func.buildData = {
+        bootstrapVersion: func.bootstrapVersion,
+        runtimeAPIVersion: func.runtimeAPIVersion,
+      }
+    }
+  }
+
   const fileObjs = functionZips.map(
     ({
       buildData,
