@@ -1,15 +1,16 @@
+import { createRequire } from 'node:module'
 import { env as _env, version as nodejsVersion } from 'process'
 
 import type { Options } from 'execa'
 import execa from 'execa'
 import { expect, test } from 'vitest'
 
-import pkg from '../../package.json'
-
 import { callCli } from './utils/call-cli.js'
 import { cliPath } from './utils/cli-path.js'
 import { MockApiTestContext, withMockApi } from './utils/mock-api-vitest.js'
 import { withSiteBuilder } from './utils/site-builder.js'
+
+const pkg = createRequire(import.meta.url)('../../package.json') as { name: string; version: string }
 
 const getCLIOptions = (apiUrl: string): Options => ({
   env: {
