@@ -13,7 +13,9 @@ const formatValue = (value: unknown): string => {
   if (typeof value === 'string') {
     return value
   }
-  return String(value as number | boolean | bigint)
+  // TODO(serhalp): Either narrow the type (only number/bigint/boolean reach here at runtime) or keep this.
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  return String(value)
 }
 
 export const formatQueryResult = (

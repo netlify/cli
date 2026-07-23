@@ -166,6 +166,7 @@ describe('getLiveTunnelSlug', () => {
   test('uses the override slug without reading state', () => {
     const state = createMockState()
     expect(getLiveTunnelSlug(state, 'custom-slug')).toBe('custom-slug')
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- asserting on a vi.fn() mock
     expect(state.get).not.toHaveBeenCalled()
   })
 
@@ -178,6 +179,7 @@ describe('getLiveTunnelSlug', () => {
     const state = createMockState(undefined)
     const slug = getLiveTunnelSlug(state, undefined)
     expect(slug).toMatch(/^[\da-f]{8}$/)
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- asserting on a vi.fn() mock
     expect(state.set).toHaveBeenCalledWith('liveTunnelSlug', slug)
   })
 })

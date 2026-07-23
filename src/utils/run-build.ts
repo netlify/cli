@@ -68,10 +68,13 @@ export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline:
 }>
 export async function runNetlifyBuild({
   command,
+  // TODO(serhalp): Either remove this default (the param is required and every known caller passes it) or keep it if a
+  // dynamic caller relies on it.
+  // eslint-disable-next-line @typescript-eslint/no-useless-default-assignment
   env = {},
   options,
   settings,
-  timeline = 'build',
+  timeline,
 }: {
   command: BaseCommand
   // The flags of the command

@@ -6,9 +6,14 @@ import { chalk, logAndThrowError, exit, log, logJson } from '../../utils/command
 import type BaseCommand from '../base-command.js'
 
 type ApiMethodName = keyof NetlifyAPI
+type ApiMethod = (payload: unknown) => Promise<unknown>
 
 const isValidApiMethod = (api: NetlifyAPI, apiMethod: string): apiMethod is ApiMethodName =>
   Object.hasOwn(api, apiMethod)
+
+// The method name comes from CLI args, so the value is read dynamically (as `unknown`); this guard
+// confirms it's callable and gives it a single, honest call signature.
+const isCallable = (value: unknown): value is ApiMethod => typeof value === 'function'
 
 export const apiCommand = async (apiMethodName: string, options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
@@ -31,12 +36,12 @@ export const apiCommand = async (apiMethodName: string, options: OptionValues, c
     return logAndThrowError(`You must provide an API method. Run "netlify api --list" to see available methods`)
   }
 
-  if (!(isValidApiMethod(api, apiMethodName) && typeof api[apiMethodName] === 'function')) {
+  const apiMethod: unknown = isValidApiMethod(api, apiMethodName) ? Reflect.get(api, apiMethodName) : undefined
+  if (!isCallable(apiMethod)) {
     return logAndThrowError(
       `"${apiMethodName}"" is not a valid api method. Run "netlify api --list" to see available methods`,
     )
   }
-  const apiMethod = api[apiMethodName].bind(api)
 
   let payload
   if (options.data) {
@@ -45,7 +50,7 @@ export const apiCommand = async (apiMethodName: string, options: OptionValues, c
     payload = {}
   }
   try {
-    const apiResponse = await apiMethod(payload)
+    const apiResponse = await apiMethod.call(api, payload)
     logJson(apiResponse)
   } catch (error_) {
     return logAndThrowError(error_)
