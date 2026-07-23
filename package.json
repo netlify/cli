@@ -5,7 +5,7 @@
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
-    "node": ">=20.12.2"
+    "node": ">=22.13.0"
   },
   "files": [
     "/bin",
@@ -160,7 +160,7 @@
     "@netlify/functions": "^5.3.0",
     "@netlify/types": "^2.8.0",
     "@sindresorhus/slugify": "^3.0.0",
-    "@tsconfig/node20": "20.1.0",
+    "@tsconfig/node22": "22.0.5",
     "@tsconfig/recommended": "^1.0.13",
     "@types/backoff": "^2.5.5",
     "@types/content-type": "^1.1.9",

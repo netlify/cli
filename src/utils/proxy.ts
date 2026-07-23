@@ -711,7 +711,7 @@ const initializeProxy = async function ({
 
     proxyRes.on('end', async function onEnd() {
       // @ts-expect-error TS(7005) FIXME: Variable 'responseData' implicitly has an 'any[]' ... Remove this comment to see the full error message
-      let responseBody = Buffer.concat(responseData)
+      let responseBody: Buffer = Buffer.concat(responseData)
 
       let responseStatus = options.status || proxyRes.statusCode
 

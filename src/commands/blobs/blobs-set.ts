@@ -33,7 +33,7 @@ export const blobsSet = async (
   if (input) {
     const inputPath = resolve(input)
     try {
-      value = await fs.readFile(inputPath)
+      value = new Uint8Array(await fs.readFile(inputPath)).buffer
     } catch (error) {
       if (isNodeError(error) && error.code === 'ENOENT') {
         return logAndThrowError(
