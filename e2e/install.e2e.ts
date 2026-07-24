@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import { platform } from 'node:os'
 import path from 'node:path'
+import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
 import process from 'node:process'
@@ -15,10 +16,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import createDebug from 'debug'
 import picomatch from 'picomatch'
 
-import pkg from '../package.json'
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const projectRoot = path.resolve(__dirname, '..')
+const pkg = createRequire(import.meta.url)('../package.json') as { version: string }
 const distDir = path.join(projectRoot, 'dist')
 const tempdirPrefix = 'netlify-cli-e2e-test--'
 
@@ -215,11 +215,7 @@ const installTests: [packageManager: string, config: InstallTest][] = [
 ]
 
 describe.each(installTests)('%s → installs the cli and runs commands without errors', (packageManager, config) => {
-  // Yarn v1 enforces engine constraints strictly. A transitive dep (chokidar@5) requires node >=20.19.0,
-  // breaking yarn installs on older Node 20.x. Node 20 EOL is April 2026, so we skip rather than override.
-  const yarnOnOldNode20 = packageManager === 'yarn' && process.versions.node === '20.12.2'
-
-  it.skipIf(yarnOnOldNode20)('runs the commands without errors', async () => {
+  it('runs the commands without errors', async () => {
     const cwd = await fs.mkdtemp(path.join(os.tmpdir(), tempdirPrefix))
 
     try {
