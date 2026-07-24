@@ -2,7 +2,7 @@
 # Node.js versions tested on Linux in every PR's test matrix.
 # The minimum version should stay aligned with package.json `engines.node`.
 # Used by: unit-tests.yml, integration-tests.yml, e2e-tests.yml
-node_versions: ['20.12.2', '22', '24']
+node_versions: ['22.13.0', '24']
 
 # Pin specific install versions for entries in `node_versions` / `primary_node_version`.
 node_install_overrides:

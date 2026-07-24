@@ -16,8 +16,9 @@ export let didEnableCompileCache = false
  * Keep in mind that the cache is specific to a version of netlify-cli and a version of node.js and it is stored on the
  * user's disk in a temp dir. If any of these changes or the temp dir is cleared, the next run is a cold run.
  *
- * The programmatic API to enable this (`enableCompileCache()`) was added in node 22.8.0, but we currently support
- * >=20.12.2, hence the conditional below. (For completeness, note that support via the env var was added in 22.1.0.)
+ * The programmatic API to enable this (`enableCompileCache()`) was added in node 22.8.0, below our minimum supported
+ * version, so the conditional below is defensive rather than strictly necessary. (For completeness, note that support
+ * via the env var was added in 22.1.0.)
  *
  * The Netlify CLI is often used in CI workflows. In this context, we wouldn't want the overhead of the first run
  * because we almost certainly would not get any benefits on "subsequent runs". Even if the user has configured caching
@@ -30,6 +31,7 @@ export const maybeEnableCompileCache = (): void => {
   // The docs recommend turning this off when running tests to generate precise coverage
   if (process.env.NODE_ENV === 'test') return
 
+  // TODO(serhalp): Consider enabling unconditionally now that we require Node.js 22.13.0+.
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   if ('enableCompileCache' in module && typeof module.enableCompileCache === 'function') {
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
