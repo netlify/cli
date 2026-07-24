@@ -55,7 +55,7 @@
     "typecheck:watch": "tsc --watch"
   },
   "dependencies": {
-    "@fastify/static": "^9.1.1",
+    "@fastify/static": "^10.1.2",
     "@netlify/ai": "^0.4.1",
     "@netlify/api": "^14.0.19",
     "@netlify/blobs": "^10.7.9",
