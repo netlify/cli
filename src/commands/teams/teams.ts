@@ -3,7 +3,7 @@ import type { OptionValues } from 'commander'
 import type BaseCommand from '../base-command.js'
 
 const teams = (_options: OptionValues, command: BaseCommand) => {
-  command.help()
+  command.helpOrRejectExtraArgs()
 }
 
 export const createTeamsCommand = (program: BaseCommand) => {

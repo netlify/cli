@@ -5,7 +5,7 @@ import { normalizeContext } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
 const env = (_options: OptionValues, command: BaseCommand) => {
-  command.help()
+  command.helpOrRejectExtraArgs()
 }
 
 export const createEnvCommand = (program: BaseCommand) => {

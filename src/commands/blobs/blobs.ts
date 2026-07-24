@@ -8,7 +8,7 @@ import BaseCommand from '../base-command.js'
  * The blobs command
  */
 const blobs = (_options: OptionValues, command: BaseCommand) => {
-  command.help()
+  command.helpOrRejectExtraArgs()
 }
 
 /**
