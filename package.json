@@ -58,7 +58,7 @@
     "@fastify/static": "^10.0.0",
     "@netlify/ai": "^0.4.3",
     "@netlify/api": "^15.1.0",
-    "@netlify/blobs": "^10.7.9",
+    "@netlify/blobs": "^10.7.10",
     "@netlify/build": "^36.2.3",
     "@netlify/build-info": "^11.2.0",
     "@netlify/config": "^25.1.1",
