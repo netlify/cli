@@ -73,7 +73,7 @@
     "@netlify/redirect-parser": "^15.0.4",
     "@netlify/zip-it-and-ship-it": "^14.7.1",
     "@octokit/rest": "^22.0.0",
-    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/api": "^1.9.1",
     "@pnpm/tabtab": "^0.5.4",
     "ansi-escapes": "^7.3.0",
     "ansi-to-html": "^0.7.2",
@@ -216,6 +216,21 @@
     "typescript-eslint": "~8.45.0",
     "verdaccio": "^6.3.2",
     "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "@opentelemetry/api": "^1.9.1",
+    "@netlify/otel": {
+      "@opentelemetry/core": "^2.8.0",
+      "@opentelemetry/instrumentation": "^0.219.0",
+      "@opentelemetry/resources": "^2.8.0",
+      "@opentelemetry/sdk-trace-node": "^2.8.0"
+    },
+    "@netlify/edge-bundler": {
+      "esbuild": "^0.28.1"
+    },
+    "@netlify/zip-it-and-ship-it": {
+      "esbuild": "^0.28.1"
+    }
   },
   "packageManager": "npm@10.9.4+sha512.3a7506f37e85c1ba1021baad79f0cd9724748131f321fc117c4dc3ba235ec01be7327584a41d15117c01945560aa9373220628fcc1e1dddd877a5fe9b336a900"
 }
