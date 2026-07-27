@@ -65,6 +65,7 @@ export const startProxyServer = async ({
   site,
   siteInfo,
   state,
+  watchIgnore,
   deployEnvironment,
 }: {
   accountId: string | undefined
@@ -90,6 +91,7 @@ export const startProxyServer = async ({
   projectDir: string
   repositoryRoot?: string
   state: LocalState
+  watchIgnore: string[]
   functionsRegistry?: FunctionsRegistry
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
@@ -116,6 +118,7 @@ export const startProxyServer = async ({
     accountId,
     repositoryRoot,
     api,
+    watchIgnore,
     deployEnvironment,
   })
   if (!url) {

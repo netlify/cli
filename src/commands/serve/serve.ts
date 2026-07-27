@@ -210,6 +210,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
     state,
     accountId,
+    watchIgnore: devConfig.watchIgnore ?? [],
     deployEnvironment: [],
   })
 

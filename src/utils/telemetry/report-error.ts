@@ -12,6 +12,12 @@ import { cliVersion } from './utils.js'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
+let currentCommand: string | undefined
+
+export const setCommandForErrorReporting = (command?: string): void => {
+  currentCommand = command
+}
+
 /**
  *
  * @param {import('@bugsnag/js').NotifiableError} error
@@ -49,8 +55,11 @@ export const reportError = async function (error, config = {}) {
       user: {
         id: globalConfig.get('userId'),
       },
-      // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type '{}'.
-      metadata: config.metadata,
+      metadata: {
+        // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type '{}'.
+        ...config.metadata,
+        ...(currentCommand === undefined ? {} : { command: { name: currentCommand } }),
+      },
       osName: `${os.platform()}-${os.arch()}`,
       cliVersion,
       nodejsVersion,

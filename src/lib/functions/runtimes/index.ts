@@ -21,6 +21,7 @@ export type BaseBuildResult = {
   // TODO(serhalp): This module and type shouldn't know about these zisi types. Refactor to allow the JS runtime's zisi
   // builder to define this on its extended base build result type.
   excludedRoutes?: Route[] | undefined
+  invocationMode?: string | undefined
   routes?: ExtendedRoute[] | undefined
   runtimeAPIVersion?: number | undefined
 }

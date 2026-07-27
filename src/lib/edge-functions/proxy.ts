@@ -95,6 +95,7 @@ export const initializeProxy = async ({
   settings,
   siteInfo,
   state,
+  watchIgnore,
   deployEnvironment,
 }: {
   accountId: string
@@ -117,6 +118,7 @@ export const initializeProxy = async ({
   settings: ServerSettings
   siteInfo: $TSFixMe
   state: LocalState
+  watchIgnore: string[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   const isolatePort = await getAvailablePort()
@@ -139,7 +141,9 @@ export const initializeProxy = async ({
     inspectSettings,
     port: isolatePort,
     projectDir,
+    publishDir: settings.dist,
     repositoryRoot,
+    watchIgnore,
     deployEnvironment,
   })
   return async (req: ExtendedIncomingMessage) => {
@@ -214,7 +218,9 @@ const prepareServer = async ({
   inspectSettings,
   port,
   projectDir,
+  publishDir,
   repositoryRoot,
+  watchIgnore,
   deployEnvironment,
 }: {
   aiGatewayContext?: AIGatewayContext | null
@@ -228,7 +234,9 @@ const prepareServer = async ({
   inspectSettings: Parameters<typeof bundler.serve>[0]['inspectSettings']
   port: number
   projectDir: string
+  publishDir: string
   repositoryRoot?: string
+  watchIgnore: string[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   try {
@@ -267,8 +275,10 @@ const prepareServer = async ({
       getUpdatedConfig,
       importMapFromTOML: config.functions?.['*'].deno_import_map,
       projectDir,
+      publishDir,
       runIsolate,
       servePath,
+      watchIgnore,
       deployEnvironment: deployEnvironment
         .filter(({ scopes }) => scopes.includes('functions'))
         // Scopes should be opaque to the functions registry: We just filtered down to only variables

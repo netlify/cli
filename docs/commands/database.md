@@ -201,7 +201,7 @@ netlify database migrations new
 - `description` (*string*) - Purpose of the migration (used to generate the file name)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output result as JSON
-- `scheme` (*sequential | timestamp*) - Numbering scheme for migration prefixes
+- `scheme` (*timestamp | sequential*) - Numbering scheme for migration prefixes
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 

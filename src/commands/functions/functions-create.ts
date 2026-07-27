@@ -48,6 +48,18 @@ const MOON_SPINNER = {
   frames: ['🌑 ', '🌒 ', '🌓 ', '🌔 ', '🌕 ', '🌖 ', '🌗 ', '🌘 '],
 }
 
+const isValidFunctionName = (name: unknown): name is string => typeof name === 'string' && /^[\w.-]+$/i.test(name)
+
+const validateFunctionName = (name: unknown): void => {
+  if (!isValidFunctionName(name)) {
+    throw new Error(
+      `Invalid function name "${String(
+        name,
+      )}". Function names must only contain letters, numbers, hyphens, underscores, or dots.`,
+    )
+  }
+}
+
 /**
  * prompt for a name if name not supplied
  * @param {string} argumentName
@@ -61,10 +73,12 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
     if (argumentName) {
       throw new Error('function name specified in both flag and arg format, pick one')
     }
+    validateFunctionName(options.name)
     return options.name
   }
 
   if (argumentName) {
+    validateFunctionName(argumentName)
     return argumentName
   }
 
@@ -74,7 +88,7 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
       message: 'Name your function:',
       default: defaultName,
       type: 'input',
-      validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
+      validate: (val) => isValidFunctionName(val),
       // make sure it is not undefined and is a valid filename.
       // this has some nuance i have ignored, eg crossenv and i18n concerns
     },
@@ -372,11 +386,12 @@ const ensureFunctionDirExists = async function (command) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 const downloadFromURL = async function (command, options, argumentName, functionsDir) {
-  const folderContents = await readRepoURL(options.url)
   const [functionName] = options.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
+  const fnFolder = getSafeFunctionPath(functionsDir, nameToUse)
 
-  const fnFolder = path.join(functionsDir, nameToUse)
+  const folderContents = await readRepoURL(options.url)
+
   if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
     log(
       `${NETLIFYDEVWARN}: A single file version of the function ${nameToUse} already exists at ${fnFolder}.js. Terminating without further action.`,
@@ -394,7 +409,8 @@ const downloadFromURL = async function (command, options, argumentName, function
     folderContents.map(async ({ download_url: downloadUrl, name }) => {
       try {
         const res = await fetch(downloadUrl)
-        const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
+        const fileName = path.basename(name)
+        const finalName = path.basename(fileName, '.js') === functionName ? `${nameToUse}.js` : fileName
         const dest = fs.createWriteStream(path.join(fnFolder, finalName))
         res.body?.pipe(dest)
       } catch (error_) {
@@ -736,16 +752,22 @@ const registerEFInToml = async (funcName, options) => {
   }
 }
 
+const getSafeFunctionPath = (functionsDir: string, name: string): string => {
+  const resolvedFunctionsDir = path.resolve(functionsDir)
+  const functionPath = path.resolve(resolvedFunctionsDir, name)
+  const relativePath = path.relative(resolvedFunctionsDir, functionPath)
+  if (relativePath === '' || relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+    return logAndThrowError(`Invalid function name "${name}": it resolves outside the functions directory.`)
+  }
+  return functionPath
+}
+
 /**
  * we used to allow for a --dir command,
  * but have retired that to force every scaffolded function to be a directory
- * @param {string} functionsDir
- * @param {string} name
- * @returns
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionsDir' implicitly has an 'any' t... Remove this comment to see the full error message
-const ensureFunctionPathIsOk = function (functionsDir, name) {
-  const functionPath = path.join(functionsDir, name)
+const ensureFunctionPathIsOk = function (functionsDir: string, name: string): string {
+  const functionPath = getSafeFunctionPath(functionsDir, name)
   if (fs.existsSync(functionPath)) {
     log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
     process.exit(1)

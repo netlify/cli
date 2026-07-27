@@ -12,6 +12,49 @@ import { processOnExit } from './dev.js'
 const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
   value instanceof Error && Object.hasOwn(value, 'code')
 
+type CommandResult = {
+  exitCode?: number
+  message?: string
+  shortMessage?: string
+  stderr?: string
+  stdout?: string
+}
+
+const isCommandResult = (value: unknown): value is CommandResult =>
+  typeof value === 'object' &&
+  value !== null &&
+  (typeof (value as CommandResult).exitCode === 'number' ||
+    typeof (value as CommandResult).message === 'string' ||
+    typeof (value as CommandResult).shortMessage === 'string' ||
+    typeof (value as CommandResult).stderr === 'string' ||
+    typeof (value as CommandResult).stdout === 'string')
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+export const getCommandName = (command: string) => {
+  const match = /^(?:"([^"]+)"|'([^']+)'|(\S+))/.exec(command.trim())
+
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? command
+}
+
+export const canReportMissingCommandName = (command: string) =>
+  !/(?:&&|\|\||[|;<>])/.test(command) && !/^\s*[\w.-]+=/.test(command)
+
+export const shouldUseShell = (command: string) =>
+  /(?:&&|\|\||[|;<>])/.test(command) || /^\s*[\w.-]+=(?:"[^"]*"|'[^']*'|\S+)\s+\S/.test(command)
+
+const isMissingCommandMessage = ({ command, output }: { command: string; output: string }) =>
+  output.split(/\r?\n/).some((line) => {
+    const commandPattern = escapeRegExp(command)
+    const missingCommandPatterns = [
+      new RegExp(`(?:^|:)\\s*${commandPattern}\\s*:\\s*(?:command\\s+)?not found(?:\\s|$)`, 'i'),
+      new RegExp(`(?:^|\\s)command not found:\\s*${commandPattern}(?:\\s|$)`, 'i'),
+      new RegExp(`(?:^|\\s|['"])${commandPattern}['"]?\\s+is not recognized as an internal or external command`, 'i'),
+    ]
+
+    return missingCommandPatterns.some((pattern) => pattern.test(line))
+  })
+
 const createStripAnsiControlCharsStream = (): Transform =>
   new Transform({
     transform(chunk, _encoding, callback) {
@@ -68,6 +111,7 @@ export const runCommand = (
   const { cwd, env = {}, spinner } = options
   const commandProcess = execa.command(command, {
     preferLocal: true,
+    shell: shouldUseShell(command),
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
     env: {
@@ -111,8 +155,12 @@ export const runCommand = (
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   commandProcess.then(async () => {
     const result = await commandProcess
-    const [commandWithoutArgs] = command.split(' ')
-    if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
+    const commandWithoutArgs = getCommandName(command)
+    if (
+      result.failed &&
+      canReportMissingCommandName(command) &&
+      isNonExistingCommandError({ command: commandWithoutArgs, error: result })
+    ) {
       log(
         `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
           `'${commandWithoutArgs}'`,
@@ -135,7 +183,7 @@ export const runCommand = (
   return commandProcess
 }
 
-const isNonExistingCommandError = ({ command, error: commandError }: { command: string; error: unknown }) => {
+export const isNonExistingCommandError = ({ command, error: commandError }: { command: string; error: unknown }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
   if (isErrnoException(commandError) && commandError.code === 'ENOENT') {
@@ -147,10 +195,13 @@ const isNonExistingCommandError = ({ command, error: commandError }: { command: 
     return false
   }
 
-  // this only works on English versions of Windows
-  return (
-    commandError instanceof Error &&
-    typeof commandError.message === 'string' &&
-    commandError.message.includes('is not recognized as an internal or external command')
-  )
+  if (!isCommandResult(commandError)) {
+    return false
+  }
+
+  const output = [commandError.message, commandError.shortMessage, commandError.stderr, commandError.stdout]
+    .filter((value): value is string => typeof value === 'string')
+    .join('\n')
+
+  return isMissingCommandMessage({ command, output })
 }

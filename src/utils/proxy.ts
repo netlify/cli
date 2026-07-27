@@ -25,7 +25,7 @@ import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
-import throttle from 'lodash/throttle.js'
+import { throttle } from './object-utilities.js'
 import type { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 
@@ -711,7 +711,7 @@ const initializeProxy = async function ({
 
     proxyRes.on('end', async function onEnd() {
       // @ts-expect-error TS(7005) FIXME: Variable 'responseData' implicitly has an 'any[]' ... Remove this comment to see the full error message
-      let responseBody = Buffer.concat(responseData)
+      let responseBody: Buffer = Buffer.concat(responseData)
 
       let responseStatus = options.status || proxyRes.statusCode
 
@@ -947,6 +947,7 @@ export const startProxy = async function ({
   settings,
   siteInfo,
   state,
+  watchIgnore,
   deployEnvironment,
 }: {
   command: BaseCommand
@@ -955,6 +956,7 @@ export const startProxy = async function ({
   disableEdgeFunctions: boolean
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   aiGatewayContext?: AIGatewayContext | null
+  watchIgnore: string[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 } & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
@@ -988,6 +990,7 @@ export const startProxy = async function ({
       repositoryRoot,
       siteInfo,
       state,
+      watchIgnore,
       deployEnvironment,
     })
   }

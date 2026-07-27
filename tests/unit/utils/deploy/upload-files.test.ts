@@ -1,4 +1,4 @@
-import { v4 as generateUUID } from 'uuid'
+import crypto from 'crypto'
 import { afterAll, expect, test, vi } from 'vitest'
 
 import uploadFiles from '../../../../src/utils/deploy/upload-files.js'
@@ -28,7 +28,7 @@ test('Adds a retry count to function upload requests', async () => {
   const mockApi = {
     uploadDeployFunction,
   }
-  const deployId = generateUUID()
+  const deployId = crypto.randomUUID()
   const files = [
     {
       assetType: 'function',
@@ -63,7 +63,7 @@ test('Does not retry on 400 response from function upload requests', async () =>
   const mockApi = {
     uploadDeployFunction,
   }
-  const deployId = generateUUID()
+  const deployId = crypto.randomUUID()
   const files = [
     {
       assetType: 'function',
