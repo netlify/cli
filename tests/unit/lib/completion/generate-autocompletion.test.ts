@@ -34,13 +34,12 @@ describe('generateAutocompletion', () => {
 
     generateAutocompletion(program)
 
-    expect(fs.writeFileSync).toHaveBeenCalledOnce()
-
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
+    expect(fs.writeFileSync).toHaveBeenCalledExactlyOnceWith(
       expect.stringMatching(/autocompletion\.json$/),
       expect.anything(),
       'utf-8',
     )
+
     expect(vi.mocked(fs.writeFileSync).mock.lastCall?.[1]).toMatchSnapshot()
 
     vi.mocked(fs.writeFileSync).mockRestore()

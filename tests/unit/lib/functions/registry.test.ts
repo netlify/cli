@@ -75,8 +75,7 @@ test('registry should only pass functions config to zip-it-and-ship-it', async (
     functionsRegistry.projectRoot,
   ])
 
-  expect(listFunctionsStub).toHaveBeenCalledOnce()
-  expect(listFunctionsStub).toHaveBeenCalledWith(
+  expect(listFunctionsStub).toHaveBeenCalledExactlyOnceWith(
     expect.anything(),
     expect.objectContaining({
       // @ts-expect-error FIXME(ndhoule): We should not be touching this private member in tests
@@ -149,6 +148,5 @@ test('should add included_files to watcher', async () => {
   // @ts-expect-error FIXME(ndhoule): We should not be touching this private member in tests
   await registry.buildFunctionAndWatchFiles(func)
 
-  expect(watchDebounced).toHaveBeenCalledOnce()
-  expect(watchDebounced).toHaveBeenCalledWith(['myfile', 'include/*'], expect.anything())
+  expect(watchDebounced).toHaveBeenCalledExactlyOnceWith(['myfile', 'include/*'], expect.anything())
 })
