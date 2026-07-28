@@ -15,8 +15,7 @@ vi.mock('execa', () => ({
 
 vi.mock('fs/promises', () => ({
   readFile: vi.fn(),
-  unlink: vi.fn(),
-  mkdir: vi.fn(),
+  rm: vi.fn(),
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', () => ({
@@ -33,162 +32,52 @@ vi.mock('os', () => ({
   platform: vi.fn().mockReturnValue('darwin'),
 }))
 
-describe('uploadSourceZip', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+const resolveExeca = async () => {
+  const mockExeca = await import('execa')
+  // @ts-expect-error(types): the execa overloads are awkward to satisfy in a mock
+  vi.mocked(mockExeca.default).mockImplementation(() => Promise.resolve({} as ExecaReturnValue))
+}
 
-  test('creates zip and uploads successfully', async () => {
-    // Ensure OS platform mock returns non-Windows
+const rejectExeca = async (error: Error) => {
+  const mockExeca = await import('execa')
+  // @ts-expect-error(types): the execa overloads are awkward to satisfy in a mock
+  vi.mocked(mockExeca.default).mockImplementation(() => Promise.reject(error))
+}
+
+describe('createSourceZip', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks()
     const mockOs = await import('os')
     vi.mocked(mockOs.platform).mockReturnValue('darwin')
-
-    // Import after mocks are set up
-    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
-
-    // Setup mocks using vi.mocked()
-    const mockFetch = await import('node-fetch')
-    const mockExeca = await import('execa')
-    const mockFs = await import('fs/promises')
-    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
-
-    vi.mocked(mockFetch.default).mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-    } as unknown as Response)
-
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.resolve({} as ExecaReturnValue)
-    })
-
-    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
-    vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
     vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
+  })
 
-    const mockStatusCb = vi.fn()
+  test('creates the zip and returns its path', async () => {
+    await resolveExeca()
+    const { createSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+    const mockExeca = await import('execa')
 
-    await uploadSourceZip({
-      sourceDir: '/test/source',
-      uploadUrl: 'https://s3.example.com/upload-url',
-      filename: 'test-source.zip',
-      statusCb: mockStatusCb,
-    })
+    const statusCb = vi.fn()
+    const zipPath = await createSourceZip({ sourceDir: '/test/source', statusCb })
 
+    expect(zipPath).toBe(join('/tmp/test-temp-dir', 'source.zip'))
     expect(mockExeca.default).toHaveBeenCalledWith(
       'zip',
-      expect.arrayContaining(['-r', '-q', expect.stringMatching(/test-source\.zip$/), '.']),
+      expect.arrayContaining(['-r', '-q', join('/tmp/test-temp-dir', 'source.zip'), '.']),
       expect.objectContaining({ cwd: '/test/source' }),
     )
-
-    expect(mockFetch.default).toHaveBeenCalledWith(
-      'https://s3.example.com/upload-url',
-      expect.objectContaining({
-        method: 'PUT',
-        body: Buffer.from('mock zip content'),
-      }),
+    expect(statusCb).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'source-zip-upload', msg: 'Creating source zip...', phase: 'start' }),
     )
-
-    expect(mockStatusCb).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'source-zip-upload',
-        msg: 'Creating source zip...',
-        phase: 'start',
-      }),
-    )
-
-    expect(mockFs.unlink).toHaveBeenCalledWith(expect.stringMatching(/test-source\.zip$/))
-    expect(mockCommandHelpers.log).toHaveBeenCalledWith('✔ Source code uploaded')
   })
 
-  test('handles upload failure correctly', async () => {
-    // Ensure OS platform mock returns non-Windows
-    const mockOs = await import('os')
-    vi.mocked(mockOs.platform).mockReturnValue('darwin')
-
-    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
-
-    const mockFetch = await import('node-fetch')
+  test('includes the default exclusion patterns', async () => {
+    await resolveExeca()
+    const { createSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
     const mockExeca = await import('execa')
-    const mockFs = await import('fs/promises')
-    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
-    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
-    vi.mocked(mockFetch.default).mockResolvedValue({
-      ok: false,
-      status: 403,
-      statusText: 'Forbidden',
-    } as unknown as Response)
-
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.resolve({} as ExecaReturnValue)
-    })
-
-    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
-    vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
-    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
-
-    const mockStatusCb = vi.fn()
-
-    await expect(
-      uploadSourceZip({
-        sourceDir: '/test/source',
-        uploadUrl: 'https://s3.example.com/upload-url',
-        filename: 'test-source.zip',
-        statusCb: mockStatusCb,
-      }),
-    ).rejects.toThrow('Failed to upload zip: Forbidden')
-
-    expect(mockStatusCb).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'source-zip-upload',
-        phase: 'error',
-        msg: expect.stringContaining('Failed to upload source zip') as unknown as string,
-      }),
-    )
-
-    expect(mockCommandHelpers.warn).toHaveBeenCalledWith(expect.stringContaining('Failed to upload source zip'))
-  })
-
-  test('includes proper exclusion patterns in zip command', async () => {
-    // Ensure OS platform mock returns non-Windows
-    const mockOs = await import('os')
-    vi.mocked(mockOs.platform).mockReturnValue('darwin')
-
-    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
-
-    const mockFetch = await import('node-fetch')
-    const mockExeca = await import('execa')
-    const mockFs = await import('fs/promises')
-    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
-    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
-
-    vi.mocked(mockFetch.default).mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-    } as unknown as Response)
-
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.resolve({} as ExecaReturnValue)
-    })
-
-    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
-    vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
-    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
-
-    const mockStatusCb = vi.fn()
-
-    await uploadSourceZip({
-      sourceDir: '/test/source',
-      uploadUrl: 'https://s3.example.com/upload-url',
-      filename: 'test-source.zip',
-      statusCb: mockStatusCb,
-    })
+    await createSourceZip({ sourceDir: '/test/source' })
 
     expect(mockExeca.default).toHaveBeenCalledWith(
       'zip',
@@ -197,26 +86,53 @@ describe('uploadSourceZip', () => {
     )
   })
 
-  test('throws error on Windows platform', async () => {
-    // Mock OS platform to return Windows
+  test('throws EmptySourceZipError when zip exits 12 (nothing to do)', async () => {
+    await rejectExeca(
+      Object.assign(new Error('Command failed with exit code 12'), {
+        exitCode: 12,
+        all: 'zip error: Nothing to do! (source.zip)',
+      }),
+    )
+    const { createSourceZip, EmptySourceZipError } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
+    const mockFs = await import('fs/promises')
+
+    await expect(createSourceZip({ sourceDir: '/test/source' })).rejects.toBeInstanceOf(EmptySourceZipError)
+    // An empty zip is not a reported failure.
+    expect(mockCommandHelpers.warn).not.toHaveBeenCalled()
+    // The temp directory is cleaned up even though nothing was produced.
+    expect(mockFs.rm).toHaveBeenCalledWith('/tmp/test-temp-dir', { recursive: true, force: true })
+  })
+
+  test('reports and rethrows other zip failures', async () => {
+    await rejectExeca(new Error('zip command failed'))
+    const { createSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
+
+    const statusCb = vi.fn()
+    await expect(createSourceZip({ sourceDir: '/test/source', statusCb })).rejects.toThrow('zip command failed')
+
+    expect(statusCb).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'source-zip-upload',
+        phase: 'error',
+        msg: 'Failed to create source zip: zip command failed',
+      }),
+    )
+    expect(mockCommandHelpers.warn).toHaveBeenCalledWith('Failed to create source zip: zip command failed')
+  })
+
+  test('throws on Windows platform', async () => {
     const mockOs = await import('os')
     vi.mocked(mockOs.platform).mockReturnValue('win32')
 
-    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+    const { createSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
-    const mockStatusCb = vi.fn()
-
-    await expect(
-      uploadSourceZip({
-        sourceDir: '/test/source',
-        uploadUrl: 'https://s3.example.com/upload-url',
-        filename: 'test-source.zip',
-        statusCb: mockStatusCb,
-      }),
-    ).rejects.toThrow('Source zip upload is not supported on Windows')
-
-    // Should call error status callback
-    expect(mockStatusCb).toHaveBeenCalledWith(
+    const statusCb = vi.fn()
+    await expect(createSourceZip({ sourceDir: '/test/source', statusCb })).rejects.toThrow(
+      'Source zip upload is not supported on Windows',
+    )
+    expect(statusCb).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'source-zip-upload',
         phase: 'error',
@@ -224,186 +140,50 @@ describe('uploadSourceZip', () => {
       }),
     )
   })
+})
 
-  test('handles zip creation failure correctly', async () => {
-    // Ensure OS platform mock returns non-Windows
-    const mockOs = await import('os')
-    vi.mocked(mockOs.platform).mockReturnValue('darwin')
-
-    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
-
-    const mockExeca = await import('execa')
-    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
-    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
-
-    // Mock execFile to simulate failure
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.reject(new Error('zip command failed'))
-    })
-
-    vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
-    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
-
-    const mockStatusCb = vi.fn()
-
-    await expect(
-      uploadSourceZip({
-        sourceDir: '/test/source',
-        uploadUrl: 'https://s3.example.com/upload-url',
-        filename: 'test-source.zip',
-        statusCb: mockStatusCb,
-      }),
-    ).rejects.toThrow('zip command failed')
-
-    expect(mockStatusCb).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'source-zip-upload',
-        phase: 'error',
-        msg: 'Failed to create source zip: zip command failed',
-      }),
-    )
-
-    expect(mockCommandHelpers.warn).toHaveBeenCalledWith('Failed to create source zip: zip command failed')
+describe('uploadSourceZip', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    const mockFs = await import('fs/promises')
+    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
+    vi.mocked(mockFs.rm).mockResolvedValue(undefined)
   })
 
-  test('cleans up zip file even when upload fails', async () => {
-    // Ensure OS platform mock returns non-Windows
-    const mockOs = await import('os')
-    vi.mocked(mockOs.platform).mockReturnValue('darwin')
-
+  test('uploads the zip and removes its temp dir', async () => {
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
-
     const mockFetch = await import('node-fetch')
-    const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
-    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
-    // Mock successful zip creation but failed upload
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.resolve({} as ExecaReturnValue)
-    })
+    vi.mocked(mockFetch.default).mockResolvedValue({ ok: true, status: 200, statusText: 'OK' } as unknown as Response)
 
-    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
+    const statusCb = vi.fn()
+    await uploadSourceZip({ zipPath: '/tmp/test-temp-dir/source.zip', uploadUrl: 'https://s3/upload', statusCb })
+
+    expect(mockFetch.default).toHaveBeenCalledWith(
+      'https://s3/upload',
+      expect.objectContaining({ method: 'PUT', body: Buffer.from('mock zip content') }),
+    )
+    expect(mockFs.rm).toHaveBeenCalledWith('/tmp/test-temp-dir', { recursive: true, force: true })
+    expect(mockCommandHelpers.log).toHaveBeenCalledWith('✔ Source code uploaded')
+  })
+
+  test('throws on upload failure but still removes its temp dir', async () => {
+    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+    const mockFetch = await import('node-fetch')
+    const mockFs = await import('fs/promises')
+
     vi.mocked(mockFetch.default).mockResolvedValue({
       ok: false,
       status: 500,
       statusText: 'Internal Server Error',
-    } as unknown as import('node-fetch').Response)
-
-    vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
-    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
-    vi.mocked(mockFs.unlink).mockResolvedValue(undefined)
-
-    const mockStatusCb = vi.fn()
-
-    await expect(
-      uploadSourceZip({
-        sourceDir: '/test/source',
-        uploadUrl: 'https://s3.example.com/upload-url',
-        filename: 'test-source.zip',
-        statusCb: mockStatusCb,
-      }),
-    ).rejects.toThrow('Failed to upload zip: Internal Server Error')
-
-    // Should still attempt cleanup
-    expect(mockFs.unlink).toHaveBeenCalledWith(expect.stringMatching(/test-source\.zip$/))
-  })
-
-  test('handles no status callback gracefully', async () => {
-    // Ensure OS platform mock returns non-Windows
-    const mockOs = await import('os')
-    vi.mocked(mockOs.platform).mockReturnValue('darwin')
-
-    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
-
-    const mockFetch = await import('node-fetch')
-    const mockExeca = await import('execa')
-    const mockFs = await import('fs/promises')
-    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
-    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
-
-    vi.mocked(mockFetch.default).mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-      json: vi.fn().mockResolvedValue({ url: 'https://test-source-zip-url.com' }),
-    } as unknown as import('node-fetch').Response)
-
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return {} as ExecaReturnValue
-    })
-
-    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
-    vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
-    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
-
-    // Should not throw when no status callback provided
-    const result = await uploadSourceZip({
-      sourceDir: '/test/source',
-      uploadUrl: 'https://s3.example.com/upload-url',
-      filename: 'test-source.zip',
-      // No statusCb provided - should use default empty function
-    })
-
-    expect(result).toHaveProperty('sourceZipFileName')
-  })
-
-  test('creates subdirectories when filename includes path', async () => {
-    // Ensure OS platform mock returns non-Windows
-    const mockOs = await import('os')
-    vi.mocked(mockOs.platform).mockReturnValue('darwin')
-
-    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
-
-    const mockFetch = await import('node-fetch')
-    const mockExeca = await import('execa')
-    const mockFs = await import('fs/promises')
-    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
-    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
-
-    vi.mocked(mockFetch.default).mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
     } as unknown as Response)
 
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return {} as ExecaReturnValue
-    })
+    await expect(
+      uploadSourceZip({ zipPath: '/tmp/test-temp-dir/source.zip', uploadUrl: 'https://s3/upload' }),
+    ).rejects.toThrow('Failed to upload zip: Internal Server Error')
 
-    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
-    vi.mocked(mockFs.mkdir).mockResolvedValue(undefined)
-    vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
-    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
-
-    const mockStatusCb = vi.fn()
-
-    // Test with a filename that includes a subdirectory path (like the API provides)
-    await uploadSourceZip({
-      sourceDir: '/test/source',
-      uploadUrl: 'https://s3.example.com/upload-url',
-      filename: 'workspace-snapshots/source-abc123-def456.zip',
-      statusCb: mockStatusCb,
-    })
-
-    // Should create the subdirectory before attempting zip creation
-    expect(mockFs.mkdir).toHaveBeenCalledWith(join('/tmp/test-temp-dir', 'workspace-snapshots'), { recursive: true })
-
-    // Should still call zip command with the full path
-    expect(mockExeca.default).toHaveBeenCalledWith(
-      'zip',
-      expect.arrayContaining([
-        '-r',
-        '-q',
-        join('/tmp/test-temp-dir', 'workspace-snapshots', 'source-abc123-def456.zip'),
-        '.',
-      ]),
-      expect.objectContaining({ cwd: '/test/source' }),
-    )
+    expect(mockFs.rm).toHaveBeenCalledWith('/tmp/test-temp-dir', { recursive: true, force: true })
   })
 })

@@ -1,6 +1,5 @@
-import { mkdir, readFile } from 'node:fs/promises'
+import { readFile, rm } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
-import type { PathLike } from 'node:fs'
 import { platform } from 'node:os'
 
 import execa, { ExecaError } from 'execa'
@@ -10,11 +9,18 @@ import { log, warn } from '../command-helpers.js'
 import { temporaryDirectory } from '../temporary-file.js'
 import type { DeployEvent } from './status-cb.js'
 
-interface UploadSourceZipOptions {
-  sourceDir: string
-  uploadUrl: string
-  filename: string
-  statusCb?: (status: DeployEvent) => void
+/**
+ * Thrown when the source zip would be empty — every file matched an ignore
+ * pattern (or the directory is empty), so `zip` exits with code 12 ("nothing to
+ * do"). This is not a failure: there is simply nothing to deploy. Callers decide
+ * how to surface it (the deploy command exits with a dedicated code so upstream
+ * tooling can detect it).
+ */
+export class EmptySourceZipError extends Error {
+  constructor() {
+    super('Source zip is empty: no files to deploy after applying ignore patterns')
+    this.name = 'EmptySourceZipError'
+  }
 }
 
 const DEFAULT_IGNORE_PATTERNS = [
@@ -40,55 +46,99 @@ const DEFAULT_IGNORE_PATTERNS = [
   '.temp*',
 ]
 
-const createSourceZip = async ({
+// `zip` exits with code 12 ("nothing to do") when no files were added to the
+// archive (everything matched an exclude, or the directory is empty).
+const isEmptyZipError = (error: unknown): boolean => {
+  const err = error as { exitCode?: number; all?: string; stderr?: string } | null
+  if (!err) {
+    return false
+  }
+  return err.exitCode === 12 || /nothing to do/iu.test(err.all ?? err.stderr ?? '')
+}
+
+/**
+ * Creates the source zip in a temporary directory and returns its path. The
+ * caller uploads it via `uploadSourceZip`, which removes the temporary directory
+ * afterwards. On any failure (including an empty archive) the directory is
+ * removed here before throwing.
+ *
+ * Throws `EmptySourceZipError` when the archive would be empty, so the caller
+ * can avoid creating a deploy for a source that has nothing to upload.
+ */
+export const createSourceZip = async ({
   sourceDir,
-  filename,
-  statusCb,
+  statusCb = () => {},
 }: {
   sourceDir: string
-  filename: string
-  statusCb: (status: DeployEvent) => void
-}) => {
-  // Check for Windows - this feature is not supported on Windows
-  if (platform() === 'win32') {
-    throw new Error('Source zip upload is not supported on Windows')
-  }
+  statusCb?: (status: DeployEvent) => void
+}): Promise<string> => {
+  const zipPath = join(temporaryDirectory(), 'source.zip')
 
-  const tmpDir = temporaryDirectory()
-  const zipPath = join(tmpDir, filename)
-
-  // Ensure the directory for the zip file exists
-  // The filename from the API includes a subdirectory path (e.g., 'workspace-snapshots/source-xxx.zip')
-  // While temporaryDirectory() creates a new empty directory, the subdirectory within it doesn't exist
-  // so we need to create it before the zip command can write the file
-  await mkdir(dirname(zipPath), { recursive: true })
-
-  statusCb({
-    type: 'source-zip-upload',
-    msg: `Creating source zip...`,
-    phase: 'start',
-  })
-
-  // Create exclusion list for zip command
-  const excludeArgs = DEFAULT_IGNORE_PATTERNS.flatMap((pattern) => ['-x', pattern])
-
-  // Use system zip command to create the archive
   try {
-    await execa('zip', ['-r', '-q', zipPath, '.', ...excludeArgs], {
-      all: true,
-      cwd: sourceDir,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-  } catch (_baseErr) {
-    let message = 'zip command failed'
-    if (_baseErr instanceof Error && 'command' in _baseErr) {
-      const baseErr = _baseErr as ExecaError
-      message = `${baseErr.shortMessage}\n\n${baseErr.all ?? ''}`
+    // Check for Windows - this feature is not supported on Windows
+    if (platform() === 'win32') {
+      throw new Error('Source zip upload is not supported on Windows')
     }
-    throw new Error(message, { cause: _baseErr })
-  }
 
-  return zipPath
+    statusCb({
+      type: 'source-zip-upload',
+      msg: `Creating source zip...`,
+      phase: 'start',
+    })
+
+    // Create exclusion list for zip command
+    const excludeArgs = DEFAULT_IGNORE_PATTERNS.flatMap((pattern) => ['-x', pattern])
+
+    // Use system zip command to create the archive
+    try {
+      await execa('zip', ['-r', '-q', zipPath, '.', ...excludeArgs], {
+        all: true,
+        cwd: sourceDir,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+    } catch (baseErr) {
+      // An empty archive is an expected outcome, not a failure — let the caller decide.
+      if (isEmptyZipError(baseErr)) {
+        throw new EmptySourceZipError()
+      }
+
+      let message = 'zip command failed'
+      if (baseErr instanceof Error && 'command' in baseErr) {
+        const execaErr = baseErr as ExecaError
+        message = `${execaErr.shortMessage}\n\n${execaErr.all ?? ''}`
+      }
+      throw new Error(message, { cause: baseErr })
+    }
+
+    return zipPath
+  } catch (error) {
+    // Nothing usable was produced; drop the temp directory we created.
+    await removeSourceZipDir(zipPath)
+
+    // An empty source zip is not a reported failure.
+    if (error instanceof EmptySourceZipError) {
+      throw error
+    }
+
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    statusCb({
+      type: 'source-zip-upload',
+      msg: `Failed to create source zip: ${errorMsg}`,
+      phase: 'error',
+    })
+    warn(`Failed to create source zip: ${errorMsg}`)
+    throw error
+  }
+}
+
+// Removes the temporary directory that holds a source zip. Best-effort:
+// cleanup failures are ignored.
+const removeSourceZipDir = async (zipPath: string): Promise<void> => {
+  try {
+    await rm(dirname(zipPath), { recursive: true, force: true })
+  } catch {
+    // Ignore cleanup errors
+  }
 }
 
 const uploadZipToS3 = async (zipPath: string, uploadUrl: string, statusCb: (status: DeployEvent) => void) => {
@@ -115,35 +165,22 @@ const uploadZipToS3 = async (zipPath: string, uploadUrl: string, statusCb: (stat
   }
 }
 
+/**
+ * Uploads a source zip previously created by `createSourceZip` and removes its
+ * temporary directory afterwards.
+ */
 export const uploadSourceZip = async ({
-  sourceDir,
+  zipPath,
   uploadUrl,
-  filename,
   statusCb = () => {},
-}: UploadSourceZipOptions): Promise<{ sourceZipFileName: string }> => {
-  let zipPath: PathLike | undefined
-
+}: {
+  zipPath: string
+  uploadUrl: string
+  statusCb?: (status: DeployEvent) => void
+}): Promise<void> => {
   try {
-    // Create zip from source directory
-    try {
-      zipPath = await createSourceZip({ sourceDir, filename, statusCb })
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error)
-      statusCb({
-        type: 'source-zip-upload',
-        msg: `Failed to create source zip: ${errorMsg}`,
-        phase: 'error',
-      })
-      warn(`Failed to create source zip: ${errorMsg}`)
-      throw error
-    }
-
-    let sourceZipFileName: string
-
-    // Upload to S3
     try {
       await uploadZipToS3(zipPath, uploadUrl, statusCb)
-      sourceZipFileName = filename
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
       statusCb({
@@ -162,16 +199,7 @@ export const uploadSourceZip = async ({
     })
 
     log(`✔ Source code uploaded`)
-
-    return { sourceZipFileName }
   } finally {
-    // Clean up temporary zip file
-    if (zipPath) {
-      try {
-        await (await import('node:fs/promises')).unlink(zipPath as unknown as PathLike)
-      } catch {
-        // Ignore cleanup errors
-      }
-    }
+    await removeSourceZipDir(zipPath)
   }
 }

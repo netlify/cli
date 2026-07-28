@@ -40,7 +40,7 @@ import {
 } from '../../utils/command-helpers.js'
 import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
-import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
+import { EmptySourceZipError, createSourceZip, uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import { isEmpty } from '../../utils/object-utilities.js'
@@ -296,6 +296,33 @@ const getDeployFilesFilter = ({ deployFolder, site }) => {
 const SEC_TO_MILLISEC = 1e3
 // 100 bytes
 const SYNC_FILE_LIMIT = 1e2
+
+// Exit code used when a source-zip deploy has nothing to upload (the source is
+// empty after applying ignore patterns). Mirrors `zip`'s own "nothing to do"
+// exit code (12) so upstream tooling can distinguish it from a real failure.
+const EMPTY_SOURCE_ZIP_EXIT_CODE = 12
+
+// Builds the source zip *before* the deploy is created, so an empty source
+// exits (code 12) without ever creating a dangling deploy. Returns the zip path,
+// or undefined when source-zip upload isn't requested.
+const buildSourceZipOrExit = async (
+  enabled: boolean | undefined,
+  sourceDir: string | undefined,
+  statusCb: (status: DeployEvent) => void,
+): Promise<string | undefined> => {
+  if (!enabled || !sourceDir) {
+    return undefined
+  }
+  try {
+    return await createSourceZip({ sourceDir, statusCb })
+  } catch (error) {
+    if (error instanceof EmptySourceZipError) {
+      warn(error.message)
+      return exit(EMPTY_SOURCE_ZIP_EXIT_CODE)
+    }
+    throw error
+  }
+}
 
 // Helper function to generate copy-pasteable deploy command
 const generateDeployCommand = (
@@ -579,6 +606,12 @@ const runDeploy = async ({
     // We won't have a deploy ID if we run the command with `--no-build`.
     // In this case, we must create the deploy.
     if (!deployId) {
+      const sourceZipPath = await buildSourceZipOrExit(
+        options.uploadSourceZip,
+        site.root,
+        silent ? () => {} : deployProgressCb(),
+      )
+
       if (deployToProduction) {
         await prepareProductionDeploy({ siteData, api, options, command })
       }
@@ -594,17 +627,13 @@ const runDeploy = async ({
       const createDeployResponse = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
       deployId = createDeployResponse.id as string
 
-      if (
-        options.uploadSourceZip &&
-        createDeployResponse.source_zip_upload_url &&
-        createDeployResponse.source_zip_filename
-      ) {
-        uploadSourceZipResult = await uploadSourceZip({
-          sourceDir: site.root,
+      if (sourceZipPath && createDeployResponse.source_zip_upload_url && createDeployResponse.source_zip_filename) {
+        await uploadSourceZip({
+          zipPath: sourceZipPath,
           uploadUrl: createDeployResponse.source_zip_upload_url,
-          filename: createDeployResponse.source_zip_filename,
           statusCb: silent ? () => {} : deployProgressCb(),
         })
+        uploadSourceZipResult = { sourceZipFileName: createDeployResponse.source_zip_filename }
       }
     }
 
@@ -1361,6 +1390,12 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
   if (options.build) {
+    const sourceZipPath = await buildSourceZipOrExit(
+      options.uploadSourceZip,
+      site.root,
+      options.json || options.silent ? () => {} : deployProgressCb(),
+    )
+
     if (deployToProduction) {
       await prepareProductionDeploy({ siteData, api, options, command })
     }
@@ -1386,16 +1421,10 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     const skewProtectionToken = deployMetadata.skew_protection_token
     let sourceZipFileName: string | undefined
 
-    if (
-      options.uploadSourceZip &&
-      deployMetadata.source_zip_upload_url &&
-      deployMetadata.source_zip_filename &&
-      site.root
-    ) {
+    if (sourceZipPath && deployMetadata.source_zip_upload_url && deployMetadata.source_zip_filename) {
       await uploadSourceZip({
-        sourceDir: site.root,
+        zipPath: sourceZipPath,
         uploadUrl: deployMetadata.source_zip_upload_url,
-        filename: deployMetadata.source_zip_filename,
         statusCb: options.json || options.silent ? () => {} : deployProgressCb(),
       })
       sourceZipFileName = deployMetadata.source_zip_filename
