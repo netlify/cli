@@ -14,9 +14,9 @@ test('suggests closest matching command on typo', async (t) => {
 
   for (const error of errors) {
     t.expect(error.status).toEqual('rejected')
-    t.expect(error).toHaveProperty('reason.stdout', t.expect.any(String))
+    t.expect(error).toHaveProperty('reason.stderr', t.expect.any(String))
     t.expect(
-      normalize((error as { reason: { stdout: string } }).reason.stdout, { duration: true, filePath: true }),
+      normalize((error as { reason: { stderr: string } }).reason.stderr, { duration: true, filePath: true }),
     ).toMatchSnapshot()
   }
 })
