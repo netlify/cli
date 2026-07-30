@@ -194,15 +194,12 @@ const fetchEnvelopeItems = async function ({
  */
 export const formatEnvelopeData = ({
   context = 'dev',
-  // TODO(serhalp): Either fix `fetchEnvelopeItems` (it casts a possibly-undefined API response as `EnvelopeItem[]`) or
-  // keep this default, which guards the `.filter()` below against `undefined`.
-  // eslint-disable-next-line @typescript-eslint/no-useless-default-assignment
   envelopeItems = [],
   scope = 'any',
   source,
 }: {
   context?: ContextOrBranch
-  envelopeItems: EnvelopeItem[]
+  envelopeItems?: EnvelopeItem[]
   scope?: SupportedScope
   source: string
 }): Record<

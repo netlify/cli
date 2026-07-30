@@ -68,9 +68,6 @@ export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline:
 }>
 export async function runNetlifyBuild({
   command,
-  // TODO(serhalp): Either remove this default (the param is required and every known caller passes it) or keep it if a
-  // dynamic caller relies on it.
-  // eslint-disable-next-line @typescript-eslint/no-useless-default-assignment
   env = {},
   options,
   settings,
@@ -80,7 +77,7 @@ export async function runNetlifyBuild({
   // The flags of the command
   options: $TSFixMe
   settings: ServerSettings
-  env: NodeJS.ProcessEnv
+  env?: NodeJS.ProcessEnv
   timeline: 'build' | 'dev'
 }) {
   const { apiOpts, cachedConfig, site } = command.netlify

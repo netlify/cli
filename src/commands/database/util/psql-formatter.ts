@@ -13,7 +13,7 @@ const formatValue = (value: unknown): string => {
   if (typeof value === 'string') {
     return value
   }
-  // TODO(serhalp): Either narrow the type (only number/bigint/boolean reach here at runtime) or keep this.
+  // TODO(serhalp): Narrow this to the numbers, bigints, and booleans that actually reach here.
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
   return String(value)
 }
