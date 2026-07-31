@@ -6,9 +6,12 @@ import { chalk, logAndThrowError, exit, log, logJson } from '../../utils/command
 import type BaseCommand from '../base-command.js'
 
 type ApiMethodName = keyof NetlifyAPI
+type ApiMethod = (payload: unknown) => Promise<unknown>
 
 const isValidApiMethod = (api: NetlifyAPI, apiMethod: string): apiMethod is ApiMethodName =>
   Object.hasOwn(api, apiMethod)
+
+const isCallable = (value: unknown): value is ApiMethod => typeof value === 'function'
 
 export const apiCommand = async (apiMethodName: string, options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
@@ -31,12 +34,14 @@ export const apiCommand = async (apiMethodName: string, options: OptionValues, c
     return logAndThrowError(`You must provide an API method. Run "netlify api --list" to see available methods`)
   }
 
-  if (!(isValidApiMethod(api, apiMethodName) && typeof api[apiMethodName] === 'function')) {
+  // Calling `api[apiMethodName]` unions every method signature, which TS can't represent (TS2590), so read
+  // the method dynamically and narrow it to one signature.
+  const apiMethod: unknown = isValidApiMethod(api, apiMethodName) ? Reflect.get(api, apiMethodName) : undefined
+  if (!isCallable(apiMethod)) {
     return logAndThrowError(
       `"${apiMethodName}"" is not a valid api method. Run "netlify api --list" to see available methods`,
     )
   }
-  const apiMethod = api[apiMethodName].bind(api)
 
   let payload
   if (options.data) {
@@ -59,7 +64,7 @@ Note: key=value pairs are not accepted; use JSON syntax instead.`,
     payload = {}
   }
   try {
-    const apiResponse = await apiMethod(payload)
+    const apiResponse = await apiMethod.call(api, payload)
     logJson(apiResponse)
   } catch (error_) {
     if (error_ instanceof Error && error_.message.includes('Missing required path variable')) {

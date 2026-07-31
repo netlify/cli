@@ -24,7 +24,7 @@ export const listEdgeFunctions = async (
   if (Array.isArray(data)) {
     return data
   }
-  return (data as { edge_functions?: NetlifyEdgeFunction[] }).edge_functions ?? []
+  return data.edge_functions ?? []
 }
 
 export const fetchEdgeFunctionHistoricalLogs = async ({

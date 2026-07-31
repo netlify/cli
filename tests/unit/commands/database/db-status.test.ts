@@ -124,7 +124,7 @@ const mockFS = (tree: MockFSNode, { root = DEFAULT_MOCK_FS_ROOT }: { root?: stri
 
   mockReaddir.mockImplementation((path: unknown) => {
     const resolved = typeof path === 'string' ? resolve(path) : null
-    if (!resolved || resolved.kind !== 'dir') {
+    if (resolved?.kind !== 'dir') {
       return Promise.reject(Object.assign(new Error(`ENOENT: ${String(path)}`), { code: 'ENOENT' }))
     }
     const dirEntries = Object.keys(resolved.node.dirs ?? {}).map((name) => ({

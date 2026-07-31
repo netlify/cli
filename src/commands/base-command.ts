@@ -118,7 +118,7 @@ const getDuration = (startTime: bigint) => {
  */
 async function selectWorkspace(project: Project, filter?: string): Promise<string> {
   // don't show prompt for workspace selection if there is only one package
-  if (project.workspace?.packages && project.workspace.packages.length === 1) {
+  if (project.workspace?.packages.length === 1) {
     return project.workspace.packages[0].path
   }
 

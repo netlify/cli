@@ -138,7 +138,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
 
     const functionConfig = config.functions?.[name]
     // @ts-expect-error -- XXX(serhalp): fixed in stack PR (bumps to https://github.com/netlify/build/pull/6165)
-    this.schedule = functionConfig && functionConfig.schedule
+    this.schedule = functionConfig?.schedule
 
     this.srcFiles = new Set()
   }

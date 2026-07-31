@@ -194,7 +194,7 @@ export const uploadDropFiles = async (
   {
     concurrentUpload = DEFAULT_CONCURRENT_UPLOAD,
     maxRetry = DEFAULT_MAX_RETRY,
-    statusCb = (() => {}) as StatusCallback,
+    statusCb = () => {},
   }: {
     concurrentUpload?: number
     maxRetry?: number

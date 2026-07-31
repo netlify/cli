@@ -1,4 +1,3 @@
-import type { OptionValues } from 'commander'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 vi.mock('../../../../src/utils/telemetry/report-error.js', () => ({
@@ -12,7 +11,7 @@ const getSite = vi.fn()
 
 const command = { netlify: { api: { getSite } } } as unknown as BaseCommand
 
-const runApi = async (data: string) => apiCommand('getSite', { data } as OptionValues, command)
+const runApi = async (data: string) => apiCommand('getSite', { data }, command)
 
 const captureError = async (data: string): Promise<Error> => {
   try {

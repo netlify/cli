@@ -24,7 +24,7 @@ describe('loginRequest', () => {
     process.stdout.write = vi.fn((chunk: string) => {
       stdoutOutput.push(chunk)
       return true
-    }) as typeof process.stdout.write
+    })
   })
 
   afterEach(() => {

@@ -93,7 +93,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       '-c, --context <context...>',
       'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: all contexts)',
       // spread over an array for variadic options
-      (context: string, previous: string[] = []) => [...previous, normalizeContext(context)],
+      (context: string, previous: string[] | undefined) => [...(previous ?? []), normalizeContext(context)],
     )
     .option('--json', 'Output environment variables as JSON')
     .option('--site <name-or-id>', 'A project name or ID to target')
@@ -131,7 +131,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       '-c, --context <context...>',
       'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: all contexts)',
       // spread over an array for variadic options
-      (context: string, previous: string[] = []) => [...previous, normalizeContext(context)],
+      (context: string, previous: string[] | undefined) => [...(previous ?? []), normalizeContext(context)],
     )
     .option('--json', 'Output environment variables as JSON')
     .option('-s, --site <name-or-id>', 'A project name or ID to target')
