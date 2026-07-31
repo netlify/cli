@@ -9,7 +9,7 @@ export const cancelDeploy = async ({ api, deployId }: { api: NetlifyAPI; deployI
   } catch (error) {
     warn(
       `Failed canceling deploy with id ${deployId}: ${
-        error instanceof Error ? error.message : error?.toString() ?? ''
+        error instanceof Error ? error.message : (error?.toString() ?? '')
       }`,
     )
   }

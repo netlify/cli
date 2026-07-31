@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 
 import { readApiErrorMessage } from '../../../../../src/commands/database/util/api-errors.js'
 
-const makeResponse = (text: string): Response => ({ text: () => Promise.resolve(text) } as unknown as Response)
+const makeResponse = (text: string): Response => ({ text: () => Promise.resolve(text) }) as unknown as Response
 
 describe('readApiErrorMessage', () => {
   test('extracts the `message` field from a JSON error body', async () => {

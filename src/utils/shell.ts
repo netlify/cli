@@ -58,7 +58,10 @@ const isMissingCommandMessage = ({ command, output }: { command: string; output:
 const createStripAnsiControlCharsStream = (): Transform =>
   new Transform({
     transform(chunk, _encoding, callback) {
-      callback(null, stripVTControlCharacters(typeof chunk === 'string' ? chunk : (chunk as unknown)?.toString() ?? ''))
+      callback(
+        null,
+        stripVTControlCharacters(typeof chunk === 'string' ? chunk : ((chunk as unknown)?.toString() ?? '')),
+      )
     },
   })
 

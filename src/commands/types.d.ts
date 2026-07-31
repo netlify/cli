@@ -29,7 +29,7 @@ export type NetlifyOptions = {
     scheme?: string
     host?: string
     pathPrefix?: string
-  },
+  }
   repositoryRoot: string
   /** Absolute path of the netlify configuration file */
   configFilePath: string
