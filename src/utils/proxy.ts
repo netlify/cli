@@ -556,6 +556,15 @@ const initializeProxy = async function ({
     }
 
     if (res instanceof http.ServerResponse) {
+      if (res.headersSent || res.writableEnded) {
+        // The upstream died mid-response: headers are already on the wire, so
+        // `writeHead` below would throw ERR_HTTP_HEADERS_SENT out of this event
+        // handler and terminate the whole CLI (see #5917). The response is
+        // unsalvageable — drop the socket and keep the dev server alive so
+        // requests after the upstream comes back succeed.
+        res.destroy()
+        return
+      }
       res.writeHead(500, {
         'Content-Type': 'text/plain',
       })
