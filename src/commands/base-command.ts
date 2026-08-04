@@ -118,7 +118,7 @@ const getDuration = (startTime: bigint) => {
  */
 async function selectWorkspace(project: Project, filter?: string): Promise<string> {
   // don't show prompt for workspace selection if there is only one package
-  if (project.workspace?.packages && project.workspace.packages.length === 1) {
+  if (project.workspace?.packages.length === 1) {
     return project.workspace.packages[0].path
   }
 
@@ -731,6 +731,10 @@ export default class BaseCommand extends Command {
       siteData = result
     }
 
+    if (siteData.id) {
+      actionCommand.siteId = siteData.id
+    }
+
     const globalConfig = await getGlobalConfigStore()
 
     // ==================================================
@@ -773,10 +777,11 @@ export default class BaseCommand extends Command {
         root: buildDir,
         configPath,
         get id() {
-          return state.get('siteId')
+          return actionCommand.siteId || state.get('siteId')
         },
         set id(id) {
           state.set('siteId', id)
+          actionCommand.siteId = id
         },
       },
       // Site information retrieved using the API (api.getSite())

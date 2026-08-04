@@ -1,12 +1,10 @@
 import { Buffer } from 'node:buffer'
-import { version } from 'node:process'
 import events from 'node:events'
 
 import type { HandlerEvent } from '@netlify/functions'
 import FormData from 'form-data'
 import getPort from 'get-port'
 import fetch from 'node-fetch'
-import { gte } from 'semver'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
@@ -459,7 +457,7 @@ describe.concurrent('commands/dev/config', () => {
     })
   })
 
-  test.runIf(gte(version, '20.12.2'))('should support functions with streaming responses', async (t) => {
+  test('should support functions with streaming responses', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder
         .withPackageJson({ packageJson: { dependencies: { '@netlify/functions': 'latest' } } })

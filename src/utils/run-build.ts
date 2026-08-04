@@ -71,13 +71,13 @@ export async function runNetlifyBuild({
   env = {},
   options,
   settings,
-  timeline = 'build',
+  timeline,
 }: {
   command: BaseCommand
   // The flags of the command
   options: $TSFixMe
   settings: ServerSettings
-  env: NodeJS.ProcessEnv
+  env?: NodeJS.ProcessEnv
   timeline: 'build' | 'dev'
 }) {
   const { apiOpts, cachedConfig, site } = command.netlify

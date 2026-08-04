@@ -199,7 +199,7 @@ export const formatEnvelopeData = ({
   source,
 }: {
   context?: ContextOrBranch
-  envelopeItems: EnvelopeItem[]
+  envelopeItems?: EnvelopeItem[]
   scope?: SupportedScope
   source: string
 }): Record<

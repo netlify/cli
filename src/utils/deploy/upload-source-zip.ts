@@ -168,7 +168,7 @@ export const uploadSourceZip = async ({
     // Clean up temporary zip file
     if (zipPath) {
       try {
-        await (await import('node:fs/promises')).unlink(zipPath as unknown as PathLike)
+        await (await import('node:fs/promises')).unlink(zipPath)
       } catch {
         // Ignore cleanup errors
       }
