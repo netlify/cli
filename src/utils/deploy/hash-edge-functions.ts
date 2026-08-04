@@ -4,14 +4,10 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 
-import { $TSFixMe } from '../../commands/types.js'
+import type { Manifest } from '@netlify/edge-bundler'
 
 import type { StatusCallback } from './status-cb.js'
-
-interface ManifestBundle {
-  asset: string
-  format: string
-}
+import type { EdgeFunctionUploadFile } from './upload-files.js'
 
 const hashBundle = async (filepath: string, hashAlgorithm: string): Promise<string> => {
   const hasher = createHash(hashAlgorithm)
@@ -31,33 +27,37 @@ const hashEdgeFunctions = async (
   // edge_functions: { format => code_sha } sent on deploy create
   edgeFunctions: Record<string, string>
   // code_sha => [fileObj] consumed by the upload arm
-  edgeFnShaMap: Record<string, $TSFixMe[]>
+  edgeFnShaMap: Record<string, EdgeFunctionUploadFile[]>
 }> => {
   const edgeFunctions: Record<string, string> = {}
-  const edgeFnShaMap: Record<string, $TSFixMe[]> = {}
+  const edgeFnShaMap: Record<string, EdgeFunctionUploadFile[]> = {}
 
   if (!edgeFunctionsDistPath) {
     return { edgeFunctions, edgeFnShaMap }
   }
 
-  let manifest: { bundles?: ManifestBundle[] }
+  // `Partial` because this is whatever happens to be on disk, not something we produced.
+  let manifest: Partial<Manifest>
   try {
-    manifest = JSON.parse(await readFile(join(edgeFunctionsDistPath, 'manifest.json'), 'utf8')) as {
-      bundles?: ManifestBundle[]
-    }
+    manifest = JSON.parse(await readFile(join(edgeFunctionsDistPath, 'manifest.json'), 'utf8')) as Partial<Manifest>
   } catch {
     // No manifest (or an unreadable one) means there are no edge functions to declare.
     return { edgeFunctions, edgeFnShaMap }
   }
 
-  const bundles = Array.isArray(manifest.bundles) ? manifest.bundles : []
+  const bundles = manifest.bundles ?? []
   for (const bundle of bundles) {
     const filepath = join(edgeFunctionsDistPath, bundle.asset)
     const codeSha = await hashBundle(filepath, hashAlgorithm)
 
     edgeFunctions[bundle.format] = codeSha
 
-    const fileObj = { assetType: 'edge-function', filepath, normalizedPath: codeSha, hash: codeSha }
+    const fileObj: EdgeFunctionUploadFile = {
+      assetType: 'edge-function',
+      filepath,
+      normalizedPath: codeSha,
+      hash: codeSha,
+    }
     if (Array.isArray(edgeFnShaMap[codeSha])) {
       edgeFnShaMap[codeSha].push(fileObj)
     } else {

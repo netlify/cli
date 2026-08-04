@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import { afterAll, expect, test, vi } from 'vitest'
 
-import uploadFiles from '../../../../src/utils/deploy/upload-files.js'
+import uploadFiles, { type UploadApi, type UploadFile } from '../../../../src/utils/deploy/upload-files.js'
 
 vi.mock('../../../../src/utils/deploy/constants.js', async () => {
   const actual = await vi.importActual('../../../../src/utils/deploy/constants.js')
@@ -18,8 +18,7 @@ test('Adds a retry count to function upload requests', async () => {
   const uploadDeployFunction = vi.fn()
   const mockError = new Error('Uh-oh')
 
-  // @ts-expect-error TS(2339) FIXME: Property 'status' does not exist on type 'Error'.
-  mockError.status = 500
+  Object.assign(mockError, { status: 500 })
 
   uploadDeployFunction.mockRejectedValueOnce(mockError)
   uploadDeployFunction.mockRejectedValueOnce(mockError)
@@ -27,9 +26,9 @@ test('Adds a retry count to function upload requests', async () => {
 
   const mockApi = {
     uploadDeployFunction,
-  }
+  } as unknown as UploadApi
   const deployId = crypto.randomUUID()
-  const files = [
+  const files: UploadFile[] = [
     {
       assetType: 'function',
       filepath: '/some/path/func1.zip',
@@ -55,21 +54,21 @@ test('Adds a retry count to edge function upload requests', async () => {
   const uploadDeployEdgeFunction = vi.fn()
   const mockError = new Error('Uh-oh')
 
-  // @ts-expect-error TS(2339) FIXME: Property 'status' does not exist on type 'Error'.
-  mockError.status = 500
+  Object.assign(mockError, { status: 500 })
 
   uploadDeployEdgeFunction.mockRejectedValueOnce(mockError)
   uploadDeployEdgeFunction.mockResolvedValueOnce(undefined)
 
   const mockApi = {
     uploadDeployEdgeFunction,
-  }
+  } as unknown as UploadApi
   const deployId = crypto.randomUUID()
-  const files = [
+  const files: UploadFile[] = [
     {
       assetType: 'edge-function',
       filepath: '/some/path/abc123.tar.gz',
       normalizedPath: 'abc123',
+      hash: 'abc123',
     },
   ]
   const options = {
@@ -90,16 +89,15 @@ test('Does not retry on 400 response from function upload requests', async () =>
   const uploadDeployFunction = vi.fn()
   const mockError = new Error('Uh-oh')
 
-  // @ts-expect-error TS(2339) FIXME: Property 'status' does not exist on type 'Error'.
-  mockError.status = 400
+  Object.assign(mockError, { status: 400 })
 
   uploadDeployFunction.mockRejectedValue(mockError)
 
   const mockApi = {
     uploadDeployFunction,
-  }
+  } as unknown as UploadApi
   const deployId = crypto.randomUUID()
-  const files = [
+  const files: UploadFile[] = [
     {
       assetType: 'function',
       filepath: '/some/path/func1.zip',
