@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises'
 import { statSync } from 'fs'
-import { join, resolve } from 'path'
+import { join, resolve, sep } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
@@ -128,7 +128,12 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
   // Mapping file URLs to names of functions that use them as dependencies.
   private dependencyPaths = new MultiMap<string, string>()
 
-  private directoryWatchers = new Map<string, import('chokidar').FSWatcher>()
+  private functionsWatcher?: import('chokidar').FSWatcher
+
+  // Dependency files outside the edge function directories that are being
+  // explicitly watched, so we can unwatch them when they stop being imported.
+  private watchedDependencyPaths = new Set<string>()
+
   private env: Record<string, string>
   private featureFlags: FeatureFlags
 
@@ -609,6 +614,8 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
         this.dependencyPaths.add(dependencyPath, functionName)
       })
     })
+
+    this.syncDependencyWatchers()
   }
 
   /**
@@ -704,11 +711,13 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
   }
 
   private async setupWatchers() {
-    // While functions are guaranteed to be inside one of the configured
-    // directories, they might be importing files that are located in
-    // parent directories. So we watch the entire project directory for
-    // changes.
-    await this.setupWatcherForDirectory()
+    // Watching the entire project directory would open one file descriptor
+    // per file on some platforms, which exhausts the file descriptor table
+    // in large projects and makes any subsequent `spawn` fail with EBADF.
+    // Instead, we watch the edge function directories and explicitly watch
+    // any files outside of them that functions import (see
+    // `syncDependencyWatchers`).
+    await this.setupFunctionsWatcher()
 
     if (!this.configPath) {
       return
@@ -727,7 +736,23 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
     })
   }
 
-  private async setupWatcherForDirectory() {
+  private get edgeFunctionsDirectories() {
+    const directories = [getInternalEdgeFunctionsDirectory(this.command)]
+
+    if (this.usesFrameworksAPI) {
+      directories.push(getFrameworkEdgeFunctionsDirectory(this.command))
+    }
+
+    const userFunctionsDirectory = getUserEdgeFunctionsDirectory(this.command)
+
+    if (userFunctionsDirectory !== undefined) {
+      directories.push(userFunctionsDirectory)
+    }
+
+    return directories
+  }
+
+  private async setupFunctionsWatcher() {
     const toIgnoredRegex = (dir: string) => new RegExp(`^${dir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(/|$)`)
 
     const toIgnoredEntry = (p: string): string | RegExp => {
@@ -745,14 +770,46 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
       ...this.watchIgnore.map(toIgnoredEntry),
       this.internalImportMapPath,
     ]
-    const watcher = await watchDebounced(this.projectDir, {
+
+    this.functionsWatcher = await watchDebounced(this.edgeFunctionsDirectories, {
       ignored,
       onAdd: () => this.checkForAddedOrDeletedFunctions(),
       onChange: (paths) => this.handleFileChange(paths),
       onUnlink: () => this.checkForAddedOrDeletedFunctions(),
     })
 
-    this.directoryWatchers.set(this.projectDir, watcher)
+    // The initial build may have finished before the watcher was created, in
+    // which case its dependencies haven't been picked up by a sync yet.
+    this.syncDependencyWatchers()
+  }
+
+  private syncDependencyWatchers() {
+    const watcher = this.functionsWatcher
+
+    if (watcher === undefined) {
+      return
+    }
+
+    const directories = this.edgeFunctionsDirectories
+    const dependencyPaths = new Set(
+      [...this.dependencyPaths.keys()].filter(
+        (path) => !directories.some((directory) => path.startsWith(`${directory}${sep}`)),
+      ),
+    )
+
+    this.watchedDependencyPaths.forEach((path) => {
+      if (!dependencyPaths.has(path)) {
+        watcher.unwatch(path)
+      }
+    })
+
+    dependencyPaths.forEach((path) => {
+      if (!this.watchedDependencyPaths.has(path)) {
+        watcher.add(path)
+      }
+    })
+
+    this.watchedDependencyPaths = dependencyPaths
   }
 
   // We only take into account edge functions from the Frameworks API in
