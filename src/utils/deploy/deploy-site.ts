@@ -199,11 +199,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   if (deployParams.body.async) deploy = await waitForDiff(api, deploy.id, siteId, deployTimeout)
 
-  const {
-    required: requiredFiles,
-    required_functions: requiredFns,
-    required_edge_functions: requiredEdgeFns,
-  } = deploy
+  const { required: requiredFiles, required_functions: requiredFns, required_edge_functions: requiredEdgeFns } = deploy
 
   statusCb({
     type: 'create-deploy',
