@@ -8,4 +8,8 @@ export class MultiMap<K, V> {
   get(key: K): readonly V[] {
     return this.map.get(key) ?? []
   }
+
+  keys(): IterableIterator<K> {
+    return this.map.keys()
+  }
 }

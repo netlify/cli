@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import type BaseCommand from '../../../../src/commands/base-command.js'
 import { EdgeFunctionsRegistryImpl } from '../../../../src/lib/edge-functions/registry.js'
 import type { NormalizedCachedConfigConfig } from '../../../../src/utils/command-helpers.js'
+import { MultiMap } from '../../../../src/utils/multimap.js'
 
 vi.mock('fs', async (importOriginal) => {
   const actual = await importOriginal<typeof import('fs')>()
@@ -21,12 +22,18 @@ vi.mock('@netlify/dev-utils', async (importOriginal) => {
 })
 
 // Creates a partial registry via Object.create so the constructor is bypassed,
-// then populates the private fields needed by setupWatcherForDirectory.
+// then populates the private fields needed by setupFunctionsWatcher.
 const makeRegistry = (fields: { projectDir: string; servePath: string; publishDir: string; watchIgnore: string[] }) => {
   const registry = Object.create(EdgeFunctionsRegistryImpl.prototype) as EdgeFunctionsRegistryImpl
   Object.assign(registry, {
     ...fields,
-    directoryWatchers: new Map(),
+    command: {
+      name: () => 'dev',
+      workingDir: fields.projectDir,
+      netlify: { config: { build: { edge_functions: join(fields.projectDir, 'netlify/edge-functions') } } },
+    },
+    dependencyPaths: new MultiMap<string, string>(),
+    watchedDependencyPaths: new Set<string>(),
     checkForAddedOrDeletedFunctions: vi.fn(),
     handleFileChange: vi.fn(),
   })
@@ -36,7 +43,7 @@ const makeRegistry = (fields: { projectDir: string; servePath: string; publishDi
 const captureIgnored = async (registry: EdgeFunctionsRegistryImpl): Promise<(string | RegExp)[]> => {
   const { watchDebounced } = await import('@netlify/dev-utils')
   vi.mocked(watchDebounced).mockClear()
-  await (registry as unknown as { setupWatcherForDirectory: () => Promise<void> }).setupWatcherForDirectory()
+  await (registry as unknown as { setupFunctionsWatcher: () => Promise<void> }).setupFunctionsWatcher()
   const [, options] = vi.mocked(watchDebounced).mock.calls[0]
   return (options as { ignored: (string | RegExp)[] }).ignored
 }
