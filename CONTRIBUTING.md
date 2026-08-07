@@ -66,8 +66,8 @@ npm run watch
 
 Make sure everything is correctly set up by running those tests first.
 
-We recommend you set up your IDE or text editor to run ESLint and Prettier automatically on file save. Otherwise, you
-can run them manually using:
+We recommend you set up your IDE or text editor to run ESLint and oxfmt automatically on file save. Otherwise, you can
+run them manually using:
 
 ```bash
 npm run format

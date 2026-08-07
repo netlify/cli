@@ -76,8 +76,8 @@ const sampleMigrations: SampleMigration[] = [
 function createMockCommand(
   overrides: { siteId?: string | null; accessToken?: string | null; migrationsPath?: string } = {},
 ) {
-  const siteId = overrides.siteId === null ? undefined : overrides.siteId ?? 'site-123'
-  const accessToken = overrides.accessToken === null ? undefined : overrides.accessToken ?? 'Bearer test-token'
+  const siteId = overrides.siteId === null ? undefined : (overrides.siteId ?? 'site-123')
+  const accessToken = overrides.accessToken === null ? undefined : (overrides.accessToken ?? 'Bearer test-token')
   const migrationsPath = overrides.migrationsPath ?? '/project/netlify/database/migrations'
 
   return {

@@ -191,7 +191,7 @@ export const getLiveTunnelSlug = (state: LocalState, override?: string) => {
   } catch (error) {
     log(
       `${NETLIFYDEVERR} Could not read or write local state file: ${
-        error instanceof Error ? error.message : error?.toString() ?? ''
+        error instanceof Error ? error.message : (error?.toString() ?? '')
       }`,
     )
   }

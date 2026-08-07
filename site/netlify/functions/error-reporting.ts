@@ -52,8 +52,7 @@ const toError = ({
 // file:///C:/Users/jane/AppData/Roaming/npm/node_modules/netlify-cli/dist/utils/x.js.
 // Stripping everything up to the last `node_modules` makes the same frame identical
 // across machines and install layouts (npm, npx, pnpm) so Bugsnag groups on it.
-const normalizeFrameFile = (file: string): string =>
-  file.replace(/^.*node_modules[/\\]/, '').replace(/\\/g, '/')
+const normalizeFrameFile = (file: string): string => file.replace(/^.*node_modules[/\\]/, '').replace(/\\/g, '/')
 
 export const handler: Handler = async ({ body }) => {
   try {

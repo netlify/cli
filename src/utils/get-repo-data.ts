@@ -70,12 +70,12 @@ const getRepoData = async ({
       repo,
       url,
       branch,
-      provider: host != null ? PROVIDERS[host] ?? host : host,
+      provider: host != null ? (PROVIDERS[host] ?? host) : host,
       httpsUrl: `https://${host}/${repo}`,
     }
   } catch (error) {
     return {
-      error: error instanceof Error ? error.message : error?.toString() ?? 'Failed to get repo data',
+      error: error instanceof Error ? error.message : (error?.toString() ?? 'Failed to get repo data'),
     }
   }
 }

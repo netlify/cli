@@ -18,33 +18,31 @@ describe('env:list command', () => {
       })
     })
 
-    test.concurrent<FixtureTestContext>(
-      'should return the keys and values for the given context',
-      async ({ fixture }) => {
-        const cliResponse = await fixture.callCli(['env:list', '--context', 'production', '--json'], {
-          offline: false,
-          parseJson: true,
-        })
+    test.concurrent<FixtureTestContext>('should return the keys and values for the given context', async ({
+      fixture,
+    }) => {
+      const cliResponse = await fixture.callCli(['env:list', '--context', 'production', '--json'], {
+        offline: false,
+        parseJson: true,
+      })
 
-        expect(cliResponse).toEqual({
-          EXISTING_VAR: 'envelope-prod-value',
-          OTHER_VAR: 'envelope-all-value',
-        })
-      },
-    )
+      expect(cliResponse).toEqual({
+        EXISTING_VAR: 'envelope-prod-value',
+        OTHER_VAR: 'envelope-all-value',
+      })
+    })
 
-    test.concurrent<FixtureTestContext>(
-      'should return the keys and values for the given scope',
-      async ({ fixture }) => {
-        const cliResponse = await fixture.callCli(['env:list', '--scope', 'runtime', '--json'], {
-          offline: false,
-          parseJson: true,
-        })
+    test.concurrent<FixtureTestContext>('should return the keys and values for the given scope', async ({
+      fixture,
+    }) => {
+      const cliResponse = await fixture.callCli(['env:list', '--scope', 'runtime', '--json'], {
+        offline: false,
+        parseJson: true,
+      })
 
-        expect(cliResponse).toEqual({
-          OTHER_VAR: 'envelope-all-value',
-        })
-      },
-    )
+      expect(cliResponse).toEqual({
+        OTHER_VAR: 'envelope-all-value',
+      })
+    })
   })
 })

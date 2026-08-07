@@ -152,10 +152,10 @@ const migrationsTree = (names: string[]): MockFSNode => ({
 function createMockCommand(
   overrides: { siteRoot?: string | null; migrationsPath?: string | null; siteId?: string | null } = {},
 ) {
-  const siteRoot = overrides.siteRoot === null ? undefined : overrides.siteRoot ?? '/project'
+  const siteRoot = overrides.siteRoot === null ? undefined : (overrides.siteRoot ?? '/project')
   const migrationsPath =
-    overrides.migrationsPath === null ? undefined : overrides.migrationsPath ?? '/project/netlify/database/migrations'
-  const siteId = overrides.siteId === null ? undefined : overrides.siteId ?? 'site-123'
+    overrides.migrationsPath === null ? undefined : (overrides.migrationsPath ?? '/project/netlify/database/migrations')
+  const siteId = overrides.siteId === null ? undefined : (overrides.siteId ?? 'site-123')
 
   return {
     siteId,
