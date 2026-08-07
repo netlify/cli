@@ -205,6 +205,7 @@
     "oxfmt": "0.61.0",
     "p-timeout": "^7.0.0",
     "picomatch": "^4.0.4",
+    "pkg-pr-new": "^0.0.86",
     "serialize-javascript": "^7.0.5",
     "strip-ansi": "^7.1.2",
     "temp-dir": "^3.0.0",
