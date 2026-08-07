@@ -32,7 +32,7 @@ const makeCommand = (name = 'dev') =>
       config: { build: { edge_functions: userFunctionsDir } },
       frameworksAPIPaths: { edgeFunctions: { path: frameworkFunctionsDir } },
     },
-  } as unknown as BaseCommand)
+  }) as unknown as BaseCommand
 
 const makeRegistry = (overrides: Record<string, unknown> = {}) => {
   const registry = Object.create(EdgeFunctionsRegistryImpl.prototype) as EdgeFunctionsRegistryImpl
