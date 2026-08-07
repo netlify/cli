@@ -3,7 +3,7 @@ import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
 
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, prettyJsonRenderOptions } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
 
@@ -98,10 +98,13 @@ export const watch = async (_options: unknown, command: BaseCommand) => {
     log()
     log(message)
     log(
-      prettyjson.render({
-        URL: siteData.ssl_url || siteData.url,
-        Admin: siteData.admin_url,
-      }),
+      prettyjson.render(
+        {
+          URL: siteData.ssl_url || siteData.url,
+          Admin: siteData.admin_url,
+        },
+        prettyJsonRenderOptions(),
+      ),
     )
     console.timeEnd('Deploy time')
   } catch (error_) {
