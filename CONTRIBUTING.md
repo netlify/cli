@@ -205,11 +205,8 @@ package to npm.
 
 ### Creating a prerelease
 
-1. Create a branch named `releases/<tag>/<version>` with the version and tag you’d like to release.
-2. Push the branch to the repo.
-
-For example, a branch named `releases/rc.0/4.0.0` will create the version `4.0.0-rc.0` and publish it under the `rc.0`
-tag.
+Pull requests and pushes to `main` automatically publish installable prereleases with [pkg.pr.new](https://pkg.pr.new/).
+Check the prerelease workflow run for the package version and installation command.
 
 ## License
 
