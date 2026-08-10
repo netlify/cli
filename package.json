@@ -1,11 +1,23 @@
 {
   "name": "netlify-cli",
-  "description": "Netlify command line tool",
   "version": "27.1.1",
+  "description": "Netlify command line tool",
+  "keywords": [
+    "api",
+    "cli",
+    "netlify",
+    "static"
+  ],
+  "homepage": "https://github.com/netlify/cli",
+  "bugs": {
+    "url": "https://github.com/netlify/cli/issues"
+  },
+  "license": "MIT",
   "author": "Netlify Inc.",
-  "type": "module",
-  "engines": {
-    "node": ">=22.13.0"
+  "repository": "https://github.com/netlify/cli",
+  "bin": {
+    "netlify": "./bin/run.js",
+    "ntl": "./bin/run.js"
   },
   "files": [
     "/bin",
@@ -13,22 +25,7 @@
     "/functions-templates",
     "/dist"
   ],
-  "homepage": "https://github.com/netlify/cli",
-  "keywords": [
-    "api",
-    "cli",
-    "netlify",
-    "static"
-  ],
-  "license": "MIT",
-  "repository": "https://github.com/netlify/cli",
-  "bin": {
-    "ntl": "./bin/run.js",
-    "netlify": "./bin/run.js"
-  },
-  "bugs": {
-    "url": "https://github.com/netlify/cli/issues"
-  },
+  "type": "module",
   "scripts": {
     "build": "node ./node_modules/typescript-native/bin/tsc --project tsconfig.build.json",
     "clean": "rm -rf dist/",
@@ -217,6 +214,9 @@
     "typescript-native": "npm:typescript@~7.0.2",
     "verdaccio": "^6.3.2",
     "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22.13.0"
   },
   "packageManager": "npm@10.9.4+sha512.3a7506f37e85c1ba1021baad79f0cd9724748131f321fc117c4dc3ba235ec01be7327584a41d15117c01945560aa9373220628fcc1e1dddd877a5fe9b336a900"
 }

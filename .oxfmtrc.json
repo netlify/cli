@@ -5,6 +5,6 @@
   "printWidth": 120,
   "proseWrap": "always",
   "trailingComma": "all",
-  "sortPackageJson": false,
+  "sortPackageJson": true,
   "ignorePatterns": ["node_modules", "CHANGELOG.md", "docs/**", "**/package-lock.json"]
 }

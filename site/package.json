@@ -2,8 +2,9 @@
   "name": "cli-docs-site",
   "version": "1.0.0",
   "description": "Docs site for Netlify CLI",
-  "type": "module",
+  "license": "MIT",
   "author": "Netlify Inc.",
+  "type": "module",
   "scripts": {
     "build": "npm run build:docs-md && npm run build:site",
     "build:docs-md": "npm run build:docs-md:gen && npm run build:docs-md:copy",
@@ -14,7 +15,6 @@
     "preview": "npm run build:docs-md:copy && astro preview",
     "start": "npm run dev"
   },
-  "license": "MIT",
   "dependencies": {
     "@astrojs/starlight": "0.39.3",
     "@bugsnag/js": "8.9.0",

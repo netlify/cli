@@ -2,18 +2,18 @@
   "name": "{{name}}",
   "version": "1.0.0",
   "description": "netlify functions:create - scheduled function in TypeScript",
+  "keywords": [
+    "netlify",
+    "schedule",
+    "serverless",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "Netlify",
   "main": "{{name}}.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "netlify",
-    "serverless",
-    "typescript",
-    "schedule"
-  ],
-  "author": "Netlify",
-  "license": "MIT",
   "dependencies": {
     "@netlify/functions": "^5.3.0",
     "@types/node": "^22.0.0",
