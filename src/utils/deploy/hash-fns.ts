@@ -200,14 +200,14 @@ const hashFns = async (
     .filter((func) =>
       Boolean(
         func.displayName ||
-          func.generator ||
-          func.routes ||
-          func.buildData ||
-          func.priority ||
-          func.trafficRules ||
-          func.region ||
-          func.memory ||
-          func.vcpu,
+        func.generator ||
+        func.routes ||
+        func.buildData ||
+        func.priority ||
+        func.trafficRules ||
+        func.region ||
+        func.memory ||
+        func.vcpu,
       ),
     )
     .reduce(

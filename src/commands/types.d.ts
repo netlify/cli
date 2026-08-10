@@ -14,7 +14,7 @@ export type NetlifySite = {
   configPath?: string
   siteId?: string
   get id(): string | undefined
-  set id(id: string): void
+  set id(id: string)
 }
 
 /**
@@ -29,7 +29,7 @@ export type NetlifyOptions = {
     scheme?: string
     host?: string
     pathPrefix?: string
-  },
+  }
   repositoryRoot: string
   /** Absolute path of the netlify configuration file */
   configFilePath: string

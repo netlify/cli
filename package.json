@@ -1,11 +1,23 @@
 {
   "name": "netlify-cli",
-  "description": "Netlify command line tool",
   "version": "27.1.1",
+  "description": "Netlify command line tool",
+  "keywords": [
+    "api",
+    "cli",
+    "netlify",
+    "static"
+  ],
+  "homepage": "https://github.com/netlify/cli",
+  "bugs": {
+    "url": "https://github.com/netlify/cli/issues"
+  },
+  "license": "MIT",
   "author": "Netlify Inc.",
-  "type": "module",
-  "engines": {
-    "node": ">=22.13.0"
+  "repository": "https://github.com/netlify/cli",
+  "bin": {
+    "netlify": "./bin/run.js",
+    "ntl": "./bin/run.js"
   },
   "files": [
     "/bin",
@@ -13,30 +25,14 @@
     "/functions-templates",
     "/dist"
   ],
-  "homepage": "https://github.com/netlify/cli",
-  "keywords": [
-    "api",
-    "cli",
-    "netlify",
-    "static"
-  ],
-  "license": "MIT",
-  "repository": "https://github.com/netlify/cli",
-  "bin": {
-    "ntl": "./bin/run.js",
-    "netlify": "./bin/run.js"
-  },
-  "bugs": {
-    "url": "https://github.com/netlify/cli/issues"
-  },
+  "type": "module",
   "scripts": {
-    "_format": "prettier --loglevel=warn \"{src,tools,scripts,tests,e2e,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\"",
     "build": "node ./node_modules/typescript-native/bin/tsc --project tsconfig.build.json",
     "clean": "rm -rf dist/",
     "dev": "node ./node_modules/typescript-native/bin/tsc --project tsconfig.build.json --watch",
     "docs": "npm run --prefix=site build",
-    "format": "npm run _format -- --write",
-    "format:check": "npm run _format -- --check",
+    "format": "oxfmt --write",
+    "format:check": "oxfmt --check",
     "lint": "eslint --cache",
     "lint:fix": "npm run lint -- --fix",
     "start": "node ./bin/run.js",
@@ -203,10 +199,10 @@
     "memfs": "^4.56.10",
     "nock": "^14.0.10",
     "npm-run-all2": "^8.0.4",
+    "oxfmt": "0.61.0",
     "p-timeout": "^7.0.0",
     "picomatch": "^4.0.4",
     "pkg-pr-new": "^0.0.86",
-    "prettier": "^2.8.8",
     "serialize-javascript": "^7.0.5",
     "strip-ansi": "^7.1.2",
     "temp-dir": "^3.0.0",
@@ -218,6 +214,9 @@
     "typescript-native": "npm:typescript@~7.0.2",
     "verdaccio": "^6.3.2",
     "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22.13.0"
   },
   "packageManager": "npm@10.9.4+sha512.3a7506f37e85c1ba1021baad79f0cd9724748131f321fc117c4dc3ba235ec01be7327584a41d15117c01945560aa9373220628fcc1e1dddd877a5fe9b336a900"
 }

@@ -31,13 +31,11 @@ jobs:
         run: du -sk node_modules | cut -f1 > .delta.packageSize && echo "kb (Package size)" >> .delta.packageSize
 
       - name: Get dependency count
-        run:
-          npm ls -a -p | wc -l | tr -d ' \n' > .delta.dependencyCount && echo " (Dependency count)" >>
+        run: npm ls -a -p | wc -l | tr -d ' \n' > .delta.dependencyCount && echo " (Dependency count)" >>
           .delta.dependencyCount
 
       - name: Get TypeScript conversion progress
-        run:
-          grep -r --exclude-dir="node_modules" --include="*.ts" "@ts-expect-error" . | wc -l | xargs >
+        run: grep -r --exclude-dir="node_modules" --include="*.ts" "@ts-expect-error" . | wc -l | xargs >
           .delta.tsConversion && echo " (Number of ts-expect-error directives)" >> .delta.tsConversion
 
       - name: Save PR number

@@ -333,7 +333,10 @@ export const startFunctionsServer = async (
     siteUrl,
     timeouts,
   } = options
-  const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root, packagePath: command.workspacePackage })
+  const internalFunctionsDir = await getInternalFunctionsDir({
+    base: site.root,
+    packagePath: command.workspacePackage,
+  })
   const functionsDirectories: string[] = []
   let manifest
 
