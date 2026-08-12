@@ -153,7 +153,9 @@ describe('migrationPull', () => {
     await migrationPull({}, createMockCommand())
 
     const calledUrl = mockFetch.mock.calls[0][0] as URL
-    expect(calledUrl.toString()).toBe('https://api.netlify.com/api/v1/sites/site-123/database/migrations')
+    expect(calledUrl.toString()).toBe(
+      'https://api.netlify.com/api/v1/sites/site-123/database/migrations?branch=production',
+    )
     expect(mockFetch.mock.calls[0][1]).toEqual({ headers: { Authorization: 'Bearer test-token' } })
   })
 
@@ -168,12 +170,26 @@ describe('migrationPull', () => {
 
     expect(detailCalls).toHaveLength(2)
     expect(detailCalls.map((u) => u.toString()).sort()).toEqual([
-      'https://api.netlify.com/api/v1/sites/site-123/database/migrations/0001_create-users',
-      'https://api.netlify.com/api/v1/sites/site-123/database/migrations/0002_add-posts',
+      'https://api.netlify.com/api/v1/sites/site-123/database/migrations/0001_create-users?branch=production',
+      'https://api.netlify.com/api/v1/sites/site-123/database/migrations/0002_add-posts?branch=production',
     ])
     for (const call of mockFetch.mock.calls) {
       expect(call[1]).toEqual({ headers: { Authorization: 'Bearer test-token' } })
     }
+  })
+
+  test('requests the production branch it reports pulling from when none is given', async () => {
+    // Sending no branch makes the detail endpoint resolve against the published
+    // deploy, which 404s for a migration that was applied and later deleted from
+    // the repo — exactly the files this command exists to restore.
+    mockFetchResponse(sampleMigrations)
+
+    await migrationPull({ force: true }, createMockCommand())
+
+    const branches = mockFetch.mock.calls.map((call) => (call[0] as URL).searchParams.get('branch'))
+    expect(branches.length).toBeGreaterThan(0)
+    expect([...new Set(branches)]).toEqual(['production'])
+    expect(logMessages.join('\n')).toContain('from production')
   })
 
   test('forwards branch to both list and detail endpoints', async () => {
@@ -393,13 +409,13 @@ describe('migrationPull', () => {
       expect(calledUrl.searchParams.get('branch')).toBe('feature/my-branch')
     })
 
-    test('does not send branch query parameter when --branch is not used', async () => {
+    test('sends the production branch explicitly when --branch is not used', async () => {
       mockFetchResponse(sampleMigrations)
 
       await migrationPull({ force: true }, createMockCommand())
 
       const calledUrl = mockFetch.mock.calls[0][0] as URL
-      expect(calledUrl.searchParams.has('branch')).toBe(false)
+      expect(calledUrl.searchParams.get('branch')).toBe('production')
     })
 
     test('uses branch name in log messages', async () => {
