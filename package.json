@@ -58,7 +58,7 @@
     "@netlify/build": "^36.3.4",
     "@netlify/build-info": "^11.3.0",
     "@netlify/config": "^25.2.2",
-    "@netlify/dev": "^4.18.10",
+    "@netlify/dev": "^4.18.13",
     "@netlify/dev-utils": "^4.4.7",
     "@netlify/edge-bundler": "^16.0.3",
     "@netlify/edge-functions": "^3.0.8",
