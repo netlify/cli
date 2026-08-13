@@ -4,7 +4,7 @@ import { getURL } from '@netlify/edge-functions-bootstrap/version'
 
 import { warn } from '../../utils/command-helpers.js'
 
-export const FALLBACK_BOOTSTRAP_URL = 'https://edge.netlify.com/bootstrap/index-combined.ts'
+export const FALLBACK_BOOTSTRAP_URL = 'https://edge.netlify.com/bootstrap/server.ts'
 
 export const getBootstrapURL = async () => {
   if (env.NETLIFY_EDGE_BOOTSTRAP) {
