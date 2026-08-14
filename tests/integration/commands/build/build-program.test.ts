@@ -71,7 +71,7 @@ describe('command/build', () => {
       // eslint-disable-next-line no-restricted-properties
       process.cwd = () => builder.directory
       await withMockApi(routes, async ({ apiUrl }) => {
-        process.env = getEnvironmentVariables({ apiUrl })
+        process.env = { ...originalEnv, ...getEnvironmentVariables({ apiUrl }) }
 
         await builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id }).build()
 
