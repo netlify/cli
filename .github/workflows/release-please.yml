@@ -38,7 +38,7 @@ jobs:
         id: node
         run: echo "version=$(yq eval '.primary_node_version' .github/test-matrix.yml)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ steps.node.outputs.version }}
           cache: npm
