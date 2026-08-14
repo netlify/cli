@@ -1734,4 +1734,88 @@ describe.concurrent('deploy command', () => {
       })
     })
   })
+
+  describe('deploy-scoped environment variables', () => {
+    const withDeployedEnv = async (
+      t: Parameters<typeof withSiteBuilder<void>>[0],
+      args: string[],
+      assert: (deployState: DeployRouteState) => void,
+    ) => {
+      await withMockDeploy(async (mockApi, deployState) => {
+        await withSiteBuilder(t, async (builder) => {
+          builder.withContentFile({ path: 'public/index.html', content: '<h1>env vars</h1>' })
+          await builder.build()
+
+          await callCli(
+            ['deploy', '--json', '--no-build', '--dir', 'public', ...args],
+            getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+          ).then(parseDeploy)
+
+          assert(deployState)
+        })
+      })
+    }
+
+    test('preserves empty-string variable values', async (t) => {
+      await withDeployedEnv(t, ['--env', 'EMPTY='], (deployState) => {
+        expect(deployState.getDeployBody()!.environment).toEqual([
+          { key: 'EMPTY', value: '', is_secret: false, scopes: ['functions'] },
+        ])
+      })
+    })
+
+    test('sends --env and --secret-env on the update-deploy API call', async (t) => {
+      await withDeployedEnv(
+        t,
+        ['--env', 'NODE_ENV=production', '--env', 'API_URL=https://example.com/?a=b', '--secret-env', 'TOKEN=hunter2'],
+        (deployState) => {
+          expect(deployState.getDeployBody()!.environment).toEqual([
+            { key: 'NODE_ENV', value: 'production', is_secret: false, scopes: ['functions'] },
+            { key: 'API_URL', value: 'https://example.com/?a=b', is_secret: false, scopes: ['functions'] },
+            { key: 'TOKEN', value: 'hunter2', is_secret: true, scopes: ['functions'] },
+          ])
+        },
+      )
+    })
+
+    test('does not send environment on the create-deploy request', async (t) => {
+      await withDeployedEnv(t, ['--env', 'NODE_ENV=production'], (deployState) => {
+        expect(deployState.getCreateDeployBody()).not.toBeNull()
+        expect(deployState.getCreateDeployBody()!.environment).toBeUndefined()
+      })
+    })
+
+    test('omits environment entirely when neither flag is used', async (t) => {
+      await withDeployedEnv(t, [], (deployState) => {
+        expect(deployState.getDeployBody()!.environment).toBeUndefined()
+      })
+    })
+
+    for (const { name, args, message } of [
+      { name: 'a value without a separator', args: ['--env', 'NODE_ENV'], message: 'Expected KEY=VALUE' },
+      { name: 'a reserved key', args: ['--env', 'SITE_ID=abc'], message: 'is a reserved key name' },
+      { name: 'a malformed key', args: ['--env', '2FA=on'], message: 'must start with a letter' },
+      {
+        name: 'a duplicate key',
+        args: ['--env', 'A=1', '--secret-env', 'A=2'],
+        message: 'was specified more than once',
+      },
+    ]) {
+      test(`rejects ${name}`, async (t) => {
+        await withMockDeploy(async (mockApi) => {
+          await withSiteBuilder(t, async (builder) => {
+            builder.withContentFile({ path: 'public/index.html', content: '<h1>env vars</h1>' })
+            await builder.build()
+
+            await expect(
+              callCli(
+                ['deploy', '--no-build', '--dir', 'public', ...args],
+                getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+              ),
+            ).rejects.toHaveProperty('stderr', expect.stringContaining(message))
+          })
+        })
+      })
+    }
+  })
 })
