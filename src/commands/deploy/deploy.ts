@@ -42,6 +42,7 @@ import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/dep
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
 import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
+import { mergeDeployEnvVars } from '../../utils/env/deploy-env-vars.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import { isEmpty } from '../../utils/object-utilities.js'
 import openBrowser from '../../utils/open-browser.js'
@@ -319,7 +320,18 @@ const generateDeployCommand = (
 
   if (command?.options) {
     for (const option of command.options) {
-      if (['createSite', 'site', 'siteName', 'team'].includes(option.attributeName())) {
+      // `env` and `secretEnv` are skipped because reprinting a secret value here would leak it.
+      if (
+        [
+          'createSite',
+          'site',
+          'siteName',
+          'team',
+          // Don't print secret information
+          'env',
+          'secretEnv',
+        ].includes(option.attributeName())
+      ) {
         continue
       }
 
@@ -665,6 +677,7 @@ const runDeploy = async ({
       manifestPath,
       skipFunctionsCache,
       siteRoot: site.root,
+      environment: mergeDeployEnvVars(options.env, options.secretEnv),
     })
   } catch (error) {
     if (deployId) {
@@ -1332,6 +1345,13 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
         )
       }
     } else {
+      if (options.env != null || options.secretEnv != null) {
+        return logAndThrowError(
+          `${chalk.cyanBright('--env')} and ${chalk.cyanBright(
+            '--secret-env',
+          )} require an account. Log in, or deploy without them.`,
+        )
+      }
       return anonymousDeploy(options, command)
     }
   }

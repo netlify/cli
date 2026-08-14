@@ -4,6 +4,7 @@ import { Option } from 'commander'
 import terminalLink from 'terminal-link'
 
 import { normalizeContext } from '../../utils/env/index.js'
+import { findDuplicateKey, mergeDeployEnvVars, parseDeployEnvVar } from '../../utils/env/deploy-env-vars.js'
 import BaseCommand from '../base-command.js'
 import { chalk, logAndThrowError, warn } from '../../utils/command-helpers.js'
 import type { DeployOptionValues } from './option_values.js'
@@ -77,6 +78,16 @@ For detailed configuration options, see the Netlify documentation.`,
       normalizeContext,
     )
     .option(
+      '--env <KEY=VALUE>',
+      'Set an environment variable for this deploy only. Applies to deployed functions only. Can be specified multiple times.',
+      parseDeployEnvVar('--env'),
+    )
+    .option(
+      '--secret-env <KEY=VALUE>',
+      'Set a secret environment variable for this deploy only. Applies to deployed functions only. The value is masked in the Netlify UI and API. Can be specified multiple times.',
+      parseDeployEnvVar('--secret-env'),
+    )
+    .option(
       '--skip-functions-cache',
       'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
       false,
@@ -110,6 +121,8 @@ For detailed configuration options, see the Netlify documentation.`,
       'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
       'netlify deploy --trigger',
       'netlify deploy --context deploy-preview',
+      'netlify deploy --env "NODE_ENV=production" --env "API_URL=https://api.example.com"',
+      'netlify deploy --env "NODE_ENV=production" --secret-env "DATABASE_PASSWORD=$DB_PASSWORD"',
       'netlify deploy --site-name my-new-site --team my-team # Create site and deploy',
       'netlify deploy --allow-anonymous --dir ./public --no-build # Deploy without auth',
     ])
@@ -134,6 +147,17 @@ For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl,
 
       if (options.context && !options.build) {
         return logAndThrowError('--context flag is only available when using the --build flag')
+      }
+
+      if (options.env != null || options.secretEnv != null) {
+        if (options.trigger) {
+          return logAndThrowError('--env and --secret-env cannot be used with --trigger')
+        }
+
+        const duplicateKey = findDuplicateKey(mergeDeployEnvVars(options.env, options.secretEnv))
+        if (duplicateKey != null) {
+          return logAndThrowError(`Environment variable "${duplicateKey}" was specified more than once.`)
+        }
       }
 
       if (options.siteName) {
