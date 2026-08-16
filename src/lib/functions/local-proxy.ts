@@ -1,8 +1,20 @@
 import { stdout } from 'process'
-
-import { getBinaryPath as getFunctionsProxyPath } from '@netlify/local-functions-proxy'
-
 import execa from '../../utils/execa.js'
+
+let getFunctionsProxyPath: (() => Promise<string | null>) | null = null
+
+async function loadFunctionsProxy() {
+  if (getFunctionsProxyPath === null) {
+    try {
+      const mod = await import('@netlify/local-functions-proxy')
+      getFunctionsProxyPath = mod.getBinaryPath
+    } catch {
+      // Package not installed (e.g., when using --omit=optional)
+      getFunctionsProxyPath = () => Promise.resolve(null)
+    }
+  }
+  return getFunctionsProxyPath
+}
 
 export const runFunctionsProxy = async ({
   binaryPath,
@@ -19,7 +31,8 @@ export const runFunctionsProxy = async ({
   name: string
   timeout: number
 }) => {
-  const functionsProxyPath = await getFunctionsProxyPath()
+  const getBinaryPath = await loadFunctionsProxy()
+  const functionsProxyPath = await getBinaryPath()
   const requestData = {
     resource: '',
     ...event,
@@ -33,11 +46,9 @@ export const runFunctionsProxy = async ({
       requestTimeEpoch: 0,
     },
   }
-
   if (functionsProxyPath === null) {
     throw new Error('Host machine does not support local functions proxy server')
   }
-
   const parameters = [
     '--event',
     JSON.stringify(requestData),
@@ -51,8 +62,6 @@ export const runFunctionsProxy = async ({
     `${timeout.toString()}s`,
   ]
   const proxyProcess = execa(functionsProxyPath, parameters)
-
   proxyProcess.stderr?.pipe(stdout)
-
   return proxyProcess
 }
