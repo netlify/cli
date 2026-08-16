@@ -39,7 +39,7 @@ const getErrorMessage = function ({ message }) {
 // Leading and trailing whitespace in `from` and `to` is trimmed so that typos
 // such as `to = " https://example.com"` do not silently break redirects
 // (see https://github.com/netlify/cli/issues/4707).
-const trimValue = (value) => (typeof value === 'string' ? value.trim() : value)
+const trimValue = (value: string | unknown): string | unknown => (typeof value === 'string' ? value.trim() : value)
 
 const normalizeRedirect = function ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'country' implicitly has an 'any' ... Remove this comment to see the full error message
