@@ -439,7 +439,17 @@ const reportDeployError = ({
 
 const deployProgressCb = function () {
   const spinnersByType: Record<DeployEvent['type'], Spinner> = {}
+  // Steps that produce concurrent stdout output (e.g., esbuild during bundling)
+  // should not use animated spinners to avoid mixing output (see #2391).
+  const noSpinnerTypes = new Set<DeployEvent['type']>(['edge-functions-bundling'])
   return (event: DeployEvent) => {
+    if (noSpinnerTypes.has(event.type)) {
+      // For concurrent-output steps, log text status only (no spinner).
+      if (event.phase === 'stop') {
+        log(event.msg)
+      }
+      return
+    }
     switch (event.phase) {
       case 'start': {
         spinnersByType[event.type] = startSpinner({
@@ -770,10 +780,11 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
   const argv = process.argv.slice(2)
   const statusCb =
     options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
-
+  // During bundling, esbuild outputs to stdout concurrently. deployProgressCb
+  // skips the spinner for this step to avoid mixing output (see #2391).
   statusCb({
     type: 'edge-functions-bundling',
-    msg: 'Bundling edge functions...\n',
+    msg: 'Bundling edge functions...',
     phase: 'start',
   })
 
