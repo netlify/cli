@@ -37,6 +37,7 @@ import {
   logJson,
   warn,
   type APIError,
+  NETLIFYDEVWARN,
 } from '../../utils/command-helpers.js'
 import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
@@ -944,6 +945,22 @@ const prepAndRunDeploy = async ({
 
   const deployFolder = await getDeployFolder({ command, options, config, site, siteData })
   const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
+  // When deploying without running a build, warn if build plugins are configured
+  // because their config mutations are lost without a build run
+  // (see https://github.com/netlify/cli/issues/3792).
+  if (!options.build) {
+    type ConfigPlugin = { package?: unknown; origin?: string }
+    const plugins =
+      (config?.plugins as ConfigPlugin[] | undefined) ??
+      (command.netlify.cachedConfig.config as { plugins?: ConfigPlugin[] } | undefined)?.plugins
+    const configuredPlugins = plugins?.filter((plugin) => plugin.origin !== 'default') ?? []
+    if (configuredPlugins.length > 0) {
+      log(
+        `${NETLIFYDEVWARN} Site uses build plugins (${configuredPlugins.map((p) => p.package).join(', ')}) but no build is being run.\n` +
+          `  Config changes made by these plugins will not be applied. Use ${chalk.cyanBright('netlify deploy --build')} to build and deploy together.`,
+      )
+    }
+  }
   const { configPath } = site
 
   // build flag wasn't used and edge functions directories exist
