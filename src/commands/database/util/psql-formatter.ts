@@ -1,4 +1,6 @@
-import type { FieldDef } from 'pg'
+import type { FieldDef, QueryResult } from 'pg'
+
+type StatementResult = QueryResult<Record<string, unknown>>
 
 const formatValue = (value: unknown): string => {
   if (value === null || value === undefined) {
@@ -63,3 +65,19 @@ export const formatQueryResult = (
 
   return lines.join('\n')
 }
+
+// pg resolves a simple query to one `Result` per statement when the SQL holds
+// more than one statement, and to a bare `Result` when it holds exactly one.
+const toStatementResults = (result: StatementResult | StatementResult[]): StatementResult[] =>
+  Array.isArray(result) ? result : [result]
+
+export const formatStatementResults = (result: StatementResult | StatementResult[]): string =>
+  toStatementResults(result)
+    .map(({ fields, rows, rowCount, command }) => formatQueryResult(fields, rows, rowCount, command))
+    .join('\n')
+
+// Rows to emit for `--json`: those of the last statement that returned a row
+// set, so a scripted `BEGIN; SELECT ...; COMMIT;` yields the SELECT's rows
+// rather than COMMIT's empty one. Always an array, whatever the statement count.
+export const lastRowSet = (result: StatementResult | StatementResult[]): Record<string, unknown>[] =>
+  toStatementResults(result).findLast(({ fields }) => fields.length > 0)?.rows ?? []

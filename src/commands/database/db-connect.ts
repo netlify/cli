@@ -4,7 +4,7 @@ import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { connectRawClient } from './util/db-connection.js'
 import { executeMetaCommand } from './util/meta-commands.js'
-import { formatQueryResult } from './util/psql-formatter.js'
+import { formatQueryResult, formatStatementResults, lastRowSet } from './util/psql-formatter.js'
 
 export interface ConnectOptions {
   query?: string
@@ -44,9 +44,9 @@ export const connect = async (options: ConnectOptions, command: BaseCommand): Pr
     try {
       const result = await client.query<Record<string, unknown>>(options.query)
       if (options.json) {
-        logJson(result.rows)
+        logJson(lastRowSet(result))
       } else {
-        log(formatQueryResult(result.fields, result.rows, result.rowCount, result.command))
+        log(formatStatementResults(result))
       }
     } finally {
       await cleanup()
@@ -126,7 +126,7 @@ export const connect = async (options: ConnectOptions, command: BaseCommand): Pr
       void (async () => {
         try {
           const result = await client.query<Record<string, unknown>>(sql)
-          log(formatQueryResult(result.fields, result.rows, result.rowCount, result.command))
+          log(formatStatementResults(result))
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err)
           log(`ERROR:  ${message}`)
