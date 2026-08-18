@@ -33,13 +33,19 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 
 import { connect } from '../../../../src/commands/database/db-connect.js'
 
-const makeField = (name: string): FieldDef =>
-  ({ name, tableID: 0, columnID: 0, dataTypeID: 23, dataTypeSize: 4, dataTypeModifier: -1, format: 'text' })
+const makeField = (name: string): FieldDef => ({
+  name,
+  tableID: 0,
+  columnID: 0,
+  dataTypeID: 23,
+  dataTypeSize: 4,
+  dataTypeModifier: -1,
+  format: 'text',
+})
 
 const makeResult = (
   overrides: Partial<QueryResult<Record<string, unknown>>> & { command: string },
-): QueryResult<Record<string, unknown>> =>
-  ({ fields: [], rows: [], rowCount: null, oid: 0, ...overrides })
+): QueryResult<Record<string, unknown>> => ({ fields: [], rows: [], rowCount: null, oid: 0, ...overrides })
 
 // pg resolves a multi-statement simple query to one result per statement.
 const TRANSACTION_RESULTS = [

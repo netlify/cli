@@ -8,19 +8,25 @@ import {
   lastRowSet,
 } from '../../../../../src/commands/database/util/psql-formatter.js'
 
-const makeField = (name: string): FieldDef =>
-  ({ name, tableID: 0, columnID: 0, dataTypeID: 23, dataTypeSize: 4, dataTypeModifier: -1, format: 'text' })
+const makeField = (name: string): FieldDef => ({
+  name,
+  tableID: 0,
+  columnID: 0,
+  dataTypeID: 23,
+  dataTypeSize: 4,
+  dataTypeModifier: -1,
+  format: 'text',
+})
 
 const makeResult = (
   overrides: Partial<QueryResult<Record<string, unknown>>> & { command: string },
-): QueryResult<Record<string, unknown>> =>
-  ({
-    fields: [],
-    rows: [],
-    rowCount: null,
-    oid: 0,
-    ...overrides,
-  })
+): QueryResult<Record<string, unknown>> => ({
+  fields: [],
+  rows: [],
+  rowCount: null,
+  oid: 0,
+  ...overrides,
+})
 
 const BEGIN = makeResult({ command: 'BEGIN' })
 const COMMIT = makeResult({ command: 'COMMIT' })
