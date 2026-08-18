@@ -1,9 +1,32 @@
+import { join } from 'path'
+
 import { Client } from 'pg'
 
 import { NetlifyDev, type SQLExecutor } from '@netlify/dev'
 import { LocalState } from '@netlify/dev-utils'
 
+import { warn } from '../../../utils/command-helpers.js'
 import { PgClientExecutor } from './pg-client-executor.js'
+
+export const getLocalDatabaseDirectory = (buildDir: string): string => join(buildDir, '.netlify', 'db')
+
+// Raised when the local database can't be started, usually because PGlite
+// can't open the persisted data directory. `summary` holds the failure and its
+// underlying cause without the recovery hint, so `netlify database reset` —
+// which is the recovery — doesn't tell the user to run it.
+export class LocalDatabaseStartError extends Error {
+  readonly directory: string
+  readonly summary: string
+
+  constructor(directory: string, causes: string[]) {
+    const summary = [`Failed to start the local database at ${directory}.`, ...causes].join('\n')
+    super(
+      `${summary}\nThe persisted data directory may be unusable. Run \`netlify database reset\` to discard it and start from an empty database.`,
+    )
+    this.directory = directory
+    this.summary = summary
+  }
+}
 
 interface DBConnection {
   executor: SQLExecutor
@@ -100,7 +123,18 @@ export async function connectRawClient(buildDir: string, urlOverride?: string): 
 
   const state = new LocalState(buildDir)
 
+  // NetlifyDev swallows database startup failures into a warning, so the only
+  // way to report the underlying PGlite error is to capture what it logs.
+  const startupWarnings: string[] = []
+
   const netlifyDev = new NetlifyDev({
+    logger: {
+      error: console.error,
+      log: console.log,
+      warn: (message = '') => {
+        startupWarnings.push(message)
+      },
+    },
     projectRoot: buildDir,
     aiGateway: { enabled: false },
     blobs: { enabled: false },
@@ -120,8 +154,12 @@ export async function connectRawClient(buildDir: string, urlOverride?: string): 
   const connectionString = state.get('dbConnectionString')
   if (!connectionString) {
     await netlifyDev.stop()
-    throw new Error('Local database failed to start.')
+    throw new LocalDatabaseStartError(getLocalDatabaseDirectory(buildDir), startupWarnings)
   }
+
+  startupWarnings.forEach((message) => {
+    warn(message)
+  })
 
   const client = new Client({ connectionString })
   await client.connect()
