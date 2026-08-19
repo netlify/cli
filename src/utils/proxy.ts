@@ -17,7 +17,7 @@ import { renderFunctionErrorPage } from '@netlify/dev-utils'
 import { ImageHandler } from '@netlify/images'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import contentType from 'content-type'
-import cookie from 'cookie'
+import { parseCookie } from 'cookie'
 import { getProperty } from 'dot-prop'
 import generateETag from 'etag'
 import getAvailablePort from 'get-port'
@@ -321,7 +321,7 @@ const serveRedirect = async function ({
       match.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
     )
 
-    const cookieValues = cookie.parse(req.headers.cookie || '')
+    const cookieValues = parseCookie(req.headers.cookie || '')
     const token = cookieValues.nf_jwt
 
     // Serve not found by default
