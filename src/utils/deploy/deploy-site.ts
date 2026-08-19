@@ -28,6 +28,7 @@ import {
 import uploadFiles from './upload-files.js'
 import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
 import type { DeployEvent } from './status-cb.js'
+import type { DeployEnvironmentVariable } from '../env/deploy-env-vars.js'
 import { temporaryDirectory } from '../temporary-file.js'
 
 export type { DeployEvent }
@@ -59,6 +60,7 @@ export const deploySite = async (
     deployId,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
+    environment,
     // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     filter,
     fnDir = [],
@@ -84,6 +86,7 @@ export const deploySite = async (
     concurrentUpload?: number
     deployTimeout?: number
     draft?: boolean
+    environment?: DeployEnvironmentVariable[]
     maxRetry?: number
     statusCb?: (status: DeployEvent) => void
     syncFileLimit?: number
@@ -178,7 +181,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
   const primaryFramework = packageFrameworks?.[0]
 
   // @ts-expect-error TS(2349) This expression is not callable
-  const deployParams = cleanDeep({
+  const cleanedParams = cleanDeep({
     siteId,
     deploy_id: deployId,
     body: {
@@ -195,6 +198,12 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
       build_version: getNetlifyBuildVersion(),
     },
   })
+  // cleanDeep deeply strips keys with empty strings, but empty strings are valid environment
+  // variable values--a user can use an empty string to e.g. unset a variable only for a deploy.
+  // This would result in payloads with a missing `value` key, which the API would reject.
+  const deployParams = environment?.length
+    ? { ...cleanedParams, body: { ...cleanedParams.body, environment } }
+    : cleanedParams
   let deploy = await api.updateSiteDeploy(deployParams)
 
   if (deployParams.body.async) deploy = await waitForDiff(api, deploy.id, siteId, deployTimeout)
