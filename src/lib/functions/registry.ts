@@ -547,13 +547,13 @@ export class FunctionsRegistry {
           return
         }
 
-        const runtime = runtimes[runtimeName]
-
         // If there is no matching runtime, it means this function is not yet
         // supported in Netlify Dev.
-        if (runtime === undefined) {
+        if (!(runtimeName in runtimes)) {
           return
         }
+
+        const runtime = runtimes[runtimeName as keyof typeof runtimes]
 
         // If this function has already been registered, we skip it.
         if (this.functions.has(name)) {
@@ -568,9 +568,8 @@ export class FunctionsRegistry {
           name,
           displayName,
           projectRoot: this.projectRoot,
-          // @ts-expect-error(serhalp) -- I think TS needs to know that a given instance of `runtime` in this loop at
-          // this point will have a refined type of only one of the runtime types in the union, and this type is
-          // consistent between the `NetlifyFunction` and the `runtime`. But... how do?
+          // @ts-expect-error -- `runtime` is one supported runtime implementation, but
+          // NetlifyFunction's generic currently models only the JS build-result variant.
           runtime,
           timeoutBackground: this.timeouts.backgroundFunctions,
           timeoutSynchronous: this.timeouts.syncFunctions,
