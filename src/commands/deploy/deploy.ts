@@ -35,6 +35,7 @@ import {
   getToken,
   log,
   logJson,
+  prettyJsonRenderOptions,
   warn,
   type APIError,
 } from '../../utils/command-helpers.js'
@@ -914,7 +915,7 @@ const printResults = ({
       }),
     )
 
-    log(prettyjson.render(msgData))
+    log(prettyjson.render(msgData, prettyJsonRenderOptions()))
 
     if (!deployToProduction) {
       log()
@@ -973,11 +974,14 @@ const prepAndRunDeploy = async ({
 
   log('')
   log(
-    prettyjson.render({
-      'Deploy path': deployFolder,
-      'Functions path': functionsFolder,
-      'Configuration path': configPath,
-    }),
+    prettyjson.render(
+      {
+        'Deploy path': deployFolder,
+        'Functions path': functionsFolder,
+        'Configuration path': configPath,
+      },
+      prettyJsonRenderOptions(),
+    ),
   )
   log()
 
