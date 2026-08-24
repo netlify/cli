@@ -1,0 +1,61 @@
+docs/commands/database.md
+  s_d1230654d0e055::t_d542e0a4107b75 22,61-62,88-89,114-115,141-142,157,185-186,205-206,231-232,260-261
+docs/commands/env.md
+  s_d1230654d0e055::t_d542e0a4107b75 21,63-64,94-95,127-128,225-226
+docs/commands/build.md
+  s_d1230654d0e055::t_d542e0a4107b75 23-24
+docs/commands/open.md
+  s_d1230654d0e055::t_d542e0a4107b75 23-24,54,77
+docs/commands/blobs.md
+  s_d1230654d0e055::t_d542e0a4107b75 21,64-65,87-88,111-112,136-137
+docs/commands/clone.md
+  s_d1230654d0e055::t_d542e0a4107b75 40-41
+docs/commands/agents.md
+  s_d1230654d0e055::t_d542e0a4107b75 24,98-99,129-130,159-160
+docs/commands/login.md
+  s_d1230654d0e055::t_d542e0a4107b75 26-27
+docs/commands/teams.md
+  s_d1230654d0e055::t_d542e0a4107b75 51-52
+docs/commands/sites.md
+  s_d1230654d0e055::t_d542e0a4107b75 22,86-87,110-111,132-133
+docs/commands/init.md
+  s_d1230654d0e055::t_d542e0a4107b75 25-26
+docs/commands/completion.md
+  s_d1230654d0e055::t_d542e0a4107b75 49
+docs/commands/status.md
+  s_d1230654d0e055::t_d542e0a4107b75 23-24,44
+docs/commands/claim.md
+  s_d1230654d0e055::t_d542e0a4107b75 23-24
+docs/commands/api.md
+  s_d1230654d0e055::t_d542e0a4107b75 29-30
+docs/commands/dev.md
+  s_d1230654d0e055::t_d542e0a4107b75 83-84
+docs/commands/functions.md
+  s_d1230654d0e055::t_d542e0a4107b75 22,58-59,157-158,177-178
+docs/commands/link.md
+  s_d1230654d0e055::t_d542e0a4107b75 26-27
+docs/commands/recipes.md
+  s_d1230654d0e055::t_d542e0a4107b75 24,53
+docs/commands/switch.md
+  s_d1230654d0e055::t_d542e0a4107b75 21
+docs/commands/unlink.md
+  s_d1230654d0e055::t_d542e0a4107b75 21
+docs/commands/watch.md
+  s_d1230654d0e055::t_d542e0a4107b75 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "417793a4afc86fe1f378b3480b7bcc20e75e2e25",
+  "prompts": {},
+  "sessions": {
+    "s_d1230654d0e055": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf3da575-1dfd-4bea-9bac-0c4e588f1ce0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Mathias Biilmann <info@mathias-biilmann.net>"
+    }
+  }
+}
