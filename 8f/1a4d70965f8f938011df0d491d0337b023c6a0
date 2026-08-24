@@ -1,0 +1,19 @@
+tests/integration/commands/didyoumean/__snapshots__/didyoumean.test.ts.snap
+  s_d1230654d0e055::t_60bb38ec81ea80 23,84,145,206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "8f1a4d70965f8f938011df0d491d0337b023c6a0",
+  "prompts": {},
+  "sessions": {
+    "s_d1230654d0e055": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf3da575-1dfd-4bea-9bac-0c4e588f1ce0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Mathias Biilmann <info@mathias-biilmann.net>"
+    }
+  }
+}
