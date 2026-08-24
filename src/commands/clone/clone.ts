@@ -89,9 +89,7 @@ const cloneFromNetlifyGit = async (
   }
 }
 
-const parseNetlifySiteInput = (
-  input: string,
-): { isNetlifySite: true; siteName: string } | { isNetlifySite: false } => {
+const parseNetlifySiteInput = (input: string): { isNetlifySite: true; siteName: string } | { isNetlifySite: false } => {
   const netlifyAppUrlRegex = /^https?:\/\/([^.]+)\.netlify\.app\/?$/
   const netlifyAppUrlMatch = netlifyAppUrlRegex.exec(input)
   if (netlifyAppUrlMatch) {
