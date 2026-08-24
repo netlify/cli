@@ -1,22 +1,72 @@
 import fs from 'fs'
 
+import type { NetlifyAPI } from '@netlify/api'
 import backoff from 'backoff'
 import pMap from 'p-map'
 
 import { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } from './constants.js'
+import type { StatusCallback } from './status-cb.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRetry, statusCb }) => {
-  if (!concurrentUpload || !statusCb || !maxRetry) throw new Error('Missing required option concurrentUpload')
+export type UploadApi = Pick<NetlifyAPI, 'uploadDeployFile' | 'uploadDeployFunction' | 'uploadDeployEdgeFunction'>
+
+// `@netlify/api` only models path and query parameters, so header parameters such as
+// `X-Nf-Retry-Count` have to be added on top of the generated parameter types.
+type WithRetryCount<T> = T & { xNfRetryCount?: number }
+
+type UploadDeployFunctionParams = WithRetryCount<Parameters<UploadApi['uploadDeployFunction']>[0]>
+type UploadDeployEdgeFunctionParams = WithRetryCount<Parameters<UploadApi['uploadDeployEdgeFunction']>[0]>
+
+interface UploadFileBase {
+  filepath: string
+  normalizedPath: string
+  body?: fs.ReadStream
+}
+
+export interface StaticUploadFile extends UploadFileBase {
+  assetType: 'file'
+}
+
+export interface FunctionUploadFile extends UploadFileBase {
+  assetType: 'function'
+  runtime?: string
+  invocationMode?: string
+  timeout?: number
+}
+
+export interface EdgeFunctionUploadFile extends UploadFileBase {
+  assetType: 'edge-function'
+  hash: string
+}
+
+export type UploadFile = StaticUploadFile | FunctionUploadFile | EdgeFunctionUploadFile
+
+class MissingAssetTypeError extends Error {
+  constructor(readonly fileObj: unknown) {
+    super('File Object missing assetType property')
+  }
+}
+
+interface UploadFilesOptions {
+  concurrentUpload: number
+  maxRetry: number
+  statusCb: StatusCallback
+}
+
+const uploadFiles = async (
+  api: UploadApi,
+  deployId: string,
+  uploadList: UploadFile[],
+  { concurrentUpload, maxRetry, statusCb }: UploadFilesOptions,
+) => {
+  if (!concurrentUpload || !maxRetry) throw new Error('Missing required option concurrentUpload')
   statusCb({
     type: 'upload',
     msg: `Uploading ${uploadList.length} files`,
     phase: 'start',
   })
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'fileObj' implicitly has an 'any' type.
-  const uploadFile = async (fileObj, index) => {
-    const { assetType, body, filepath, invocationMode, normalizedPath, runtime, timeout } = fileObj
+  const uploadFile = async (fileObj: UploadFile, index: number) => {
+    const { body, filepath, normalizedPath } = fileObj
 
     const readStreamCtor = () => body ?? fs.createReadStream(filepath)
 
@@ -25,10 +75,10 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
       msg: `(${index}/${uploadList.length}) Uploading ${normalizedPath}...`,
       phase: 'progress',
     })
-    let response
-    switch (assetType) {
+
+    switch (fileObj.assetType) {
       case 'file': {
-        response = await retryUpload(
+        return await retryUpload(
           () =>
             api.uploadDeployFile({
               body: readStreamCtor,
@@ -37,12 +87,12 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
             }),
           maxRetry,
         )
-        break
       }
       case 'function': {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'retryCount' implicitly has an 'any' typ... Remove this comment to see the full error message
-        response = await retryUpload((retryCount) => {
-          const params = {
+        const { invocationMode, runtime, timeout } = fileObj
+
+        return await retryUpload((retryCount) => {
+          const params: UploadDeployFunctionParams = {
             body: readStreamCtor,
             deployId,
             invocationMode,
@@ -52,23 +102,31 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
           }
 
           if (retryCount > 0) {
-            // @ts-expect-error TS(2339) FIXME: Property 'xNfRetryCount' does not exist on type '{... Remove this comment to see the full error message
             params.xNfRetryCount = retryCount
           }
 
           return api.uploadDeployFunction(params)
         }, maxRetry)
-        break
+      }
+      case 'edge-function': {
+        return await retryUpload((retryCount) => {
+          const params: UploadDeployEdgeFunctionParams = {
+            body: readStreamCtor,
+            deployId,
+            codeSha: normalizedPath,
+          }
+
+          if (retryCount > 0) {
+            params.xNfRetryCount = retryCount
+          }
+
+          return api.uploadDeployEdgeFunction(params)
+        }, maxRetry)
       }
       default: {
-        const error = new Error('File Object missing assetType property')
-        // @ts-expect-error TS(2339) FIXME: Property 'fileObj' does not exist on type 'Error'.
-        error.fileObj = fileObj
-        throw error
+        throw new MissingAssetTypeError(fileObj)
       }
     }
-
-    return response
   }
 
   const results = await pMap(uploadList, uploadFile, { concurrency: concurrentUpload })
@@ -80,11 +138,14 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
   return results
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'uploadFn' implicitly has an 'any' type.
-const retryUpload = (uploadFn, maxRetry) =>
-  new Promise((resolve, reject) => {
-    // @ts-expect-error TS(7034) FIXME: Variable 'lastError' implicitly has type 'any' in ... Remove this comment to see the full error message
-    let lastError
+const getErrorStatus = (error: unknown): number | undefined =>
+  typeof error === 'object' && error !== null && 'status' in error && typeof error.status === 'number'
+    ? error.status
+    : undefined
+
+const retryUpload = <T>(uploadFn: (retryCount: number) => Promise<T>, maxRetry: number): Promise<T> =>
+  new Promise<T>((resolve, reject) => {
+    let lastError: unknown
 
     const fibonacciBackoff = backoff.fibonacci({
       randomisationFactor: UPLOAD_RANDOM_FACTOR,
@@ -101,16 +162,16 @@ const retryUpload = (uploadFn, maxRetry) =>
       } catch (error) {
         lastError = error
 
+        const status = getErrorStatus(error)
+
         // We don't need to retry for 400 or 422 errors
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.status === 400 || error.status === 422) {
+        if (status === 400 || status === 422) {
           reject(error)
           return
         }
 
         // observed errors: 408, 401 (4** swallowed), 502
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.status > 400 || error.name === 'FetchError') {
+        if ((status !== undefined && status > 400) || (error instanceof Error && error.name === 'FetchError')) {
           fibonacciBackoff.backoff()
           return
         }
@@ -130,7 +191,6 @@ const retryUpload = (uploadFn, maxRetry) =>
     fibonacciBackoff.on('ready', tryUpload)
 
     fibonacciBackoff.on('fail', () => {
-      // @ts-expect-error TS(7005) FIXME: Variable 'lastError' implicitly has an 'any' type.
       reject(lastError)
     })
 

@@ -74,6 +74,11 @@ export interface CachedConfig {
             }
           }
         }
+    db?: {
+      migrations?: {
+        path?: string
+      }
+    }
     edge_functions?: EdgeFunctionDeclaration[]
     functions?: NetlifyConfig['functions']
     functionsDirectory?: undefined | string
@@ -133,7 +138,7 @@ export const getRunBuildOptions = async ({
   defaultConfig,
   deployHandler,
   deployId,
-  options: { context, cwd, debug, dry, json, offline, silent },
+  options: { alias, context, cwd, debug, dry, json, offline, silent },
   packagePath,
   skewProtectionToken,
   token,
@@ -181,6 +186,7 @@ export const getRunBuildOptions = async ({
     token: token ?? undefined,
     dry,
     debug,
+    branch: alias,
     context,
     mode: 'cli',
     telemetry: false,

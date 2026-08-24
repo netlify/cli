@@ -7,8 +7,9 @@
 ::backdrop {
   /* All variables below are selectively copied from netlify/docs:
      https://github.com/netlify/docs/blob/main/docs/.vuepress/theme/styles/variables.css */
-  --fontFamilyHeading: Pacaembu, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --fontFamilyHeading:
+    Pacaembu, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol';
   --fontFamilyMono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', Courier, monospace;
 
   /* Color Palette: Neutral colors */
@@ -46,8 +47,9 @@
 
   /* Adjust Starlight's theme defaults */
   --sl-nav-pad-y: 0;
-  --sl-font-system: Mulishvar, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif,
-    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  --sl-font-system:
+    Mulishvar, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji,
+    Segoe UI Emoji, Segoe UI Symbol;
   --sl-font-mono: var(--fontFamilyMono);
   --sl-color-bg: var(--colorBg);
   --sl-color-bg-nav: var(--sl-color-bg);
@@ -76,7 +78,7 @@
 
   & .right-sidebar a[aria-current='true'],
   & .right-sidebar a[aria-current='true']:hover,
-  & .sidebar [open]>summary>.group-label>.large {
+  & .sidebar [open] > summary > .group-label > .large {
     background: transparent;
     color: var(--colorText);
   }
@@ -87,7 +89,7 @@
 
   & .sidebar details a:hover,
   & .sidebar .large:hover,
-  & .sidebar [open]>summary>.group-label>.large:hover,
+  & .sidebar [open] > summary > .group-label > .large:hover,
   & .sidebar a.large[aria-current='page'],
   & .right-sidebar a:hover {
     color: var(--colorSidebarActiveLink);
@@ -113,6 +115,11 @@
   .expressive-code .frame,
   .expressive-code pre {
     border-radius: var(--smallRadius);
+  }
+
+  .expressive-code .frame.is-terminal pre {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
   }
 }
 
@@ -194,7 +201,7 @@ a {
 }
 
 /* Bump font size of first paragraph */
-.main-pane .sl-markdown-content>p:first-of-type:not(.netlify-panel) {
+.main-pane .sl-markdown-content > p:first-of-type:not(.netlify-panel) {
   font-size: var(--mediumText);
 }
 
@@ -217,7 +224,7 @@ a {
 }
 
 /* Remove border in between main heading and content */
-.content-panel+.content-panel {
+.content-panel + .content-panel {
   border-top-width: 0;
 }
 
@@ -247,7 +254,7 @@ a {
 }
 
 /* Align top-level links to caret */
-.sidebar .top-level>li>a {
+.sidebar .top-level > li > a {
   --sl-icon-size: 1.25rem;
   --sl-icon-caret-size: 4.16;
   /* caret icon width is 4.16 at the original icon size of 16x16 */
@@ -263,7 +270,7 @@ a {
 }
 
 /* Second level sidebar links */
-.sidebar details ul>li {
+.sidebar details ul > li {
   border-inline-start: 0;
   padding-inline-start: 2.5rem;
 
@@ -273,7 +280,7 @@ a {
 }
 
 /* Second-level items with accordion (`summary`) */
-.sidebar ul ul>li:has(summary) {
+.sidebar ul ul > li:has(summary) {
   margin-inline-start: -1rem;
 
   & .large {
@@ -296,7 +303,7 @@ a {
 /* Starlight's current sidebar HTML markup contains whitespace in
    between tags, reduce default value a bit (not 0 to stay on the
    safe side re:upstream changes) */
-.sidebar .top-level>li>a.external-link:after {
+.sidebar .top-level > li > a.external-link:after {
   margin-left: 0.125em;
 }
 
@@ -377,10 +384,9 @@ details summary {
 
 /* Medium screens (Starlight breakpoint) */
 @media (min-width: 50rem) {
-
   /* Increase default margin in between top-level sidebar items
      with collapsible sub-items, very bespoke to the current sidebar structure */
-  .top-level>li+li>details {
+  .top-level > li + li > details {
     margin-top: 1rem;
   }
 
@@ -390,7 +396,7 @@ details summary {
   }
 }
 
-.tab>a {
+.tab > a {
   border-color: var(--colorBorder) !important;
 
   &[aria-selected='true'] {

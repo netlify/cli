@@ -12,6 +12,12 @@ import { cliVersion } from './utils.js'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
+let currentCommand: string | undefined
+
+export const setCommandForErrorReporting = (command?: string): void => {
+  currentCommand = command
+}
+
 /**
  *
  * @param {import('@bugsnag/js').NotifiableError} error
@@ -25,9 +31,15 @@ export const reportError = async function (error, config = {}) {
   if (isCI) {
     return
   }
-
   // convert a NotifiableError to an error class
   const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
+
+  // `@netlify/config` tags intentional user-input errors (malformed netlify.toml,
+  // invalid redirects, etc.) with this shape. See @netlify/config/lib/error.js.
+  // These are not CLI bugs and don't belong in Bugsnag.
+  if (error?.customErrorInfo?.type === 'resolveConfig') {
+    return
+  }
 
   const globalConfig = await getGlobalConfigStore()
 
@@ -43,8 +55,11 @@ export const reportError = async function (error, config = {}) {
       user: {
         id: globalConfig.get('userId'),
       },
-      // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type '{}'.
-      metadata: config.metadata,
+      metadata: {
+        // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type '{}'.
+        ...config.metadata,
+        ...(currentCommand === undefined ? {} : { command: { name: currentCommand } }),
+      },
       osName: `${os.platform()}-${os.arch()}`,
       cliVersion,
       nodejsVersion,

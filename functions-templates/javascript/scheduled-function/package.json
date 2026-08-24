@@ -2,19 +2,19 @@
   "name": "{{name}}",
   "version": "1.0.0",
   "description": "netlify functions:create - scheduled function in JavaScript",
+  "keywords": [
+    "javascript",
+    "netlify",
+    "schedule",
+    "serverless"
+  ],
+  "license": "MIT",
+  "author": "Netlify",
   "main": "{{name}}.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "netlify",
-    "serverless",
-    "javascript",
-    "schedule"
-  ],
-  "author": "Netlify",
-  "license": "MIT",
   "dependencies": {
-    "@netlify/functions": "^5.1.0"
+    "@netlify/functions": "^6.0.0"
   }
 }

@@ -52,9 +52,7 @@ You can either provide a
 [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the
 `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run.js login` before running the tests.
 
-The tests don’t count towards Netlify build minutes since they build a site locally and deploy it using the API.
-
-> You can disable these tests by setting the `NETLIFY_TEST_DISABLE_LIVE` environment variable to `true`.
+The tests don't count towards Netlify build minutes since they build a site locally and deploy it using the API.
 
 **For Netlify employees**, our CI uses a Netlify Auth Token from a
 [`netlify services` account](https://app.netlify.com/teams/netlify-services/sites). Credentials for the account are in
@@ -68,8 +66,8 @@ npm run watch
 
 Make sure everything is correctly set up by running those tests first.
 
-We recommend you set up your IDE or text editor to run ESLint and Prettier automatically on file save. Otherwise, you
-can run them manually using:
+We recommend you set up your IDE or text editor to run ESLint and oxfmt automatically on file save. Otherwise, you can
+run them manually using:
 
 ```bash
 npm run format
@@ -207,11 +205,8 @@ package to npm.
 
 ### Creating a prerelease
 
-1. Create a branch named `releases/<tag>/<version>` with the version and tag you’d like to release.
-2. Push the branch to the repo.
-
-For example, a branch named `releases/rc.0/4.0.0` will create the version `4.0.0-rc.0` and publish it under the `rc.0`
-tag.
+Pull requests and pushes to `main` automatically publish installable prereleases with [pkg.pr.new](https://pkg.pr.new/).
+Check the prerelease workflow run for the package version and installation command.
 
 ## License
 

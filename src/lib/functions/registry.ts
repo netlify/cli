@@ -6,7 +6,8 @@ import { env } from 'process'
 import type { GeneratedFunction } from '@netlify/build'
 import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
 import { type MemoizeCache, watchDebounced } from '@netlify/dev-utils'
-import extractZip from 'extract-zip'
+
+import { extractZip } from '../../utils/zip.js'
 
 import {
   chalk,
@@ -88,6 +89,7 @@ export class FunctionsRegistry {
   // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
   private settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
   private timeouts: { backgroundFunctions: number; syncFunctions: number }
+  private readonly deployEnvironment: { key: string; value: string; isSecret: boolean }[]
 
   constructor({
     aiGatewayContext,
@@ -95,6 +97,7 @@ export class FunctionsRegistry {
     capabilities,
     config,
     debug = false,
+    deployEnvironment,
     frameworksAPIPaths,
     generatedFunctions,
     isConnected = false,
@@ -121,6 +124,7 @@ export class FunctionsRegistry {
     // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
     settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
     timeouts: { backgroundFunctions: number; syncFunctions: number }
+    deployEnvironment: { key: string; value: string; isSecret: boolean }[]
   }) {
     this.capabilities = capabilities
     this.config = config
@@ -133,6 +137,7 @@ export class FunctionsRegistry {
     this.settings = settings
     this.blobsContext = blobsContext
     this.aiGatewayContext = aiGatewayContext
+    this.deployEnvironment = deployEnvironment ?? []
 
     /**
      * An object to be shared among all functions in the registry. It can be
@@ -542,13 +547,13 @@ export class FunctionsRegistry {
           return
         }
 
-        const runtime = runtimes[runtimeName]
-
         // If there is no matching runtime, it means this function is not yet
         // supported in Netlify Dev.
-        if (runtime === undefined) {
+        if (!(runtimeName in runtimes)) {
           return
         }
+
+        const runtime = runtimes[runtimeName as keyof typeof runtimes]
 
         // If this function has already been registered, we skip it.
         if (this.functions.has(name)) {
@@ -563,14 +568,14 @@ export class FunctionsRegistry {
           name,
           displayName,
           projectRoot: this.projectRoot,
-          // @ts-expect-error(serhalp) -- I think TS needs to know that a given instance of `runtime` in this loop at
-          // this point will have a refined type of only one of the runtime types in the union, and this type is
-          // consistent between the `NetlifyFunction` and the `runtime`. But... how do?
+          // @ts-expect-error -- `runtime` is one supported runtime implementation, but
+          // NetlifyFunction's generic currently models only the JS build-result variant.
           runtime,
           timeoutBackground: this.timeouts.backgroundFunctions,
           timeoutSynchronous: this.timeouts.syncFunctions,
           settings: this.settings,
           srcPath,
+          deployEnvironment: this.deployEnvironment,
         })
 
         // If a function we're registering was also unregistered in this run,

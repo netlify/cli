@@ -12,6 +12,7 @@ import {
   warn,
   type APIError,
 } from '../../utils/command-helpers.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import type BaseCommand from '../base-command.js'
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
@@ -22,7 +23,11 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   if (!accessToken) {
     log(`Not logged in. Please log in to see project status.`)
     log()
-    log('Login with "netlify login" command')
+    if (!isInteractive()) {
+      log(`Run ${chalk.cyanBright('`netlify login --request "<message>"`')} to request access from a team member.`)
+    } else {
+      log(`Login with ${chalk.cyanBright('`netlify login`')} command`)
+    }
     return exit()
   }
 

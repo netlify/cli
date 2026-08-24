@@ -65,6 +65,8 @@ export const startProxyServer = async ({
   site,
   siteInfo,
   state,
+  watchIgnore,
+  deployEnvironment,
 }: {
   accountId: string | undefined
   addonsUrls: $TSFixMe
@@ -89,7 +91,9 @@ export const startProxyServer = async ({
   projectDir: string
   repositoryRoot?: string
   state: LocalState
+  watchIgnore: string[]
   functionsRegistry?: FunctionsRegistry
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   const url = await startProxy({
     addonsUrls,
@@ -114,6 +118,8 @@ export const startProxyServer = async ({
     accountId,
     repositoryRoot,
     api,
+    watchIgnore,
+    deployEnvironment,
   })
   if (!url) {
     log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)

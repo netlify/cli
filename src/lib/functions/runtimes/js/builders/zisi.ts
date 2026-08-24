@@ -23,6 +23,7 @@ const require = createRequire(import.meta.url)
 export type ZisiBuildResult = BaseBuildResult & {
   buildPath: string
   includedFiles: FunctionResult['includedFiles']
+  invocationMode: FunctionResult['invocationMode']
   outputModuleFormat: FunctionResult['outputModuleFormat']
   mainFile: FunctionResult['mainFile']
   runtimeAPIVersion: FunctionResult['runtimeAPIVersion']
@@ -66,6 +67,7 @@ const buildFunction = async ({
     excludedRoutes,
     includedFiles,
     inputs,
+    invocationMode,
     mainFile,
     outputModuleFormat,
     path: functionPath,
@@ -103,6 +105,7 @@ const buildFunction = async ({
     buildPath,
     excludedRoutes,
     includedFiles,
+    invocationMode,
     outputModuleFormat,
     mainFile,
     routes,

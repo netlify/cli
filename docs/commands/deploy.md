@@ -29,9 +29,11 @@ netlify deploy
 **Flags**
 
 - `alias` (*string*) - Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.
+- `allow-anonymous` (*boolean*) - If not logged in, deploy anonymously and create a claimable site instead of requiring authentication
 - `context` (*string*) - Specify a deploy context for environment variables read during the build ("production", "deploy-preview", "branch-deploy", "dev") or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)
-- `create-site` (*string*) - Create a new site and deploy to it. Optionally specify a name, otherwise a random name will be generated. Requires --team flag if you have multiple teams.
+- `created-via` (*string*) - Specify the source of the deploy (e.g., "cli", "drop")
 - `dir` (*string*) - Specify a folder to deploy
+- `env` (*string*) - Set an environment variable for this deploy only. Applies to deployed functions only. Can be specified multiple times.
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions folder to deploy
 - `json` (*boolean*) - Output deployment data as JSON
@@ -42,9 +44,11 @@ netlify deploy
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `prod` (*boolean*) - Deploy to production
+- `secret-env` (*string*) - Set a secret environment variable for this deploy only. Applies to deployed functions only. The value is masked in the Netlify UI and API. Can be specified multiple times.
 - `site` (*string*) - A project name or ID to deploy to
+- `site-name` (*string*) - Name for a new site. Implies --create-site if the site does not already exist.
 - `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
-- `team` (*string*) - Specify team slug when creating a site. Only works with --create-site flag.
+- `team` (*string*) - Specify team slug when creating a site. Only works with --create-site or --site-name flag.
 - `timeout` (*string*) - Timeout to wait for deployment to finish
 - `trigger` (*boolean*) - Trigger a new build of your project on Netlify without uploading local files
 
@@ -61,7 +65,10 @@ netlify deploy --message "A message with an $ENV_VAR"
 netlify deploy --auth $NETLIFY_AUTH_TOKEN
 netlify deploy --trigger
 netlify deploy --context deploy-preview
-netlify deploy --create-site my-new-site --team my-team # Create site and deploy
+netlify deploy --env "NODE_ENV=production" --env "API_URL=https://api.example.com"
+netlify deploy --env "NODE_ENV=production" --secret-env "DATABASE_PASSWORD=$DB_PASSWORD"
+netlify deploy --site-name my-new-site --team my-team # Create site and deploy
+netlify deploy --allow-anonymous --dir ./public --no-build # Deploy without auth
 ```
 
 

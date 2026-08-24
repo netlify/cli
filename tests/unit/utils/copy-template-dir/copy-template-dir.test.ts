@@ -3,14 +3,19 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { readdirpPromise } from 'readdirp'
-import { describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test } from 'vitest'
 
 import { copyTemplateDir } from '../../../../src/utils/copy-template-dir/copy-template-dir.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const outDir = path.join(__dirname, '../tmp')
 
 describe('copyTemplateDir', () => {
+  afterEach(() => {
+    fs.rmSync(outDir, { recursive: true, force: true })
+  })
+
   test('should write a bunch of files', async () => {
     const checkCreatedFileNames = (names: string[]) => {
       expect(names).toContain('.a')
@@ -25,7 +30,6 @@ describe('copyTemplateDir', () => {
     }
 
     const inDir = path.join(__dirname, 'fixtures')
-    const outDir = path.join(__dirname, '../tmp')
 
     const createdFiles = await copyTemplateDir(inDir, outDir, {})
 
@@ -38,45 +42,30 @@ describe('copyTemplateDir', () => {
     // Checks that the files were created in the file system
     const files = await readdirpPromise(outDir)
     checkCreatedFileNames(files.map((file) => file.path))
-
-    // Cleanup
-    fs.rmdirSync(outDir, { recursive: true })
   })
 
   test('should inject context variables strings', async () => {
     const inDir = path.join(__dirname, 'fixtures')
-    const outDir = path.join(__dirname, '../tmp')
 
     await copyTemplateDir(inDir, outDir, { foo: 'bar' })
 
     const fileContent = fs.readFileSync(path.join(outDir, '1.txt'), 'utf-8').trim()
     expect(fileContent).toBe('hello bar sama')
-
-    // Cleanup
-    fs.rmdirSync(outDir, { recursive: true })
   })
 
   test('should inject context variables strings into filenames', async () => {
     const inDir = path.join(__dirname, 'fixtures')
-    const outDir = path.join(__dirname, '../tmp')
 
     await copyTemplateDir(inDir, outDir, { foo: 'bar' })
 
     expect(fs.existsSync(path.join(outDir, 'bar.txt'))).toBe(true)
-
-    // Cleanup
-    fs.rmdirSync(outDir, { recursive: true })
   })
 
   test('should inject context variables strings into directory names', async () => {
     const inDir = path.join(__dirname, 'fixtures')
-    const outDir = path.join(__dirname, '../tmp')
 
     await copyTemplateDir(inDir, outDir, { foo: 'bar' })
 
     expect(fs.existsSync(path.join(outDir, 'bar'))).toBe(true)
-
-    // Cleanup
-    fs.rmdirSync(outDir, { recursive: true })
   })
 })

@@ -6,6 +6,7 @@ export const createAIGatewayTestData = () => {
     id: 'test-site-id',
     name: 'site-name',
     ssl_url: 'https://test-site.netlify.app',
+    published_deploy: { id: 'deploy-123' },
   }
 
   const aiGatewayToken = {
@@ -83,6 +84,32 @@ export const createMockApiFailureRoutes = (siteInfo: {
   { path: 'sites/test-site-id/ai-gateway/token', status: 404, response: { message: 'Not Found' } },
   { path: 'ai-gateway/providers', status: 404, response: { message: 'Not Found' } },
 ]
+
+export const createAccountScopedAIGatewayTestData = () => {
+  const siteInfo = {
+    account_slug: 'test-account',
+    id: 'test-site-id',
+    name: 'site-name',
+    ssl_url: 'https://test-site.netlify.app',
+    // No published_deploy — triggers account-scoped fallback
+  }
+
+  const accountAIGatewayToken = {
+    token: 'account-ai-gateway-token-456',
+    url: 'https://ai.netlify.com/.netlify/ai/',
+  }
+
+  const routes = [
+    { path: 'sites/test-site-id', response: siteInfo },
+    { path: 'sites/test-site-id/service-instances', response: [] },
+    { path: 'accounts', response: [{ id: 'account-id-123', slug: siteInfo.account_slug }] },
+    { path: 'accounts/test-account/env', response: [] },
+    { path: 'accounts/account-id-123/ai-gateway/token', response: accountAIGatewayToken },
+    { path: 'ai-gateway/providers', response: { providers: {} } },
+  ]
+
+  return { siteInfo, accountAIGatewayToken, routes }
+}
 
 export const createAIGatewayDisabledTestData = () => {
   const siteInfo = {

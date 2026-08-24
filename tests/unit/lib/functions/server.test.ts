@@ -42,7 +42,7 @@ describe('createHandler', () => {
 
     // TODO(serhalp): Lazy test type. Create a config factory and use it here.
     app.all(
-      '*',
+      '{*splat}',
       // @ts-expect-error TS(2741) FIXME: Property 'processing' is missing in type '{}' but ... Remove this comment to see the full error message
       createHandler({ functionsRegistry, config: { dev: {} }, geo: 'mock', state: new LocalState(projectRoot) }),
     )

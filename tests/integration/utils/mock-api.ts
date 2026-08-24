@@ -90,7 +90,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     res.json([])
   })
 
-  app.all('*', function onRequest(req, res) {
+  app.all('{*splat}', function onRequest(req, res) {
     if (process.env.DEBUG_TESTS) {
       console.debug('[mock-api] ', req.method, req.path, req.body)
     }

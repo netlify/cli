@@ -29,11 +29,13 @@ export const createFunctionsCommand = (program: BaseCommand) => {
     .option('-n, --name <name>', 'function name')
     .option('-u, --url <url>', 'pull template from URL')
     .option('-l, --language <lang>', 'function language')
+    .option('-t, --template <name>', 'bundled template to use (skips the interactive template picker)')
     .option('-o, --offline', 'Disables any features that require network access')
     .addExamples([
       'netlify functions:create',
       'netlify functions:create hello-world',
       'netlify functions:create --name hello-world',
+      'netlify functions:create --language typescript --template hello-world',
     ])
     .action(async (name: string, options: OptionValues, command: BaseCommand) => {
       const { functionsCreate } = await import('./functions-create.js')

@@ -50,6 +50,10 @@ Manage objects in Netlify Blobs
 
 Build on your local machine
 
+### [claim](/commands/claim)
+
+Claim an anonymously deployed site and link it to your account
+
 ### [clone](/commands/clone)
 
 Clone a remote repository and link it to an existing project on Netlify
@@ -63,14 +67,21 @@ Generate shell completion script
 | [`completion:install`](/commands/completion#completioninstall) | Generates completion script for your preferred shell  |
 
 
-### [db](/commands/db)
+### [create](/commands/create)
+
+Create a new Netlify project using an AI agent
+
+### [database](/commands/database)
 
 Provision a production ready Postgres database with a single command
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`init`](/commands/db#init) | Initialize a new database for the current site  |
-| [`status`](/commands/db#status) | Check the status of the database  |
+| [`database status`](/commands/database#database-status) | Check the status of the database, including applied and pending migrations  |
+| [`database init`](/commands/database#database-init) | Interactive setup: install the package, scaffold a starter migration, and verify the database  |
+| [`database connect`](/commands/database#database-connect) | Connect to the database  |
+| [`database reset`](/commands/database#database-reset) | Reset the local development database, removing all data and tables  |
+| [`database migrations`](/commands/database#database-migrations) | Manage database migrations  |
 
 
 ### [deploy](/commands/deploy)
@@ -127,13 +138,7 @@ Login to your Netlify account
 
 ### [logs](/commands/logs)
 
-Stream logs from your project
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`logs:deploy`](/commands/logs#logsdeploy) | Stream the logs of deploys currently being built to the console  |
-| [`logs:function`](/commands/logs#logsfunction) | Stream netlify function logs to the console  |
-
+View logs from your project
 
 ### [open](/commands/open)
 
@@ -165,9 +170,9 @@ Handle various project operations
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`sites:create`](/commands/sites#sitescreate) | Create an empty project (advanced)  |
-| [`sites:create-template`](/commands/sites#sitescreate-template) | (Beta) Create a project from a starter template  |
 | [`sites:delete`](/commands/sites#sitesdelete) | Delete a project  |
 | [`sites:list`](/commands/sites#siteslist) | List all projects you have access to  |
+| [`sites:search`](/commands/sites#sitessearch) | Search for projects by name  |
 
 
 ### [status](/commands/status)
@@ -182,6 +187,15 @@ Print status information
 ### [switch](/commands/switch)
 
 Switch your active Netlify account
+
+### [teams](/commands/teams)
+
+Handle various team operations
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`teams:list`](/commands/teams#teamslist) | List all teams you have access to  |
+
 
 ### [unlink](/commands/unlink)
 

@@ -40,7 +40,7 @@ const cloneRepo = async (repoUrl: string, targetDir: string, debug: boolean): Pr
   try {
     await runGit(['clone', repoUrl, targetDir], !debug)
   } catch (error) {
-    throw new Error(`Failed to clone repository: ${error instanceof Error ? error.message : error?.toString() ?? ''}`)
+    throw new Error(`Failed to clone repository: ${error instanceof Error ? error.message : (error?.toString() ?? '')}`)
   }
 }
 

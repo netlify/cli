@@ -1,7 +1,4 @@
-import { version } from 'process'
-
 import execa from 'execa'
-import { gte } from 'semver'
 import { describe, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
@@ -13,19 +10,20 @@ const siteInfo = {
   name: 'mock-site-name',
 }
 const routes = [
-  { path: 'sites/*/service-instances', response: [] },
-  { path: 'sites/*', response: siteInfo },
+  { path: 'sites/:siteId/service-instances', response: [] },
+  { path: 'sites/{*splat}', response: siteInfo },
   {
     path: 'accounts',
     response: [{ id: siteInfo.account_id, slug: siteInfo.account_slug }],
   },
+  { path: 'accounts/:accountId/env', response: [] },
 ]
 
 const setup = async ({ fixture }: { fixture: { directory: string } }) => {
   await execa('npm', ['install'], { cwd: fixture.directory })
 }
 
-describe.runIf(gte(version, '20.12.2')).concurrent('v2 api', async () => {
+describe.concurrent('v2 api', async () => {
   await setupFixtureTests('dev-server-with-v2-functions', { devServer: true, mockApi: { routes }, setup }, () => {
     test<FixtureTestContext>('should successfully be able to run v2 functions', async ({ devServer, expect }) => {
       const response = await fetch(`http://localhost:${devServer!.port}/.netlify/functions/ping`)

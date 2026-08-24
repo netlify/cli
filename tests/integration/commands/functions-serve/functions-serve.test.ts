@@ -17,19 +17,18 @@ import {
   createAIGatewayTestData,
 } from '../../utils/ai-gateway-helpers.js'
 
-const DEFAULT_PORT = 9999
 const SERVE_TIMEOUT = 180_000
 
 const withFunctionsServer = async (
   {
     args = [],
     builder,
-    port = DEFAULT_PORT,
+    port,
     env = {},
   }: {
     args?: string[]
     builder: SiteBuilder
-    port?: number
+    port: number
     env?: NodeJS.ProcessEnv
   },
   testHandler: () => Promise<unknown>,
@@ -74,8 +73,9 @@ describe.concurrent('functions:serve command', () => {
         })
         .build()
 
-      await withFunctionsServer({ builder }, async () => {
-        const response = await fetch(`http://localhost:9999/.netlify/functions/ping`)
+      const port = await getPort()
+      await withFunctionsServer({ builder, args: ['--port', port.toString()], port }, async () => {
+        const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/ping`)
         t.expect(await response.text()).toEqual('ping')
       })
     })

@@ -1,3 +1,4 @@
+import { createHash, randomUUID } from 'crypto'
 import { copyFile, mkdir, rm, unlink, writeFile } from 'fs/promises'
 import os from 'os'
 import path from 'path'
@@ -12,7 +13,6 @@ import execa from 'execa'
 import serializeJS from 'serialize-javascript'
 import tempDirectory from 'temp-dir'
 import tomlify from 'tomlify-j0.4'
-import { v4 as uuidv4 } from 'uuid'
 import type { TestContext } from 'vitest'
 
 const ensureDir = (directory: string) => mkdir(directory, { recursive: true })
@@ -317,13 +317,29 @@ export class SiteBuilder {
   }
 }
 
+// Windows has a MAX_PATH limit of 260 characters. Since test directories
+// include the temp dir, process version, PID, a UUID, and the site name,
+// long test names can push nested file paths over this limit. We cap the
+// site name and append a hash to avoid collisions.
+const MAX_SITE_NAME_LENGTH = 50
+
+const truncateSiteName = (siteName: string): string => {
+  if (siteName.length <= MAX_SITE_NAME_LENGTH) {
+    return siteName
+  }
+
+  const hash = createHash('sha256').update(siteName).digest('hex').slice(0, 8)
+
+  return `${siteName.slice(0, MAX_SITE_NAME_LENGTH - 9)}-${hash}`
+}
+
 export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
   const directory = path.join(
     tempDirectory,
     `netlify-cli-tests-${process.version}`,
     `${process.pid}`,
-    uuidv4(),
-    siteName,
+    randomUUID(),
+    truncateSiteName(siteName),
   )
 
   return new SiteBuilder(directory).ensureDirectoryExists(directory)

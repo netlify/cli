@@ -1,11 +1,11 @@
 {
   "name": "myorg",
   "version": "0.0.0",
+  "private": true,
   "license": "MIT",
   "scripts": {
     "postinstall": "node ./tools/scripts/patch-nx-cli.js"
   },
-  "private": true,
   "dependencies": {
     "core-js": "^3.6.5",
     "next": "14.2.32",

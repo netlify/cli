@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer'
+import crypto from 'crypto'
 import path from 'path'
 
 import { BlobsServer } from '@netlify/blobs/server'
-import { v4 as uuidv4 } from 'uuid'
 
 import { log, NETLIFYDEVLOG } from '../../utils/command-helpers.js'
 import { getPathInProject } from '../settings.js'
@@ -47,7 +47,7 @@ const printLocalBlobsNotice = () => {
  * for its authentication.
  */
 const initializeBlobsServer = async (projectRoot: string, debug: boolean) => {
-  const token = uuidv4()
+  const token = crypto.randomUUID()
   const directory = path.resolve(projectRoot, getPathInProject(['blobs-serve']))
   const server = new BlobsServer({
     debug,

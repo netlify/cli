@@ -1,0 +1,7 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": false,
+  "singleQuote": true,
+  "sortPackageJson": true,
+  "ignorePatterns": ["node_modules", "CHANGELOG.md", "docs/**", "**/package-lock.json"]
+}

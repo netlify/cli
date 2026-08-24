@@ -17,7 +17,7 @@ import { renderFunctionErrorPage } from '@netlify/dev-utils'
 import { ImageHandler } from '@netlify/images'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import contentType from 'content-type'
-import cookie from 'cookie'
+import { parseCookie } from 'cookie'
 import { getProperty } from 'dot-prop'
 import generateETag from 'etag'
 import getAvailablePort from 'get-port'
@@ -25,7 +25,7 @@ import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
-import throttle from 'lodash/throttle.js'
+import { throttle } from './object-utilities.js'
 import type { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 
@@ -192,12 +192,9 @@ const proxyToExternalUrl = function ({
     target: dest.origin,
     changeOrigin: true,
     pathRewrite: () => destURL,
-    // hide logging
-    logLevel: 'warn',
     ...(Buffer.isBuffer(req.originalBody) && { buffer: Readable.from(req.originalBody) }),
   })
-  // @ts-expect-error TS(2345) FIXME: Argument of type 'Request' is not assignable to parameter of type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
-  handler(req, res, () => {})
+  void handler(req, res, () => {})
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'addonUrl' implicitly has an 'any'... Remove this comment to see the full error message
@@ -324,7 +321,7 @@ const serveRedirect = async function ({
       match.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
     )
 
-    const cookieValues = cookie.parse(req.headers.cookie || '')
+    const cookieValues = parseCookie(req.headers.cookie || '')
     const token = cookieValues.nf_jwt
 
     // Serve not found by default
@@ -549,6 +546,10 @@ const initializeProxy = async function ({
         options.target = `http://${isIPv6(newHost) ? `[${newHost}]` : newHost}:${targetUrl.port}`
         options.targetHostname = newHost
         options.isChangingTarget = true
+        // http-proxy attaches new 'aborted'/'error' listeners on req for every proxy.web call; without
+        // clearing them first, retries leak listeners and the closures retain per-attempt proxyReq objects.
+        req.removeAllListeners('aborted')
+        req.removeAllListeners('error')
         proxy.web(req, res, options)
         return
       }
@@ -622,6 +623,10 @@ const initializeProxy = async function ({
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
         // @ts-expect-error TS(2339) FIXME: Property 'alternativePaths' does not exist on type... Remove this comment to see the full error message
         req.url = req.alternativePaths.shift()
+        // http-proxy attaches new 'aborted'/'error' listeners on req for every proxy.web call; without
+        // clearing them first, retries leak listeners and the closures retain per-attempt proxyReq objects.
+        req.removeAllListeners('aborted')
+        req.removeAllListeners('error')
         // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
         proxy.web(req, res, req.proxyOptions)
         return
@@ -706,7 +711,7 @@ const initializeProxy = async function ({
 
     proxyRes.on('end', async function onEnd() {
       // @ts-expect-error TS(7005) FIXME: Variable 'responseData' implicitly has an 'any[]' ... Remove this comment to see the full error message
-      let responseBody = Buffer.concat(responseData)
+      let responseBody: Buffer = Buffer.concat(responseData)
 
       let responseStatus = options.status || proxyRes.statusCode
 
@@ -942,6 +947,8 @@ export const startProxy = async function ({
   settings,
   siteInfo,
   state,
+  watchIgnore,
+  deployEnvironment,
 }: {
   command: BaseCommand
   config: NormalizedCachedConfigConfig
@@ -949,6 +956,8 @@ export const startProxy = async function ({
   disableEdgeFunctions: boolean
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   aiGatewayContext?: AIGatewayContext | null
+  watchIgnore: string[]
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 } & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
@@ -981,6 +990,8 @@ export const startProxy = async function ({
       repositoryRoot,
       siteInfo,
       state,
+      watchIgnore,
+      deployEnvironment,
     })
   }
 

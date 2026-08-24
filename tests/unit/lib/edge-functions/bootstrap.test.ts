@@ -29,4 +29,13 @@ describe('`getBootstrapURL()`', () => {
     expect(res.status).toBe(200)
     expect(res.headers.get('content-type')).toMatch(/^application\/typescript/)
   })
+
+  test('Falls back to a publicly accessible URL', { retry: 3 }, async () => {
+    // The fallback is what serves edge functions when the version lookup fails,
+    // so a typo in it stays invisible until that happens in the wild.
+    const res = await fetch(FALLBACK_BOOTSTRAP_URL)
+
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toMatch(/^application\/typescript/)
+  })
 })

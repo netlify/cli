@@ -46,6 +46,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   private readonly aiGatewayContext?: AIGatewayContext | null
   private readonly blobsContext: BlobsContextWithEdgeAccess
   private readonly config: NormalizedCachedConfigConfig
+  private readonly deployEnvironment: { key: string; value: string; isSecret: boolean }[]
   private readonly directory?: string
   private readonly projectRoot: string
   private readonly timeoutBackground?: number
@@ -63,9 +64,22 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   // main file.
   public readonly srcPath: string
 
-  // Determines whether this is a background function based on the function
-  // name.
-  public readonly isBackground: boolean
+  // Determines whether this is a background function. Checks (in order):
+  //  1. ZISI build data — `invocationMode === 'background'` captures the
+  //     filename suffix AND the in-source `config.background: true`.
+  //  2. The TOML config — `[functions.<name>] background = true`.
+  //  3. The filename suffix as a last-resort fallback (used pre-build and for
+  //     non-ZISI runtimes like Go).
+  get isBackground(): boolean {
+    if (this.buildData?.invocationMode === 'background') {
+      return true
+    }
+
+    if (this.config.functions?.[this.name]?.background === true) {
+      return true
+    }
+    return this.name.endsWith(BACKGROUND)
+  }
 
   private buildQueue?: Promise<BuildResult> | undefined
   public buildData?: MappedOmit<BuildResult, 'includedFiles' | 'schedule' | 'srcFiles'> | undefined
@@ -79,6 +93,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     aiGatewayContext,
     blobsContext,
     config,
+    deployEnvironment,
     directory,
     displayName,
     mainFile,
@@ -93,6 +108,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     aiGatewayContext?: AIGatewayContext | null
     blobsContext: BlobsContextWithEdgeAccess
     config: NormalizedCachedConfigConfig
+    deployEnvironment: { key: string; value: string; isSecret: boolean }[]
     directory?: string
     displayName?: string
     mainFile: string
@@ -108,6 +124,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     this.aiGatewayContext = aiGatewayContext
     this.blobsContext = blobsContext
     this.config = config
+    this.deployEnvironment = deployEnvironment ?? []
     this.directory = directory
     this.mainFile = mainFile
     this.name = name
@@ -119,11 +136,9 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     this.settings = settings
     this.srcPath = srcPath
 
-    this.isBackground = name.endsWith(BACKGROUND)
-
     const functionConfig = config.functions?.[name]
     // @ts-expect-error -- XXX(serhalp): fixed in stack PR (bumps to https://github.com/netlify/build/pull/6165)
-    this.schedule = functionConfig && functionConfig.schedule
+    this.schedule = functionConfig?.schedule
 
     this.srcFiles = new Set()
   }
@@ -281,6 +296,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     const environment = {
       // Include function-specific environment variables from config
       ...configEnvVars,
+      ...Object.fromEntries(this.deployEnvironment.map(({ key, value }) => [key, value])),
     }
 
     if (this.blobsContext) {
@@ -309,7 +325,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   }
 
   /**
-   * Matches all routes agains the incoming request. If a match is found, then the matched route is returned.
+   * Matches all routes against the incoming request. If a match is found, then the matched route is returned.
    * @returns matched route
    */
   async matchURLPath(rawPath: string, method: string, hasStaticFile: () => Promise<boolean>) {

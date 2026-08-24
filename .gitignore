@@ -30,8 +30,9 @@ site/src/**/*.md
 .verdaccio-storage
 .eslintcache
 _test_out/**
+tests/unit/utils/tmp
 *.crt
 *.key
 
 # Used in local dev by tsc: https://www.typescriptlang.org/tsconfig/#tsBuildInfoFile
-tsconfig.tsbuildinfo
+*.tsbuildinfo

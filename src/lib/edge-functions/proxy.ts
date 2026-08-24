@@ -95,6 +95,8 @@ export const initializeProxy = async ({
   settings,
   siteInfo,
   state,
+  watchIgnore,
+  deployEnvironment,
 }: {
   accountId: string
   aiGatewayContext?: AIGatewayContext | null
@@ -116,6 +118,8 @@ export const initializeProxy = async ({
   settings: ServerSettings
   siteInfo: $TSFixMe
   state: LocalState
+  watchIgnore: string[]
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   const isolatePort = await getAvailablePort()
   const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode', 'edge_functions_bootstrap_populate_environment']
@@ -137,7 +141,10 @@ export const initializeProxy = async ({
     inspectSettings,
     port: isolatePort,
     projectDir,
+    publishDir: settings.dist,
     repositoryRoot,
+    watchIgnore,
+    deployEnvironment,
   })
   return async (req: ExtendedIncomingMessage) => {
     if (req.headers[headers.Passthrough] !== undefined) {
@@ -211,7 +218,10 @@ const prepareServer = async ({
   inspectSettings,
   port,
   projectDir,
+  publishDir,
   repositoryRoot,
+  watchIgnore,
+  deployEnvironment,
 }: {
   aiGatewayContext?: AIGatewayContext | null
   command: BaseCommand
@@ -224,7 +234,10 @@ const prepareServer = async ({
   inspectSettings: Parameters<typeof bundler.serve>[0]['inspectSettings']
   port: number
   projectDir: string
+  publishDir: string
   repositoryRoot?: string
+  watchIgnore: string[]
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   try {
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
@@ -262,8 +275,15 @@ const prepareServer = async ({
       getUpdatedConfig,
       importMapFromTOML: config.functions?.['*'].deno_import_map,
       projectDir,
+      publishDir,
       runIsolate,
       servePath,
+      watchIgnore,
+      deployEnvironment: deployEnvironment
+        .filter(({ scopes }) => scopes.includes('functions'))
+        // Scopes should be opaque to the functions registry: We just filtered down to only variables
+        // should be applied to functions.
+        .map(({ scopes, ...rest }) => rest),
     })
 
     return registry
