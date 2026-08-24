@@ -18,9 +18,9 @@ netlify switch
 
 **Flags**
 
-- `email` (*string*) - Switch to the account matching this email address
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `email` (*string*) - Switch to the account matching this email address
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

@@ -68,7 +68,7 @@ describe('git-credential command', () => {
     it('writes credentials in git credential format', () => {
       const output: string[] = []
       const mockOutput = new Writable({
-        write(chunk, encoding, callback) {
+        write(chunk: Buffer, _encoding, callback) {
           output.push(chunk.toString())
           callback()
         },
