@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   parseGitCredentialInput,
   writeCredentials,
-  AGENTGIT_HOST,
+  NETLIFY_GIT_HOST,
 } from '../../../../src/commands/git-credential/git-credential.js'
 
 describe('git-credential command', () => {
@@ -13,7 +13,7 @@ describe('git-credential command', () => {
       const input = new Readable({
         read() {
           this.push('protocol=https\n')
-          this.push('host=agentgit.netlify.app\n')
+          this.push('host=git.netlify.app\n')
           this.push('path=/test/repo.git\n')
           this.push('\n')
           this.push(null)
@@ -24,7 +24,7 @@ describe('git-credential command', () => {
 
       expect(result).toEqual({
         protocol: 'https',
-        host: 'agentgit.netlify.app',
+        host: 'git.netlify.app',
         path: '/test/repo.git',
       })
     })
@@ -80,9 +80,9 @@ describe('git-credential command', () => {
     })
   })
 
-  describe('AGENTGIT_HOST', () => {
+  describe('NETLIFY_GIT_HOST', () => {
     it('is the correct host', () => {
-      expect(AGENTGIT_HOST).toBe('agentgit.netlify.app')
+      expect(NETLIFY_GIT_HOST).toBe('git.netlify.app')
     })
   })
 })

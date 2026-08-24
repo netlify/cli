@@ -6,7 +6,7 @@ import { getToken } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 import type { GitCredentialOptionValues } from './option_values.js'
 
-export const AGENTGIT_HOST = 'agentgit.netlify.app'
+export const NETLIFY_GIT_HOST = 'git.netlify.app'
 
 export const parseGitCredentialInput = async (input: Readable): Promise<Record<string, string>> => {
   const rl = readline.createInterface({
@@ -43,7 +43,7 @@ export const gitCredential = async (
 
   const input = await parseGitCredentialInput(process.stdin)
 
-  if (input.host !== AGENTGIT_HOST) {
+  if (input.host !== NETLIFY_GIT_HOST) {
     return
   }
 
