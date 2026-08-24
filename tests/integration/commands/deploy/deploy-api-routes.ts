@@ -53,6 +53,8 @@ interface CreateDeployBody {
   branch?: string
   environment?: DeployEnvironmentVariable[]
   deploy_source?: string
+  agent_runner_id?: string
+  agent_runner_session_id?: string
 }
 
 export interface DeployRouteState {
