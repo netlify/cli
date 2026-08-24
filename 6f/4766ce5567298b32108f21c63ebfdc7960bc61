@@ -1,0 +1,27 @@
+src/commands/clone/clone.ts
+  s_d1230654d0e055::t_ff6d6f65b8624e 266
+  s_d1230654d0e055::t_655f7f0987c7b8 16-24
+  s_d1230654d0e055::t_6fa265d7b7de15 124-143,145-152,154-192
+  s_d1230654d0e055::t_bf86c8eb9dc007 217-224
+  s_d1230654d0e055::t_32fddb2f1cd237 15,53,56,66,77,144,153
+src/commands/git-credential/git-credential.ts
+  s_d1230654d0e055::t_32fddb2f1cd237 9,46
+tests/unit/commands/git-credential/git-credential.test.ts
+  s_d1230654d0e055::t_32fddb2f1cd237 7,16,27,83,85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "6f4766ce5567298b32108f21c63ebfdc7960bc61",
+  "prompts": {},
+  "sessions": {
+    "s_d1230654d0e055": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf3da575-1dfd-4bea-9bac-0c4e588f1ce0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Mathias Biilmann <info@mathias-biilmann.net>"
+    }
+  }
+}
