@@ -51,11 +51,9 @@ const getCredentialHelper = (): string => {
 
 const configureGitAuth = async (repoDir: string): Promise<void> => {
   await execa('git', ['config', `credential.https://${NETLIFY_GIT_HOST}.helper`, ''], { cwd: repoDir })
-  await execa(
-    'git',
-    ['config', '--add', `credential.https://${NETLIFY_GIT_HOST}.helper`, getCredentialHelper()],
-    { cwd: repoDir },
-  )
+  await execa('git', ['config', '--add', `credential.https://${NETLIFY_GIT_HOST}.helper`, getCredentialHelper()], {
+    cwd: repoDir,
+  })
   await execa('git', ['config', 'http.postBuffer', '524288000'], { cwd: repoDir })
 }
 
