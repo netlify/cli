@@ -3,16 +3,16 @@ import { resolve } from 'path'
 import inquirer from 'inquirer'
 
 import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js'
-import { chalk, logAndThrowError, log, getToken } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, getToken, type APIError } from '../../utils/command-helpers.js'
 import { runGit } from '../../utils/run-git.js'
 import execa from '../../utils/execa.js'
 import type BaseCommand from '../base-command.js'
+import { NETLIFY_GIT_HOST } from '../git-credential/git-credential.js'
 import { link } from '../link/link.js'
 import type { CloneOptionValues } from './option_values.js'
 import { startSpinner } from '../../lib/spinner.js'
 import type { SiteInfo } from '../../utils/types.js'
 
-const NETLIFY_GIT_HOST = 'git.netlify.app'
 const NETLIFY_GIT_SERVICE_HOST = 'hgit.services-prod.nsvcs.net'
 
 const isNetlifyGitServiceUrl = (repoUrl: string): boolean => {
@@ -44,37 +44,30 @@ const cloneRepo = async (repoUrl: string, targetDir: string, debug: boolean): Pr
   }
 }
 
-const getNetlifyCliPath = (): string => {
-  return process.argv[1]
+const getCredentialHelper = (): string => {
+  const cliPath = process.argv[1]
+  return `!'${cliPath}' git-credential`
 }
 
 const configureGitAuth = async (repoDir: string): Promise<void> => {
-  const cliPath = getNetlifyCliPath()
   await execa('git', ['config', `credential.https://${NETLIFY_GIT_HOST}.helper`, ''], { cwd: repoDir })
   await execa(
     'git',
-    ['config', '--add', `credential.https://${NETLIFY_GIT_HOST}.helper`, `!${cliPath} git-credential`],
+    ['config', '--add', `credential.https://${NETLIFY_GIT_HOST}.helper`, getCredentialHelper()],
     { cwd: repoDir },
   )
   await execa('git', ['config', 'http.postBuffer', '524288000'], { cwd: repoDir })
 }
 
-const redactToken = (message: string, token: string): string => {
-  return message.replaceAll(token, '[REDACTED]')
-}
-
-const cloneFromNetlifyGit = async (
-  repoUrl: string,
-  targetDir: string,
-  token: string,
-  debug: boolean,
-): Promise<void> => {
+const cloneFromNetlifyGit = async (repoUrl: string, targetDir: string, debug: boolean): Promise<void> => {
   try {
     await execa(
       'git',
       [
         '-c',
-        `http.https://${NETLIFY_GIT_HOST}.extraHeader=Authorization: Bearer ${token}`,
+        `credential.https://${NETLIFY_GIT_HOST}.helper=`,
+        '-c',
+        `credential.https://${NETLIFY_GIT_HOST}.helper=${getCredentialHelper()}`,
         'clone',
         repoUrl,
         targetDir,
@@ -85,7 +78,7 @@ const cloneFromNetlifyGit = async (
     )
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    throw new Error(`Failed to clone repository: ${redactToken(message, token)}`)
+    throw new Error(`Failed to clone repository: ${message}`)
   }
 }
 
@@ -114,9 +107,45 @@ const lookupSiteByName = async (api: BaseCommand['netlify']['api'], siteName: st
     const sites = await api.listSites({ name: siteName, filter: 'all' })
     const site = sites.find((s) => s.name === siteName)
     return site ? (site as SiteInfo) : null
-  } catch {
-    return null
+  } catch (error) {
+    if ((error as APIError).status === 404) {
+      return null
+    }
+    throw error
   }
+}
+
+const finalizeClone = async (
+  options: CloneOptionValues,
+  command: BaseCommand,
+  workingDir: string,
+  linkOverrides: { id?: string; name?: string; gitRemoteUrl?: string },
+): Promise<void> => {
+  command.workingDir = workingDir
+  process.chdir(workingDir)
+
+  const { id, name, ...globalOptions } = options
+  await link({ ...globalOptions, ...linkOverrides }, command)
+}
+
+const logCloneSuccess = (
+  targetDir: string,
+  { credentialsConfigured = false, devCommand }: { credentialsConfigured?: boolean; devCommand?: string } = {},
+): void => {
+  log()
+  log(chalk.green('✔ Your project is ready to go!'))
+  log(`→ Next, enter your project directory using ${chalk.cyanBright(`cd ${targetDir}`)}`)
+  log()
+  log(`→ You can now run other ${chalk.cyanBright('netlify')} CLI commands in this directory`)
+  if (credentialsConfigured) {
+    log(`Git is configured to use your Netlify credentials for this repository.`)
+  }
+  log(`→ To build and deploy your project: ${chalk.cyanBright('netlify deploy')}`)
+  if (devCommand) {
+    log(`→ To run your dev server: ${chalk.cyanBright(devCommand)}`)
+  }
+  log(`→ To see all available commands: ${chalk.cyanBright('netlify help')}`)
+  log()
 }
 
 const cloneFromNetlifyGitService = async (
@@ -148,7 +177,7 @@ const cloneFromNetlifyGitService = async (
   const cloneSpinner = startSpinner({ text: `Cloning repository to ${chalk.cyan(targetDir)}` })
 
   try {
-    await cloneFromNetlifyGit(repoUrl, resolvedTargetDir, token, options.debug ?? false)
+    await cloneFromNetlifyGit(repoUrl, resolvedTargetDir, options.debug ?? false)
   } catch (error) {
     cloneSpinner.error()
     return logAndThrowError(error)
@@ -167,25 +196,8 @@ const cloneFromNetlifyGitService = async (
 
   configSpinner.success('Configured git credentials')
 
-  command.workingDir = resolvedTargetDir
-  process.chdir(resolvedTargetDir)
-
-  const { id, name, ...globalOptions } = options
-  const linkOptions = {
-    ...globalOptions,
-    id: siteInfo.id,
-  }
-  await link(linkOptions, command)
-
-  log()
-  log(chalk.green('✔ Your project is ready to go!'))
-  log(`→ Next, enter your project directory using ${chalk.cyanBright(`cd ${targetDir}`)}`)
-  log()
-  log(`→ You can now run other ${chalk.cyanBright('netlify')} CLI commands in this directory`)
-  log(`Git is configured to use your Netlify credentials for this repository.`)
-  log(`→ To build and deploy your project: ${chalk.cyanBright('netlify deploy')}`)
-  log(`→ To see all available commands: ${chalk.cyanBright('netlify help')}`)
-  log()
+  await finalizeClone(options, command, resolvedTargetDir, { id: siteInfo.id })
+  logCloneSuccess(targetDir, { credentialsConfigured: true })
 }
 
 export const clone = async (
@@ -237,25 +249,8 @@ export const clone = async (
       }
       cloneSpinner.success(`Cloned repository to ${chalk.cyan(targetDir)}`)
 
-      command.workingDir = targetDir
-      process.chdir(targetDir)
-
-      const { id, name, ...globalOptions } = options
-      const linkOptions = {
-        ...globalOptions,
-        id: siteInfo.id,
-        gitRemoteUrl: connectedRepoUrl,
-      }
-      await link(linkOptions, command)
-
-      log()
-      log(chalk.green('✔ Your project is ready to go!'))
-      log(`→ Next, enter your project directory using ${chalk.cyanBright(`cd ${targetDir}`)}`)
-      log()
-      log(`→ You can now run other ${chalk.cyanBright('netlify')} CLI commands in this directory`)
-      log(`→ To build and deploy your project: ${chalk.cyanBright('netlify deploy')}`)
-      log(`→ To see all available commands: ${chalk.cyanBright('netlify help')}`)
-      log()
+      await finalizeClone(options, command, targetDir, { id: siteInfo.id, gitRemoteUrl: connectedRepoUrl })
+      logCloneSuccess(targetDir)
     } else {
       log(`Site does not have a connected repository.`)
       log(`Cloning from Netlify's managed git service...`)
@@ -277,28 +272,7 @@ export const clone = async (
     }
     cloneSpinner.success(`Cloned repository to ${chalk.cyan(targetDir)}`)
 
-    command.workingDir = targetDir
-    process.chdir(targetDir)
-
-    const { id, name, ...globalOptions } = options
-    const linkOptions = {
-      ...globalOptions,
-      id,
-      name,
-      gitRemoteUrl: httpsUrl,
-    }
-    await link(linkOptions, command)
-
-    log()
-    log(chalk.green('✔ Your project is ready to go!'))
-    log(`→ Next, enter your project directory using ${chalk.cyanBright(`cd ${targetDir}`)}`)
-    log()
-    log(`→ You can now run other ${chalk.cyanBright('netlify')} CLI commands in this directory`)
-    log(`→ To build and deploy your project: ${chalk.cyanBright('netlify deploy')}`)
-    if (command.netlify.config.dev?.command) {
-      log(`→ To run your dev server: ${chalk.cyanBright(command.netlify.config.dev.command)}`)
-    }
-    log(`→ To see all available commands: ${chalk.cyanBright('netlify help')}`)
-    log()
+    await finalizeClone(options, command, targetDir, { id: options.id, name: options.name, gitRemoteUrl: httpsUrl })
+    logCloneSuccess(targetDir, { devCommand: command.netlify.config.dev?.command })
   }
 }

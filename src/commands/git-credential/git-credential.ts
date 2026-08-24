@@ -8,7 +8,7 @@ import type { GitCredentialOptionValues } from './option_values.js'
 
 export const NETLIFY_GIT_HOST = 'git.netlify.app'
 
-export const parseGitCredentialInput = async (input: Readable): Promise<Record<string, string>> => {
+export const parseGitCredentialInput = async (input: Readable): Promise<Partial<Record<string, string>>> => {
   const rl = readline.createInterface({
     input,
     terminal: false,
@@ -43,7 +43,7 @@ export const gitCredential = async (
 
   const input = await parseGitCredentialInput(process.stdin)
 
-  if (input.host !== NETLIFY_GIT_HOST) {
+  if (input.host?.split(':')[0] !== NETLIFY_GIT_HOST) {
     return
   }
 
