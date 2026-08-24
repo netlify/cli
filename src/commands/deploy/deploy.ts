@@ -40,6 +40,7 @@ import {
 } from '../../utils/command-helpers.js'
 import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
+import { getDeploySourceFields } from '../../utils/deploy/deploy-source.js'
 import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { mergeDeployEnvVars } from '../../utils/env/deploy-env-vars.js'
@@ -600,7 +601,7 @@ const runDeploy = async ({
         draft,
         branch: alias,
         include_upload_url: options.uploadSourceZip,
-        deploy_source: process.env.NETLIFY_DEPLOY_SOURCE || 'cli',
+        ...getDeploySourceFields(),
       }
 
       const createDeployResponse = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
@@ -1390,7 +1391,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
       draft,
       branch: alias,
       include_upload_url: options.uploadSourceZip,
-      deploy_source: process.env.NETLIFY_DEPLOY_SOURCE || 'cli',
+      ...getDeploySourceFields(),
     }
 
     // TODO: Type this properly in `@netlify/api`.
