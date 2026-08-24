@@ -1,0 +1,19 @@
+tests/integration/commands/help/__snapshots__/help.test.ts.snap
+  s_d1230654d0e055::t_425d7de4ea1b2f 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "927ed9282513e7ca6f81feb6025ddd97b35fd48c",
+  "prompts": {},
+  "sessions": {
+    "s_d1230654d0e055": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf3da575-1dfd-4bea-9bac-0c4e588f1ce0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Mathias Biilmann <info@mathias-biilmann.net>"
+    }
+  }
+}
