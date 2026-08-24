@@ -34,11 +34,11 @@ netlify clone
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `id` (*string*) - ID of existing Netlify project to link to (only for GitHub/GitLab repos)
 - `name` (*string*) - Name of existing Netlify project to link to (only for GitHub/GitLab repos)
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

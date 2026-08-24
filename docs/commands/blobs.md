@@ -18,9 +18,9 @@ netlify blobs
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -59,10 +59,10 @@ netlify blobs:delete
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Bypasses prompts & Force the command to run.
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `blobs:get`
@@ -82,10 +82,10 @@ netlify blobs:get
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `output` (*string*) - Defines the filesystem path where the blob data should be persisted
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `blobs:list`
@@ -104,12 +104,12 @@ netlify blobs:list
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `directories` (*boolean*) - Indicates that keys with the '/' character should be treated as directories, returning a list of sub-directories at a given level rather than all the keys inside them
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output list contents as JSON
 - `prefix` (*string*) - A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `blobs:set`
@@ -130,11 +130,11 @@ netlify blobs:set
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `input` (*string*) - Defines the filesystem path where the blob data should be read from
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 

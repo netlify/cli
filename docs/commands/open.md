@@ -18,10 +18,10 @@ netlify open
 **Flags**
 
 - `admin` (*boolean*) - Open Netlify project
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `site` (*boolean*) - Open project
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -51,9 +51,9 @@ netlify open:admin
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 **Examples**
 
@@ -74,9 +74,9 @@ netlify open:site
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 **Examples**
 

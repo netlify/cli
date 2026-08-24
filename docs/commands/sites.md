@@ -19,9 +19,9 @@ netlify sites
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -81,10 +81,10 @@ netlify sites:delete
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Delete without prompting (useful for CI).
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -105,10 +105,10 @@ netlify sites:list
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output project data as JSON
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `sites:search`
@@ -127,10 +127,10 @@ netlify sites:search
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output project data as JSON
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
