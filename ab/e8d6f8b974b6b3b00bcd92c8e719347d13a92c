@@ -1,0 +1,65 @@
+docs/index.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 59
+docs/commands/clone.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 11,13-16,18-22,32,39-41,46-48,51
+docs/commands/build.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 20-21
+docs/commands/dev.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 83-84
+docs/commands/api.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 29-30
+docs/commands/login.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 22-23
+docs/commands/switch.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 23
+docs/commands/completion.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 51
+docs/commands/unlink.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 23
+docs/commands/teams.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 51-52
+docs/commands/link.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 21-22
+docs/commands/watch.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 23
+docs/commands/init.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 21-22
+docs/commands/blobs.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 23,64-65,87-88,107-108,133-134
+docs/commands/database.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 24,58-59,88-89,111-112,141-142,159,182-183,201-202,228-229,257-258
+docs/commands/env.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 23,59-60,90-91,124-125,221-222
+docs/commands/agents.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 26,94-95,126-127,156-157
+docs/commands/sites.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 24,86-87,110-111,132-133
+tests/unit/commands/git-credential/git-credential.test.ts
+  s_d1230654d0e055::t_81467954df0af8 71
+docs/commands/claim.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 20-21
+docs/commands/functions.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 24,55-56,154-155,173-174
+docs/commands/open.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 23-24,56,79
+docs/commands/recipes.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 26,55
+docs/commands/status.md
+  s_d1230654d0e055::t_22be4a8e1d0a3a 23-24,46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "abe8d6f8b974b6b3b00bcd92c8e719347d13a92c",
+  "prompts": {},
+  "sessions": {
+    "s_d1230654d0e055": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf3da575-1dfd-4bea-9bac-0c4e588f1ce0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Mathias Biilmann <info@mathias-biilmann.net>"
+    }
+  }
+}
