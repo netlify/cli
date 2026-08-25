@@ -55,7 +55,7 @@
     "@netlify/ai": "^1.0.0",
     "@netlify/api": "^15.1.2",
     "@netlify/blobs": "^11.0.1",
-    "@netlify/build": "^36.4.1",
+    "@netlify/build": "^36.4.2",
     "@netlify/build-info": "^11.3.0",
     "@netlify/config": "^25.2.3",
     "@netlify/dev": "^5.0.1",
