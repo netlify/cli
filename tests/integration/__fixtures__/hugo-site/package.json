@@ -1,10 +1,10 @@
 {
   "name": "hugo-site",
   "version": "1.0.0",
+  "license": "MIT",
   "scripts": {
     "serve": "hugo server -d out"
   },
-  "license": "MIT",
   "devDependencies": {
     "hugo-bin": "^0.108.0"
   }

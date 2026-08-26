@@ -35,4 +35,4 @@ tests/unit/utils/tmp
 *.key
 
 # Used in local dev by tsc: https://www.typescriptlang.org/tsconfig/#tsBuildInfoFile
-tsconfig.tsbuildinfo
+*.tsbuildinfo

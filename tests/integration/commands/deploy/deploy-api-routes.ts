@@ -27,6 +27,13 @@ const deployResponse = {
   url: 'https://test-site.netlify.app',
 }
 
+interface DeployEnvironmentVariable {
+  key: string
+  value: string
+  is_secret: boolean
+  scopes: string[]
+}
+
 interface DeployBody {
   files?: Record<string, string>
   functions?: Record<string, string>
@@ -35,13 +42,24 @@ interface DeployBody {
   async?: boolean
   branch?: string
   draft?: boolean
+  environment?: DeployEnvironmentVariable[]
   framework?: string
   framework_version?: string
   build_version?: string
 }
 
+interface CreateDeployBody {
+  draft?: boolean
+  branch?: string
+  environment?: DeployEnvironmentVariable[]
+  deploy_source?: string
+  agent_runner_id?: string
+  agent_runner_session_id?: string
+}
+
 export interface DeployRouteState {
   getDeployBody: () => DeployBody | null
+  getCreateDeployBody: () => CreateDeployBody | null
   getUploadedFiles: () => Record<string, Buffer>
   getUploadedFunctions: () => Record<string, Buffer>
   reset: () => void
@@ -49,6 +67,7 @@ export interface DeployRouteState {
 
 export const createDeployRoutes = (): { routes: Route[] } & DeployRouteState => {
   let lastDeployBody: DeployBody | null = null
+  let lastCreateDeployBody: CreateDeployBody | null = null
   let uploadedFiles: Record<string, Buffer> = {}
   let uploadedFunctions: Record<string, Buffer> = {}
 
@@ -68,7 +87,8 @@ export const createDeployRoutes = (): { routes: Route[] } & DeployRouteState => 
     {
       path: 'sites/site_id/deploys',
       method: 'POST',
-      response: (_req: express.Request, res: express.Response) => {
+      response: (req: express.Request, res: express.Response) => {
+        lastCreateDeployBody = req.body as CreateDeployBody
         res.json({
           ...deployResponse,
           state: 'prepared',
@@ -161,10 +181,12 @@ export const createDeployRoutes = (): { routes: Route[] } & DeployRouteState => 
   return {
     routes,
     getDeployBody: () => lastDeployBody,
+    getCreateDeployBody: () => lastCreateDeployBody,
     getUploadedFiles: () => uploadedFiles,
     getUploadedFunctions: () => uploadedFunctions,
     reset: () => {
       lastDeployBody = null
+      lastCreateDeployBody = null
       uploadedFiles = {}
       uploadedFunctions = {}
     },

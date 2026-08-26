@@ -124,7 +124,7 @@ const mockFS = (tree: MockFSNode, { root = DEFAULT_MOCK_FS_ROOT }: { root?: stri
 
   mockReaddir.mockImplementation((path: unknown) => {
     const resolved = typeof path === 'string' ? resolve(path) : null
-    if (!resolved || resolved.kind !== 'dir') {
+    if (resolved?.kind !== 'dir') {
       return Promise.reject(Object.assign(new Error(`ENOENT: ${String(path)}`), { code: 'ENOENT' }))
     }
     const dirEntries = Object.keys(resolved.node.dirs ?? {}).map((name) => ({
@@ -152,10 +152,10 @@ const migrationsTree = (names: string[]): MockFSNode => ({
 function createMockCommand(
   overrides: { siteRoot?: string | null; migrationsPath?: string | null; siteId?: string | null } = {},
 ) {
-  const siteRoot = overrides.siteRoot === null ? undefined : overrides.siteRoot ?? '/project'
+  const siteRoot = overrides.siteRoot === null ? undefined : (overrides.siteRoot ?? '/project')
   const migrationsPath =
-    overrides.migrationsPath === null ? undefined : overrides.migrationsPath ?? '/project/netlify/database/migrations'
-  const siteId = overrides.siteId === null ? undefined : overrides.siteId ?? 'site-123'
+    overrides.migrationsPath === null ? undefined : (overrides.migrationsPath ?? '/project/netlify/database/migrations')
+  const siteId = overrides.siteId === null ? undefined : (overrides.siteId ?? 'site-123')
 
   return {
     siteId,

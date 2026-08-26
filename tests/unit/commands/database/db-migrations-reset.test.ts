@@ -65,8 +65,8 @@ function createMockCommand(
   overrides: { buildDir?: string; projectRoot?: string; siteId?: string | null; accessToken?: string | null } = {},
 ) {
   const { buildDir = '/project', projectRoot = '/project' } = overrides
-  const siteId = overrides.siteId === null ? undefined : overrides.siteId ?? 'site-123'
-  const accessToken = overrides.accessToken === null ? undefined : overrides.accessToken ?? 'Bearer test-token'
+  const siteId = overrides.siteId === null ? undefined : (overrides.siteId ?? 'site-123')
+  const accessToken = overrides.accessToken === null ? undefined : (overrides.accessToken ?? 'Bearer test-token')
 
   return {
     siteId,

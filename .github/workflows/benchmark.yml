@@ -19,7 +19,7 @@ jobs:
         run: echo "version=$(yq eval '.primary_node_version' .github/test-matrix.yml)" >> "$GITHUB_OUTPUT"
 
       - name: Use Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ steps.node.outputs.version }}
           cache: npm
@@ -31,13 +31,11 @@ jobs:
         run: du -sk node_modules | cut -f1 > .delta.packageSize && echo "kb (Package size)" >> .delta.packageSize
 
       - name: Get dependency count
-        run:
-          npm ls -a -p | wc -l | tr -d ' \n' > .delta.dependencyCount && echo " (Dependency count)" >>
+        run: npm ls -a -p | wc -l | tr -d ' \n' > .delta.dependencyCount && echo " (Dependency count)" >>
           .delta.dependencyCount
 
       - name: Get TypeScript conversion progress
-        run:
-          grep -r --exclude-dir="node_modules" --include="*.ts" "@ts-expect-error" . | wc -l | xargs >
+        run: grep -r --exclude-dir="node_modules" --include="*.ts" "@ts-expect-error" . | wc -l | xargs >
           .delta.tsConversion && echo " (Number of ts-expect-error directives)" >> .delta.tsConversion
 
       - name: Save PR number
@@ -45,7 +43,7 @@ jobs:
         run: echo ${{ github.event.number }} > ./pr_number
 
       - name: Upload deltas
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: delta-action-deltas
           retention-days: 7

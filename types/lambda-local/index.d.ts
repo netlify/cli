@@ -1,7 +1,7 @@
 // This module is "TypeScript" but contains no actual type annotations, so
 // the resulting `.d.ts` file is just useless `any`s.
 declare module 'lambda-local' {
-  declare interface Options {
+  interface Options {
     clientContext?: string | Record<string, unknown>
     environment?: Record<string, string | undefined>
     esm?: boolean
@@ -16,7 +16,7 @@ declare module 'lambda-local' {
   // See https://github.com/ashiina/lambda-local/blob/8914e6804533450fa68c56fe6c34858b645735d0/src/lambdalocal.ts#L110
   // But this whole thing is kind of a lie (we're exercising a code path where the `event` we pass in is returned, so
   // this is just our type we happen to define.
-  declare interface LambdaEvent {
+  interface LambdaEvent {
     body?: NodeJS.ReadableStream | string | undefined
     headers?: Record<string, string> | undefined
     level?: unknown

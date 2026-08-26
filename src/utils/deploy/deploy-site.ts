@@ -15,6 +15,7 @@ import {
   DEFAULT_SYNC_LIMIT,
 } from './constants.js'
 import { hashConfig } from './hash-config.js'
+import hashEdgeFunctions from './hash-edge-functions.js'
 import hashFiles from './hash-files.js'
 import hashFns from './hash-fns.js'
 import {
@@ -27,6 +28,7 @@ import {
 import uploadFiles from './upload-files.js'
 import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
 import type { DeployEvent } from './status-cb.js'
+import type { DeployEnvironmentVariable } from '../env/deploy-env-vars.js'
 import { temporaryDirectory } from '../temporary-file.js'
 
 export type { DeployEvent }
@@ -58,6 +60,7 @@ export const deploySite = async (
     deployId,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
+    environment,
     // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     filter,
     fnDir = [],
@@ -83,6 +86,7 @@ export const deploySite = async (
     concurrentUpload?: number
     deployTimeout?: number
     draft?: boolean
+    environment?: DeployEnvironmentVariable[]
     maxRetry?: number
     statusCb?: (status: DeployEvent) => void
     syncFileLimit?: number
@@ -104,6 +108,7 @@ export const deploySite = async (
     { files: staticFiles, filesShaMap: staticShaMap },
     { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules },
     configFile,
+    { edgeFunctions, edgeFnShaMap },
   ] = await Promise.all([
     hashFiles({
       assetType,
@@ -125,6 +130,7 @@ export const deploySite = async (
       rootDir: siteRoot,
     }),
     hashConfig({ config }),
+    hashEdgeFunctions(edgeFunctionsDistPath, { hashAlgorithm, statusCb }),
   ])
 
   const files = { ...staticFiles, [configFile.normalizedPath]: configFile.hash }
@@ -175,12 +181,13 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
   const primaryFramework = packageFrameworks?.[0]
 
   // @ts-expect-error TS(2349) This expression is not callable
-  const deployParams = cleanDeep({
+  const cleanedParams = cleanDeep({
     siteId,
     deploy_id: deployId,
     body: {
       files,
       functions,
+      edge_functions: edgeFunctions,
       function_schedules: functionSchedules,
       functions_config: fnConfig,
       async: Object.keys(files).length > syncFileLimit,
@@ -191,23 +198,30 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
       build_version: getNetlifyBuildVersion(),
     },
   })
+  // cleanDeep deeply strips keys with empty strings, but empty strings are valid environment
+  // variable values--a user can use an empty string to e.g. unset a variable only for a deploy.
+  // This would result in payloads with a missing `value` key, which the API would reject.
+  const deployParams = environment?.length
+    ? { ...cleanedParams, body: { ...cleanedParams.body, environment } }
+    : cleanedParams
   let deploy = await api.updateSiteDeploy(deployParams)
 
   if (deployParams.body.async) deploy = await waitForDiff(api, deploy.id, siteId, deployTimeout)
 
-  const { required: requiredFiles, required_functions: requiredFns } = deploy
+  const { required: requiredFiles, required_functions: requiredFns, required_edge_functions: requiredEdgeFns } = deploy
 
   statusCb({
     type: 'create-deploy',
     msg: `CDN requesting ${requiredFiles.length} files${
       Array.isArray(requiredFns) ? ` and ${requiredFns.length} functions` : ''
-    }`,
+    }${Array.isArray(requiredEdgeFns) ? ` and ${requiredEdgeFns.length} edge functions` : ''}`,
     phase: 'stop',
   })
 
   const filesUploadList = getUploadList(requiredFiles, filesShaMap)
   const functionsUploadList = getUploadList(requiredFns, fnShaMap)
-  const uploadList = [...filesUploadList, ...functionsUploadList]
+  const edgeFunctionsUploadList = getUploadList(requiredEdgeFns, edgeFnShaMap)
+  const uploadList = [...filesUploadList, ...functionsUploadList, ...edgeFunctionsUploadList]
 
   await uploadFiles(api, deployId, uploadList, { concurrentUpload, statusCb, maxRetry })
 

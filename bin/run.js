@@ -15,7 +15,7 @@ const UPDATE_BOXEN_OPTIONS = {
   padding: 1,
   margin: 1,
   textAlignment: 'center',
-  borderStyle: 'round', 
+  borderStyle: 'round',
   borderColor: NETLIFY_CYAN_HEX,
   float: 'center',
   // This is an intentional half-width space to work around a unicode padding math bug in boxen

@@ -1,7 +1,7 @@
 import path from 'path'
 
 import chokidar, { type FSWatcher } from 'chokidar'
-import cookie from 'cookie'
+import { parseCookie } from 'cookie'
 import redirector from 'netlify-redirector'
 import type { Match, RedirectMatcher } from 'netlify-redirector'
 import pFilter from 'p-filter'
@@ -96,7 +96,7 @@ export const createRewriter = async function ({
         req.hostname || req.headers.host
       }`,
     )
-    const cookieValues = cookie.parse(req.headers.cookie || '')
+    const cookieValues = parseCookie(req.headers.cookie || '')
     const headers: Record<string, string | string[]> = {
       'x-language': cookieValues.nf_lang || getLanguage(req.headers),
       'x-country': cookieValues.nf_country || geoCountry || 'us',

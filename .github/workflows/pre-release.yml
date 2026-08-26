@@ -2,27 +2,29 @@
 name: prerelease
 on:
   push:
-    branches:
-      # releases/<tag>/<version>
-      - releases/*/*
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
 jobs:
   prerelease:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: write
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Read primary Node version
         id: node
         run: echo "version=$(yq eval '.primary_node_version' .github/test-matrix.yml)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ steps.node.outputs.version }}
           cache: npm
-          registry-url: 'https://registry.npmjs.org'
 
       # Use npm@10 due to https://github.com/npm/cli/issues/8489 and https://github.com/npm/cli/issues/8767
       - name: Setup npm version
@@ -34,33 +36,5 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Extract tag and version
-        id: extract
-        run: |-
-          ref=${{ github.ref }}
-          branch=${ref:11}
-          tag_version=${branch:9}
-          tag=${tag_version%/*}
-          version=${tag_version##*/}
-          echo "tag=${tag}" >> $GITHUB_OUTPUT
-          echo "version=${version}" >> $GITHUB_OUTPUT
-      - name: Log versions
-        run: |-
-          echo tag=${{ steps.extract.outputs.tag }}
-          echo version=${{ steps.extract.outputs.version }}
-
-      - name: Configure Git user
-        run: |
-          git config --global user.name "Netlify"
-          git config --global user.email "82042599+token-generator-app[bot]@users.noreply.github.com"
-
-      - name: Run npm version
-        run: npm version ${{ steps.extract.outputs.version }}-${{ steps.extract.outputs.tag }} --allow-same-version
-
-      - name: Push changes
-        run: git push --follow-tags
-
-      - name: Run npm publish
-        run: npm publish --tag=${{ steps.extract.outputs.tag }} --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Publish prerelease
+        run: npm exec -- pkg-pr-new publish --previewVersion

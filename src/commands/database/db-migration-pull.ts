@@ -77,11 +77,9 @@ const getApiContext = (command: BaseCommand): ApiContext => {
   }
 }
 
-const fetchMigrations = async (ctx: ApiContext, branch: string | undefined): Promise<MigrationListItem[]> => {
+const fetchMigrations = async (ctx: ApiContext, branch: string): Promise<MigrationListItem[]> => {
   const url = new URL(`${ctx.basePath}/sites/${encodeURIComponent(ctx.siteId)}/database/migrations`)
-  if (branch) {
-    url.searchParams.set('branch', branch)
-  }
+  url.searchParams.set('branch', branch)
 
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${ctx.token}` },
@@ -96,13 +94,11 @@ const fetchMigrations = async (ctx: ApiContext, branch: string | undefined): Pro
   return data.migrations
 }
 
-const fetchMigrationContent = async (ctx: ApiContext, name: string, branch: string | undefined): Promise<string> => {
+const fetchMigrationContent = async (ctx: ApiContext, name: string, branch: string): Promise<string> => {
   const url = new URL(
     `${ctx.basePath}/sites/${encodeURIComponent(ctx.siteId)}/database/migrations/${encodeURIComponent(name)}`,
   )
-  if (branch) {
-    url.searchParams.set('branch', branch)
-  }
+  url.searchParams.set('branch', branch)
 
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${ctx.token}` },
@@ -120,16 +116,19 @@ const fetchMigrationContent = async (ctx: ApiContext, name: string, branch: stri
 export const migrationPull = async (options: MigrationPullOptions, command: BaseCommand) => {
   const { force, json } = options
 
-  const branch = (await resolveBranch(options.branch)) ?? process.env.NETLIFY_DB_BRANCH
-  const source = branch ?? PRODUCTION_BRANCH
+  // Always resolve to an explicit branch. Leaving it undefined makes the detail
+  // endpoint fall back to the published deploy, which 404s for a migration that
+  // was applied and later deleted from the repo — the files this command exists
+  // to restore. It also made the request disagree with the branch reported below.
+  const branch = (await resolveBranch(options.branch)) ?? process.env.NETLIFY_DB_BRANCH ?? PRODUCTION_BRANCH
   const ctx = getApiContext(command)
   const migrations = await fetchMigrations(ctx, branch)
 
   if (migrations.length === 0) {
     if (json) {
-      logJson({ migrations_pulled: 0, branch: source })
+      logJson({ migrations_pulled: 0, branch })
     } else {
-      log(`No migrations found for ${source}.`)
+      log(`No migrations found for ${branch}.`)
     }
     return
   }
@@ -155,7 +154,7 @@ export const migrationPull = async (options: MigrationPullOptions, command: Base
         name: 'confirmed',
         message: `This will overwrite all local migrations in ${migrationsDirectory} with ${String(
           migrations.length,
-        )} migration${migrations.length === 1 ? '' : 's'} from ${source}. Continue?`,
+        )} migration${migrations.length === 1 ? '' : 's'} from ${branch}. Continue?`,
         default: false,
       },
     ])
@@ -178,11 +177,11 @@ export const migrationPull = async (options: MigrationPullOptions, command: Base
   if (json) {
     logJson({
       migrations_pulled: migrations.length,
-      branch: source,
+      branch,
       migrations: migrations.map((m) => m.name),
     })
   } else {
-    log(`Pulled ${String(migrations.length)} migration${migrations.length === 1 ? '' : 's'} from ${source}:`)
+    log(`Pulled ${String(migrations.length)} migration${migrations.length === 1 ? '' : 's'} from ${branch}:`)
     for (const migration of migrations) {
       log(`  - ${migration.name}`)
     }
