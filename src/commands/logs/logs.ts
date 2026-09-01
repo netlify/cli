@@ -276,6 +276,7 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     siteId,
     accessToken: client.accessToken,
     deployId,
+    deployTargeted,
     functionNames,
     edgeFunctionNames,
     levelsToPrint,
@@ -377,6 +378,7 @@ const runFollowMode = async ({
   siteId,
   accessToken,
   deployId,
+  deployTargeted,
   functionNames,
   edgeFunctionNames,
   levelsToPrint,
@@ -387,6 +389,7 @@ const runFollowMode = async ({
   siteId: string
   accessToken: string | null | undefined
   deployId?: string
+  deployTargeted: boolean
   functionNames: string[]
   edgeFunctionNames: string[]
   levelsToPrint: string[]
@@ -399,10 +402,10 @@ const runFollowMode = async ({
     printEntry(entry, levelsToPrint, json, assignColor(key))
   }
 
-  if (sources.includes('deploy') && deployId) {
-    const buildingDeployId = await findCurrentBuildingDeploy(client, siteId)
-    if (buildingDeployId) {
-      streamDeploy(siteId, buildingDeployId, accessToken, onEntry, () => {
+  if (sources.includes('deploy')) {
+    const deployStreamId = deployTargeted ? deployId : await findCurrentBuildingDeploy(client, siteId)
+    if (deployStreamId) {
+      streamDeploy(siteId, deployStreamId, accessToken, onEntry, () => {
         if (!json) {
           log(chalk.dim('Deploy stream closed.'))
         }
