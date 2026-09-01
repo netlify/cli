@@ -6,6 +6,7 @@ import type BaseCommand from '../base-command.js'
 
 import {
   createColorAssigner,
+  DEPLOY_ID_RE,
   formatJsonLine,
   formatLogLine,
   parseTimeValue,
@@ -18,6 +19,7 @@ import { LOG_LEVELS_LIST, CLI_LOG_LEVEL_CHOICES_STRING } from './log-levels.js'
 import {
   fetchDeployHistoricalLogs,
   findCurrentBuildingDeploy,
+  findLatestDeploy,
   findLatestReadyDeploy,
   streamDeploy,
 } from './sources/deploy.js'
@@ -167,9 +169,21 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
   }
 
   let deployId: string | undefined
-  if (options.url) {
+  let deployTargeted = false
+  if (options.deploy) {
+    const explicitDeployId = (options.deploy as string).trim()
+    if (!DEPLOY_ID_RE.test(explicitDeployId)) {
+      return logAndThrowError(`Invalid --deploy value: ${explicitDeployId}. Expected a deploy ID.`)
+    }
+    if (options.url) {
+      return logAndThrowError('--deploy cannot be used together with --url.')
+    }
+    deployId = explicitDeployId
+    deployTargeted = true
+  } else if (options.url) {
     try {
       deployId = await resolveDeployIdFromUrl(options.url as string, client, siteId, siteInfo)
+      deployTargeted = deployId !== undefined
     } catch (error) {
       const message = (error as Error).message
       if (message.includes("doesn't seem to match") && siteInfo.name) {
@@ -218,14 +232,14 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     }
 
     if (!deployId) {
-      const latestId = await findLatestReadyDeploy(client, siteId)
+      const latestId = sources.includes('deploy')
+        ? await findLatestDeploy(client, siteId)
+        : await findLatestReadyDeploy(client, siteId)
       if (latestId) {
         deployId = latestId
       }
     }
   }
-
-  const apiBase = client.basePath
 
   const sinceValue = (options.since as string | undefined) ?? DEFAULT_SINCE
   const untilValue = options.until as string | undefined
@@ -234,17 +248,20 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     await runHistoricalMode({
       sources,
       client,
-      apiBase,
       siteId,
       accessToken: client.accessToken,
       deployId,
+      deployTargeted,
       functionNames,
       edgeFunctionNames,
       from: historicalRange.from,
       to: historicalRange.to,
       levelsToPrint,
       json,
-      timeDescription: humanizeTimeRange(sinceValue, untilValue),
+      timeDescription:
+        deployTargeted && sources.length === 1 && sources[0] === 'deploy'
+          ? (deployId ?? '')
+          : humanizeTimeRange(sinceValue, untilValue),
     })
     return
   }
@@ -269,10 +286,10 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
 const runHistoricalMode = async ({
   sources,
   client,
-  apiBase,
   siteId,
   accessToken,
   deployId,
+  deployTargeted,
   functionNames,
   edgeFunctionNames,
   from,
@@ -283,10 +300,10 @@ const runHistoricalMode = async ({
 }: {
   sources: Source[]
   client: NetlifyAPI
-  apiBase: string
   siteId: string
   accessToken: string | null | undefined
   deployId?: string
+  deployTargeted: boolean
   functionNames: string[]
   edgeFunctionNames: string[]
   from: number
@@ -299,11 +316,11 @@ const runHistoricalMode = async ({
 
   if (sources.includes('deploy') && deployId) {
     const deployEntries = await fetchDeployHistoricalLogs({
-      apiBase,
+      siteId,
       accessToken,
       deployId,
-      from,
-      to,
+      from: deployTargeted ? undefined : from,
+      to: deployTargeted ? undefined : to,
     })
     allEntries.push(...deployEntries)
   }

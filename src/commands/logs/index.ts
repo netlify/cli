@@ -130,6 +130,12 @@ export const createLogsCommand = (program: BaseCommand) => {
       ),
     )
     .addOption(
+      new Option(
+        '-d, --deploy <deploy-id>',
+        'Show logs for a specific deploy by ID, including failed builds. Cannot be combined with --url',
+      ),
+    )
+    .addOption(
       new Option('-l, --level <levels...>', `Log levels to include. Choices are:${CLI_LOG_LEVEL_CHOICES_STRING}`),
     )
     .addOption(new Option('--json', 'Output logs as JSON Lines'))
@@ -143,6 +149,7 @@ export const createLogsCommand = (program: BaseCommand) => {
       'netlify logs --follow --source functions --source edge-functions',
       'netlify logs --json --since 1h',
       'netlify logs --url https://my-branch--my-site.netlify.app --since 1h',
+      'netlify logs --source deploy --deploy 5b4e23db82d3f1780abd74f2 --since 7d',
     ])
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { logsCommand } = await import('./logs.js')

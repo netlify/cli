@@ -1,11 +1,10 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { getWebSocket } from '../../../utils/websockets/index.js'
-import { debugFetch } from '../log-api.js'
 import type { LogEntry } from '../log-api.js'
 
-interface DeployLogLine {
-  ts: string
+interface DeployLogMessage {
+  ts?: string | number
   log?: string
   message?: string
   level?: string
@@ -13,50 +12,96 @@ interface DeployLogLine {
   type?: string
 }
 
+const DEPLOY_LOG_REPLAY_TIMEOUT_MS = 30_000
+
+const parseDeployLogTimestamp = (message: DeployLogMessage): number | undefined => {
+  if (!message.ts) {
+    return undefined
+  }
+  const ts = new Date(message.ts).getTime()
+  return Number.isNaN(ts) ? undefined : ts
+}
+
+const toLogEntry = (message: DeployLogMessage, ts: number): LogEntry => ({
+  source: 'deploy',
+  name: 'deploy',
+  ts,
+  level: message.level ?? 'INFO',
+  message: message.log ?? message.message ?? '',
+  section: message.section,
+})
+
+const isEndOfBuild = (message: DeployLogMessage): boolean =>
+  message.type === 'report' && message.section === 'building'
+
 export const fetchDeployHistoricalLogs = async ({
-  apiBase,
+  siteId,
   accessToken,
   deployId,
   from,
   to,
 }: {
-  apiBase: string
+  siteId: string
   accessToken: string | null | undefined
   deployId: string
-  from: number
-  to: number
+  from?: number
+  to?: number
 }): Promise<LogEntry[]> => {
-  const response = await debugFetch(`${apiBase}/api/v1/deploys/${encodeURIComponent(deployId)}/log`, {
-    headers: {
-      Authorization: `Bearer ${accessToken ?? ''}`,
-    },
+  const collected: { entry: LogEntry; hasTimestamp: boolean }[] = []
+  const ws = getWebSocket('wss://socketeer.services.netlify.com/build/logs')
+
+  await new Promise<void>((resolve) => {
+    let settled = false
+    const settle = () => {
+      if (settled) {
+        return
+      }
+      settled = true
+      clearTimeout(timeout)
+      ws.close()
+      resolve()
+    }
+    const timeout = setTimeout(settle, DEPLOY_LOG_REPLAY_TIMEOUT_MS)
+
+    ws.on('open', () => {
+      ws.send(
+        JSON.stringify({
+          deploy_id: deployId,
+          site_id: siteId,
+          access_token: accessToken,
+        }),
+      )
+    })
+
+    ws.on('message', (data: string) => {
+      let message: DeployLogMessage
+      try {
+        message = JSON.parse(data) as DeployLogMessage
+      } catch {
+        return
+      }
+      if (isEndOfBuild(message)) {
+        settle()
+        return
+      }
+      const parsedTs = parseDeployLogTimestamp(message)
+      collected.push({
+        entry: toLogEntry(message, parsedTs ?? Date.now()),
+        hasTimestamp: parsedTs !== undefined,
+      })
+    })
+
+    ws.on('close', settle)
+    ws.on('error', settle)
   })
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch deploy logs: ${response.status.toString()} ${response.statusText}`)
-  }
-
-  const logData = (await response.json()) as DeployLogLine[]
-  if (!Array.isArray(logData)) {
-    return []
-  }
-
-  return logData
-    .map((line): LogEntry | null => {
-      const ts = new Date(line.ts).getTime()
-      if (Number.isNaN(ts) || ts < from || ts > to) {
-        return null
-      }
-      return {
-        source: 'deploy',
-        name: 'deploy',
-        ts,
-        level: line.level ?? 'INFO',
-        message: line.log ?? line.message ?? '',
-        section: line.section,
-      }
-    })
-    .filter((entry): entry is LogEntry => entry !== null)
+  return collected
+    .filter(
+      ({ entry, hasTimestamp }) =>
+        !hasTimestamp || ((from === undefined || entry.ts >= from) && (to === undefined || entry.ts <= to)),
+    )
+    .map(({ entry }) => entry)
+    .sort((a, b) => a.ts - b.ts)
 }
 
 export const streamDeploy = (
@@ -79,24 +124,10 @@ export const streamDeploy = (
   })
 
   ws.on('message', (data: string) => {
-    const logData = JSON.parse(data) as {
-      message: string
-      section?: string
-      type?: string
-      level?: string
-      ts?: string
-    }
+    const message = JSON.parse(data) as DeployLogMessage
+    onEntry(toLogEntry(message, parseDeployLogTimestamp(message) ?? Date.now()))
 
-    onEntry({
-      source: 'deploy',
-      name: 'deploy',
-      ts: logData.ts ? new Date(logData.ts).getTime() : Date.now(),
-      level: logData.level ?? 'INFO',
-      message: logData.message,
-      section: logData.section,
-    })
-
-    if (logData.type === 'report' && logData.section === 'building') {
+    if (isEndOfBuild(message)) {
       ws.close()
     }
   })
@@ -117,5 +148,10 @@ export const findCurrentBuildingDeploy = async (client: NetlifyAPI, siteId: stri
 
 export const findLatestReadyDeploy = async (client: NetlifyAPI, siteId: string): Promise<string | undefined> => {
   const deploys = (await client.listSiteDeploys({ siteId, state: 'ready', per_page: 1 })) as { id: string }[]
+  return deploys.length > 0 ? deploys[0].id : undefined
+}
+
+export const findLatestDeploy = async (client: NetlifyAPI, siteId: string): Promise<string | undefined> => {
+  const deploys = (await client.listSiteDeploys({ siteId, per_page: 1 })) as { id: string }[]
   return deploys.length > 0 ? deploys[0].id : undefined
 }
