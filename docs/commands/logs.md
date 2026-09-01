@@ -17,6 +17,7 @@ netlify logs
 
 **Flags**
 
+- `deploy` (*string*) - Show logs for a specific deploy by ID, including failed builds. Cannot be combined with --url
 - `edge-function` (*string*) - Filter to specific edge functions by name or path
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `follow` (*boolean*) - Stream logs in real time instead of showing historical logs
@@ -42,6 +43,7 @@ netlify logs --follow
 netlify logs --follow --source functions --source edge-functions
 netlify logs --json --since 1h
 netlify logs --url https://my-branch--my-site.netlify.app --since 1h
+netlify logs --source deploy --deploy 5b4e23db82d3f1780abd74f2 --since 7d
 ```
 
 
