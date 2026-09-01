@@ -31,8 +31,17 @@ const toLogEntry = (message: DeployLogMessage, ts: number): LogEntry => ({
   section: message.section,
 })
 
-const isEndOfBuild = (message: DeployLogMessage): boolean =>
-  message.type === 'report' && message.section === 'building'
+const isEndOfBuild = (message: DeployLogMessage): boolean => message.type === 'report' && message.section === 'building'
+
+const parseDeployLogMessage = (data: string): DeployLogMessage | null => {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(data)
+  } catch {
+    return null
+  }
+  return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) ? parsed : null
+}
 
 export const fetchDeployHistoricalLogs = async ({
   siteId,
@@ -50,18 +59,24 @@ export const fetchDeployHistoricalLogs = async ({
   const collected: { entry: LogEntry; hasTimestamp: boolean }[] = []
   const ws = getWebSocket('wss://socketeer.services.netlify.com/build/logs')
 
-  await new Promise<void>((resolve) => {
+  await new Promise<void>((resolve, reject) => {
     let settled = false
-    const settle = () => {
+    const finish = (error?: Error) => {
       if (settled) {
         return
       }
       settled = true
       clearTimeout(timeout)
       ws.close()
-      resolve()
+      if (error) {
+        reject(error)
+      } else {
+        resolve()
+      }
     }
-    const timeout = setTimeout(settle, DEPLOY_LOG_REPLAY_TIMEOUT_MS)
+    const timeout = setTimeout(() => {
+      finish()
+    }, DEPLOY_LOG_REPLAY_TIMEOUT_MS)
 
     ws.on('open', () => {
       ws.send(
@@ -74,14 +89,12 @@ export const fetchDeployHistoricalLogs = async ({
     })
 
     ws.on('message', (data: string) => {
-      let message: DeployLogMessage
-      try {
-        message = JSON.parse(data) as DeployLogMessage
-      } catch {
+      const message = parseDeployLogMessage(data)
+      if (!message) {
         return
       }
       if (isEndOfBuild(message)) {
-        settle()
+        finish()
         return
       }
       const parsedTs = parseDeployLogTimestamp(message)
@@ -91,8 +104,12 @@ export const fetchDeployHistoricalLogs = async ({
       })
     })
 
-    ws.on('close', settle)
-    ws.on('error', settle)
+    ws.on('close', () => {
+      finish()
+    })
+    ws.on('error', (error: Error) => {
+      finish(error)
+    })
   })
 
   return collected
@@ -124,7 +141,10 @@ export const streamDeploy = (
   })
 
   ws.on('message', (data: string) => {
-    const message = JSON.parse(data) as DeployLogMessage
+    const message = parseDeployLogMessage(data)
+    if (!message) {
+      return
+    }
     onEntry(toLogEntry(message, parseDeployLogTimestamp(message) ?? Date.now()))
 
     if (isEndOfBuild(message)) {

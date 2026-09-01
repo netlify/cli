@@ -30,9 +30,8 @@ vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: (url: string) => getWebSocketMock(url),
 }))
 
-const { fetchDeployHistoricalLogs, findLatestDeploy, findLatestReadyDeploy, streamDeploy } = await import(
-  '../../../../src/commands/logs/sources/deploy.js'
-)
+const { fetchDeployHistoricalLogs, findLatestDeploy, findLatestReadyDeploy, streamDeploy } =
+  await import('../../../../src/commands/logs/sources/deploy.js')
 
 const FROM = Date.parse('2026-01-01T00:00:00.000Z')
 const TO = Date.parse('2026-01-01T00:10:00.000Z')
@@ -169,6 +168,28 @@ describe('fetchDeployHistoricalLogs', () => {
     expect(entries.map((entry) => entry.message)).toEqual(['valid'])
   })
 
+  it('skips null and non-object frames without throwing', async () => {
+    const promise = fetchDeployHistoricalLogs({
+      siteId: 'site-1',
+      accessToken: 'token-1',
+      deployId: 'deploy-1',
+      from: FROM,
+      to: TO,
+    })
+
+    drive(sockets[0], [
+      null,
+      42,
+      'a string',
+      ['an', 'array'],
+      { ts: '2026-01-01T00:05:00.000Z', log: 'valid' },
+      { type: 'report', section: 'building' },
+    ])
+    const entries = await promise
+
+    expect(entries.map((entry) => entry.message)).toEqual(['valid'])
+  })
+
   it('resolves when the socket closes without a terminal report', async () => {
     const promise = fetchDeployHistoricalLogs({
       siteId: 'site-1',
@@ -185,6 +206,22 @@ describe('fetchDeployHistoricalLogs', () => {
     const entries = await promise
 
     expect(entries.map((entry) => entry.message)).toEqual(['partial'])
+  })
+
+  it('rejects the replay promise on socket error', async () => {
+    const promise = fetchDeployHistoricalLogs({
+      siteId: 'site-1',
+      accessToken: 'token-1',
+      deployId: 'deploy-1',
+      from: FROM,
+      to: TO,
+    })
+
+    const [ws] = sockets
+    ws.emit('open')
+    ws.emit('error', new Error('connection refused'))
+
+    await expect(promise).rejects.toThrow('connection refused')
   })
 })
 
