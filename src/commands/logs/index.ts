@@ -149,7 +149,7 @@ export const createLogsCommand = (program: BaseCommand) => {
       'netlify logs --follow --source functions --source edge-functions',
       'netlify logs --json --since 1h',
       'netlify logs --url https://my-branch--my-site.netlify.app --since 1h',
-      'netlify logs --source deploy --deploy 5b4e23db82d3f1780abd74f2',
+      'netlify logs --source deploy --deploy <deploy-id>',
     ])
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { logsCommand } = await import('./logs.js')
