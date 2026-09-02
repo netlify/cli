@@ -173,7 +173,10 @@ const main = async () => {
       ['.delta.downloadSizePackage', result.packageDownloadBytes / 1024, 'kb', 'Download size (CLI package)'],
       ['.delta.downloadSizeInstall', result.totalDownloadBytes / 1024, 'kb', 'Download size (full install)'],
       ['.delta.installedSize', result.installedBytes / 1024, 'kb', 'Installed size'],
-      ['.delta.dependencyCount', result.dependencyCount, '', 'Dependency count'],
+      // Deliberately not `.delta.dependencyCount`: this counts every package directory npm wrote,
+      // including nested duplicate copies, so it is a different measurement from the `npm ls` count
+      // that key used to hold. Reusing the key would compare the two and report a phantom jump.
+      ['.delta.installedPackageCount', result.dependencyCount, '', 'Installed package count'],
     ]
 
     for (const [filename, value, unit, label] of metrics) {
