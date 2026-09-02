@@ -9,7 +9,6 @@ import { promisify } from 'util'
 
 import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
-import fetch from 'node-fetch'
 
 import type { NetlifyAPI } from '@netlify/api'
 import { LocalState } from '@netlify/dev-utils'

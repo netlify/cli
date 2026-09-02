@@ -28,7 +28,7 @@
   "type": "module",
   "scripts": {
     "build": "node ./node_modules/typescript-native/bin/tsc --project tsconfig.build.json",
-    "clean": "rm -rf dist/",
+    "clean": "rm -rf dist/ tsconfig.build.tsbuildinfo tsconfig.tsbuildinfo",
     "dev": "node ./node_modules/typescript-native/bin/tsc --project tsconfig.build.json --watch",
     "docs": "npm run --prefix=site build",
     "format": "oxfmt --write",
@@ -47,6 +47,7 @@
     "test:integration": "vitest run --retry=3 tests/integration/",
     "test:unit": "vitest run tests/unit/",
     "postinstall": "node ./scripts/postinstall.js",
+    "prepack": "node ./scripts/strip-source-maps.js",
     "typecheck": "node ./node_modules/typescript-native/bin/tsc",
     "typecheck:watch": "node ./node_modules/typescript-native/bin/tsc --watch"
   },
@@ -123,7 +124,6 @@
     "multiparty": "^4.2.3",
     "nanospinner": "^1.2.2",
     "netlify-redirector": "^0.5.0",
-    "node-fetch": "^3.3.2",
     "normalize-package-data": "^7.0.1",
     "open": "^11.0.0",
     "p-filter": "^4.1.0",
@@ -198,6 +198,7 @@
     "lodash.shuffle": "^4.2.0",
     "memfs": "^4.56.10",
     "nock": "^14.0.10",
+    "node-fetch": "^3.3.2",
     "npm-run-all2": "^8.0.4",
     "oxfmt": "0.61.0",
     "p-timeout": "^7.0.0",

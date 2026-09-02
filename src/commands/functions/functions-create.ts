@@ -4,13 +4,13 @@ import { mkdir, readdir, unlink } from 'fs/promises'
 import { createRequire } from 'module'
 import path, { dirname, join, relative } from 'path'
 import process from 'process'
+import { pipeline } from 'stream/promises'
 import { fileURLToPath, pathToFileURL } from 'url'
 
 import { OptionValues } from 'commander'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
-import fetch from 'node-fetch'
 import { createSpinner } from 'nanospinner'
 
 import { fileExistsAsync } from '../../lib/fs.js'
@@ -409,10 +409,13 @@ const downloadFromURL = async function (command, options, argumentName, function
     folderContents.map(async ({ download_url: downloadUrl, name }) => {
       try {
         const res = await fetch(downloadUrl)
+        if (!res.ok || !res.body) {
+          throw new Error(`HTTP ${res.status.toString()}: ${res.statusText}`)
+        }
         const fileName = path.basename(name)
         const finalName = path.basename(fileName, '.js') === functionName ? `${nameToUse}.js` : fileName
         const dest = fs.createWriteStream(path.join(fnFolder, finalName))
-        res.body?.pipe(dest)
+        await pipeline(res.body, dest)
       } catch (error_) {
         throw new Error(`Error while retrieving ${downloadUrl} ${error_}`)
       }

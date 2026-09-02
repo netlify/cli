@@ -4,7 +4,6 @@ import type { PathLike } from 'node:fs'
 import { platform } from 'node:os'
 
 import execa, { ExecaError } from 'execa'
-import fetch from 'node-fetch'
 
 import { log, warn } from '../command-helpers.js'
 import { temporaryDirectory } from '../temporary-file.js'

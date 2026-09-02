@@ -1,13 +1,11 @@
 import { join } from 'node:path'
 
 import type { ExecaReturnValue } from 'execa'
-import type { Response } from 'node-fetch'
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 
 // Mock all dependencies at the top level
-vi.mock('node-fetch', () => ({
-  default: vi.fn(),
-}))
+const mockFetch = vi.fn<typeof globalThis.fetch>()
+vi.stubGlobal('fetch', mockFetch)
 
 vi.mock('execa', () => ({
   default: vi.fn(),
@@ -47,13 +45,12 @@ describe('uploadSourceZip', () => {
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     // Setup mocks using vi.mocked()
-    const mockFetch = await import('node-fetch')
     const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
-    vi.mocked(mockFetch.default).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       statusText: 'OK',
@@ -83,7 +80,7 @@ describe('uploadSourceZip', () => {
       expect.objectContaining({ cwd: '/test/source' }),
     )
 
-    expect(mockFetch.default).toHaveBeenCalledWith(
+    expect(mockFetch).toHaveBeenCalledWith(
       'https://s3.example.com/upload-url',
       expect.objectContaining({
         method: 'PUT',
@@ -110,13 +107,12 @@ describe('uploadSourceZip', () => {
 
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
-    const mockFetch = await import('node-fetch')
     const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
-    vi.mocked(mockFetch.default).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 403,
       statusText: 'Forbidden',
@@ -160,13 +156,12 @@ describe('uploadSourceZip', () => {
 
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
-    const mockFetch = await import('node-fetch')
     const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
-    vi.mocked(mockFetch.default).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       statusText: 'OK',
@@ -274,7 +269,6 @@ describe('uploadSourceZip', () => {
 
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
-    const mockFetch = await import('node-fetch')
     const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
@@ -287,11 +281,11 @@ describe('uploadSourceZip', () => {
     })
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
-    vi.mocked(mockFetch.default).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
       statusText: 'Internal Server Error',
-    } as unknown as import('node-fetch').Response)
+    } as unknown as Response)
 
     vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
     vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
@@ -319,18 +313,17 @@ describe('uploadSourceZip', () => {
 
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
-    const mockFetch = await import('node-fetch')
     const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
-    vi.mocked(mockFetch.default).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       statusText: 'OK',
       json: vi.fn().mockResolvedValue({ url: 'https://test-source-zip-url.com' }),
-    } as unknown as import('node-fetch').Response)
+    } as unknown as Response)
 
     // @ts-expect-error(ndhoule): getting the type on this fairly challenging
     vi.mocked(mockExeca.default).mockImplementation((..._args) => {
@@ -359,13 +352,12 @@ describe('uploadSourceZip', () => {
 
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
-    const mockFetch = await import('node-fetch')
     const mockExeca = await import('execa')
     const mockFs = await import('fs/promises')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
-    vi.mocked(mockFetch.default).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       statusText: 'OK',
