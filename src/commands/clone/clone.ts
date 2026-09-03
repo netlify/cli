@@ -214,7 +214,14 @@ export const clone = async (
 ) => {
   await command.authenticate()
 
-  const { api } = command.netlify
+  const { api, site } = command.netlify
+
+  if (site.id) {
+    return logAndThrowError(
+      `This directory is already linked to a Netlify project. Run ${chalk.cyanBright('netlify clone')} from outside any existing linked project directory.`,
+    )
+  }
+
   const parsedInput = parseNetlifySiteInput(args.repo)
 
   if (parsedInput.isNetlifySite) {

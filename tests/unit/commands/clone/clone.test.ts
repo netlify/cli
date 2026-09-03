@@ -2,9 +2,47 @@ import { resolve } from 'path'
 
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
-import { getCredentialHelper } from '../../../../src/commands/clone/clone.js'
+const { mockAuthenticate, mockListSites } = vi.hoisted(() => ({
+  mockAuthenticate: vi.fn(),
+  mockListSites: vi.fn(),
+}))
+
+vi.mock('../../../../src/utils/command-helpers.js', async () => ({
+  ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
+  logAndThrowError: (message: unknown): never => {
+    throw message instanceof Error ? message : new Error(String(message))
+  },
+}))
+
+import { clone, getCredentialHelper } from '../../../../src/commands/clone/clone.js'
+
+function createMockCommand(overrides: { siteId?: string } = {}) {
+  return {
+    authenticate: mockAuthenticate,
+    netlify: {
+      api: { listSites: mockListSites },
+      site: { id: overrides.siteId },
+    },
+  } as unknown as Parameters<typeof clone>[1]
+}
 
 describe('clone command', () => {
+  describe('clone', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+      mockAuthenticate.mockResolvedValue(undefined)
+    })
+
+    it('aborts with an actionable error when the current directory is already linked to a project', async () => {
+      const command = createMockCommand({ siteId: 'existing-site-id' })
+
+      await expect(clone({}, command, { repo: 'owner/repo' })).rejects.toThrow(/already linked to a Netlify project/)
+
+      expect(mockAuthenticate).toHaveBeenCalledOnce()
+      expect(mockListSites).not.toHaveBeenCalled()
+    })
+  })
+
   describe('getCredentialHelper', () => {
     const originalArgv1 = process.argv[1]
 
