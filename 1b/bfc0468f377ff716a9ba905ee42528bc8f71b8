@@ -1,0 +1,19 @@
+src/commands/clone/clone.ts
+  s_5fab4764b42b8a::t_21c95b32b4c40a 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "1bbfc0468f377ff716a9ba905ee42528bc8f71b8",
+  "prompts": {},
+  "sessions": {
+    "s_5fab4764b42b8a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4c1154ae-75ff-4ce0-9f0e-4da895ac6bff",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Mathias Biilmann <info@mathias-biilmann.net>"
+    }
+  }
+}
