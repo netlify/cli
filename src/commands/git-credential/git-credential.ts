@@ -3,7 +3,6 @@ import readline from 'readline'
 import type { Readable, Writable } from 'stream'
 
 import { getToken } from '../../utils/command-helpers.js'
-import type BaseCommand from '../base-command.js'
 import type { GitCredentialOptionValues } from './option_values.js'
 
 export const NETLIFY_GIT_HOST = 'git.netlify.com'
@@ -35,7 +34,6 @@ export const writeCredentials = (output: Writable, token: string): void => {
 export const gitCredential = async (
   operation: string,
   _options: GitCredentialOptionValues,
-  _command: BaseCommand,
 ): Promise<void> => {
   if (operation !== 'get') {
     return

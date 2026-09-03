@@ -6,7 +6,7 @@ export const createGitCredentialCommand = (program: BaseCommand) =>
     .command('git-credential', { hidden: true })
     .description('Git credential helper for Netlify authentication (used internally by git)')
     .argument('<operation>', 'Git credential operation (get, store, erase)')
-    .action(async (operation: string, options: GitCredentialOptionValues, command: BaseCommand) => {
+    .action(async (operation: string, options: GitCredentialOptionValues) => {
       const { gitCredential } = await import('./git-credential.js')
-      await gitCredential(operation, options, command)
+      await gitCredential(operation, options)
     })
