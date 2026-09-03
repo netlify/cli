@@ -2,10 +2,12 @@ import { resolve } from 'path'
 
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
-const { mockAuthenticate, mockListSites, mockExeca } = vi.hoisted(() => ({
+const { mockAuthenticate, mockListSites, mockExeca, mockLink, MockLocalState } = vi.hoisted(() => ({
   mockAuthenticate: vi.fn(),
   mockListSites: vi.fn(),
   mockExeca: vi.fn(),
+  mockLink: vi.fn(),
+  MockLocalState: vi.fn(),
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -19,7 +21,15 @@ vi.mock('../../../../src/utils/execa.js', () => ({
   default: mockExeca,
 }))
 
-import { clone, getCredentialHelper } from '../../../../src/commands/clone/clone.js'
+vi.mock('../../../../src/commands/link/link.js', () => ({
+  link: mockLink,
+}))
+
+vi.mock('@netlify/dev-utils', () => ({
+  LocalState: MockLocalState,
+}))
+
+import { clone, finalizeClone, getCredentialHelper } from '../../../../src/commands/clone/clone.js'
 
 function createMockCommand(overrides: { siteId?: string } = {}) {
   return {
@@ -68,6 +78,57 @@ describe('clone command', () => {
 
       expect(mockExeca).toHaveBeenCalledWith('git', ['rev-parse', '--is-inside-work-tree'])
       expect(mockListSites).toHaveBeenCalled()
+    })
+  })
+
+  describe('finalizeClone', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+      mockLink.mockResolvedValue(undefined)
+      MockLocalState.mockImplementation((cwd: string) => ({ cwd }))
+    })
+
+    it('re-resolves repositoryRoot and state for the cloned directory before linking, instead of the pre-clone one', async () => {
+      const chdirSpy = vi.spyOn(process, 'chdir').mockImplementation(() => {})
+      const command = {
+        workingDir: '/original/dir',
+        netlify: {
+          repositoryRoot: '/original/dir',
+          state: { cwd: '/original/dir' },
+        },
+      } as unknown as Parameters<typeof finalizeClone>[1]
+
+      await finalizeClone({}, command, '/cloned/dir', { id: 'site-id' })
+
+      const expectedAbsoluteDir = resolve('/cloned/dir')
+      expect(command.workingDir).toBe(expectedAbsoluteDir)
+      expect(chdirSpy).toHaveBeenCalledWith(expectedAbsoluteDir)
+      expect(command.netlify.repositoryRoot).toBe(expectedAbsoluteDir)
+      expect(MockLocalState).toHaveBeenCalledWith(expectedAbsoluteDir)
+      expect(command.netlify.state).toEqual({ cwd: expectedAbsoluteDir })
+      expect(mockLink).toHaveBeenCalledWith({ id: 'site-id' }, command)
+
+      chdirSpy.mockRestore()
+    })
+
+    it('resolves a relative workingDir to an absolute path for repositoryRoot and state', async () => {
+      const chdirSpy = vi.spyOn(process, 'chdir').mockImplementation(() => {})
+      const command = {
+        workingDir: '/original/dir',
+        netlify: {
+          repositoryRoot: '/original/dir',
+          state: { cwd: '/original/dir' },
+        },
+      } as unknown as Parameters<typeof finalizeClone>[1]
+
+      await finalizeClone({}, command, './cloned-dir', { id: 'site-id' })
+
+      const expectedAbsoluteDir = resolve('./cloned-dir')
+      expect(chdirSpy).toHaveBeenCalledWith(expectedAbsoluteDir)
+      expect(command.netlify.repositoryRoot).toBe(expectedAbsoluteDir)
+      expect(MockLocalState).toHaveBeenCalledWith(expectedAbsoluteDir)
+
+      chdirSpy.mockRestore()
     })
   })
 

@@ -1,5 +1,6 @@
 import { resolve } from 'path'
 
+import { LocalState } from '@netlify/dev-utils'
 import inquirer from 'inquirer'
 
 import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js'
@@ -120,16 +121,25 @@ const lookupSiteByName = async (api: BaseCommand['netlify']['api'], siteName: st
   }
 }
 
-const finalizeClone = async (
+export const finalizeClone = async (
   options: CloneOptionValues,
   command: BaseCommand,
   workingDir: string,
   linkOverrides: { id?: string; name?: string; gitRemoteUrl?: string },
 ): Promise<void> => {
-  command.workingDir = workingDir
+  // `workingDir` may be relative (e.g. a user-entered target dir), and must be resolved
+  // against the *current* cwd before it changes below, not after.
+  const absoluteWorkingDir = resolve(workingDir)
+  command.workingDir = absoluteWorkingDir
   // TODO(serhalp): This shouldn't be necessary but `getPathInProject` does not take
   // `command.workingDir` into account. Carefully fix this and remove this line.
-  process.chdir(workingDir)
+  process.chdir(absoluteWorkingDir)
+
+  // `command.netlify.repositoryRoot`/`state` were resolved from the pre-clone working
+  // directory before this command's action ran, so `link()` below would otherwise read
+  // and write against the original directory instead of the freshly cloned one.
+  command.netlify.repositoryRoot = absoluteWorkingDir
+  command.netlify.state = new LocalState(absoluteWorkingDir)
 
   const { id, name, ...globalOptions } = options
   await link({ ...globalOptions, ...linkOverrides }, command)
