@@ -3,7 +3,7 @@ import { resolve } from 'path'
 import inquirer from 'inquirer'
 
 import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js'
-import { chalk, logAndThrowError, log, getToken, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, getToken, netlifyCommand, type APIError } from '../../utils/command-helpers.js'
 import { runGit } from '../../utils/run-git.js'
 import execa from '../../utils/execa.js'
 import type BaseCommand from '../base-command.js'
@@ -45,9 +45,13 @@ const cloneRepo = async (repoUrl: string, targetDir: string, debug: boolean): Pr
   }
 }
 
-const getCredentialHelper = (): string => {
-  const cliPath = process.argv[1]
-  return `!'${cliPath}' git-credential`
+// Under `npx`/`pnpx`/`npm exec`, `process.argv[1]` points into a temp cache dir that
+// gets cleaned up, so a git credential helper pinned to that path breaks after the
+// fact. Fall back to the resolved invocation (e.g. `npx netlify`) in that case.
+export const getCredentialHelper = (): string => {
+  const cliCommand = netlifyCommand()
+  const invocation = cliCommand === 'netlify' ? `'${process.execPath}' '${resolve(process.argv[1])}'` : cliCommand
+  return `!${invocation} git-credential`
 }
 
 const configureGitAuth = async (repoDir: string): Promise<void> => {
