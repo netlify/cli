@@ -17,7 +17,6 @@ You can clone from:
 
 When cloning a Netlify site that has a connected repository, the repository will be cloned from the connected source (GitHub, GitLab, etc.).
 
-When cloning a Netlify site without a connected repository, the repository will be cloned from Netlify's managed git service with automatic credential configuration.
 
 If you specify a target directory, the repo will be cloned into that directory. By default, a directory will be created with the name of the repo or site.
 
