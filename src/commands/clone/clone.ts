@@ -279,6 +279,8 @@ export const clone = async (
     }
     cloneSpinner.success(`Cloned repository to ${chalk.cyan(targetDir)}`)
 
+    // Use the normalized HTTPS URL as the canonical git URL for linking to ensure
+    // we have a consistent URL format for looking up projects.
     await finalizeClone(options, command, targetDir, { id: options.id, name: options.name, gitRemoteUrl: httpsUrl })
     logCloneSuccess(targetDir, { devCommand: command.netlify.config.dev?.command })
   }
