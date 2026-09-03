@@ -81,7 +81,7 @@
     "ci-info": "^4.4.0",
     "clean-deep": "^3.4.0",
     "commander": "^12.1.0",
-    "comment-json": "^4.6.2",
+    "comment-json": "^5.0.0",
     "content-type": "^1.0.5",
     "cookie": "^2.0.0",
     "cron-parser": "^4.9.0",
