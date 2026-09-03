@@ -47,6 +47,7 @@
     "test:integration": "vitest run --retry=3 tests/integration/",
     "test:unit": "vitest run tests/unit/",
     "postinstall": "node ./scripts/postinstall.js",
+    "prepack": "node ./scripts/strip-source-maps.js",
     "typecheck": "node ./node_modules/typescript-native/bin/tsc",
     "typecheck:watch": "node ./node_modules/typescript-native/bin/tsc --watch"
   },
