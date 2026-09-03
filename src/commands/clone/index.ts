@@ -30,6 +30,10 @@ If you specify a target directory, the repo will be cloned into that directory. 
       'netlify clone https://app.netlify.com/sites/my-site',
       'netlify clone vibecoder/next-unicorn',
       'netlify clone https://github.com/vibecoder/next-unicorn.git',
+      'netlify clone git@github.com:vibecoder/next-unicorn.git',
+      'netlify clone vibecoder/next-unicorn ./next-unicorn-shh-secret',
+      'netlify clone --id 123-123-123-123 vibecoder/next-unicorn',
+      'netlify clone --name my-project-name vibecoder/next-unicorn',
       'netlify clone my-site-name ./local-folder',
     ])
     .addHelpText('after', () => {
