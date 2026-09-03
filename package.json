@@ -28,7 +28,7 @@
   "type": "module",
   "scripts": {
     "build": "node ./node_modules/typescript-native/bin/tsc --project tsconfig.build.json",
-    "clean": "rm -rf dist/",
+    "clean": "rm -rf dist/ tsconfig.build.tsbuildinfo tsconfig.tsbuildinfo",
     "dev": "node ./node_modules/typescript-native/bin/tsc --project tsconfig.build.json --watch",
     "docs": "npm run --prefix=site build",
     "format": "oxfmt --write",

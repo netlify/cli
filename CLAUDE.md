@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `npm run build` - Compiles TypeScript using `tsc --project tsconfig.build.json`
 - `npm run dev` - Runs TypeScript compiler in watch mode
-- `npm run clean` - Removes the `dist/` directory
+- `npm run clean` - Removes the `dist/` directory and the TypeScript incremental build info files
 
 ### Testing
 
