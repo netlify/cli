@@ -2,9 +2,10 @@ import { resolve } from 'path'
 
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
-const { mockAuthenticate, mockListSites } = vi.hoisted(() => ({
+const { mockAuthenticate, mockListSites, mockExeca } = vi.hoisted(() => ({
   mockAuthenticate: vi.fn(),
   mockListSites: vi.fn(),
+  mockExeca: vi.fn(),
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -12,6 +13,10 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   logAndThrowError: (message: unknown): never => {
     throw message instanceof Error ? message : new Error(String(message))
   },
+}))
+
+vi.mock('../../../../src/utils/execa.js', () => ({
+  default: mockExeca,
 }))
 
 import { clone, getCredentialHelper } from '../../../../src/commands/clone/clone.js'
@@ -31,6 +36,7 @@ describe('clone command', () => {
     beforeEach(() => {
       vi.clearAllMocks()
       mockAuthenticate.mockResolvedValue(undefined)
+      mockExeca.mockResolvedValue({ exitCode: 0 })
     })
 
     it('aborts with an actionable error when the current directory is already linked to a project', async () => {
@@ -39,7 +45,29 @@ describe('clone command', () => {
       await expect(clone({}, command, { repo: 'owner/repo' })).rejects.toThrow(/already linked to a Netlify project/)
 
       expect(mockAuthenticate).toHaveBeenCalledOnce()
+      expect(mockExeca).not.toHaveBeenCalled()
       expect(mockListSites).not.toHaveBeenCalled()
+    })
+
+    it('aborts with an actionable error when the current directory is already inside a git repository', async () => {
+      const command = createMockCommand()
+      mockExeca.mockResolvedValue({ exitCode: 0 })
+
+      await expect(clone({}, command, { repo: 'owner/repo' })).rejects.toThrow(/already inside a git repository/)
+
+      expect(mockExeca).toHaveBeenCalledWith('git', ['rev-parse', '--is-inside-work-tree'])
+      expect(mockListSites).not.toHaveBeenCalled()
+    })
+
+    it('does not abort when the current directory is not inside a git repository', async () => {
+      const command = createMockCommand()
+      mockExeca.mockRejectedValue(new Error('fatal: not a git repository'))
+      mockListSites.mockResolvedValue([])
+
+      await expect(clone({}, command, { repo: 'my-site' })).rejects.toThrow(/Could not find a Netlify site named/)
+
+      expect(mockExeca).toHaveBeenCalledWith('git', ['rev-parse', '--is-inside-work-tree'])
+      expect(mockListSites).toHaveBeenCalled()
     })
   })
 

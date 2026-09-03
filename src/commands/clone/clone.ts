@@ -207,6 +207,15 @@ const cloneFromNetlifyGitService = async (
   logCloneSuccess(targetDir, { credentialsConfigured: true })
 }
 
+const isInsideGitRepo = async (): Promise<boolean> => {
+  try {
+    await execa('git', ['rev-parse', '--is-inside-work-tree'])
+    return true
+  } catch {
+    return false
+  }
+}
+
 export const clone = async (
   options: CloneOptionValues,
   command: BaseCommand,
@@ -219,6 +228,12 @@ export const clone = async (
   if (site.id) {
     return logAndThrowError(
       `This directory is already linked to a Netlify project. Run ${chalk.cyanBright('netlify clone')} from outside any existing linked project directory.`,
+    )
+  }
+
+  if (await isInsideGitRepo()) {
+    return logAndThrowError(
+      `This directory is already inside a git repository. Run ${chalk.cyanBright('netlify clone')} from outside any existing git repository.`,
     )
   }
 
