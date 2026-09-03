@@ -17,7 +17,8 @@ const NETLIFY_GIT_SERVICE_HOST = 'hgit.services-prod.nsvcs.net'
 
 const isNetlifyGitServiceUrl = (repoUrl: string): boolean => {
   try {
-    return new URL(repoUrl).host === NETLIFY_GIT_SERVICE_HOST
+    const host = new URL(repoUrl).host;  
+    return host === NETLIFY_GIT_HOST || host === NETLIFY_GIT_SERVICE_HOST
   } catch {
     return false
   }
