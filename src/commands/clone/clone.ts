@@ -101,6 +101,8 @@ const parseNetlifySiteInput = (input: string): { isNetlifySite: true; siteName: 
   return { isNetlifySite: false }
 }
 
+// FIXME(serhalp): This suffers from the same egregious performance problem as `link`/`init`.
+// We should fix it rather than keep spreading it.
 const lookupSiteByName = async (api: BaseCommand['netlify']['api'], siteName: string): Promise<SiteInfo | null> => {
   try {
     const sites = await api.listSites({ name: siteName, filter: 'all' })
