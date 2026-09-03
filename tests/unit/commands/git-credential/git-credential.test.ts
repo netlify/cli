@@ -13,7 +13,7 @@ describe('git-credential command', () => {
       const input = new Readable({
         read() {
           this.push('protocol=https\n')
-          this.push('host=git.netlify.app\n')
+          this.push('host=git.netlify.com\n')
           this.push('path=/test/repo.git\n')
           this.push('\n')
           this.push(null)
@@ -24,7 +24,7 @@ describe('git-credential command', () => {
 
       expect(result).toEqual({
         protocol: 'https',
-        host: 'git.netlify.app',
+        host: 'git.netlify.com',
         path: '/test/repo.git',
       })
     })
@@ -82,7 +82,7 @@ describe('git-credential command', () => {
 
   describe('NETLIFY_GIT_HOST', () => {
     it('is the correct host', () => {
-      expect(NETLIFY_GIT_HOST).toBe('git.netlify.app')
+      expect(NETLIFY_GIT_HOST).toBe('git.netlify.com')
     })
   })
 })
