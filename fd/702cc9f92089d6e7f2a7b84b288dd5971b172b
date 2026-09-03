@@ -1,0 +1,16 @@
+src/commands/git-credential/git-credential.ts
+  h_d5b7d5b9958bc0 9
+src/commands/clone/clone.ts
+  h_d5b7d5b9958bc0 20-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "fd702cc9f92089d6e7f2a7b84b288dd5971b172b",
+  "prompts": {},
+  "humans": {
+    "h_d5b7d5b9958bc0": {
+      "author": "Mathias Biilmann <info@mathias-biilmann.net>"
+    }
+  }
+}
