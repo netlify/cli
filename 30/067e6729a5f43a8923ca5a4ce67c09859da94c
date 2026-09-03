@@ -1,0 +1,14 @@
+tests/unit/commands/git-credential/git-credential.test.ts
+  h_d5b7d5b9958bc0 16,27,85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "30067e6729a5f43a8923ca5a4ce67c09859da94c",
+  "prompts": {},
+  "humans": {
+    "h_d5b7d5b9958bc0": {
+      "author": "Mathias Biilmann <info@mathias-biilmann.net>"
+    }
+  }
+}
