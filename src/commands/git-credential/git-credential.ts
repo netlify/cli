@@ -31,10 +31,7 @@ export const writeCredentials = (output: Writable, token: string): void => {
   output.write(`password=${token}\n`)
 }
 
-export const gitCredential = async (
-  operation: string,
-  _options: GitCredentialOptionValues,
-): Promise<void> => {
+export const gitCredential = async (operation: string, _options: GitCredentialOptionValues): Promise<void> => {
   if (operation !== 'get') {
     return
   }
