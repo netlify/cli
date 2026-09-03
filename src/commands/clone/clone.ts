@@ -127,6 +127,8 @@ const finalizeClone = async (
   linkOverrides: { id?: string; name?: string; gitRemoteUrl?: string },
 ): Promise<void> => {
   command.workingDir = workingDir
+  // TODO(serhalp): This shouldn't be necessary but `getPathInProject` does not take
+  // `command.workingDir` into account. Carefully fix this and remove this line.
   process.chdir(workingDir)
 
   const { id, name, ...globalOptions } = options
