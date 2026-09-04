@@ -21,6 +21,7 @@ import {
   findCurrentBuildingDeploy,
   findLatestFinishedDeploy,
   findLatestReadyDeploy,
+  isDeployFinished,
   streamDeploy,
 } from './sources/deploy.js'
 import { fetchEdgeFunctionHistoricalLogs, streamEdgeFunctions } from './sources/edge-functions.js'
@@ -35,6 +36,7 @@ import {
 type Source = 'functions' | 'edge-functions' | 'deploy'
 const VALID_SOURCES: Source[] = ['functions', 'edge-functions', 'deploy']
 const DEFAULT_SINCE = '10m'
+const DEPLOY_STREAM_IDLE_CLOSE_MS = 3_000
 
 const parseSources = (rawSources: string[]): Source[] => {
   const sources: Source[] = []
@@ -399,11 +401,19 @@ export const runFollowMode = async ({
   if (sources.includes('deploy')) {
     const deployStreamId = deployTargeted ? deployId : await findCurrentBuildingDeploy(client, siteId)
     if (deployStreamId) {
-      streamDeploy(siteId, deployStreamId, accessToken, onEntry, () => {
-        if (!json) {
-          log(chalk.dim('Deploy stream closed.'))
-        }
-      })
+      const finished = deployTargeted ? await isDeployFinished(client, siteId, deployStreamId) : false
+      streamDeploy(
+        siteId,
+        deployStreamId,
+        accessToken,
+        onEntry,
+        () => {
+          if (!json) {
+            log(chalk.dim('Deploy stream closed.'))
+          }
+        },
+        { closeWhenIdleMs: finished ? DEPLOY_STREAM_IDLE_CLOSE_MS : undefined },
+      )
     }
   }
 

@@ -13,6 +13,7 @@ interface DeployLogMessage {
 }
 
 const DEPLOY_LOG_REPLAY_TIMEOUT_MS = 30_000
+const DEPLOY_STREAM_START_TIMEOUT_MS = 20_000
 
 const parseDeployLogTimestamp = (message: DeployLogMessage): number | undefined => {
   if (!message.ts) {
@@ -124,8 +125,17 @@ export const streamDeploy = (
   accessToken: string | null | undefined,
   onEntry: (entry: LogEntry) => void,
   onClose: () => void,
+  { closeWhenIdleMs }: { closeWhenIdleMs?: number } = {},
 ): (() => void) => {
   const ws = getWebSocket('wss://socketeer.services.netlify.com/build/logs')
+
+  let closeTimer: ReturnType<typeof setTimeout> | undefined
+  const scheduleClose = (ms: number) => {
+    clearTimeout(closeTimer)
+    closeTimer = setTimeout(() => {
+      ws.close()
+    }, ms)
+  }
 
   ws.on('open', () => {
     ws.send(
@@ -135,6 +145,9 @@ export const streamDeploy = (
         access_token: accessToken,
       }),
     )
+    if (closeWhenIdleMs !== undefined) {
+      scheduleClose(DEPLOY_STREAM_START_TIMEOUT_MS)
+    }
   })
 
   ws.on('message', (data: string) => {
@@ -143,6 +156,9 @@ export const streamDeploy = (
       return
     }
     onEntry(toLogEntry(message, parseDeployLogTimestamp(message) ?? Date.now()))
+    if (closeWhenIdleMs !== undefined) {
+      scheduleClose(closeWhenIdleMs)
+    }
 
     if (isEndOfBuild(message)) {
       ws.close()
@@ -150,10 +166,12 @@ export const streamDeploy = (
   })
 
   ws.on('close', () => {
+    clearTimeout(closeTimer)
     onClose()
   })
 
   return () => {
+    clearTimeout(closeTimer)
     ws.close()
   }
 }
@@ -174,4 +192,9 @@ export const findLatestFinishedDeploy = async (client: NetlifyAPI, siteId: strin
   const deploys = (await client.listSiteDeploys({ siteId, per_page: 10 })) as { id: string; state: string }[]
   const finished = deploys.find((deploy) => FINISHED_DEPLOY_STATES.has(deploy.state))
   return finished?.id
+}
+
+export const isDeployFinished = async (client: NetlifyAPI, siteId: string, deployId: string): Promise<boolean> => {
+  const deploy = (await client.getSiteDeploy({ siteId, deployId })) as { state?: unknown }
+  return typeof deploy.state === 'string' && FINISHED_DEPLOY_STATES.has(deploy.state)
 }
