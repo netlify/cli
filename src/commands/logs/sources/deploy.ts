@@ -167,3 +167,11 @@ export const findLatestReadyDeploy = async (client: NetlifyAPI, siteId: string):
   const deploys = (await client.listSiteDeploys({ siteId, state: 'ready', per_page: 1 })) as { id: string }[]
   return deploys.length > 0 ? deploys[0].id : undefined
 }
+
+const FINISHED_DEPLOY_STATES = new Set(['ready', 'error', 'cancelled'])
+
+export const findLatestFinishedDeploy = async (client: NetlifyAPI, siteId: string): Promise<string | undefined> => {
+  const deploys = (await client.listSiteDeploys({ siteId, per_page: 10 })) as { id: string; state: string }[]
+  const finished = deploys.find((deploy) => FINISHED_DEPLOY_STATES.has(deploy.state))
+  return finished?.id
+}

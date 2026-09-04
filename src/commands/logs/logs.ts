@@ -18,6 +18,7 @@ import { LOG_LEVELS_LIST, CLI_LOG_LEVEL_CHOICES_STRING } from './log-levels.js'
 import {
   fetchDeployHistoricalLogs,
   findCurrentBuildingDeploy,
+  findLatestFinishedDeploy,
   findLatestReadyDeploy,
   streamDeploy,
 } from './sources/deploy.js'
@@ -218,7 +219,9 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     }
 
     if (!deployId) {
-      const latestId = await findLatestReadyDeploy(client, siteId)
+      const latestId = sources.includes('deploy')
+        ? await findLatestFinishedDeploy(client, siteId)
+        : await findLatestReadyDeploy(client, siteId)
       if (latestId) {
         deployId = latestId
       }

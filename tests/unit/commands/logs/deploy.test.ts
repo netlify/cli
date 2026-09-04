@@ -30,7 +30,8 @@ vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: (url: string) => getWebSocketMock(url),
 }))
 
-const { fetchDeployHistoricalLogs, streamDeploy } = await import('../../../../src/commands/logs/sources/deploy.js')
+const { fetchDeployHistoricalLogs, findLatestFinishedDeploy, findLatestReadyDeploy, streamDeploy } =
+  await import('../../../../src/commands/logs/sources/deploy.js')
 
 const FROM = Date.parse('2026-01-01T00:00:00.000Z')
 const TO = Date.parse('2026-01-01T00:10:00.000Z')
@@ -204,6 +205,56 @@ describe('fetchDeployHistoricalLogs', () => {
     ws.emit('error', new Error('connection refused'))
 
     await expect(promise).rejects.toThrow('connection refused')
+  })
+})
+
+describe('deploy selection', () => {
+  it('findLatestFinishedDeploy returns the newest finished deploy, including failed ones', async () => {
+    const listSiteDeploys = vi.fn().mockResolvedValue([{ id: 'failed-deploy', state: 'error' }])
+    const client = { listSiteDeploys } as never
+
+    const id = await findLatestFinishedDeploy(client, 'site-1')
+
+    expect(id).toBe('failed-deploy')
+    expect(listSiteDeploys).toHaveBeenCalledWith({ siteId: 'site-1', per_page: 10 })
+  })
+
+  it('findLatestFinishedDeploy skips in-progress builds', async () => {
+    const listSiteDeploys = vi.fn().mockResolvedValue([
+      { id: 'building-deploy', state: 'building' },
+      { id: 'enqueued-deploy', state: 'enqueued' },
+      { id: 'ready-deploy', state: 'ready' },
+    ])
+    const client = { listSiteDeploys } as never
+
+    expect(await findLatestFinishedDeploy(client, 'site-1')).toBe('ready-deploy')
+  })
+
+  it('findLatestFinishedDeploy treats cancelled deploys as finished', async () => {
+    const listSiteDeploys = vi.fn().mockResolvedValue([
+      { id: 'building-deploy', state: 'building' },
+      { id: 'cancelled-deploy', state: 'cancelled' },
+    ])
+    const client = { listSiteDeploys } as never
+
+    expect(await findLatestFinishedDeploy(client, 'site-1')).toBe('cancelled-deploy')
+  })
+
+  it('findLatestReadyDeploy filters to ready deploys only', async () => {
+    const listSiteDeploys = vi.fn().mockResolvedValue([{ id: 'ready-deploy', state: 'ready' }])
+    const client = { listSiteDeploys } as never
+
+    const id = await findLatestReadyDeploy(client, 'site-1')
+
+    expect(id).toBe('ready-deploy')
+    expect(listSiteDeploys).toHaveBeenCalledWith({ siteId: 'site-1', state: 'ready', per_page: 1 })
+  })
+
+  it('returns undefined when there are no finished deploys', async () => {
+    const client = {
+      listSiteDeploys: vi.fn().mockResolvedValue([{ id: 'building-deploy', state: 'building' }]),
+    } as never
+    expect(await findLatestFinishedDeploy(client, 'site-1')).toBeUndefined()
   })
 })
 
