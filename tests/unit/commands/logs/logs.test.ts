@@ -3,14 +3,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const fetchDeployHistoricalLogsMock = vi.fn<(...args: unknown[]) => Promise<unknown[]>>()
 const findLatestFinishedDeployMock = vi.fn<(...args: unknown[]) => Promise<string | undefined>>()
 const findLatestReadyDeployMock = vi.fn<(...args: unknown[]) => Promise<string | undefined>>()
+const streamDeployMock = vi.fn<(...args: unknown[]) => void>()
+const findCurrentBuildingDeployMock = vi.fn<(...args: unknown[]) => Promise<string | undefined>>()
 
 vi.mock('../../../../src/commands/logs/sources/deploy.js', () => ({
   fetchDeployHistoricalLogs: (...args: unknown[]) => fetchDeployHistoricalLogsMock(...args),
-  findCurrentBuildingDeploy: vi.fn(),
+  findCurrentBuildingDeploy: (...args: unknown[]) => findCurrentBuildingDeployMock(...args),
   findLatestFinishedDeploy: (...args: unknown[]) => findLatestFinishedDeployMock(...args),
   findLatestReadyDeploy: (...args: unknown[]) => findLatestReadyDeployMock(...args),
   isDeployFinished: () => Promise.resolve(false),
-  streamDeploy: vi.fn(),
+  streamDeploy: (...args: unknown[]) => {
+    streamDeployMock(...args)
+  },
 }))
 
 vi.mock('../../../../src/commands/logs/sources/edge-functions.js', () => ({
@@ -18,7 +22,7 @@ vi.mock('../../../../src/commands/logs/sources/edge-functions.js', () => ({
   streamEdgeFunctions: vi.fn(),
 }))
 
-const { logsCommand } = await import('../../../../src/commands/logs/logs.js')
+const { logsCommand, runFollowMode } = await import('../../../../src/commands/logs/logs.js')
 
 const A_VALID_DEPLOY_ID = 'a'.repeat(24)
 
@@ -31,10 +35,27 @@ const makeCommand = () =>
     },
   }) as never
 
+type FollowArgs = Parameters<typeof runFollowMode>[0]
+
+const followArgs = (overrides: Partial<FollowArgs>): FollowArgs => ({
+  sources: ['deploy'],
+  client: {} as never,
+  siteId: 'site-1',
+  accessToken: 'token-1',
+  deployTargeted: false,
+  functionNames: [],
+  edgeFunctionNames: [],
+  levelsToPrint: ['info', 'warn', 'error', 'debug', 'trace', 'fatal'],
+  json: false,
+  ...overrides,
+})
+
 beforeEach(() => {
   fetchDeployHistoricalLogsMock.mockReset().mockResolvedValue([])
   findLatestFinishedDeployMock.mockReset().mockResolvedValue('finished-deploy')
   findLatestReadyDeployMock.mockReset().mockResolvedValue('ready-deploy')
+  streamDeployMock.mockClear()
+  findCurrentBuildingDeployMock.mockReset().mockResolvedValue('building-deploy')
 })
 
 describe('logsCommand deploy auto-selection', () => {
@@ -84,5 +105,31 @@ describe('logsCommand --deploy-id', () => {
 
     expect(fetchDeployHistoricalLogsMock).toHaveBeenCalledTimes(1)
     expect(fetchDeployHistoricalLogsMock.mock.calls[0]?.[0]).toMatchObject({ deployId: A_VALID_DEPLOY_ID })
+  })
+})
+
+describe('runFollowMode deploy targeting', () => {
+  it('streams the explicitly targeted deploy without looking up the building deploy', async () => {
+    await runFollowMode(followArgs({ deployId: 'target-deploy', deployTargeted: true }))
+
+    expect(findCurrentBuildingDeployMock).not.toHaveBeenCalled()
+    expect(streamDeployMock).toHaveBeenCalledTimes(1)
+    expect(streamDeployMock.mock.calls[0]?.[1]).toBe('target-deploy')
+  })
+
+  it('falls back to the current building deploy when nothing is targeted', async () => {
+    await runFollowMode(followArgs({ deployId: 'latest-deploy', deployTargeted: false }))
+
+    expect(findCurrentBuildingDeployMock).toHaveBeenCalledOnce()
+    expect(streamDeployMock).toHaveBeenCalledTimes(1)
+    expect(streamDeployMock.mock.calls[0]?.[1]).toBe('building-deploy')
+  })
+
+  it('streams nothing when no deploy is building and none is targeted', async () => {
+    findCurrentBuildingDeployMock.mockResolvedValue(undefined)
+
+    await runFollowMode(followArgs({ deployId: undefined, deployTargeted: false }))
+
+    expect(streamDeployMock).not.toHaveBeenCalled()
   })
 })
