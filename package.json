@@ -23,7 +23,8 @@
     "/bin",
     "/scripts",
     "/functions-templates",
-    "/dist"
+    "/dist",
+    "!dist/**/*.map"
   ],
   "type": "module",
   "scripts": {
