@@ -4,7 +4,7 @@ import { version as nodeVersion } from 'process'
 
 import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
 import type { MemoizeCache } from '@netlify/dev-utils'
-import CronParser from 'cron-parser'
+import { parseExpression } from 'cron-parser'
 import semver from 'semver'
 
 import { logAndThrowError, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
@@ -36,7 +36,7 @@ type MappedOmit<T, K extends keyof T> = { [P in keyof T as P extends K ? never :
 const difference = (setA: Set<string>, setB: Set<string>) => new Set([...setA].filter((item) => !setB.has(item)))
 
 const getNextRun = function (schedule: string) {
-  const cron = CronParser.parseExpression(schedule, {
+  const cron = parseExpression(schedule, {
     tz: 'Etc/UTC',
   })
   return cron.next().toDate()
