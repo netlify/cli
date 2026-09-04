@@ -130,7 +130,10 @@ export const createLogsCommand = (program: BaseCommand) => {
       ),
     )
     .addOption(
-      new Option('-d, --deploy-id <deploy-id>', 'Show logs for a specific deploy by ID, including failed builds. Can be used with all sources.'),
+      new Option(
+        '-d, --deploy-id <deploy-id>',
+        'Show logs for a specific deploy by ID, including failed builds. Can be used with all sources.',
+      ),
     )
     .addOption(
       new Option('-l, --level <levels...>', `Log levels to include. Choices are:${CLI_LOG_LEVEL_CHOICES_STRING}`),
