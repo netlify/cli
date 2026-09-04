@@ -56,7 +56,7 @@ Claim an anonymously deployed site and link it to your account
 
 ### [clone](/commands/clone)
 
-Clone a remote repository and link it to an existing project on Netlify
+Clone a repository and link it to a Netlify project
 
 ### [completion](/commands/completion)
 
