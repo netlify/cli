@@ -130,12 +130,16 @@ export const createLogsCommand = (program: BaseCommand) => {
       ),
     )
     .addOption(
+      new Option('-d, --deploy-id <deploy-id>', 'Show logs for a specific deploy by ID, including failed builds'),
+    )
+    .addOption(
       new Option('-l, --level <levels...>', `Log levels to include. Choices are:${CLI_LOG_LEVEL_CHOICES_STRING}`),
     )
     .addOption(new Option('--json', 'Output logs as JSON Lines'))
     .addExamples([
       'netlify logs',
       'netlify logs --since 1h',
+      'netlify logs --source deploy --deploy-id <deploy-id> --since 7d',
       'netlify logs --source functions --function checkout --since 24h',
       'netlify logs --source edge-functions --since 30m',
       'netlify logs --source deploy --source functions --since 1h',

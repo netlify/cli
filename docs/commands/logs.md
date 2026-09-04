@@ -17,6 +17,7 @@ netlify logs
 
 **Flags**
 
+- `deploy-id` (*string*) - Show logs for a specific deploy by ID, including failed builds
 - `edge-function` (*string*) - Filter to specific edge functions by name or path
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `follow` (*boolean*) - Stream logs in real time instead of showing historical logs
@@ -35,6 +36,7 @@ netlify logs
 ```bash
 netlify logs
 netlify logs --since 1h
+netlify logs --source deploy --deploy-id <deploy-id> --since 7d
 netlify logs --source functions --function checkout --since 24h
 netlify logs --source edge-functions --since 30m
 netlify logs --source deploy --source functions --since 1h
