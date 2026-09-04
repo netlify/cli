@@ -83,7 +83,7 @@
     "clean-deep": "^3.4.0",
     "commander": "^12.1.0",
     "comment-json": "^5.0.0",
-    "content-type": "^1.0.5",
+    "content-type": "^3.0.0",
     "cookie": "^2.0.0",
     "cron-parser": "^4.9.0",
     "debug": "^4.4.3",
