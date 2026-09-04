@@ -1,11 +1,15 @@
 /*
- * Measures the size impact of a change and writes the numbers as `.delta.*` files for
- * `netlify/delta-action` to compare against `main` and post on the PR. See
- * `.github/workflows/benchmark.yml`.
+ * The `.delta.*` files written here are consumed by `netlify/delta-action`, which compares them
+ * against `main` and posts the result on the PR. See `.github/workflows/benchmark.yml`.
+ *
+ * A shell version of this was tried first and produces identical numbers, but it needs `jq` and
+ * GNU `find` (`-printf` is not in BSD `find`, so it will not run on a maintainer's mac). Node is
+ * already guaranteed here, and the measurements below are only worth reading if they are right,
+ * which is what the unit tests in `tests/unit/scripts` are for.
  */
 
 import { execFile } from 'node:child_process'
-import { readdir, readFile, lstat, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises'
+import { access, readdir, readFile, lstat, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
@@ -14,7 +18,7 @@ import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
 
-/** cacache stores downloaded tarballs under this key prefix; registry metadata shares the prefix. */
+/** Registry metadata is cached under the same key namespace as tarballs; only tarball keys end here. */
 const TARBALL_KEY_SUFFIX = '.tgz'
 
 const walkFiles = async (dir) => {
@@ -38,8 +42,6 @@ const walkFiles = async (dir) => {
 }
 
 /**
- * Total bytes of every package tarball npm downloaded into `cacheDir`.
- *
  * Read from cacache's index rather than by measuring the cache on disk: the index records an exact
  * byte count per entry, and lets us exclude cached registry metadata, which is downloaded too but
  * fluctuates as unrelated packages publish. Tarballs for a published version are immutable, so a
@@ -76,8 +78,6 @@ export const sumCachedTarballBytes = async (cacheDir) => {
 }
 
 /**
- * Total bytes of the files under `dir`.
- *
  * Uses real file sizes rather than `du`, which reports disk blocks and so inflates a tree of many
  * small files by an amount that varies with the filesystem. Symlinks are measured as links, not
  * followed, so `node_modules/.bin` doesn't count binaries twice.
@@ -96,19 +96,52 @@ export const directoryBytes = async (dir) => {
   return sizes.reduce((total, size) => total + size, 0)
 }
 
-/** Renders one metric in the two-line shape `delta-action` parses: value, then `unit (label)`. */
+/** `delta-action` parses each metric file as a value line followed by an `unit (label)` line. */
 export const formatDelta = (value, unit, label) => `${Math.round(value).toString()}\n${unit} (${label})\n`
 
-/** Counts installed packages by looking for the manifests npm wrote, including nested copies. */
-const countPackages = async (nodeModulesDir) => {
-  const files = await walkFiles(nodeModulesDir)
-  return files.filter((file) => path.basename(file) === 'package.json').length
+const hasManifest = async (dir) => {
+  try {
+    await access(path.join(dir, 'package.json'))
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**
- * Builds the tarball a release would publish, installs it the way a user would, and reports what
- * that cost. Measuring a real install rather than the repo's own `node_modules` is what lets these
- * numbers cover our own package contents as well as our dependencies.
+ * Only the direct children of a `node_modules` directory (or of a scope directory inside one) are
+ * package roots. A dependency is free to ship `package.json` files of its own -- inside `dist`, or
+ * in test fixtures -- and those are not installed packages.
+ */
+export const countPackageRoots = async (nodeModulesDir) => {
+  let entries
+  try {
+    entries = await readdir(nodeModulesDir, { withFileTypes: true })
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
+      return 0
+    }
+    throw error
+  }
+
+  const counts = await Promise.all(
+    entries
+      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+      .map(async (entry) => {
+        const entryPath = path.join(nodeModulesDir, entry.name)
+        if (entry.name.startsWith('@')) {
+          return countPackageRoots(entryPath)
+        }
+        const nested = await countPackageRoots(path.join(entryPath, 'node_modules'))
+        return ((await hasManifest(entryPath)) ? 1 : 0) + nested
+      }),
+  )
+  return counts.reduce((total, count) => total + count, 0)
+}
+
+/**
+ * Measuring a real install rather than the repo's own `node_modules` is what lets these numbers
+ * cover our own published package contents as well as our dependencies.
  */
 const measure = async (repoDir, scratchDir) => {
   const packDir = path.join(scratchDir, 'pack')
@@ -158,7 +191,7 @@ const measure = async (repoDir, scratchDir) => {
     packageDownloadBytes: packed.size,
     totalDownloadBytes: dependencyTarballBytes + packed.size,
     installedBytes: await directoryBytes(nodeModulesDir),
-    dependencyCount: await countPackages(nodeModulesDir),
+    packageCount: await countPackageRoots(nodeModulesDir),
   }
 }
 
@@ -173,10 +206,9 @@ const main = async () => {
       ['.delta.downloadSizePackage', result.packageDownloadBytes / 1024, 'kb', 'Download size (CLI package)'],
       ['.delta.downloadSizeInstall', result.totalDownloadBytes / 1024, 'kb', 'Download size (full install)'],
       ['.delta.installedSize', result.installedBytes / 1024, 'kb', 'Installed size'],
-      // Deliberately not `.delta.dependencyCount`: this counts every package directory npm wrote,
-      // including nested duplicate copies, so it is a different measurement from the `npm ls` count
-      // that key used to hold. Reusing the key would compare the two and report a phantom jump.
-      ['.delta.installedPackageCount', result.dependencyCount, '', 'Installed package count'],
+      // Deliberately not `.delta.dependencyCount`: that key held an `npm ls` count of the repo's own
+      // tree, so reusing it would compare two different measurements and report a phantom jump.
+      ['.delta.installedPackageCount', result.packageCount, '', 'Installed package count'],
     ]
 
     for (const [filename, value, unit, label] of metrics) {

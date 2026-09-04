@@ -1,10 +1,10 @@
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises'
+import { mkdtemp, mkdir, writeFile, rm, lstat, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 
-import { directoryBytes, formatDelta, sumCachedTarballBytes } from '../../../scripts/measure-size.js'
+import { countPackageRoots, directoryBytes, formatDelta, sumCachedTarballBytes } from '../../../scripts/measure-size.js'
 
 let workDir: string
 
@@ -60,10 +60,10 @@ describe('sumCachedTarballBytes', () => {
     // cacache appends rather than rewrites, so the same key legitimately appears more than once.
     await writeIndexBucket(workDir, 'bucket1', [
       tarballEntry('chalk', '5.3.0', 13_397),
-      tarballEntry('chalk', '5.3.0', 13_397),
+      tarballEntry('chalk', '5.3.0', 14_001),
     ])
 
-    expect(await sumCachedTarballBytes(workDir)).toBe(13_397)
+    expect(await sumCachedTarballBytes(workDir)).toBe(14_001)
   })
 
   test('skips unparseable lines rather than throwing', async () => {
@@ -93,15 +93,59 @@ describe('directoryBytes', () => {
 
   test('counts a symlink itself rather than following it to its target', async () => {
     // `node_modules/.bin` is full of symlinks; following them would count binaries repeatedly.
-    const { symlink } = await import('node:fs/promises')
-    await writeFile(path.join(workDir, 'real.js'), 'x'.repeat(100))
-    await symlink(path.join(workDir, 'real.js'), path.join(workDir, 'link.js'))
+    const target = path.join(workDir, 'real.js')
+    const link = path.join(workDir, 'link.js')
+    await writeFile(target, 'x'.repeat(100))
+    await symlink(target, link)
 
-    expect(await directoryBytes(workDir)).toBeLessThan(200)
+    expect(await directoryBytes(workDir)).toBe(100 + (await lstat(link)).size)
   })
 
   test('returns zero for a directory that does not exist', async () => {
     expect(await directoryBytes(path.join(workDir, 'never-created'))).toBe(0)
+  })
+})
+
+describe('countPackageRoots', () => {
+  const writeManifest = async (...segments: string[]) => {
+    const dir = path.join(workDir, ...segments)
+    await mkdir(dir, { recursive: true })
+    await writeFile(path.join(dir, 'package.json'), '{}')
+  }
+
+  test('counts unscoped and scoped packages', async () => {
+    await writeManifest('node_modules', 'chalk')
+    await writeManifest('node_modules', '@netlify', 'api')
+    await writeManifest('node_modules', '@netlify', 'blobs')
+
+    expect(await countPackageRoots(path.join(workDir, 'node_modules'))).toBe(3)
+  })
+
+  test('counts nested duplicate copies npm hoisted separately', async () => {
+    await writeManifest('node_modules', 'chalk')
+    await writeManifest('node_modules', 'chalk', 'node_modules', 'ansi-styles')
+
+    expect(await countPackageRoots(path.join(workDir, 'node_modules'))).toBe(2)
+  })
+
+  test('ignores manifests a package ships outside its root', async () => {
+    await writeManifest('node_modules', 'chalk')
+    await writeManifest('node_modules', 'chalk', 'dist')
+    await writeManifest('node_modules', 'chalk', 'test', 'fixtures', 'project')
+
+    expect(await countPackageRoots(path.join(workDir, 'node_modules'))).toBe(1)
+  })
+
+  test('ignores directories npm writes that are not packages', async () => {
+    await writeManifest('node_modules', 'chalk')
+    await mkdir(path.join(workDir, 'node_modules', '.bin'), { recursive: true })
+    await mkdir(path.join(workDir, 'node_modules', 'empty-dir'), { recursive: true })
+
+    expect(await countPackageRoots(path.join(workDir, 'node_modules'))).toBe(1)
+  })
+
+  test('returns zero when nothing was installed', async () => {
+    expect(await countPackageRoots(path.join(workDir, 'never-created'))).toBe(0)
   })
 })
 
