@@ -137,6 +137,17 @@ export const streamDeploy = (
     }, ms)
   }
 
+  // Closing a still-connecting socket emits an error; handle it (and any other
+  // socket error) so it never surfaces as an unhandled event. The `close` event
+  // that follows runs the cleanup below.
+  ws.on('error', () => {
+    clearTimeout(closeTimer)
+  })
+
+  if (closeWhenIdleMs !== undefined) {
+    scheduleClose(DEPLOY_STREAM_START_TIMEOUT_MS)
+  }
+
   ws.on('open', () => {
     ws.send(
       JSON.stringify({
@@ -145,9 +156,6 @@ export const streamDeploy = (
         access_token: accessToken,
       }),
     )
-    if (closeWhenIdleMs !== undefined) {
-      scheduleClose(DEPLOY_STREAM_START_TIMEOUT_MS)
-    }
   })
 
   ws.on('message', (data: string) => {
