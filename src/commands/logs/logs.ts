@@ -225,8 +225,6 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     }
   }
 
-  const apiBase = client.basePath
-
   const sinceValue = (options.since as string | undefined) ?? DEFAULT_SINCE
   const untilValue = options.until as string | undefined
 
@@ -234,7 +232,6 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     await runHistoricalMode({
       sources,
       client,
-      apiBase,
       siteId,
       accessToken: client.accessToken,
       deployId,
@@ -269,7 +266,6 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
 const runHistoricalMode = async ({
   sources,
   client,
-  apiBase,
   siteId,
   accessToken,
   deployId,
@@ -283,7 +279,6 @@ const runHistoricalMode = async ({
 }: {
   sources: Source[]
   client: NetlifyAPI
-  apiBase: string
   siteId: string
   accessToken: string | null | undefined
   deployId?: string
@@ -299,7 +294,7 @@ const runHistoricalMode = async ({
 
   if (sources.includes('deploy') && deployId) {
     const deployEntries = await fetchDeployHistoricalLogs({
-      apiBase,
+      siteId,
       accessToken,
       deployId,
       from,
