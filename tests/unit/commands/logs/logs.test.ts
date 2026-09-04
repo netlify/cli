@@ -72,7 +72,10 @@ describe('logsCommand --deploy-id', () => {
 
   it('rejects --deploy-id combined with --url', async () => {
     await expect(
-      logsCommand({ source: ['deploy'], deployId: A_VALID_DEPLOY_ID, url: 'https://example.netlify.app' }, makeCommand()),
+      logsCommand(
+        { source: ['deploy'], deployId: A_VALID_DEPLOY_ID, url: 'https://example.netlify.app' },
+        makeCommand(),
+      ),
     ).rejects.toThrow('--deploy-id cannot be used together with --url.')
   })
 
