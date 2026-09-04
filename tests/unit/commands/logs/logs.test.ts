@@ -5,13 +5,14 @@ const findLatestFinishedDeployMock = vi.fn<(...args: unknown[]) => Promise<strin
 const findLatestReadyDeployMock = vi.fn<(...args: unknown[]) => Promise<string | undefined>>()
 const streamDeployMock = vi.fn<(...args: unknown[]) => void>()
 const findCurrentBuildingDeployMock = vi.fn<(...args: unknown[]) => Promise<string | undefined>>()
+const isDeployFinishedMock = vi.fn<(...args: unknown[]) => Promise<boolean>>()
 
 vi.mock('../../../../src/commands/logs/sources/deploy.js', () => ({
   fetchDeployHistoricalLogs: (...args: unknown[]) => fetchDeployHistoricalLogsMock(...args),
   findCurrentBuildingDeploy: (...args: unknown[]) => findCurrentBuildingDeployMock(...args),
   findLatestFinishedDeploy: (...args: unknown[]) => findLatestFinishedDeployMock(...args),
   findLatestReadyDeploy: (...args: unknown[]) => findLatestReadyDeployMock(...args),
-  isDeployFinished: () => Promise.resolve(false),
+  isDeployFinished: (...args: unknown[]) => isDeployFinishedMock(...args),
   streamDeploy: (...args: unknown[]) => {
     streamDeployMock(...args)
   },
@@ -56,6 +57,7 @@ beforeEach(() => {
   findLatestReadyDeployMock.mockReset().mockResolvedValue('ready-deploy')
   streamDeployMock.mockClear()
   findCurrentBuildingDeployMock.mockReset().mockResolvedValue('building-deploy')
+  isDeployFinishedMock.mockReset().mockResolvedValue(false)
 })
 
 describe('logsCommand deploy auto-selection', () => {
@@ -131,5 +133,14 @@ describe('runFollowMode deploy targeting', () => {
     await runFollowMode(followArgs({ deployId: undefined, deployTargeted: false }))
 
     expect(streamDeployMock).not.toHaveBeenCalled()
+  })
+
+  it('still streams the targeted deploy when the completion check fails', async () => {
+    isDeployFinishedMock.mockRejectedValue(new Error('api down'))
+
+    await runFollowMode(followArgs({ deployId: 'target-deploy', deployTargeted: true }))
+
+    expect(streamDeployMock).toHaveBeenCalledTimes(1)
+    expect(streamDeployMock.mock.calls[0]?.[1]).toBe('target-deploy')
   })
 })

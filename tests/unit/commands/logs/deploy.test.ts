@@ -329,6 +329,29 @@ describe('streamDeploy', () => {
     }
   })
 
+  it('closes after the start timeout even if the socket never opens', () => {
+    vi.useFakeTimers()
+    try {
+      streamDeploy('site-1', 'deploy-1', 'token-1', vi.fn(), vi.fn(), { closeWhenIdleMs: 3_000 })
+      const [ws] = sockets
+
+      vi.advanceTimersByTime(20_000)
+
+      expect(ws.closed).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('handles a socket error without throwing (e.g. closed while connecting)', () => {
+    streamDeploy('site-1', 'deploy-1', 'token-1', vi.fn(), vi.fn(), { closeWhenIdleMs: 3_000 })
+    const [ws] = sockets
+
+    expect(() =>
+      ws.emit('error', new Error('WebSocket was closed before the connection was established')),
+    ).not.toThrow()
+  })
+
   it('does not idle-close when closeWhenIdleMs is not set', () => {
     vi.useFakeTimers()
     try {

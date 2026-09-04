@@ -401,7 +401,9 @@ export const runFollowMode = async ({
   if (sources.includes('deploy')) {
     const deployStreamId = deployTargeted ? deployId : await findCurrentBuildingDeploy(client, siteId)
     if (deployStreamId) {
-      const finished = deployTargeted ? await isDeployFinished(client, siteId, deployStreamId) : false
+      const finished = deployTargeted
+        ? await isDeployFinished(client, siteId, deployStreamId).catch(() => false)
+        : false
       streamDeploy(
         siteId,
         deployStreamId,
