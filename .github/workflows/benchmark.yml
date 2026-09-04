@@ -25,14 +25,16 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --no-audit && npm prune --production
+        run: npm ci --no-audit
 
-      - name: Get size
-        run: du -sk node_modules | cut -f1 > .delta.packageSize && echo "kb (Package size)" >> .delta.packageSize
+      # `npm pack` only produces a representative tarball once `dist` exists.
+      - name: Build
+        run: npm run build
 
-      - name: Get dependency count
-        run: npm ls -a -p | wc -l | tr -d ' \n' > .delta.dependencyCount && echo " (Dependency count)" >>
-          .delta.dependencyCount
+      # Packs the CLI and installs it like a user would, then reports download size, installed size
+      # and dependency count for that install. See scripts/measure-size.js.
+      - name: Get size and dependency count
+        run: node scripts/measure-size.js
 
       - name: Get TypeScript conversion progress
         run: grep -r --exclude-dir="node_modules" --include="*.ts" "@ts-expect-error" . | wc -l | xargs >
