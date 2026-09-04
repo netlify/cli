@@ -137,9 +137,6 @@ export const streamDeploy = (
     }, ms)
   }
 
-  // Closing a still-connecting socket emits an error; handle it (and any other
-  // socket error) so it never surfaces as an unhandled event. The `close` event
-  // that follows runs the cleanup below.
   ws.on('error', () => {
     clearTimeout(closeTimer)
   })
