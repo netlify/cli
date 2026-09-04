@@ -6,6 +6,7 @@ import type BaseCommand from '../base-command.js'
 
 import {
   createColorAssigner,
+  DEPLOY_ID_RE,
   formatJsonLine,
   formatLogLine,
   parseTimeValue,
@@ -168,7 +169,16 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
   }
 
   let deployId: string | undefined
-  if (options.url) {
+  if (options.deployId) {
+    const explicitDeployId = (options.deployId as string).trim()
+    if (!DEPLOY_ID_RE.test(explicitDeployId)) {
+      return logAndThrowError(`Invalid --deploy-id value: ${explicitDeployId}. Expected a deploy ID.`)
+    }
+    if (options.url) {
+      return logAndThrowError('--deploy-id cannot be used together with --url.')
+    }
+    deployId = explicitDeployId
+  } else if (options.url) {
     try {
       deployId = await resolveDeployIdFromUrl(options.url as string, client, siteId, siteInfo)
     } catch (error) {
