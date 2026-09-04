@@ -1,9 +1,10 @@
-import { Argument, Option, OptionValues } from 'commander'
+import { Argument, Option } from 'commander'
 
 import { chalk, logAndThrowError, netlifyCommand } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 import { CLI_LOG_LEVEL_CHOICES_STRING } from './log-levels.js'
+import type { LogsOptionValues } from './option_values.js'
 
 const createDeprecatedFunctionCommand = (program: BaseCommand) => {
   const base = netlifyCommand()
@@ -152,7 +153,7 @@ export const createLogsCommand = (program: BaseCommand) => {
       'netlify logs --json --since 1h',
       'netlify logs --url https://my-branch--my-site.netlify.app --since 1h',
     ])
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: LogsOptionValues, command: BaseCommand) => {
       const { logsCommand } = await import('./logs.js')
       await logsCommand(options, command)
     })

@@ -1,5 +1,4 @@
 import type { NetlifyAPI } from '@netlify/api'
-import { OptionValues } from 'commander'
 
 import { chalk, log, logAndThrowError, netlifyCommand } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
@@ -16,6 +15,7 @@ import {
 } from './log-api.js'
 import type { LogEntry } from './log-api.js'
 import { LOG_LEVELS_LIST, CLI_LOG_LEVEL_CHOICES_STRING } from './log-levels.js'
+import type { LogsOptionValues } from './option_values.js'
 import {
   fetchDeployHistoricalLogs,
   findCurrentBuildingDeploy,
@@ -125,7 +125,7 @@ const printEntry = (
   }
 }
 
-export const logsCommand = async (options: OptionValues, command: BaseCommand) => {
+export const logsCommand = async (options: LogsOptionValues, command: BaseCommand) => {
   const client = command.netlify.api
   const { site, siteInfo } = command.netlify
   const siteId = site.id
@@ -134,7 +134,7 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     return logAndThrowError('You must link a project before viewing logs.')
   }
 
-  const levelFlags = options.level as string[] | undefined
+  const levelFlags = options.level
   if (levelFlags && !levelFlags.every((level) => LOG_LEVELS_LIST.includes(level))) {
     return logAndThrowError(`Invalid log level. Choices are: ${CLI_LOG_LEVEL_CHOICES_STRING.toString()}`)
   }
@@ -147,9 +147,9 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
   }
 
   let sources: Source[]
-  const rawSources = options.source as string[] | undefined
-  const functionNames = (options.function as string[] | undefined) ?? []
-  const edgeFunctionNames = (options.edgeFunction as string[] | undefined) ?? []
+  const rawSources = options.source
+  const functionNames = options.function ?? []
+  const edgeFunctionNames = options.edgeFunction ?? []
 
   if (rawSources) {
     try {
@@ -173,7 +173,7 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
   let deployId: string | undefined
   let deployTargeted = false
   if (options.deployId) {
-    const explicitDeployId = (options.deployId as string).trim()
+    const explicitDeployId = options.deployId.trim()
     if (!DEPLOY_ID_RE.test(explicitDeployId)) {
       return logAndThrowError(`Invalid --deploy-id value: ${explicitDeployId}. Expected a deploy ID.`)
     }
@@ -184,7 +184,7 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     deployTargeted = true
   } else if (options.url) {
     try {
-      deployId = await resolveDeployIdFromUrl(options.url as string, client, siteId, siteInfo)
+      deployId = await resolveDeployIdFromUrl(options.url, client, siteId, siteInfo)
       deployTargeted = deployId !== undefined
     } catch (error) {
       const message = (error as Error).message
@@ -192,7 +192,7 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
         const parts = [
           netlifyCommand(),
           'logs',
-          ...(options.since ? [`--since ${options.since as string}`] : []),
+          ...(options.since ? [`--since ${options.since}`] : []),
           `--url https://${siteInfo.name}.netlify.app`,
         ].join(' ')
         return logAndThrowError(`${message}\nTry running ${chalk.cyan(parts)}`)
@@ -208,9 +208,9 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
       return logAndThrowError('--until requires --since to also be set.')
     }
     try {
-      const fromValue = (options.since as string | undefined) ?? DEFAULT_SINCE
+      const fromValue = options.since ?? DEFAULT_SINCE
       const from = parseTimeValue(fromValue, now)
-      const to = options.until ? parseTimeValue(options.until as string, now) : now
+      const to = options.until ? parseTimeValue(options.until, now) : now
       if (from >= to) {
         return logAndThrowError('--since must be earlier than --until.')
       }
@@ -243,8 +243,8 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     }
   }
 
-  const sinceValue = (options.since as string | undefined) ?? DEFAULT_SINCE
-  const untilValue = options.until as string | undefined
+  const sinceValue = options.since ?? DEFAULT_SINCE
+  const untilValue = options.until
 
   if (historicalRange) {
     await runHistoricalMode({
