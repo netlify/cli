@@ -140,6 +140,7 @@ export const createLogsCommand = (program: BaseCommand) => {
       'netlify logs',
       'netlify logs --since 1h',
       'netlify logs --source deploy --deploy-id <deploy-id> --since 7d',
+      'netlify logs --source functions --deploy-id <deploy-id>',
       'netlify logs --source functions --function checkout --since 24h',
       'netlify logs --source edge-functions --since 30m',
       'netlify logs --source deploy --source functions --since 1h',
