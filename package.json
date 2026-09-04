@@ -156,7 +156,7 @@
     "@netlify/functions": "^6.0.0",
     "@netlify/types": "^3.0.0",
     "@sindresorhus/slugify": "^3.0.0",
-    "@tsconfig/node22": "22.0.5",
+    "@tsconfig/node24": "24.0.0",
     "@tsconfig/recommended": "^1.0.13",
     "@types/backoff": "^2.5.5",
     "@types/content-type": "^1.1.9",
