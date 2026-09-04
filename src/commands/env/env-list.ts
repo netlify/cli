@@ -9,7 +9,7 @@ import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { SUPPORTED_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
 import { EnvironmentVariables } from '../../utils/types.js'
-import { getSiteInfo } from './utils.js'
+import { failNotLinked, getEnvSiteId, getSiteInfo } from './utils.js'
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
@@ -43,12 +43,11 @@ const getTable = ({
 
 export const envList = async (options: OptionValues, command: BaseCommand) => {
   const { context, scope } = options
-  const { api, cachedConfig, site } = command.netlify
-  const siteId = site.id
+  const { api, cachedConfig } = command.netlify
+  const siteId = getEnvSiteId(options, command)
 
   if (!siteId) {
-    log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return failNotLinked(options)
   }
 
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
