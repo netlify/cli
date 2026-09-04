@@ -77,7 +77,7 @@ const cloneFromNetlifyGit = async (repoUrl: string, targetDir: string, debug: bo
         targetDir,
       ],
       {
-        ...(debug ? {} : { stdio: 'pipe' }),
+        ...(debug ? { stdio: 'inherit' } : {}),
       },
     )
   } catch (error) {
