@@ -126,7 +126,7 @@ export const createLogsCommand = (program: BaseCommand) => {
     .addOption(
       new Option(
         '-u, --url <url>',
-        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains',
+        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains. Can be used with all sources.',
       ),
     )
     .addOption(
