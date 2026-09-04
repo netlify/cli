@@ -30,7 +30,7 @@ vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: (url: string) => getWebSocketMock(url),
 }))
 
-const { fetchDeployHistoricalLogs, findLatestFinishedDeploy, findLatestReadyDeploy, streamDeploy } =
+const { fetchDeployHistoricalLogs, findLatestFinishedDeploy, findLatestReadyDeploy, isDeployFinished, streamDeploy } =
   await import('../../../../src/commands/logs/sources/deploy.js')
 
 const FROM = Date.parse('2026-01-01T00:00:00.000Z')
@@ -274,5 +274,86 @@ describe('streamDeploy', () => {
     ws.emit('message', JSON.stringify({ type: 'report', section: 'building' }))
     expect(ws.closed).toBe(true)
     expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('closes after going idle when closeWhenIdleMs is set', () => {
+    vi.useFakeTimers()
+    try {
+      const onClose = vi.fn()
+      streamDeploy('site-1', 'deploy-1', 'token-1', vi.fn(), onClose, { closeWhenIdleMs: 3_000 })
+      const [ws] = sockets
+
+      ws.emit('open')
+      ws.emit('message', JSON.stringify({ ts: '2026-01-01T00:05:00.000Z', message: 'replayed line' }))
+      expect(ws.closed).toBe(false)
+
+      vi.advanceTimersByTime(3_000)
+      expect(ws.closed).toBe(true)
+      expect(onClose).toHaveBeenCalledOnce()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not arm the short idle timer until the first message arrives', () => {
+    vi.useFakeTimers()
+    try {
+      streamDeploy('site-1', 'deploy-1', 'token-1', vi.fn(), vi.fn(), { closeWhenIdleMs: 3_000 })
+      const [ws] = sockets
+
+      ws.emit('open')
+      // a slow first message (longer than the idle window) must not close the stream early
+      vi.advanceTimersByTime(10_000)
+      expect(ws.closed).toBe(false)
+
+      ws.emit('message', JSON.stringify({ message: 'first line' }))
+      vi.advanceTimersByTime(3_000)
+      expect(ws.closed).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('closes after the start timeout when no message ever arrives', () => {
+    vi.useFakeTimers()
+    try {
+      streamDeploy('site-1', 'deploy-1', 'token-1', vi.fn(), vi.fn(), { closeWhenIdleMs: 3_000 })
+      const [ws] = sockets
+
+      ws.emit('open')
+      vi.advanceTimersByTime(20_000)
+
+      expect(ws.closed).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not idle-close when closeWhenIdleMs is not set', () => {
+    vi.useFakeTimers()
+    try {
+      streamDeploy('site-1', 'deploy-1', 'token-1', vi.fn(), vi.fn())
+      const [ws] = sockets
+
+      ws.emit('open')
+      ws.emit('message', JSON.stringify({ message: 'live line' }))
+      vi.advanceTimersByTime(60_000)
+
+      expect(ws.closed).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+describe('isDeployFinished', () => {
+  it.each(['ready', 'error', 'cancelled'])('returns true for the %s state', async (state) => {
+    const client = { getSiteDeploy: vi.fn().mockResolvedValue({ state }) } as never
+    expect(await isDeployFinished(client, 'site-1', 'deploy-1')).toBe(true)
+  })
+
+  it('returns false for an in-progress deploy', async () => {
+    const client = { getSiteDeploy: vi.fn().mockResolvedValue({ state: 'building' }) } as never
+    expect(await isDeployFinished(client, 'site-1', 'deploy-1')).toBe(false)
   })
 })
