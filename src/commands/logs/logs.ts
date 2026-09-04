@@ -169,6 +169,7 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
   }
 
   let deployId: string | undefined
+  let deployTargeted = false
   if (options.deployId) {
     const explicitDeployId = (options.deployId as string).trim()
     if (!DEPLOY_ID_RE.test(explicitDeployId)) {
@@ -178,9 +179,11 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
       return logAndThrowError('--deploy-id cannot be used together with --url.')
     }
     deployId = explicitDeployId
+    deployTargeted = true
   } else if (options.url) {
     try {
       deployId = await resolveDeployIdFromUrl(options.url as string, client, siteId, siteInfo)
+      deployTargeted = deployId !== undefined
     } catch (error) {
       const message = (error as Error).message
       if (message.includes("doesn't seem to match") && siteInfo.name) {
@@ -269,6 +272,7 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     siteId,
     accessToken: client.accessToken,
     deployId,
+    deployTargeted,
     functionNames,
     edgeFunctionNames,
     levelsToPrint,
@@ -362,12 +366,13 @@ const runHistoricalMode = async ({
   }
 }
 
-const runFollowMode = async ({
+export const runFollowMode = async ({
   sources,
   client,
   siteId,
   accessToken,
   deployId,
+  deployTargeted,
   functionNames,
   edgeFunctionNames,
   levelsToPrint,
@@ -378,6 +383,7 @@ const runFollowMode = async ({
   siteId: string
   accessToken: string | null | undefined
   deployId?: string
+  deployTargeted: boolean
   functionNames: string[]
   edgeFunctionNames: string[]
   levelsToPrint: string[]
@@ -390,10 +396,10 @@ const runFollowMode = async ({
     printEntry(entry, levelsToPrint, json, assignColor(key))
   }
 
-  if (sources.includes('deploy') && deployId) {
-    const buildingDeployId = await findCurrentBuildingDeploy(client, siteId)
-    if (buildingDeployId) {
-      streamDeploy(siteId, buildingDeployId, accessToken, onEntry, () => {
+  if (sources.includes('deploy')) {
+    const deployStreamId = deployTargeted ? deployId : await findCurrentBuildingDeploy(client, siteId)
+    if (deployStreamId) {
+      streamDeploy(siteId, deployStreamId, accessToken, onEntry, () => {
         if (!json) {
           log(chalk.dim('Deploy stream closed.'))
         }
