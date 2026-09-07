@@ -57,6 +57,7 @@ import {
   uploadDropFiles,
   waitForDropDeploy,
 } from '../../utils/deploy/drop-api.js'
+import type { UploadFile } from '../../utils/deploy/upload-files.js'
 import { getUploadList } from '../../utils/deploy/util.js'
 import hashFiles from '../../utils/deploy/hash-files.js'
 import { deployFileNormalizer, getEdgeFunctionsDistPathIfExists } from '../../utils/deploy/process-files.js'
@@ -583,6 +584,7 @@ const runDeploy = async ({
   functionLogsUrl: string
   edgeFunctionLogsUrl: string
   sourceZipFileName?: string
+  uploadList: UploadFile[]
 }> => {
   let results
   let deployId = existingDeployId
@@ -710,6 +712,7 @@ const runDeploy = async ({
     functionLogsUrl,
     edgeFunctionLogsUrl,
     sourceZipFileName: uploadSourceZipResult?.sourceZipFileName,
+    uploadList: results.uploadList,
   }
 }
 
@@ -832,20 +835,65 @@ interface JsonData {
   edge_function_logs: string
   url?: string
   source_zip_filename?: string
+  uploaded_files?: string[]
+  uploaded_functions?: string[]
+  uploaded_edge_functions?: string[]
 }
 
-const printResults = ({
+
+export const printUploadedAssets = (uploadList: UploadFile[]): void => {
+  const staticFiles = uploadList.filter((f) => f.assetType === 'file').map((f) => f.normalizedPath)
+  const functions = uploadList.filter((f) => f.assetType === 'function').map((f) => f.normalizedPath)
+  const edgeFunctions = uploadList.filter((f) => f.assetType === 'edge-function').map((f) => f.normalizedPath)
+
+  log('')
+  log(chalk.cyanBright.bold(`Uploaded assets (${uploadList.length} total)`))
+  log('')
+
+  log(`  Static files (${staticFiles.length}):`)
+  if (staticFiles.length === 0) {
+    log('    (none)')
+  } else {
+    for (const file of staticFiles) {
+      log(`    ${file}`)
+    }
+  }
+  log('')
+
+  log(`  Functions (${functions.length}):`)
+  if (functions.length === 0) {
+    log('    (none)')
+  } else {
+    for (const fn of functions) {
+      log(`    ${fn}`)
+    }
+  }
+  log('')
+
+  log(`  Edge functions (${edgeFunctions.length}):`)
+  if (edgeFunctions.length === 0) {
+    log('    (none)')
+  } else {
+    for (const ef of edgeFunctions) {
+      log(`    ${ef}`)
+    }
+  }
+}
+
+export const printResults = ({
   deployToProduction,
   uploadSourceZip,
   json,
   results,
   runBuildCommand,
+  showUploaded,
 }: {
   deployToProduction: boolean
   uploadSourceZip: boolean
   json: boolean
   results: Awaited<ReturnType<typeof prepAndRunDeploy>>
   runBuildCommand: boolean
+  showUploaded: boolean
 }): void => {
   const msgData: Record<string, string> = {
     'Build logs': terminalLink(results.logsUrl, results.logsUrl, { fallback: false }),
@@ -876,6 +924,18 @@ const printResults = ({
       jsonData.source_zip_filename = results.sourceZipFileName
     }
 
+    if (showUploaded) {
+      jsonData.uploaded_files = results.uploadList
+        .filter((f) => f.assetType === 'file')
+        .map((f) => f.normalizedPath)
+      jsonData.uploaded_functions = results.uploadList
+        .filter((f) => f.assetType === 'function')
+        .map((f) => f.normalizedPath)
+      jsonData.uploaded_edge_functions = results.uploadList
+        .filter((f) => f.assetType === 'edge-function')
+        .map((f) => f.normalizedPath)
+    }
+
     logJson(jsonData)
     exit(0)
   } else if (!isInteractive()) {
@@ -888,6 +948,10 @@ const printResults = ({
     log(`\nBuild logs: <${results.logsUrl}>`)
     log(`Function logs: <${results.functionLogsUrl}>`)
     log(`Edge function logs: <${results.edgeFunctionLogsUrl}>`)
+
+    if (showUploaded) {
+      printUploadedAssets(results.uploadList)
+    }
 
     if (!deployToProduction) {
       log()
@@ -916,6 +980,10 @@ const printResults = ({
     )
 
     log(prettyjson.render(msgData))
+
+    if (showUploaded) {
+      printUploadedAssets(results.uploadList)
+    }
 
     if (!deployToProduction) {
       log()
@@ -1478,6 +1546,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     results,
     deployToProduction,
     uploadSourceZip: !!options.uploadSourceZip,
+    showUploaded: !!options.showUploaded,
   })
 
   if (options.open) {
