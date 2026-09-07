@@ -21,7 +21,7 @@ vi.mock('../../../../src/utils/scripted-commands.js', () => ({
   isInteractive: vi.fn().mockReturnValue(false),
 }))
 
-import { printResults, printUploadedAssets } from '../../../../src/commands/deploy/deploy.js'
+import { printResults, printUploadedAssets, printAnonymousDeployResults } from '../../../../src/commands/deploy/deploy.js'
 import type { UploadFile } from '../../../../src/utils/deploy/upload-files.js'
 
 const makeResults = (overrides: object = {}) => ({
@@ -221,6 +221,102 @@ describe('printResults', () => {
       expect(data).toHaveProperty('deploy_id', 'deploy-456')
       expect(data).toHaveProperty('deploy_url')
       expect(data).toHaveProperty('logs')
+    })
+  })
+})
+
+describe('printAnonymousDeployResults', () => {
+  const baseParams = {
+    claimCommand: 'netlify claim --site site-123 --token tok',
+    claimUrl: 'https://app.netlify.com/drop/mysite#drop_token=tok',
+    deployId: 'deploy-456',
+    isPasswordProtected: true,
+    siteId: 'site-123',
+    siteUrl: 'https://mysite.netlify.app',
+    uploadList: [] as UploadFile[],
+  }
+
+  describe('--show-uploaded not set', () => {
+    test('does not print upload section in text mode', () => {
+      printAnonymousDeployResults({ ...baseParams, json: false, showUploaded: false })
+
+      const output = logMessages.join('\n')
+      expect(output).not.toContain('Uploaded assets')
+    })
+
+    test('does not include uploaded keys in JSON output', () => {
+      printAnonymousDeployResults({
+        ...baseParams,
+        json: true,
+        showUploaded: false,
+        uploadList: [staticFile('/index.html')],
+      })
+
+      expect(jsonMessages).toHaveLength(1)
+      const data = jsonMessages[0] as Record<string, unknown>
+      expect(data).not.toHaveProperty('uploaded_files')
+      expect(data).not.toHaveProperty('uploaded_functions')
+      expect(data).not.toHaveProperty('uploaded_edge_functions')
+    })
+  })
+
+  describe('--show-uploaded set', () => {
+    test('prints upload section in text mode', () => {
+      printAnonymousDeployResults({
+        ...baseParams,
+        json: false,
+        showUploaded: true,
+        uploadList: [staticFile('/index.html'), staticFile('/about.html')],
+      })
+
+      const output = logMessages.join('\n')
+      expect(output).toContain('Uploaded assets (2 total)')
+      expect(output).toContain('/index.html')
+      expect(output).toContain('/about.html')
+    })
+
+    test('prints upload section with empty list in text mode', () => {
+      printAnonymousDeployResults({ ...baseParams, json: false, showUploaded: true, uploadList: [] })
+
+      const output = logMessages.join('\n')
+      expect(output).toContain('Uploaded assets (0 total)')
+      expect(output.match(/\(none\)/g)?.length).toBe(3)
+    })
+
+    test('includes uploaded_files in JSON output', () => {
+      printAnonymousDeployResults({
+        ...baseParams,
+        json: true,
+        showUploaded: true,
+        uploadList: [staticFile('/index.html'), staticFile('/about.html')],
+      })
+
+      expect(jsonMessages).toHaveLength(1)
+      const data = jsonMessages[0] as Record<string, unknown>
+      expect(data.uploaded_files).toEqual(['/index.html', '/about.html'])
+      expect(data.uploaded_functions).toEqual([])
+      expect(data.uploaded_edge_functions).toEqual([])
+    })
+
+    test('includes empty arrays in JSON output when nothing was uploaded', () => {
+      printAnonymousDeployResults({ ...baseParams, json: true, showUploaded: true, uploadList: [] })
+
+      expect(jsonMessages).toHaveLength(1)
+      const data = jsonMessages[0] as Record<string, unknown>
+      expect(data.uploaded_files).toEqual([])
+      expect(data.uploaded_functions).toEqual([])
+      expect(data.uploaded_edge_functions).toEqual([])
+    })
+
+    test('JSON output still includes standard anonymous deploy fields', () => {
+      printAnonymousDeployResults({ ...baseParams, json: true, showUploaded: true })
+
+      expect(jsonMessages).toHaveLength(1)
+      const data = jsonMessages[0] as Record<string, unknown>
+      expect(data).toHaveProperty('site_id', 'site-123')
+      expect(data).toHaveProperty('deploy_id', 'deploy-456')
+      expect(data).toHaveProperty('claim_url')
+      expect(data).toHaveProperty('claim_command')
     })
   })
 })

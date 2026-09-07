@@ -1222,6 +1222,83 @@ const ensureSiteExists = async (
   return promptForSiteAction(options, command, site)
 }
 
+export const printAnonymousDeployResults = ({
+  claimCommand,
+  claimUrl,
+  deployId,
+  isPasswordProtected,
+  json,
+  showUploaded,
+  siteId,
+  siteUrl,
+  uploadList,
+}: {
+  claimCommand: string
+  claimUrl: string
+  deployId: string
+  isPasswordProtected: boolean
+  json: boolean
+  showUploaded: boolean
+  siteId: string
+  siteUrl: string
+  uploadList: UploadFile[]
+}): void => {
+  if (json) {
+    const jsonData: Record<string, unknown> = {
+      site_id: siteId,
+      site_url: siteUrl,
+      deploy_id: deployId,
+      claim_url: claimUrl,
+      claim_command: claimCommand,
+      ...(isPasswordProtected ? { password: 'My-Drop-Site' } : {}),
+    }
+
+    if (showUploaded) {
+      jsonData.uploaded_files = uploadList.filter((f) => f.assetType === 'file').map((f) => f.normalizedPath)
+      jsonData.uploaded_functions = uploadList.filter((f) => f.assetType === 'function').map((f) => f.normalizedPath)
+      jsonData.uploaded_edge_functions = uploadList
+        .filter((f) => f.assetType === 'edge-function')
+        .map((f) => f.normalizedPath)
+    }
+
+    logJson(jsonData)
+    return
+  }
+
+  log('')
+  log(chalk.cyanBright.bold(`🚀 Deploy complete\n${'─'.repeat(64)}`))
+  log('')
+
+  const boxContent = isPasswordProtected
+    ? `Site URL:  ${terminalLink(siteUrl, siteUrl, { fallback: false })}\n\nPassword:  My-Drop-Site`
+    : `Site URL:  ${terminalLink(siteUrl, siteUrl, { fallback: false })}`
+
+  log(
+    boxen(boxContent, {
+      padding: 1,
+      margin: 1,
+      textAlignment: 'center',
+      borderStyle: 'round',
+      borderColor: NETLIFY_CYAN_HEX,
+      title: `⬥  Anonymous deploy is live ⬥ `,
+      titleAlignment: 'center',
+    }),
+  )
+  log(`  ${chalk.bold('Claim on Netlify:')}`)
+  log(`  ${claimUrl}`)
+  log('')
+  log(`  ${chalk.bold('Claim via CLI:')}`)
+  log(`  ${claimCommand}`)
+  log('')
+  warn('Anonymously deployed sites need to be claimed within 60 minutes.')
+
+  if (showUploaded) {
+    printUploadedAssets(uploadList)
+  }
+
+  log('')
+}
+
 const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand) => {
   const { workingDir } = command
   const { site, config } = command.netlify
@@ -1332,10 +1409,12 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
     throw error
   }
 
-  const uploadList = getUploadList(deployInfo.required, filesShaMap) as UploadListItem[]
+  // Anonymous deploys only allow static files (checkForFunctions() above blocks functions and
+  // edge functions), so every entry in filesShaMap has assetType: 'file'.
+  const uploadList = getUploadList(deployInfo.required, filesShaMap) as UploadFile[]
 
   if (uploadList.length > 0) {
-    await uploadDropFiles(dropApiOptions, deployInfo.deploy_id, uploadList, dropToken, {
+    await uploadDropFiles(dropApiOptions, deployInfo.deploy_id, uploadList as unknown as UploadListItem[], dropToken, {
       statusCb,
     })
   }
@@ -1353,45 +1432,17 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
   const isPasswordProtected = !options.createdVia || options.createdVia === 'drop'
   const claimUrl = `https://app.netlify.com/drop/${deployInfo.subdomain}#drop_token=${dropToken}`
 
-  if (options.json) {
-    logJson({
-      site_id: deployInfo.id,
-      site_url: siteUrl,
-      deploy_id: deployInfo.deploy_id,
-      claim_url: claimUrl,
-      claim_command: `netlify claim --site ${deployInfo.id} --token ${dropToken}`,
-      ...(isPasswordProtected ? { password: 'My-Drop-Site' } : {}),
-    })
-    return
-  }
-
-  log('')
-  log(chalk.cyanBright.bold(`🚀 Deploy complete\n${'─'.repeat(64)}`))
-  log('')
-
-  const boxContent = isPasswordProtected
-    ? `Site URL:  ${terminalLink(siteUrl, siteUrl, { fallback: false })}\n\nPassword:  My-Drop-Site`
-    : `Site URL:  ${terminalLink(siteUrl, siteUrl, { fallback: false })}`
-
-  log(
-    boxen(boxContent, {
-      padding: 1,
-      margin: 1,
-      textAlignment: 'center',
-      borderStyle: 'round',
-      borderColor: NETLIFY_CYAN_HEX,
-      title: `⬥  Anonymous deploy is live ⬥ `,
-      titleAlignment: 'center',
-    }),
-  )
-  log(`  ${chalk.bold('Claim on Netlify:')}`)
-  log(`  ${claimUrl}`)
-  log('')
-  log(`  ${chalk.bold('Claim via CLI:')}`)
-  log(`  netlify claim --site ${deployInfo.id} --token ${dropToken}`)
-  log('')
-  warn('Anonymously deployed sites need to be claimed within 60 minutes.')
-  log('')
+  printAnonymousDeployResults({
+    claimCommand: `netlify claim --site ${deployInfo.id} --token ${dropToken}`,
+    claimUrl,
+    deployId: deployInfo.deploy_id,
+    isPasswordProtected,
+    json: options.json ?? false,
+    showUploaded: options.showUploaded ?? false,
+    siteId: deployInfo.id,
+    siteUrl,
+    uploadList,
+  })
 }
 
 export const deploy = async (options: DeployOptionValues, command: BaseCommand) => {
