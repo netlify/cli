@@ -1409,8 +1409,6 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
     throw error
   }
 
-  // Anonymous deploys only allow static files (checkForFunctions() above blocks functions and
-  // edge functions), so every entry in filesShaMap has assetType: 'file'.
   const uploadList = getUploadList(deployInfo.required, filesShaMap) as UploadFile[]
 
   if (uploadList.length > 0) {
