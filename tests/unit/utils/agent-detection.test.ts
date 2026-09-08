@@ -166,35 +166,16 @@ test('an unknown, oversized NETLIFY_AGENT value is sanitized and capped at 64 ch
   expect(result?.otherValue).toHaveLength(64)
 })
 
-test('NETLIFY_AGENT=constructor does not resolve via the Object prototype chain', () => {
-  expect(getDrivingAgent({ NETLIFY_AGENT: 'constructor' })).toEqual({
+test.each(['constructor', '__proto__', 'toString'])('%s does not resolve via the Object prototype chain', (key) => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: key })).toEqual({
     name: 'other',
     source: 'NETLIFY_AGENT',
-    otherValue: 'constructor',
+    otherValue: key,
   })
-})
-
-test('NETLIFY_AGENT=__proto__ does not resolve via the Object prototype chain', () => {
-  expect(getDrivingAgent({ NETLIFY_AGENT: '__proto__' })).toEqual({
-    name: 'other',
-    source: 'NETLIFY_AGENT',
-    otherValue: '__proto__',
-  })
-})
-
-test('NETLIFY_AGENT=toString does not resolve via the Object prototype chain', () => {
-  expect(getDrivingAgent({ NETLIFY_AGENT: 'toString' })).toEqual({
-    name: 'other',
-    source: 'NETLIFY_AGENT',
-    otherValue: 'toString',
-  })
-})
-
-test('AI_AGENT=constructor does not resolve via the Object prototype chain', () => {
-  expect(getDrivingAgent({ AI_AGENT: 'constructor' })).toEqual({
+  expect(getDrivingAgent({ AI_AGENT: key })).toEqual({
     name: 'other',
     source: 'AI_AGENT',
-    otherValue: 'constructor',
+    otherValue: key,
   })
 })
 
