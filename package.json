@@ -1,6 +1,6 @@
 {
   "name": "netlify-cli",
-  "version": "27.4.2",
+  "version": "27.5.0",
   "description": "Netlify command line tool",
   "keywords": [
     "api",
@@ -23,7 +23,8 @@
     "/bin",
     "/scripts",
     "/functions-templates",
-    "/dist"
+    "/dist",
+    "!dist/**/*.map"
   ],
   "type": "module",
   "scripts": {
@@ -76,12 +77,12 @@
     "ascii-table": "^0.0.9",
     "backoff": "^2.5.0",
     "boxen": "^8.0.1",
-    "chalk": "^5.6.2",
+    "chalk": "^6.0.0",
     "chokidar": "^5.0.0",
     "ci-info": "^4.4.0",
     "clean-deep": "^3.4.0",
     "commander": "^12.1.0",
-    "comment-json": "^4.6.2",
+    "comment-json": "^5.0.0",
     "content-type": "^1.0.5",
     "cookie": "^2.0.0",
     "cron-parser": "^5.0.0",
@@ -140,7 +141,7 @@
     "semver": "^7.7.2",
     "source-map-support": "^0.5.21",
     "terminal-link": "^5.0.0",
-    "toml": "^3.0.0",
+    "toml": "^4.0.0",
     "tomlify-j0.4": "^3.0.0",
     "ulid": "^3.0.1",
     "update-notifier": "^7.3.1",
@@ -218,5 +219,10 @@
   "engines": {
     "node": ">=22.13.0"
   },
-  "packageManager": "npm@10.9.4+sha512.3a7506f37e85c1ba1021baad79f0cd9724748131f321fc117c4dc3ba235ec01be7327584a41d15117c01945560aa9373220628fcc1e1dddd877a5fe9b336a900"
+  "packageManager": "npm@11.19.1+sha512.cedb312b1b7f92421a02cfb68b4194e88f8346651dacd6acc5364a25ef5309d4a32b19616a1ff8aff865e7280c0fa5c0835a99f5cd93368991e2a80ec9da75d2",
+  "allowScripts": {
+    "esbuild": true,
+    "sharp@0.34.5": true,
+    "unix-dgram": true
+  }
 }

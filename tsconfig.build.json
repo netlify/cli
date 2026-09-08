@@ -6,8 +6,7 @@
     "noEmit": false,
     "outDir": "dist",
     "rootDir": "src",
-    "sourceMap": true,
-    "tsBuildInfoFile": "./tsconfig.build.tsbuildinfo"
+    "sourceMap": true
   },
   "include": ["src/**/*.ts", "types/**/*.d.ts"]
 }
