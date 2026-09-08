@@ -69,8 +69,6 @@ const parseAnnouncedName = (raw: string): ParsedAnnouncedName => {
 
 const nonEmpty = (value: string | undefined): string | undefined => (value ? value : undefined)
 
-const COPILOT_SESSION_ENV_KEY = ['COPILOT_AGENT', 'SESSION_ID'].join('_')
-
 type Signal = {
   source: string
   detect: (env: NodeJS.ProcessEnv) => ParsedAnnouncedName | undefined
@@ -97,8 +95,8 @@ const SIGNALS: Signal[] = [
     detect: (env) => (env.COPILOT_CLI === '1' ? { name: 'copilot' } : undefined),
   },
   {
-    source: COPILOT_SESSION_ENV_KEY,
-    detect: (env) => (nonEmpty(env[COPILOT_SESSION_ENV_KEY]) === undefined ? undefined : { name: 'copilot' }),
+    source: 'COPILOT_AGENT_SESSION_ID',
+    detect: (env) => (nonEmpty(env.COPILOT_AGENT_SESSION_ID) === undefined ? undefined : { name: 'copilot' }),
   },
   {
     source: 'OPENCODE',
