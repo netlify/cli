@@ -162,7 +162,7 @@ export async function runNetlifyBuild({
       useStaticServer: true,
       dist: undefined,
     }
-    if (!options.dir && netlifyConfig?.build?.publish) {
+    if (!options.dir && netlifyConfig?.build.publish) {
       settingsOverrides.dist = netlifyConfig.build.publish
     }
     await devCommand({ netlifyConfig, settingsOverrides })
