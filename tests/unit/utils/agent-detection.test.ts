@@ -98,14 +98,25 @@ test('a single match omits markers', () => {
 test('NETLIFY_AGENT overrides every other signal and lists all matched names as markers', () => {
   expect(
     getDrivingAgent({
-      NETLIFY_AGENT: 'gemini',
       CODEX_CI: '1',
+      GEMINI_CLI: '1',
+      COPILOT_CLI: '1',
+      COPILOT_AGENT_SESSION_ID: 'session-123',
+      OPENCODE: '1',
+      AGENT_DISPLAY_OUT: '/tmp/agent-display-output.json',
+      AGENT_CONTEXT_OUT: '/tmp/agent-context-output.json',
       AI_AGENT: 'claude-code_2-1-263_agent',
+      COPILOT_AGENT: '1',
+      CURSOR_AGENT: '1',
+      CLINE_ACTIVE: 'true',
+      AGENT: 'amp',
+      CLAUDE_CODE_CHILD_SESSION: '1',
+      NETLIFY_AGENT: 'chatgpt',
     }),
   ).toEqual({
-    name: 'gemini',
+    name: 'chatgpt',
     source: 'NETLIFY_AGENT',
-    markers: ['gemini', 'codex', 'claude'],
+    markers: ['chatgpt', 'codex', 'gemini', 'copilot', 'opencode', 'kiro', 'claude', 'cursor', 'cline', 'amp'],
   })
 })
 
@@ -153,6 +164,46 @@ test('an unknown, oversized NETLIFY_AGENT value is sanitized and capped at 64 ch
     otherValue: 'x'.repeat(64),
   })
   expect(result?.otherValue).toHaveLength(64)
+})
+
+test('NETLIFY_AGENT=constructor does not resolve via the Object prototype chain', () => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: 'constructor' })).toEqual({
+    name: 'other',
+    source: 'NETLIFY_AGENT',
+    otherValue: 'constructor',
+  })
+})
+
+test('NETLIFY_AGENT=__proto__ does not resolve via the Object prototype chain', () => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: '__proto__' })).toEqual({
+    name: 'other',
+    source: 'NETLIFY_AGENT',
+    otherValue: '__proto__',
+  })
+})
+
+test('NETLIFY_AGENT=toString does not resolve via the Object prototype chain', () => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: 'toString' })).toEqual({
+    name: 'other',
+    source: 'NETLIFY_AGENT',
+    otherValue: 'toString',
+  })
+})
+
+test('AI_AGENT=constructor does not resolve via the Object prototype chain', () => {
+  expect(getDrivingAgent({ AI_AGENT: 'constructor' })).toEqual({
+    name: 'other',
+    source: 'AI_AGENT',
+    otherValue: 'constructor',
+  })
+})
+
+test('NETLIFY_AGENT=constructor_1-0_agent does not resolve constructor via the split-at-last-underscore path', () => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: 'constructor_1-0_agent' })).toEqual({
+    name: 'other',
+    source: 'NETLIFY_AGENT',
+    otherValue: 'constructor_1-0_agent',
+  })
 })
 
 test('AGENT=1 alone matches nothing', () => {

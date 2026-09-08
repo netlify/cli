@@ -1,4 +1,4 @@
-// EX-3040: signal choices and evidence are tracked in the Linear issue, not here.
+// Only markers an agent product sets on its own count as a signal; never infer from process names, terminals, or the process tree.
 
 export type DrivingAgent = {
   name: string
@@ -25,12 +25,12 @@ export const CANONICAL_AGENT_NAMES = [
 
 export type CanonicalAgentName = (typeof CANONICAL_AGENT_NAMES)[number]
 
-const ANNOUNCED_NAME_TABLE: Partial<Record<string, CanonicalAgentName>> = {
-  ...Object.fromEntries(CANONICAL_AGENT_NAMES.map((name) => [name, name] as const)),
-  'claude-code': 'claude',
-  'claude-ai': 'claudeai',
-  github_copilot_vscode_agent: 'copilot',
-}
+const ANNOUNCED_NAME_TABLE = new Map<string, CanonicalAgentName>([
+  ...CANONICAL_AGENT_NAMES.map((name) => [name, name] as const),
+  ['claude-code', 'claude'],
+  ['claude-ai', 'claudeai'],
+  ['github_copilot_vscode_agent', 'copilot'],
+])
 
 type ParsedAnnouncedName = {
   name: CanonicalAgentName
@@ -43,13 +43,13 @@ const sanitizeAnnouncedValue = (raw: string): string => raw.replace(/[^A-Za-z0-9
 const parseAnnouncedName = (raw: string): ParsedAnnouncedName => {
   const sanitized = sanitizeAnnouncedValue(raw)
 
-  const exact = ANNOUNCED_NAME_TABLE[sanitized]
+  const exact = ANNOUNCED_NAME_TABLE.get(sanitized)
   if (exact) {
     return { name: exact }
   }
 
   const withoutAgentSuffix = sanitized.replace(/_agent$/, '')
-  const suffixMatch = ANNOUNCED_NAME_TABLE[withoutAgentSuffix]
+  const suffixMatch = ANNOUNCED_NAME_TABLE.get(withoutAgentSuffix)
   if (suffixMatch) {
     return { name: suffixMatch }
   }
@@ -57,7 +57,7 @@ const parseAnnouncedName = (raw: string): ParsedAnnouncedName => {
   const lastUnderscore = withoutAgentSuffix.lastIndexOf('_')
   if (lastUnderscore !== -1) {
     const head = withoutAgentSuffix.slice(0, lastUnderscore)
-    const headMatch = ANNOUNCED_NAME_TABLE[head]
+    const headMatch = ANNOUNCED_NAME_TABLE.get(head)
     if (headMatch) {
       const tail = withoutAgentSuffix.slice(lastUnderscore + 1)
       return { name: headMatch, version: tail.replace(/-/g, '.') }
