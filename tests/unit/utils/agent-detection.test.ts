@@ -51,6 +51,14 @@ test('resolves AGENT_CONTEXT_OUT to kiro', () => {
   })
 })
 
+test('resolves OZ_RUN_ID to warp without surfacing its value', () => {
+  expect(getDrivingAgent({ OZ_RUN_ID: 'run-123' })).toEqual({ name: 'warp', source: 'OZ_RUN_ID' })
+})
+
+test('resolves WARP_RUN_ID to warp', () => {
+  expect(getDrivingAgent({ WARP_RUN_ID: 'run-123' })).toEqual({ name: 'warp', source: 'WARP_RUN_ID' })
+})
+
 test('parses AI_AGENT claude-code_2-1-263_agent into claude with version 2.1.263', () => {
   expect(getDrivingAgent({ AI_AGENT: 'claude-code_2-1-263_agent' })).toEqual({
     name: 'claude',
@@ -105,6 +113,8 @@ test('NETLIFY_AGENT overrides every other signal and lists all matched names as 
       OPENCODE: '1',
       AGENT_DISPLAY_OUT: '/tmp/agent-display-output.json',
       AGENT_CONTEXT_OUT: '/tmp/agent-context-output.json',
+      OZ_RUN_ID: 'run-123',
+      WARP_RUN_ID: 'run-123',
       AI_AGENT: 'claude-code_2-1-263_agent',
       COPILOT_AGENT: '1',
       CURSOR_AGENT: '1',
@@ -116,7 +126,24 @@ test('NETLIFY_AGENT overrides every other signal and lists all matched names as 
   ).toEqual({
     name: 'chatgpt',
     source: 'NETLIFY_AGENT',
-    markers: ['chatgpt', 'codex', 'gemini', 'copilot', 'opencode', 'kiro', 'claude', 'cursor', 'cline', 'amp'],
+    markers: ['chatgpt', 'codex', 'gemini', 'copilot', 'opencode', 'kiro', 'warp', 'claude', 'cursor', 'cline', 'amp'],
+  })
+})
+
+test('an unknown NETLIFY_AGENT still overrides a recognized marker and keeps its raw value', () => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: 'windsurf', CODEX_CI: '1' })).toEqual({
+    name: 'other',
+    source: 'NETLIFY_AGENT',
+    otherValue: 'windsurf',
+    markers: ['other', 'codex'],
+  })
+})
+
+test('nests AI_AGENT under a Warp run marker', () => {
+  expect(getDrivingAgent({ OZ_RUN_ID: 'run-123', AI_AGENT: 'claude-code_2-1-263_agent' })).toEqual({
+    name: 'warp',
+    source: 'OZ_RUN_ID',
+    markers: ['warp', 'claude'],
   })
 })
 
@@ -235,6 +262,8 @@ test('falls back to process.env when no argument is given', () => {
     'OPENCODE_TERMINAL',
     'AGENT_DISPLAY_OUT',
     'AGENT_CONTEXT_OUT',
+    'OZ_RUN_ID',
+    'WARP_RUN_ID',
     'AI_AGENT',
     'COPILOT_AGENT',
     'CURSOR_AGENT',

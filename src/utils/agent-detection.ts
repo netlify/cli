@@ -18,6 +18,7 @@ export const CANONICAL_AGENT_NAMES = [
   'kiro',
   'cline',
   'amp',
+  'warp',
   'claudeai',
   'chatgpt',
   'other',
@@ -112,6 +113,14 @@ const SIGNALS: Signal[] = [
     detect: (env) => (nonEmpty(env.AGENT_CONTEXT_OUT) === undefined ? undefined : { name: 'kiro' }),
   },
   {
+    source: 'OZ_RUN_ID',
+    detect: (env) => (nonEmpty(env.OZ_RUN_ID) === undefined ? undefined : { name: 'warp' }),
+  },
+  {
+    source: 'WARP_RUN_ID',
+    detect: (env) => (nonEmpty(env.WARP_RUN_ID) === undefined ? undefined : { name: 'warp' }),
+  },
+  {
     source: 'AI_AGENT',
     detect: (env) => {
       const value = nonEmpty(env.AI_AGENT)
@@ -156,7 +165,8 @@ export const getDrivingAgent = (env: NodeJS.ProcessEnv = process.env): DrivingAg
     return undefined
   }
 
-  const winner = matches.find((match) => match.name !== 'other') ?? matches[0]
+  const [first] = matches
+  const winner = first.source === 'NETLIFY_AGENT' ? first : (matches.find((match) => match.name !== 'other') ?? first)
 
   const version =
     winner.source === 'AI_AGENT'

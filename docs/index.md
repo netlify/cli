@@ -212,7 +212,7 @@ Watch for project deploy to finish
 
 The CLI reads the `NETLIFY_AGENT` environment variable to learn which AI agent or tool is running it. Agents, MCP servers, and wrappers that invoke the CLI should set it to their name. Known names resolve to a canonical agent name; anything else is recorded as `other`. The value is limited to letters, digits, `_`, `.`, and `-`, and is truncated to 64 characters.
 
-Recognized values: `claude`, `codex`, `copilot`, `gemini`, `cursor`, `opencode`, `kiro`, `cline`, `amp`, `claudeai`, `chatgpt`, `claude-code`, `claude-ai`, `github_copilot_vscode_agent`.
+Recognized values: `claude`, `codex`, `copilot`, `gemini`, `cursor`, `opencode`, `kiro`, `cline`, `amp`, `warp`, `claudeai`, `chatgpt`, `claude-code`, `claude-ai`, `github_copilot_vscode_agent`.
 
 ```
 NETLIFY_AGENT=claude-code netlify deploy
