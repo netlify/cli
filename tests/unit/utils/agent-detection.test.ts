@@ -6,6 +6,26 @@ test('resolves NETLIFY_AGENT to the matching canonical name', () => {
   expect(getDrivingAgent({ NETLIFY_AGENT: 'codex' })).toEqual({ name: 'codex', source: 'NETLIFY_AGENT' })
 })
 
+test('matches NETLIFY_AGENT case-insensitively', () => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: 'Claude-Code' })).toEqual({ name: 'claude', source: 'NETLIFY_AGENT' })
+})
+
+test('keeps a version parsed from NETLIFY_AGENT', () => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: 'claude-code_2-1-263_agent' })).toEqual({
+    name: 'claude',
+    source: 'NETLIFY_AGENT',
+    version: '2.1.263',
+  })
+})
+
+test('preserves the original casing of an unknown value in otherValue', () => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: 'MyWrapper' })).toEqual({
+    name: 'other',
+    source: 'NETLIFY_AGENT',
+    otherValue: 'MyWrapper',
+  })
+})
+
 test('resolves CODEX_CI without CODEX_VERSION and omits version', () => {
   expect(getDrivingAgent({ CODEX_CI: '1' })).toEqual({ name: 'codex', source: 'CODEX_CI' })
 })

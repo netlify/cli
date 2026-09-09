@@ -214,7 +214,7 @@ The CLI reads the `NETLIFY_AGENT` environment variable to learn which AI agent o
 
 Recognized values: `claude`, `codex`, `copilot`, `gemini`, `cursor`, `opencode`, `kiro`, `cline`, `amp`, `warp`, `claudeai`, `chatgpt`, `claude-code`, `claude-ai`, `github_copilot_vscode_agent`.
 
-```
+```bash
 NETLIFY_AGENT=claude-code netlify deploy
 ```
 

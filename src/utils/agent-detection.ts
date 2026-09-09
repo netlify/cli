@@ -1,13 +1,5 @@
 // Only markers an agent product sets on its own count as a signal; never infer from process names, terminals, or the process tree.
 
-export type DrivingAgent = {
-  name: string
-  source: string
-  version?: string
-  markers?: string[]
-  otherValue?: string
-}
-
 export const CANONICAL_AGENT_NAMES = [
   'claude',
   'codex',
@@ -26,6 +18,14 @@ export const CANONICAL_AGENT_NAMES = [
 
 export type CanonicalAgentName = (typeof CANONICAL_AGENT_NAMES)[number]
 
+export type DrivingAgent = {
+  name: CanonicalAgentName
+  source: string
+  version?: string
+  markers?: CanonicalAgentName[]
+  otherValue?: string
+}
+
 const ANNOUNCED_NAME_TABLE = new Map<string, CanonicalAgentName>([
   ...CANONICAL_AGENT_NAMES.map((name) => [name, name] as const),
   ['claude-code', 'claude'],
@@ -43,13 +43,14 @@ const sanitizeAnnouncedValue = (raw: string): string => raw.replace(/[^A-Za-z0-9
 
 const parseAnnouncedName = (raw: string): ParsedAnnouncedName => {
   const sanitized = sanitizeAnnouncedValue(raw)
+  const key = sanitized.toLowerCase()
 
-  const exact = ANNOUNCED_NAME_TABLE.get(sanitized)
+  const exact = ANNOUNCED_NAME_TABLE.get(key)
   if (exact) {
     return { name: exact }
   }
 
-  const withoutAgentSuffix = sanitized.replace(/_agent$/, '')
+  const withoutAgentSuffix = key.replace(/_agent$/, '')
   const suffixMatch = ANNOUNCED_NAME_TABLE.get(withoutAgentSuffix)
   if (suffixMatch) {
     return { name: suffixMatch }
@@ -168,12 +169,7 @@ export const getDrivingAgent = (env: NodeJS.ProcessEnv = process.env): DrivingAg
   const [first] = matches
   const winner = first.source === 'NETLIFY_AGENT' ? first : (matches.find((match) => match.name !== 'other') ?? first)
 
-  const version =
-    winner.source === 'AI_AGENT'
-      ? winner.version
-      : winner.source === 'CODEX_CI'
-        ? nonEmpty(env.CODEX_VERSION)
-        : undefined
+  const version = winner.version ?? (winner.source === 'CODEX_CI' ? nonEmpty(env.CODEX_VERSION) : undefined)
 
   const distinctNames = [...new Set(matches.map((match) => match.name))]
 
