@@ -57,18 +57,18 @@ test('resolves OPENCODE when OPENCODE_TERMINAL is unset', () => {
   expect(getDrivingAgent({ OPENCODE: '1' })).toEqual({ name: 'opencode', source: 'OPENCODE' })
 })
 
-test('resolves AGENT_DISPLAY_OUT to kiro without surfacing its value', () => {
-  expect(getDrivingAgent({ AGENT_DISPLAY_OUT: '/tmp/agent-display-output.json' })).toEqual({
-    name: 'kiro',
-    source: 'AGENT_DISPLAY_OUT',
-  })
+test('resolves AGENT_DISPLAY_OUT plus AGENT_CONTEXT_OUT to kiro without surfacing their values', () => {
+  expect(
+    getDrivingAgent({
+      AGENT_DISPLAY_OUT: '/tmp/agent-display-output.json',
+      AGENT_CONTEXT_OUT: '/tmp/agent-context-output.json',
+    }),
+  ).toEqual({ name: 'kiro', source: 'AGENT_DISPLAY_OUT' })
 })
 
-test('resolves AGENT_CONTEXT_OUT to kiro', () => {
-  expect(getDrivingAgent({ AGENT_CONTEXT_OUT: '/tmp/agent-context-output.json' })).toEqual({
-    name: 'kiro',
-    source: 'AGENT_CONTEXT_OUT',
-  })
+test('either Kiro variable alone matches nothing', () => {
+  expect(getDrivingAgent({ AGENT_DISPLAY_OUT: '/tmp/agent-display-output.json' })).toBeUndefined()
+  expect(getDrivingAgent({ AGENT_CONTEXT_OUT: '/tmp/agent-context-output.json' })).toBeUndefined()
 })
 
 test('resolves OZ_RUN_ID to warp without surfacing its value', () => {
@@ -146,7 +146,7 @@ test('NETLIFY_AGENT overrides every other signal and lists all matched names as 
   ).toEqual({
     name: 'chatgpt',
     source: 'NETLIFY_AGENT',
-    markers: ['chatgpt', 'codex', 'gemini', 'copilot', 'opencode', 'kiro', 'warp', 'claude', 'cursor', 'cline', 'amp'],
+    markers: ['chatgpt', 'codex', 'gemini', 'copilot', 'opencode', 'kiro', 'claude', 'cursor', 'cline', 'amp', 'warp'],
   })
 })
 
@@ -159,11 +159,20 @@ test('an unknown NETLIFY_AGENT still overrides a recognized marker and keeps its
   })
 })
 
-test('nests AI_AGENT under a Warp run marker', () => {
+test('the agent inside a Warp run beats the Warp run marker', () => {
   expect(getDrivingAgent({ OZ_RUN_ID: 'run-123', AI_AGENT: 'claude-code_2-1-263_agent' })).toEqual({
-    name: 'warp',
-    source: 'OZ_RUN_ID',
-    markers: ['warp', 'claude'],
+    name: 'claude',
+    source: 'AI_AGENT',
+    version: '2.1.263',
+    markers: ['claude', 'warp'],
+  })
+})
+
+test('sanitizes and caps CODEX_VERSION', () => {
+  expect(getDrivingAgent({ CODEX_CI: '1', CODEX_VERSION: `1.2.3\r\nX-Injected: ${'9'.repeat(80)}` })).toEqual({
+    name: 'codex',
+    source: 'CODEX_CI',
+    version: `1.2.3X-Injected${'9'.repeat(64 - '1.2.3X-Injected'.length)}`,
   })
 })
 

@@ -76,6 +76,9 @@ type Signal = {
   detect: (env: NodeJS.ProcessEnv) => ParsedAnnouncedName | undefined
 }
 
+// Precedence, first match with a recognized name wins: NETLIFY_AGENT (explicit, wins even when unknown);
+// markers only the process running the command sets; AI_AGENT; markers inherited from an agent session;
+// runner/task markers such as Warp's last, since the agent inside the run is the more specific answer.
 const SIGNALS: Signal[] = [
   {
     source: 'NETLIFY_AGENT',
@@ -107,19 +110,10 @@ const SIGNALS: Signal[] = [
   },
   {
     source: 'AGENT_DISPLAY_OUT',
-    detect: (env) => (nonEmpty(env.AGENT_DISPLAY_OUT) === undefined ? undefined : { name: 'kiro' }),
-  },
-  {
-    source: 'AGENT_CONTEXT_OUT',
-    detect: (env) => (nonEmpty(env.AGENT_CONTEXT_OUT) === undefined ? undefined : { name: 'kiro' }),
-  },
-  {
-    source: 'OZ_RUN_ID',
-    detect: (env) => (nonEmpty(env.OZ_RUN_ID) === undefined ? undefined : { name: 'warp' }),
-  },
-  {
-    source: 'WARP_RUN_ID',
-    detect: (env) => (nonEmpty(env.WARP_RUN_ID) === undefined ? undefined : { name: 'warp' }),
+    detect: (env) =>
+      nonEmpty(env.AGENT_DISPLAY_OUT) !== undefined && nonEmpty(env.AGENT_CONTEXT_OUT) !== undefined
+        ? { name: 'kiro' }
+        : undefined,
   },
   {
     source: 'AI_AGENT',
@@ -148,6 +142,14 @@ const SIGNALS: Signal[] = [
     source: 'CLAUDE_CODE_CHILD_SESSION',
     detect: (env) => (env.CLAUDE_CODE_CHILD_SESSION === '1' ? { name: 'claude' } : undefined),
   },
+  {
+    source: 'OZ_RUN_ID',
+    detect: (env) => (nonEmpty(env.OZ_RUN_ID) === undefined ? undefined : { name: 'warp' }),
+  },
+  {
+    source: 'WARP_RUN_ID',
+    detect: (env) => (nonEmpty(env.WARP_RUN_ID) === undefined ? undefined : { name: 'warp' }),
+  },
 ]
 
 type SignalMatch = { source: string } & ParsedAnnouncedName
@@ -169,7 +171,8 @@ export const getDrivingAgent = (env: NodeJS.ProcessEnv = process.env): DrivingAg
   const [first] = matches
   const winner = first.source === 'NETLIFY_AGENT' ? first : (matches.find((match) => match.name !== 'other') ?? first)
 
-  const version = winner.version ?? (winner.source === 'CODEX_CI' ? nonEmpty(env.CODEX_VERSION) : undefined)
+  const codexVersion = winner.source === 'CODEX_CI' ? nonEmpty(env.CODEX_VERSION) : undefined
+  const version = winner.version ?? (codexVersion === undefined ? undefined : sanitizeAnnouncedValue(codexVersion))
 
   const distinctNames = [...new Set(matches.map((match) => match.name))]
 
