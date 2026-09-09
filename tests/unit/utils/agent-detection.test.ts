@@ -197,17 +197,36 @@ test('unknown AI_AGENT resolves to other with otherValue', () => {
   })
 })
 
-test('a recognized name beats an other match but still lists it in markers', () => {
-  expect(
-    getDrivingAgent({
-      AI_AGENT: 'some-new-tool_1-0_agent',
-      CURSOR_AGENT: '1',
-    }),
-  ).toEqual({
-    name: 'cursor',
-    source: 'CURSOR_AGENT',
+test('an unknown AI_AGENT beats an inherited session marker and keeps its raw value', () => {
+  expect(getDrivingAgent({ AI_AGENT: 'windsurf@1.0', CURSOR_AGENT: '1' })).toEqual({
+    name: 'other',
+    source: 'AI_AGENT',
+    version: '1.0',
+    otherValue: 'windsurf',
     markers: ['other', 'cursor'],
   })
+})
+
+test('parses the name@version AI_AGENT convention', () => {
+  expect(getDrivingAgent({ AI_AGENT: 'codex@1.2.3' })).toEqual({ name: 'codex', source: 'AI_AGENT', version: '1.2.3' })
+})
+
+test('an announced @version wins over an underscore-encoded one', () => {
+  expect(getDrivingAgent({ AI_AGENT: 'claude-code_2-1-263_agent@3.0.0' })).toEqual({
+    name: 'claude',
+    source: 'AI_AGENT',
+    version: '3.0.0',
+  })
+})
+
+test('a name with an empty @version omits version', () => {
+  expect(getDrivingAgent({ AI_AGENT: 'codex@' })).toEqual({ name: 'codex', source: 'AI_AGENT' })
+})
+
+test('an override that sanitizes to nothing is treated as unset', () => {
+  expect(getDrivingAgent({ NETLIFY_AGENT: '   ', CODEX_CI: '1' })).toEqual({ name: 'codex', source: 'CODEX_CI' })
+  expect(getDrivingAgent({ NETLIFY_AGENT: '!!!' })).toBeUndefined()
+  expect(getDrivingAgent({ AI_AGENT: '@1.0' })).toBeUndefined()
 })
 
 test('an unknown, oversized NETLIFY_AGENT value is sanitized and capped at 64 characters', () => {

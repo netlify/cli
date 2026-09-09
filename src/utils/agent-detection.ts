@@ -41,19 +41,27 @@ type ParsedAnnouncedName = {
 
 const sanitizeAnnouncedValue = (raw: string): string => raw.replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 64)
 
-const parseAnnouncedName = (raw: string): ParsedAnnouncedName => {
-  const sanitized = sanitizeAnnouncedValue(raw)
+const nonEmpty = (value: string | undefined): string | undefined => (value ? value : undefined)
+
+const parseAnnouncedName = (raw: string): ParsedAnnouncedName | undefined => {
+  const atIndex = raw.indexOf('@')
+  const sanitized = sanitizeAnnouncedValue(atIndex === -1 ? raw : raw.slice(0, atIndex))
+  if (sanitized === '') {
+    return undefined
+  }
+
+  const announcedVersion = atIndex === -1 ? undefined : nonEmpty(sanitizeAnnouncedValue(raw.slice(atIndex + 1)))
   const key = sanitized.toLowerCase()
 
   const exact = ANNOUNCED_NAME_TABLE.get(key)
   if (exact) {
-    return { name: exact }
+    return { name: exact, version: announcedVersion }
   }
 
   const withoutAgentSuffix = key.replace(/_agent$/, '')
   const suffixMatch = ANNOUNCED_NAME_TABLE.get(withoutAgentSuffix)
   if (suffixMatch) {
-    return { name: suffixMatch }
+    return { name: suffixMatch, version: announcedVersion }
   }
 
   const lastUnderscore = withoutAgentSuffix.lastIndexOf('_')
@@ -62,30 +70,25 @@ const parseAnnouncedName = (raw: string): ParsedAnnouncedName => {
     const headMatch = ANNOUNCED_NAME_TABLE.get(head)
     if (headMatch) {
       const tail = withoutAgentSuffix.slice(lastUnderscore + 1)
-      return { name: headMatch, version: tail.replace(/-/g, '.') }
+      return { name: headMatch, version: announcedVersion ?? tail.replace(/-/g, '.') }
     }
   }
 
-  return { name: 'other', otherValue: sanitized }
+  return { name: 'other', otherValue: sanitized, version: announcedVersion }
 }
-
-const nonEmpty = (value: string | undefined): string | undefined => (value ? value : undefined)
 
 type Signal = {
   source: string
   detect: (env: NodeJS.ProcessEnv) => ParsedAnnouncedName | undefined
 }
 
-// Precedence, first match with a recognized name wins: NETLIFY_AGENT (explicit, wins even when unknown);
-// markers only the process running the command sets; AI_AGENT; markers inherited from an agent session;
-// runner/task markers such as Warp's last, since the agent inside the run is the more specific answer.
+// Precedence, first match wins: NETLIFY_AGENT (explicit, even when unknown); markers only the process
+// running the command sets; AI_AGENT (explicit, even when unknown); markers inherited from an agent
+// session; runner/task markers such as Warp's last, since the agent inside the run is the more specific answer.
 const SIGNALS: Signal[] = [
   {
     source: 'NETLIFY_AGENT',
-    detect: (env) => {
-      const value = nonEmpty(env.NETLIFY_AGENT)
-      return value === undefined ? undefined : parseAnnouncedName(value)
-    },
+    detect: (env) => (env.NETLIFY_AGENT === undefined ? undefined : parseAnnouncedName(env.NETLIFY_AGENT)),
   },
   {
     source: 'CODEX_CI',
@@ -117,10 +120,7 @@ const SIGNALS: Signal[] = [
   },
   {
     source: 'AI_AGENT',
-    detect: (env) => {
-      const value = nonEmpty(env.AI_AGENT)
-      return value === undefined ? undefined : parseAnnouncedName(value)
-    },
+    detect: (env) => (env.AI_AGENT === undefined ? undefined : parseAnnouncedName(env.AI_AGENT)),
   },
   {
     source: 'COPILOT_AGENT',
@@ -168,8 +168,7 @@ export const getDrivingAgent = (env: NodeJS.ProcessEnv = process.env): DrivingAg
     return undefined
   }
 
-  const [first] = matches
-  const winner = first.source === 'NETLIFY_AGENT' ? first : (matches.find((match) => match.name !== 'other') ?? first)
+  const [winner] = matches
 
   const codexVersion = winner.source === 'CODEX_CI' ? nonEmpty(env.CODEX_VERSION) : undefined
   const version = winner.version ?? (codexVersion === undefined ? undefined : sanitizeAnnouncedValue(codexVersion))
