@@ -87,6 +87,23 @@ test('parses AI_AGENT claude-code_2-1-263_agent into claude with version 2.1.263
   })
 })
 
+test.each([
+  ['claude-code', 'claude'],
+  ['claude-ai', 'claudeai'],
+  ['github-copilot', 'copilot'],
+  ['github-copilot-cli', 'copilot'],
+  ['github_copilot_vscode_agent', 'copilot'],
+  ['cursor-cli', 'cursor'],
+  ['gemini-cli', 'gemini'],
+  ['gemini_cli', 'gemini'],
+  ['kiro-cli', 'kiro'],
+  ['warp-oz', 'warp'],
+  ['Claude_Code', 'claude'],
+])('resolves the announced alias %s to %s', (alias, name) => {
+  expect(getDrivingAgent({ AI_AGENT: alias })).toEqual({ name, source: 'AI_AGENT' })
+  expect(getDrivingAgent({ AI_AGENT: `${alias}@1.0` })).toEqual({ name, source: 'AI_AGENT', version: '1.0' })
+})
+
 test('parses AI_AGENT github_copilot_vscode_agent into copilot without version', () => {
   expect(getDrivingAgent({ AI_AGENT: 'github_copilot_vscode_agent' })).toEqual({
     name: 'copilot',

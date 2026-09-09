@@ -1,4 +1,5 @@
 // Only markers an agent product sets on its own count as a signal; never infer from process names, terminals, or the process tree.
+// The result is untrusted attribution from the environment, for telemetry and labeling only, never for authorization.
 
 export const CANONICAL_AGENT_NAMES = [
   'claude',
@@ -30,8 +31,17 @@ const ANNOUNCED_NAME_TABLE = new Map<string, CanonicalAgentName>([
   ...CANONICAL_AGENT_NAMES.map((name) => [name, name] as const),
   ['claude-code', 'claude'],
   ['claude-ai', 'claudeai'],
-  ['github_copilot_vscode_agent', 'copilot'],
+  ['github-copilot', 'copilot'],
+  ['github-copilot-cli', 'copilot'],
+  ['github-copilot-vscode-agent', 'copilot'],
+  ['cursor-cli', 'cursor'],
+  ['gemini-cli', 'gemini'],
+  ['kiro-cli', 'kiro'],
+  ['warp-oz', 'warp'],
 ])
+
+const lookupAnnouncedName = (key: string): CanonicalAgentName | undefined =>
+  ANNOUNCED_NAME_TABLE.get(key.replace(/_/g, '-'))
 
 type ParsedAnnouncedName = {
   name: CanonicalAgentName
@@ -53,13 +63,13 @@ const parseAnnouncedName = (raw: string): ParsedAnnouncedName | undefined => {
   const announcedVersion = atIndex === -1 ? undefined : nonEmpty(sanitizeAnnouncedValue(raw.slice(atIndex + 1)))
   const key = sanitized.toLowerCase()
 
-  const exact = ANNOUNCED_NAME_TABLE.get(key)
+  const exact = lookupAnnouncedName(key)
   if (exact) {
     return { name: exact, version: announcedVersion }
   }
 
   const withoutAgentSuffix = key.replace(/_agent$/, '')
-  const suffixMatch = ANNOUNCED_NAME_TABLE.get(withoutAgentSuffix)
+  const suffixMatch = lookupAnnouncedName(withoutAgentSuffix)
   if (suffixMatch) {
     return { name: suffixMatch, version: announcedVersion }
   }
@@ -67,7 +77,7 @@ const parseAnnouncedName = (raw: string): ParsedAnnouncedName | undefined => {
   const lastUnderscore = withoutAgentSuffix.lastIndexOf('_')
   if (lastUnderscore !== -1) {
     const head = withoutAgentSuffix.slice(0, lastUnderscore)
-    const headMatch = ANNOUNCED_NAME_TABLE.get(head)
+    const headMatch = lookupAnnouncedName(head)
     if (headMatch) {
       const tail = withoutAgentSuffix.slice(lastUnderscore + 1)
       return { name: headMatch, version: announcedVersion ?? tail.replace(/-/g, '.') }
