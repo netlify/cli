@@ -157,12 +157,12 @@ export async function runNetlifyBuild({
 
     // Start the dev server, forcing the usage of a static server as opposed to
     // the framework server.
-    const settingsOverrides = {
+    const settingsOverrides: Partial<ServerSettings> = {
       command: undefined,
       useStaticServer: true,
       dist: undefined,
     }
-    if (!options.dir && netlifyConfig?.build?.publish) {
+    if (!options.dir && netlifyConfig?.build.publish) {
       settingsOverrides.dist = netlifyConfig.build.publish
     }
     await devCommand({ netlifyConfig, settingsOverrides })
