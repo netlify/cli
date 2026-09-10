@@ -41,6 +41,7 @@ import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
+import { getRequestUserAgent } from '../utils/user-agent.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
 import type { MinimalAccount } from '../utils/types.js'
@@ -666,7 +667,7 @@ export default class BaseCommand extends Command {
       host?: string
       pathPrefix?: string
     } = {
-      userAgent: USER_AGENT,
+      userAgent: getRequestUserAgent(),
     }
 
     if (process.env.NETLIFY_API_URL) {

@@ -1237,12 +1237,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
 
   log(`\n${NETLIFYDEVLOG} Deploying ${filesCount} files anonymously...`)
 
-  const apiBase = command.netlify.api.basePath
-
-  const dropApiOptions = {
-    apiBase,
-    userAgent: command.netlify.api.defaultHeaders['User-agent'] || 'netlify-cli',
-  }
+  const dropApiOptions = { apiBase: command.netlify.api.basePath }
 
   const statusCb = options.json ? () => {} : deployProgressCb()
 

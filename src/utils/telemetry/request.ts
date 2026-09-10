@@ -4,9 +4,7 @@ import process from 'process'
 
 import fetch from 'node-fetch'
 
-import getPackageJson from '../get-cli-package-json.js'
-
-const { name, version } = await getPackageJson()
+import { getRequestUserAgent } from '../user-agent.js'
 
 const options = JSON.parse(process.argv[2])
 
@@ -34,7 +32,7 @@ const makeRequest = async function () {
       headers: {
         'Content-Type': 'application/json',
         'X-Netlify-Client': CLIENT_ID,
-        'User-Agent': `${name}/${version}`,
+        'User-Agent': getRequestUserAgent(),
       },
       body: JSON.stringify(options.data),
     })

@@ -5,11 +5,7 @@ import type BaseCommand from '../base-command.js'
 export const claim = async (siteId: string, dropToken: string, command: BaseCommand) => {
   await command.authenticate()
 
-  const apiBase = command.netlify.api.basePath
-  const dropApiOptions = {
-    apiBase,
-    userAgent: command.netlify.api.defaultHeaders['User-agent'] || 'netlify-cli',
-  }
+  const dropApiOptions = { apiBase: command.netlify.api.basePath }
 
   const authToken = command.netlify.api.accessToken
   if (!authToken) {

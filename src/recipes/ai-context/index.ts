@@ -5,6 +5,7 @@ import execa from 'execa'
 
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
 import { logAndThrowError, log, version } from '../../utils/command-helpers.js'
+import { track } from '../../utils/telemetry/index.js'
 
 import {
   getExistingContext,
@@ -171,4 +172,6 @@ export const run = async (runOptions: RunRecipeOptions) => {
   } catch (error) {
     logAndThrowError(error)
   }
+
+  await track('sites_aiContextInstalled', { consumer: consumer.key })
 }
