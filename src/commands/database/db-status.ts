@@ -2,6 +2,7 @@ import { readdir } from 'fs/promises'
 import { join } from 'path'
 
 import { chalk, log, logJson, netlifyCommand } from '../../utils/command-helpers.js'
+import { netlifyFetch } from '../../utils/netlify-fetch.js'
 import BaseCommand from '../base-command.js'
 import {
   type AppliedMigrationsFetcher,
@@ -157,7 +158,7 @@ const fetchBranchConnectionString = async (ctx: ServerContext, branchId: string)
     `${ctx.basePath}/sites/${encodeURIComponent(ctx.siteId)}/database/branch/${encodeURIComponent(branchId)}`,
   )
 
-  const response = await fetch(url, {
+  const response = await netlifyFetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   })
 
@@ -183,7 +184,7 @@ const fetchSiteDatabase = async (ctx: ServerContext): Promise<{ connectionString
 
   let response: Response
   try {
-    response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    response = await netlifyFetch(url, { headers: { Authorization: `Bearer ${token}` } })
   } catch {
     return null
   }

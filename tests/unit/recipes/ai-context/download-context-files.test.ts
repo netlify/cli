@@ -98,7 +98,7 @@ describe('downloadAndWriteContextFiles', () => {
 
   test('downloads and writes context files for all scopes', async () => {
     // Execute the actual function
-    await downloadAndWriteContextFiles(mockConsumer, mockRunOptions)
+    await expect(downloadAndWriteContextFiles(mockConsumer, mockRunOptions)).resolves.toBe(true)
 
     // Verify expected calls
     expect(mockFetch).toHaveBeenCalledTimes(2) // Once for each scope
@@ -124,9 +124,16 @@ describe('downloadAndWriteContextFiles', () => {
     fs.readFile.mockResolvedValue(mockProviderContent)
 
     // Execute the actual function
-    await downloadAndWriteContextFiles(mockConsumer, mockRunOptions)
+    await expect(downloadAndWriteContextFiles(mockConsumer, mockRunOptions)).resolves.toBe(false)
 
     // Verify expected behavior - no writes when versions match
+    expect(fs.writeFile).not.toHaveBeenCalled()
+  })
+
+  test('reports no writes when the consumer has no context scopes', async () => {
+    await expect(downloadAndWriteContextFiles({ ...mockConsumer, contextScopes: {} }, mockRunOptions)).resolves.toBe(
+      false,
+    )
     expect(fs.writeFile).not.toHaveBeenCalled()
   })
 
@@ -199,22 +206,25 @@ describe('downloadAndWriteContextFiles', () => {
     )
   })
 
-  test('handles download errors gracefully', async () => {
+  test('rejects when a context file cannot be downloaded', async () => {
     // Mock fetch to return not ok
     // @ts-expect-error mocking is not 100% consistent with full API and types for
     fetch.mockResolvedValue({
       ok: false,
     })
 
-    // Execute the actual function and expect error
-    await expect(downloadAndWriteContextFiles(mockConsumer, mockRunOptions)).resolves.toBeUndefined()
+    await expect(downloadAndWriteContextFiles(mockConsumer, mockRunOptions)).rejects.toThrow(
+      'An error occurred when pulling the latest context file',
+    )
+    expect(fs.writeFile).not.toHaveBeenCalled()
   })
 
-  test('checks CLI version compatibility', async () => {
+  test('rejects when the CLI is older than the minimum version', async () => {
     // Set higher minimum CLI version
     // @ts-expect-error mocking is not 100% consistent with full API and types for
     fetch.mockResolvedValue({
       ok: true,
+      text: () => Promise.resolve(mockProviderContent),
       headers: {
         get: (header: string) => {
           if (header === 'x-cli-min-ver') return '2.0.0' // Higher than the mocked current version
@@ -223,7 +233,9 @@ describe('downloadAndWriteContextFiles', () => {
       },
     })
 
-    // Execute the actual function and expect error
-    await expect(downloadAndWriteContextFiles(mockConsumer, mockRunOptions)).resolves.toBeUndefined()
+    await expect(downloadAndWriteContextFiles(mockConsumer, mockRunOptions)).rejects.toThrow(
+      'This command requires version 2.0.0',
+    )
+    expect(fs.writeFile).not.toHaveBeenCalled()
   })
 })

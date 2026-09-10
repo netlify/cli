@@ -5,6 +5,7 @@ import { getStore } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, isNodeError, log } from '../../utils/command-helpers.js'
+import { netlifyFetchForOrigin } from '../../utils/netlify-fetch.js'
 import { promptBlobSetOverwrite } from '../../utils/prompts/blob-set-prompt.js'
 import BaseCommand from '../base-command.js'
 
@@ -22,8 +23,10 @@ export const blobsSet = async (
 ) => {
   const { api, siteInfo } = command.netlify
   const { force, input } = options
+  const apiURL = `${api.scheme}://${api.host}`
   const store = getStore({
-    apiURL: `${api.scheme}://${api.host}`,
+    apiURL,
+    fetch: netlifyFetchForOrigin(apiURL),
     name: storeName,
     siteID: siteInfo.id,
     token: api.accessToken ?? '',

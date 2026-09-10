@@ -1,6 +1,7 @@
 import { getStore } from '@netlify/blobs'
 
 import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
+import { netlifyFetchForOrigin } from '../../utils/netlify-fetch.js'
 import { promptBlobDelete } from '../../utils/prompts/blob-delete-prompts.js'
 
 /**
@@ -10,8 +11,10 @@ export const blobsDelete = async (storeName: string, key: string, _options: Reco
   const { api, siteInfo } = command.netlify
   const { force } = _options
 
+  const apiURL = `${api.scheme}://${api.host}`
   const store = getStore({
-    apiURL: `${api.scheme}://${api.host}`,
+    apiURL,
+    fetch: netlifyFetchForOrigin(apiURL),
     name: storeName,
     siteID: siteInfo.id ?? '',
     token: api.accessToken ?? '',

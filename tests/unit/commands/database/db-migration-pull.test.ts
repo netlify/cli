@@ -50,6 +50,8 @@ import { resolve } from 'path'
 import inquirer from 'inquirer'
 import { migrationPull } from '../../../../src/commands/database/db-migration-pull.js'
 
+const authorizationHeaderOf = (call: unknown[]) => new Headers((call[1] as RequestInit).headers).get('Authorization')
+
 interface SampleMigration {
   version: number
   name: string
@@ -156,7 +158,7 @@ describe('migrationPull', () => {
     expect(calledUrl.toString()).toBe(
       'https://api.netlify.com/api/v1/sites/site-123/database/migrations?branch=production',
     )
-    expect(mockFetch.mock.calls[0][1]).toEqual({ headers: { Authorization: 'Bearer test-token' } })
+    expect(authorizationHeaderOf(mockFetch.mock.calls[0])).toBe('Bearer test-token')
   })
 
   test('fetches content for each migration from the detail endpoint', async () => {
@@ -174,7 +176,7 @@ describe('migrationPull', () => {
       'https://api.netlify.com/api/v1/sites/site-123/database/migrations/0002_add-posts?branch=production',
     ])
     for (const call of mockFetch.mock.calls) {
-      expect(call[1]).toEqual({ headers: { Authorization: 'Bearer test-token' } })
+      expect(authorizationHeaderOf(call)).toBe('Bearer test-token')
     }
   })
 

@@ -5,7 +5,7 @@ import fs from 'fs'
 
 import pWaitFor from 'p-wait-for'
 
-import { getRequestUserAgent } from '../user-agent.js'
+import { netlifyFetch } from '../netlify-fetch.js'
 
 import { DEPLOY_POLL, DEFAULT_DEPLOY_TIMEOUT, DEFAULT_CONCURRENT_UPLOAD, DEFAULT_MAX_RETRY } from './constants.js'
 import type { StatusCallback } from './status-cb.js'
@@ -30,14 +30,13 @@ export interface DropApiError extends Error {
 }
 
 const makeHeaders = (extra: Record<string, string> = {}): Record<string, string> => ({
-  'User-Agent': getRequestUserAgent(),
   Referer: APP_NETLIFY_REFERRER,
   ...extra,
 })
 
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
 export const getDropToken = async ({ apiBase }: DropApiOptions): Promise<string> => {
-  const response = await fetch(`${apiBase}/drop/token`, {
+  const response = await netlifyFetch(`${apiBase}/drop/token`, {
     method: 'POST',
     headers: makeHeaders({ 'Content-Type': 'application/json' }),
   })
@@ -64,7 +63,7 @@ export const createDropDeploy = async (
     body.created_via = createdVia
   }
 
-  const response = await fetch(`${apiBase}/drop`, {
+  const response = await netlifyFetch(`${apiBase}/drop`, {
     method: 'POST',
     headers: makeHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
@@ -95,15 +94,18 @@ export const uploadDropFile = async (
   // Node.js fetch needs `duplex: 'half'` for streaming bodies which isn't in standard RequestInit
   /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
   const normalizedFilePath = filePath.startsWith('/') ? filePath : `/${filePath}`
-  const response: Response = await fetch(`${apiBase}/deploys/${deployId}/files${encodeURI(normalizedFilePath)}`, {
-    method: 'PUT',
-    headers: makeHeaders({
-      'Content-Type': 'application/octet-stream',
-      Authorization: `Bearer ${token}`,
-    }),
-    body: body as any,
-    duplex: 'half',
-  } as any)
+  const response: Response = await netlifyFetch(
+    `${apiBase}/deploys/${deployId}/files${encodeURI(normalizedFilePath)}`,
+    {
+      method: 'PUT',
+      headers: makeHeaders({
+        'Content-Type': 'application/octet-stream',
+        Authorization: `Bearer ${token}`,
+      }),
+      body: body as any,
+      duplex: 'half',
+    } as any,
+  )
   /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
 
   if (!response.ok) {
@@ -125,7 +127,7 @@ export const waitForDropDeploy = async (
   let deploy: Record<string, unknown> | undefined
 
   const checkDeploy = async (): Promise<boolean> => {
-    const response = await fetch(`${apiBase}/sites/${siteId}/deploys/${deployId}`, {
+    const response = await netlifyFetch(`${apiBase}/sites/${siteId}/deploys/${deployId}`, {
       headers: makeHeaders(),
     })
 
@@ -164,7 +166,7 @@ export const claimDropSite = async (
   dropToken: string,
   authToken: string,
 ): Promise<void> => {
-  const response = await fetch(`${apiBase}/drop/claim`, {
+  const response = await netlifyFetch(`${apiBase}/drop/claim`, {
     method: 'POST',
     headers: makeHeaders({
       'Content-Type': 'application/json',

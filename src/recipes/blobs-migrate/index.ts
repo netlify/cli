@@ -4,6 +4,7 @@ import pMap from 'p-map'
 
 import BaseCommand from '../../commands/base-command.js'
 import { logAndThrowError, log } from '../../utils/command-helpers.js'
+import { netlifyFetchForOrigin } from '../../utils/netlify-fetch.js'
 
 export const description = 'Migrate legacy Netlify Blobs stores'
 
@@ -21,8 +22,10 @@ export const run = async ({ args, command }: Options) => {
 
   const [storeName] = args
   const { api, siteInfo } = command.netlify
+  const apiURL = `${api.scheme}://${api.host}`
   const clientOptions = {
-    apiURL: `${api.scheme}://${api.host}`,
+    apiURL,
+    fetch: netlifyFetchForOrigin(apiURL),
     siteID: siteInfo.id,
     token: api.accessToken ?? '',
   }

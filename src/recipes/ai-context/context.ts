@@ -1,7 +1,8 @@
 import { promises as fs } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import semver from 'semver'
-import { chalk, logAndThrowError, log, version } from '../../utils/command-helpers.js'
+import { chalk, log, version } from '../../utils/command-helpers.js'
+import { netlifyFetch } from '../../utils/netlify-fetch.js'
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
 
 const ATTRIBUTES_REGEX = /(\S*)="([^\s"]*)"/gim
@@ -41,16 +42,12 @@ export interface ConsumerConfig {
 }
 
 let contextConsumers: ConsumerConfig[] = []
-export const getContextConsumers = async (cliVersion: string) => {
+export const getContextConsumers = async () => {
   if (contextConsumers.length > 0) {
     return contextConsumers
   }
   try {
-    const res = await fetch(`${BASE_URL}/context-consumers`, {
-      headers: {
-        'user-agent': `NetlifyCLI ${cliVersion}`,
-      },
-    })
+    const res = await netlifyFetch(`${BASE_URL}/context-consumers`)
 
     if (!res.ok) {
       return []
@@ -63,7 +60,7 @@ export const getContextConsumers = async (cliVersion: string) => {
   return contextConsumers
 }
 
-export const downloadFile = async (cliVersion: string, contextConfig: ContextConfig, consumer: ConsumerConfig) => {
+export const downloadFile = async (contextConfig: ContextConfig, consumer: ConsumerConfig) => {
   try {
     if (!contextConfig.endpoint) {
       return null
@@ -79,11 +76,7 @@ export const downloadFile = async (cliVersion: string, contextConfig: ContextCon
       url.protocol = overridingUrl.protocol
     }
 
-    const res = await fetch(url, {
-      headers: {
-        'user-agent': `NetlifyCLI ${cliVersion}`,
-      },
-    })
+    const res = await netlifyFetch(url)
 
     if (!res.ok) {
       return null
@@ -221,21 +214,24 @@ export const deleteFile = async (path: string) => {
   }
 }
 
-export const downloadAndWriteContextFiles = async (consumer: ConsumerConfig, { command }: RunRecipeOptions) => {
-  await Promise.allSettled(
+export const downloadAndWriteContextFiles = async (
+  consumer: ConsumerConfig,
+  { command }: RunRecipeOptions,
+): Promise<boolean> => {
+  const results = await Promise.allSettled(
     Object.keys(consumer.contextScopes).map(async (contextKey) => {
       const contextConfig = consumer.contextScopes[contextKey]
 
       const { contents: downloadedFile, minimumCLIVersion } =
-        (await downloadFile(version, contextConfig, consumer).catch(() => null)) ?? {}
+        (await downloadFile(contextConfig, consumer).catch(() => null)) ?? {}
 
       if (!downloadedFile) {
-        return logAndThrowError(
+        throw new Error(
           `An error occurred when pulling the latest context file for scope ${contextConfig.scope}. Please try again.`,
         )
       }
       if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
-        return logAndThrowError(
+        throw new Error(
           `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
             'https://ntl.fyi/update-cli',
           )} for information on how to update.`,
@@ -264,7 +260,7 @@ export const downloadAndWriteContextFiles = async (consumer: ConsumerConfig, { c
                 absoluteFilePath,
               )} contains the latest version of the context files.`,
             )
-            return
+            return false
           }
 
           // We must preserve any overrides found in the existing file.
@@ -289,6 +285,14 @@ export const downloadAndWriteContextFiles = async (consumer: ConsumerConfig, { c
       await writeFile(absoluteFilePath, contents)
 
       log(`${existing ? 'Updated' : 'Created'} context files at ${chalk.underline(absoluteFilePath)}`)
+      return true
     }),
   )
+
+  const failure = results.find((result): result is PromiseRejectedResult => result.status === 'rejected')
+  if (failure) {
+    throw failure.reason
+  }
+
+  return results.some((result) => result.status === 'fulfilled' && result.value)
 }

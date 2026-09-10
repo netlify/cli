@@ -2,6 +2,7 @@ import type { NetlifyAPI } from '@netlify/api'
 import parseDuration from 'parse-duration'
 
 import { chalk } from '../../utils/command-helpers.js'
+import { netlifyFetch } from '../../utils/netlify-fetch.js'
 
 import { LOG_LEVELS } from './log-levels.js'
 
@@ -95,7 +96,7 @@ const debugLog = (message: string) => {
 export const debugFetch = async (url: string, init?: RequestInit): Promise<Response> => {
   debugLog(`→ ${init?.method ?? 'GET'} ${url}`)
   const start = performance.now()
-  const response = await fetch(url, init)
+  const response = await netlifyFetch(url, init)
   const elapsed = (performance.now() - start).toFixed(0)
   debugLog(`← ${response.status.toString()} ${response.statusText} (${elapsed}ms)`)
   return response

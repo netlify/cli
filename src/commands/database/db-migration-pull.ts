@@ -4,6 +4,7 @@ import { dirname, resolve, isAbsolute } from 'path'
 import inquirer from 'inquirer'
 
 import { log, logJson } from '../../utils/command-helpers.js'
+import { netlifyFetch } from '../../utils/netlify-fetch.js'
 import execa from '../../utils/execa.js'
 import BaseCommand from '../base-command.js'
 import { readApiErrorMessage } from './util/api-errors.js'
@@ -81,7 +82,7 @@ const fetchMigrations = async (ctx: ApiContext, branch: string): Promise<Migrati
   const url = new URL(`${ctx.basePath}/sites/${encodeURIComponent(ctx.siteId)}/database/migrations`)
   url.searchParams.set('branch', branch)
 
-  const response = await fetch(url, {
+  const response = await netlifyFetch(url, {
     headers: { Authorization: `Bearer ${ctx.token}` },
   })
 
@@ -100,7 +101,7 @@ const fetchMigrationContent = async (ctx: ApiContext, name: string, branch: stri
   )
   url.searchParams.set('branch', branch)
 
-  const response = await fetch(url, {
+  const response = await netlifyFetch(url, {
     headers: { Authorization: `Bearer ${ctx.token}` },
   })
 

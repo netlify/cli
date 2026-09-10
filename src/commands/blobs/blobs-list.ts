@@ -3,6 +3,7 @@ import AsciiTable from 'ascii-table'
 import { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
+import { netlifyFetchForOrigin } from '../../utils/netlify-fetch.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
@@ -13,8 +14,10 @@ interface Options extends OptionValues {
 
 export const blobsList = async (storeName: string, options: Options, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
+  const apiURL = `${api.scheme}://${api.host}`
   const store = getStore({
-    apiURL: `${api.scheme}://${api.host}`,
+    apiURL,
+    fetch: netlifyFetchForOrigin(apiURL),
     name: storeName,
     siteID: siteInfo.id,
     token: api.accessToken ?? '',

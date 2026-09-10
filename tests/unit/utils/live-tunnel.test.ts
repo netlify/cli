@@ -76,13 +76,10 @@ describe('startLiveTunnel', () => {
 
     await startLiveTunnel(TUNNEL_ARGS)
 
-    expect(vi.mocked(fetch)).toHaveBeenCalledWith(
-      'https://api.netlify.com/api/v1/live_sessions?site_id=site-456&slug=test',
-      expect.objectContaining({
-        method: 'POST',
-        headers: expect.objectContaining({ Authorization: 'Bearer fake-token' }) as unknown,
-      }),
-    )
+    const [url, init] = vi.mocked(fetch).mock.calls[0]
+    expect(url).toBe('https://api.netlify.com/api/v1/live_sessions?site_id=site-456&slug=test')
+    expect(init?.method).toBe('POST')
+    expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer fake-token')
   })
 
   test('polls the session until it is online', async () => {

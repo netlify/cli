@@ -4,7 +4,7 @@ import inquirer from 'inquirer'
 import execa from 'execa'
 
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
-import { logAndThrowError, log, version } from '../../utils/command-helpers.js'
+import { logAndThrowError, log } from '../../utils/command-helpers.js'
 import { track } from '../../utils/telemetry/index.js'
 
 import {
@@ -21,7 +21,7 @@ export const description = 'Manage context files for AI tools'
 // context consumers endpoints returns all supported IDE and other consumers
 // that can be used to pull context files. It also includes a catchall consumer
 // for outlining all context that an unspecified consumer would handle.
-const allContextConsumers = await getContextConsumers(version)
+const allContextConsumers = await getContextConsumers()
 const cliContextConsumers = allContextConsumers.filter((consumer) => !consumer.hideFromCLI)
 
 const rulesForDefaultConsumer = allContextConsumers.find((consumer) => consumer.key === 'catchall-consumer') ?? {
@@ -157,8 +157,9 @@ export const run = async (runOptions: RunRecipeOptions) => {
     return
   }
 
+  let wroteFiles = false
   try {
-    await downloadAndWriteContextFiles(consumer, runOptions)
+    wroteFiles = await downloadAndWriteContextFiles(consumer, runOptions)
 
     // the deprecated MCP file path
     // let's remove that file if it exists.
@@ -173,5 +174,7 @@ export const run = async (runOptions: RunRecipeOptions) => {
     logAndThrowError(error)
   }
 
-  await track('sites_aiContextInstalled', { consumer: consumer.key })
+  if (wroteFiles) {
+    await track('sites_aiContextInstalled', { consumer: consumer.key })
+  }
 }

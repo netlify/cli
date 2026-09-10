@@ -1,5 +1,6 @@
-import fetch from 'node-fetch'
 import { type Geolocation, mockLocation } from '@netlify/dev-utils'
+
+import { netlifyFetch } from '../utils/netlify-fetch.js'
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
@@ -93,7 +94,7 @@ export const getGeoLocation = async ({
  * Returns geolocation data from a remote API.
  */
 const getGeoLocationFromAPI = async (): Promise<Geolocation> => {
-  const res = await fetch(API_URL, {
+  const res = await netlifyFetch(API_URL, {
     method: 'GET',
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   })
