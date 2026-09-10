@@ -16,6 +16,7 @@ import {
   NETLIFY_CYAN,
   USER_AGENT,
   logError,
+  isBrokenPipe,
 } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
 import { EXIT_CODES } from '../utils/exit-codes.js'
@@ -76,9 +77,21 @@ export const CI_FORCED_COMMANDS = {
 
 const SYSTEM_INFO_TIMEOUT = 5_000
 
+const exitIfBrokenPipe = (err: NodeJS.ErrnoException) => {
+  if (isBrokenPipe(err)) {
+    process.exit(0)
+  }
+}
+
+process.stdout.on('error', exitIfBrokenPipe)
+process.stderr.on('error', exitIfBrokenPipe)
+
 let isHandlingUncaughtException = false
 
 process.on('uncaughtException', async (err: AddressInUseError | Error) => {
+  if (isBrokenPipe(err)) {
+    process.exit(0)
+  }
   if (isHandlingUncaughtException) {
     process.exit(1)
   }
