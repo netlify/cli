@@ -72,6 +72,19 @@ describe('track', () => {
     expect(getTrackedAgentProperties()).toEqual({})
   })
 
+  test('drops agent properties supplied by the caller', async () => {
+    await track('command', {
+      command: 'status',
+      agent: 'spoofed',
+      agent_source: 'spoofed',
+      agent_version: 'spoofed',
+      agent_markers: ['spoofed'],
+      agent_other_value: 'spoofed',
+    })
+
+    expect(getTrackedAgentProperties()).toEqual({})
+  })
+
   test('adds the agent version when the agent announces one', async () => {
     vi.stubEnv('AI_AGENT', 'claude-code_2-1-263_agent')
 
@@ -97,7 +110,7 @@ describe('track', () => {
     })
   })
 
-  test('reports an unknown AI_AGENT value as other with its raw value', async () => {
+  test('reports an unknown AI_AGENT value as other with its sanitized value', async () => {
     vi.stubEnv('AI_AGENT', 'some-new-tool')
 
     await track('command', { command: 'status' })

@@ -46,18 +46,17 @@ const eventConfig = {
   ],
 }
 
+// Every key is always present so a caller's payload can never supply its own agent attribution;
+// undefined values are dropped when the event is serialized.
 const getAgentProperties = () => {
   const agent = getDrivingAgent()
-  if (!agent) {
-    return {}
-  }
 
   return {
-    agent: agent.name,
-    agent_source: agent.source,
-    ...(agent.version === undefined ? {} : { agent_version: agent.version }),
-    ...(agent.markers === undefined ? {} : { agent_markers: agent.markers }),
-    ...(agent.otherValue === undefined ? {} : { agent_other_value: agent.otherValue }),
+    agent: agent?.name,
+    agent_source: agent?.source,
+    agent_version: agent?.version,
+    agent_markers: agent?.markers,
+    agent_other_value: agent?.otherValue,
   }
 }
 

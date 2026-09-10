@@ -207,3 +207,27 @@ Watch for project deploy to finish
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->
+
+## Agent detection
+
+The CLI reads the `NETLIFY_AGENT` environment variable to learn which AI agent or tool is running it. Agents, MCP servers, and wrappers that invoke the CLI should set it to their name, optionally followed by `@` and a version:
+
+```bash
+NETLIFY_AGENT=claude-code@2.1.0 netlify deploy
+```
+
+Recognized values are `claude`, `codex`, `copilot`, `gemini`, `cursor`, `opencode`, `kiro`, `cline`, `amp`, `warp`, `claudeai`, and `chatgpt`, plus the aliases `claude-code`, `claude-ai`, `github-copilot`, `github-copilot-cli`, `github-copilot-vscode-agent`, `cursor-cli`, `gemini-cli`, `kiro-cli`, and `warp-oz`. Matching ignores case and treats `_` as `-`. Any other value is recorded as `other`. Characters other than letters, digits, `_`, `.`, and `-` are removed, and values are truncated to 64 characters.
+
+The CLI also recognizes markers that agent products set on their own, such as `AI_AGENT`, `CODEX_CI`, and `GEMINI_CLI`. `NETLIFY_AGENT` takes precedence over all of them, even when its value isn't recognized.
+
+### Telemetry
+
+When telemetry is enabled, each CLI telemetry event includes the detected agent:
+
+- `agent`: the recognized name, or `other`
+- `agent_source`: the name of the environment variable that identified the agent
+- `agent_version`: the version, when the agent provides one
+- `agent_markers`: every detected agent name, when markers from more than one agent are present
+- `agent_other_value`: the sanitized value, when `agent` is `other`
+
+No agent fields are sent when no agent is detected. Telemetry isn't sent in CI, or at all after you run `netlify --telemetry-disable`.
