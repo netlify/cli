@@ -26,6 +26,13 @@ test('reports an unrecognized agent as other and keeps its raw value in utm_term
   expect(params.get('utm_term')).toBe('AI_AGENT:brand-new-agent')
 })
 
+test('keeps the name@version boundary of an announced value', () => {
+  const params = paramsFor({ AI_AGENT: 'codex@1.2.3' })
+
+  expect(params.get('utm_content')).toBe('codex')
+  expect(params.get('utm_term')).toBe('AI_AGENT:codex@1.2.3')
+})
+
 test('includes the NETLIFY_AGENT value in utm_term', () => {
   const params = paramsFor({ NETLIFY_AGENT: 'claude-code' })
 

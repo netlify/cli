@@ -1,9 +1,10 @@
 import { getDrivingAgent } from './agent-detection.js'
 
-// Every other marker's value is a flag, a session or run id, or a path, none of which belong in a URL.
+// By contract these two hold only a non-sensitive agent name[@version]. Every other marker's value is a flag,
+// a session or run id, or a path, none of which may reach a URL.
 const SOURCES_WITH_ANNOUNCED_VALUE = new Set(['NETLIFY_AGENT', 'AI_AGENT'])
 
-const sanitizeUtmTerm = (raw: string): string => raw.replace(/[^A-Za-z0-9_.:-]/g, '').slice(0, 64)
+const sanitizeUtmTerm = (raw: string): string => raw.replace(/[^A-Za-z0-9_.:@-]/g, '').slice(0, 64)
 
 const getUtmTerm = (source: string, env: NodeJS.ProcessEnv): string => {
   const value = SOURCES_WITH_ANNOUNCED_VALUE.has(source) ? env[source] : undefined
