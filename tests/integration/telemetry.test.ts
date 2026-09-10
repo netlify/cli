@@ -5,6 +5,8 @@ import type { Options } from 'execa'
 import execa from 'execa'
 import { expect, test } from 'vitest'
 
+import { USER_AGENT } from '../../src/utils/user-agent.js'
+
 import { callCli } from './utils/call-cli.js'
 import { cliPath } from './utils/cli-path.js'
 import { MockApiTestContext, withMockApi } from './utils/mock-api-vitest.js'
@@ -42,7 +44,7 @@ await withMockApi(routes, () => {
     expect(requests.length).toBe(1)
     expect(requests[0].method).toBe('POST')
     expect(requests[0].path).toBe('/api/v1/track')
-    expect(requests[0].headers['user-agent']).toBe(`${pkg.name}/${pkg.version}`)
+    expect(requests[0].headers['user-agent']).toBe(USER_AGENT)
     expect(requests[0].body).toHaveProperty('event', 'cli:user_telemetryEnabled')
     expect(requests[0].body).toHaveProperty('anonymousId', expect.any(String))
     expect(requests[0].body).toHaveProperty('properties', { cliVersion: pkg.version, nodejsVersion })
