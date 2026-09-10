@@ -271,6 +271,16 @@ test.each(['constructor', '__proto__', 'toString'])('%s does not resolve via the
   })
 })
 
+test.each(['NETLIFY_AGENT', 'AI_AGENT'])('%s=other keeps the announced value in otherValue', (source) => {
+  expect(getDrivingAgent({ [source]: 'other' })).toEqual({ name: 'other', source, otherValue: 'other' })
+  expect(getDrivingAgent({ [source]: 'Other@1.0' })).toEqual({
+    name: 'other',
+    source,
+    version: '1.0',
+    otherValue: 'Other',
+  })
+})
+
 test('NETLIFY_AGENT=constructor_1-0_agent does not resolve constructor via the split-at-last-underscore path', () => {
   expect(getDrivingAgent({ NETLIFY_AGENT: 'constructor_1-0_agent' })).toEqual({
     name: 'other',
