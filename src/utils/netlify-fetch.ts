@@ -8,10 +8,8 @@ const withUserAgent = (input: FetchInput, init?: RequestInit): RequestInit => {
   return { ...init, headers }
 }
 
-// Only for Netlify-controlled endpoints. Third-party, presigned, and user-provided URLs keep plain `fetch`.
 export const netlifyFetch: typeof fetch = (input, init) => fetch(input, withUserAgent(input, init))
 
-// For clients that send Netlify API requests and presigned-URL requests through the same `fetch`.
 export const netlifyFetchForOrigin = (origin: string): typeof fetch => {
   const netlifyOrigin = new URL(origin).origin
   return (input, init) => {
