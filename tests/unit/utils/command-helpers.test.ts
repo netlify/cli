@@ -38,7 +38,9 @@ describe('log', () => {
       throw new Error('exited')
     })
 
-    expect(() => log('hello')).toThrow('exited')
+    expect(() => {
+      log('hello')
+    }).toThrow('exited')
     expect(exit).toHaveBeenCalledWith(0)
 
     write.mockRestore()

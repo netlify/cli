@@ -81,6 +81,7 @@ const exitIfBrokenPipe = (err: NodeJS.ErrnoException) => {
   if (isBrokenPipe(err)) {
     process.exit(0)
   }
+  throw err
 }
 
 process.stdout.on('error', exitIfBrokenPipe)
