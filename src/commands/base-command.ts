@@ -38,6 +38,7 @@ import { handleOptionError, isOptionError } from '../utils/command-error-handler
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
+import { buildAuthorizeUrl } from '../utils/login-url.js'
 import openBrowser from '../utils/open-browser.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
@@ -509,7 +510,6 @@ export default class BaseCommand extends Command {
   }
 
   async expensivelyAuthenticate() {
-    const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
     log(`Logging into your Netlify account...`)
 
     // Create ticket for auth
@@ -517,8 +517,12 @@ export default class BaseCommand extends Command {
       clientId: CLIENT_ID,
     })
 
+    if (!ticket.id) {
+      return logAndThrowError('Failed to create login ticket')
+    }
+
     // Open browser for authentication
-    const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
+    const authLink = buildAuthorizeUrl(ticket.id)
 
     log(`Opening ${authLink}`)
     const browserOpened = await openBrowser({ url: authLink })
