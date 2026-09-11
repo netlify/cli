@@ -8,7 +8,18 @@ description: Initialize a new project locally
 # `init`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Configure continuous deployment for a new or existing project. To create a new project without continuous deployment, use `netlify sites:create`
+Initialize a Netlify project in the current directory
+
+Links this directory to a new or existing Netlify project and saves the project ID locally.
+`netlify init` can be used with or without Git/continuous deployment.
+
+The init command can:
+- Create a new Netlify project, or link to an existing one
+- Add `.netlify/` to `.gitignore`
+- Create or update `netlify.toml` with detected build settings (optional)
+- Connect a Git repository for continuous deployment (optional)
+
+If no Git remote is detected, you can still create a project and deploy manually with `netlify deploy`.
 
 **Usage**
 
@@ -24,6 +35,15 @@ netlify init
 - `manual` (*boolean*) - Manually configure a git remote for CI
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify init
+netlify init --manual
+netlify init --force
+netlify init --git-remote-name upstream
+```
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->
