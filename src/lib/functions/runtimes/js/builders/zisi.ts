@@ -186,8 +186,7 @@ export default async function detectZisiBuilder({
 }) {
   const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 
-  // @ts-expect-error(serhalp) -- We seem to be incorrectly using this function, but it seems to work... Investigate.
-  const packageJson = await readPackageUp(func.mainFile)
+  const packageJson = await readPackageUp({ cwd: path.dirname(func.mainFile) })
   const hasTypeModule = packageJson?.packageJson.type === 'module'
 
   const featureFlags: FeatureFlags = {}
