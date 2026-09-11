@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import { getGlobalConfigStore } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 
+import { getDrivingAgent } from '../agent-detection.js'
 import execa from '../execa.js'
 
 import { isTelemetryDisabled, cliVersion } from './utils.js'
@@ -45,6 +46,20 @@ const eventConfig = {
   ],
 }
 
+// Every key is always present so a caller's payload can never supply its own agent attribution;
+// undefined values are dropped when the event is serialized.
+const getAgentProperties = () => {
+  const agent = getDrivingAgent()
+
+  return {
+    agent: agent?.name,
+    agent_source: agent?.source,
+    agent_version: agent?.version,
+    agent_markers: agent?.markers,
+    agent_other_value: agent?.otherValue,
+  }
+}
+
 /**
  * Tracks a custom event with the provided payload
  */
@@ -82,7 +97,7 @@ export async function track(
     anonymousId: cliId,
     duration,
     status,
-    properties: { ...properties, nodejsVersion, cliVersion },
+    properties: { ...properties, nodejsVersion, cliVersion, ...getAgentProperties() },
   }
 
   return send('track', defaultData)
