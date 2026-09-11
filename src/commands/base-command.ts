@@ -263,6 +263,7 @@ export default class BaseCommand extends Command {
           .default(process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
           .hideHelp(true),
       )
+      .option('--config <path>', 'Path to the Netlify configuration file (default: netlify.toml in current or parent directories)')
       .option('--debug', 'Print debugging information')
 
     if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(commandName)) {
