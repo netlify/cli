@@ -153,12 +153,31 @@ export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> =
 // 'functions:invoke' need to return the data from the function as is
 const isDefaultJson = () => argv[0] === 'functions:invoke' || (argv[0] === 'api' && !argv.includes('--list'))
 
+export const isBrokenPipe = (err: unknown): boolean => {
+  if (!err || typeof err !== 'object') {
+    return false
+  }
+  const code = 'code' in err ? err.code : undefined
+  return code === 'EPIPE' || code === 'ERR_STREAM_DESTROYED'
+}
+
+const writeOrExit = (stream: NodeJS.WriteStream, chunk: string) => {
+  try {
+    stream.write(chunk)
+  } catch (err) {
+    if (isBrokenPipe(err)) {
+      process.exit(0)
+    }
+    throw err
+  }
+}
+
 /**
  * logs a json message
  */
 export const logJson = (message: unknown = '') => {
   if (argv.includes('--json') || isDefaultJson()) {
-    process.stdout.write(JSON.stringify(message, null, 2))
+    writeOrExit(process.stdout, JSON.stringify(message, null, 2))
   }
 }
 
@@ -168,7 +187,7 @@ export const log = (message = '', ...args: string[]) => {
     return
   }
   message = typeof message === 'string' ? message : inspect(message)
-  process.stdout.write(`${format(message, ...args)}\n`)
+  writeOrExit(process.stdout, `${format(message, ...args)}\n`)
 }
 
 export const logPadded = (message = '', ...args: string[]) => {
@@ -204,9 +223,9 @@ export const logError = (message: unknown): void => {
 
   const bang = chalk.red(BANG)
   if (process.env.DEBUG) {
-    process.stderr.write(` ${bang}   Warning: ${err.stack?.split('\n').join(`\n ${bang}   `)}\n`)
+    writeOrExit(process.stderr, ` ${bang}   Warning: ${err.stack?.split('\n').join(`\n ${bang}   `)}\n`)
   } else {
-    process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
+    writeOrExit(process.stderr, ` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
   }
 }
 
