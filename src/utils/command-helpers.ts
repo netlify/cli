@@ -1,3 +1,4 @@
+import os from 'os'
 import fs from 'fs'
 import process from 'process'
 import { format, inspect } from 'util'
@@ -6,10 +7,12 @@ import type { NetlifyAPI } from '@netlify/api'
 import { getAPIToken } from '@netlify/dev-utils'
 import { Chalk, type ChalkInstance as ChalkInstancePrimitiveType } from 'chalk'
 import type { Option } from 'commander'
+import WSL from 'is-wsl'
 import terminalLink from 'terminal-link'
 
 import { startSpinner } from '../lib/spinner.js'
 
+import { getDrivingAgent } from './agent-detection.js'
 import getCLIPackageJson from './get-cli-package-json.js'
 import { reportError } from './telemetry/report-error.js'
 import type { TokenLocation } from './types.js'
@@ -44,10 +47,18 @@ export type ChalkInstance = ChalkInstancePrimitiveType
  */
 export const padLeft = (str: string, count: number, filler = ' ') => str.padStart(str.length + count, filler)
 
-const { version: packageVersion } = await getCLIPackageJson()
+const platform = WSL ? 'wsl' : os.platform()
+const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
+
+const { name, version: packageVersion } = await getCLIPackageJson()
 
 export const version = packageVersion
-export { USER_AGENT } from './user-agent.js'
+export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
+
+export const getRequestUserAgent = (env: NodeJS.ProcessEnv = process.env): string => {
+  const agent = getDrivingAgent(env)
+  return agent ? `${USER_AGENT} agent/${agent.name}` : USER_AGENT
+}
 
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--http-proxy', '--http-proxy-certificate-filename'])

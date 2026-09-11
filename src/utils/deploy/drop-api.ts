@@ -5,8 +5,6 @@ import fs from 'fs'
 
 import pWaitFor from 'p-wait-for'
 
-import { getRequestUserAgent } from '../user-agent.js'
-
 import { DEPLOY_POLL, DEFAULT_DEPLOY_TIMEOUT, DEFAULT_CONCURRENT_UPLOAD, DEFAULT_MAX_RETRY } from './constants.js'
 import type { StatusCallback } from './status-cb.js'
 
@@ -23,23 +21,24 @@ interface DropDeployInfo {
 
 interface DropApiOptions {
   apiBase: string
+  userAgent: string
 }
 
 export interface DropApiError extends Error {
   status?: number
 }
 
-const makeHeaders = (extra: Record<string, string> = {}): Record<string, string> => ({
-  'User-Agent': getRequestUserAgent(),
+const makeHeaders = (userAgent: string, extra: Record<string, string> = {}): Record<string, string> => ({
+  'User-Agent': userAgent,
   Referer: APP_NETLIFY_REFERRER,
   ...extra,
 })
 
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
-export const getDropToken = async ({ apiBase }: DropApiOptions): Promise<string> => {
+export const getDropToken = async ({ apiBase, userAgent }: DropApiOptions): Promise<string> => {
   const response = await fetch(`${apiBase}/drop/token`, {
     method: 'POST',
-    headers: makeHeaders({ 'Content-Type': 'application/json' }),
+    headers: makeHeaders(userAgent, { 'Content-Type': 'application/json' }),
   })
 
   if (!response.ok) {
@@ -54,7 +53,7 @@ export const getDropToken = async ({ apiBase }: DropApiOptions): Promise<string>
 
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
 export const createDropDeploy = async (
-  { apiBase }: DropApiOptions,
+  { apiBase, userAgent }: DropApiOptions,
   files: Record<string, string>,
   token: string,
   createdVia?: string,
@@ -66,7 +65,7 @@ export const createDropDeploy = async (
 
   const response = await fetch(`${apiBase}/drop`, {
     method: 'POST',
-    headers: makeHeaders({ 'Content-Type': 'application/json' }),
+    headers: makeHeaders(userAgent, { 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
   })
 
@@ -86,7 +85,7 @@ interface UploadError extends Error {
 
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
 export const uploadDropFile = async (
-  { apiBase }: DropApiOptions,
+  { apiBase, userAgent }: DropApiOptions,
   deployId: string,
   filePath: string,
   body: fs.ReadStream | Buffer,
@@ -97,7 +96,7 @@ export const uploadDropFile = async (
   const normalizedFilePath = filePath.startsWith('/') ? filePath : `/${filePath}`
   const response: Response = await fetch(`${apiBase}/deploys/${deployId}/files${encodeURI(normalizedFilePath)}`, {
     method: 'PUT',
-    headers: makeHeaders({
+    headers: makeHeaders(userAgent, {
       'Content-Type': 'application/octet-stream',
       Authorization: `Bearer ${token}`,
     }),
@@ -117,7 +116,7 @@ export const uploadDropFile = async (
 
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
 export const waitForDropDeploy = async (
-  { apiBase }: DropApiOptions,
+  { apiBase, userAgent }: DropApiOptions,
   siteId: string,
   deployId: string,
   timeout: number = DEFAULT_DEPLOY_TIMEOUT,
@@ -126,7 +125,7 @@ export const waitForDropDeploy = async (
 
   const checkDeploy = async (): Promise<boolean> => {
     const response = await fetch(`${apiBase}/sites/${siteId}/deploys/${deployId}`, {
-      headers: makeHeaders(),
+      headers: makeHeaders(userAgent),
     })
 
     if (!response.ok) {
@@ -159,14 +158,14 @@ export const waitForDropDeploy = async (
 
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
 export const claimDropSite = async (
-  { apiBase }: DropApiOptions,
+  { apiBase, userAgent }: DropApiOptions,
   siteId: string,
   dropToken: string,
   authToken: string,
 ): Promise<void> => {
   const response = await fetch(`${apiBase}/drop/claim`, {
     method: 'POST',
-    headers: makeHeaders({
+    headers: makeHeaders(userAgent, {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${authToken}`,
     }),

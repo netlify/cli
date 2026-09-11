@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import semver from 'semver'
-import { chalk, log, version } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, version } from '../../utils/command-helpers.js'
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
 
 const ATTRIBUTES_REGEX = /(\S*)="([^\s"]*)"/gim
@@ -233,12 +233,12 @@ export const downloadAndWriteContextFiles = async (
         (await downloadFile(version, contextConfig, consumer).catch(() => null)) ?? {}
 
       if (!downloadedFile) {
-        throw new Error(
+        return logAndThrowError(
           `An error occurred when pulling the latest context file for scope ${contextConfig.scope}. Please try again.`,
         )
       }
       if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
-        throw new Error(
+        return logAndThrowError(
           `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
             'https://ntl.fyi/update-cli',
           )} for information on how to update.`,
