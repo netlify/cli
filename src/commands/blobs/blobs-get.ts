@@ -5,7 +5,6 @@ import { getStore } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError } from '../../utils/command-helpers.js'
-import { netlifyFetchForOrigin } from '../../utils/netlify-fetch.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
@@ -15,10 +14,8 @@ interface Options extends OptionValues {
 export const blobsGet = async (storeName: string, key: string, options: Options, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
   const { output } = options
-  const apiURL = `${api.scheme}://${api.host}`
   const store = getStore({
-    apiURL,
-    fetch: netlifyFetchForOrigin(apiURL),
+    apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
     siteID: siteInfo?.id ?? '',
     token: api.accessToken ?? '',

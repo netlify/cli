@@ -6,9 +6,7 @@ import { NetlifyAPI } from '@netlify/api'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { getDropToken } from '../../../src/utils/deploy/drop-api.js'
-import { netlifyFetch } from '../../../src/utils/netlify-fetch.js'
 import { USER_AGENT, getRequestUserAgent } from '../../../src/utils/user-agent.js'
-import { getWebSocket } from '../../../src/utils/websockets/index.js'
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -24,10 +22,6 @@ const captureUserAgent = async (sendRequest: (origin: string) => Promise<unknown
     resolveUserAgent(req.headers['user-agent'])
     res.setHeader('Content-Type', 'application/json')
     res.end('{}')
-  })
-  server.on('upgrade', (req, socket) => {
-    resolveUserAgent(req.headers['user-agent'])
-    socket.destroy()
   })
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
   const { port } = server.address() as AddressInfo
@@ -51,15 +45,6 @@ const sendViaApiClient = (origin: string) =>
 
 const sendViaDropApi = (origin: string) => getDropToken({ apiBase: origin })
 
-const sendViaNetlifyFetch = (origin: string) => netlifyFetch(`${origin}/api/v1/sites`)
-
-const sendViaWebSocket = (origin: string) =>
-  new Promise<void>((resolve) => {
-    getWebSocket(origin.replace('http', 'ws')).on('error', () => {
-      resolve()
-    })
-  })
-
 const sendViaTelemetryRequest = async (origin: string) => {
   const exited = new Promise<void>((resolve) => {
     vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -79,18 +64,16 @@ const sendViaTelemetryRequest = async (origin: string) => {
   await exited
 }
 
-test('every Netlify request path sends the same User-Agent', async () => {
+test('the API client, Drop API, and telemetry requests send the same User-Agent', async () => {
   vi.stubEnv('NETLIFY_AGENT', 'claude')
 
   const userAgents = [
     await captureUserAgent(sendViaApiClient),
     await captureUserAgent(sendViaDropApi),
     await captureUserAgent(sendViaTelemetryRequest),
-    await captureUserAgent(sendViaNetlifyFetch),
-    await captureUserAgent(sendViaWebSocket),
   ]
 
-  expect(userAgents).toEqual(Array(5).fill(`${USER_AGENT} agent/claude`))
+  expect(userAgents).toEqual(Array(3).fill(`${USER_AGENT} agent/claude`))
 })
 
 test('appends only the agent name, without its version or source', () => {

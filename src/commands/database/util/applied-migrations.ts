@@ -1,7 +1,5 @@
 import { type SQLExecutor } from '@netlify/dev'
 
-import { netlifyFetch } from '../../../utils/netlify-fetch.js'
-
 import { readApiErrorMessage } from './api-errors.js'
 import { MIGRATIONS_TABLE } from './constants.js'
 
@@ -49,7 +47,7 @@ export const remoteAppliedMigrations =
     const url = new URL(`${options.basePath}/sites/${encodeURIComponent(options.siteId)}/database/migrations`)
     url.searchParams.set('branch', options.branch)
 
-    const response = await netlifyFetch(url, {
+    const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -2,7 +2,6 @@ import { promises as fs } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import semver from 'semver'
 import { chalk, log, version } from '../../utils/command-helpers.js'
-import { netlifyFetch } from '../../utils/netlify-fetch.js'
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
 
 const ATTRIBUTES_REGEX = /(\S*)="([^\s"]*)"/gim
@@ -42,12 +41,16 @@ export interface ConsumerConfig {
 }
 
 let contextConsumers: ConsumerConfig[] = []
-export const getContextConsumers = async () => {
+export const getContextConsumers = async (cliVersion: string) => {
   if (contextConsumers.length > 0) {
     return contextConsumers
   }
   try {
-    const res = await netlifyFetch(`${BASE_URL}/context-consumers`)
+    const res = await fetch(`${BASE_URL}/context-consumers`, {
+      headers: {
+        'user-agent': `NetlifyCLI ${cliVersion}`,
+      },
+    })
 
     if (!res.ok) {
       return []
@@ -60,7 +63,7 @@ export const getContextConsumers = async () => {
   return contextConsumers
 }
 
-export const downloadFile = async (contextConfig: ContextConfig, consumer: ConsumerConfig) => {
+export const downloadFile = async (cliVersion: string, contextConfig: ContextConfig, consumer: ConsumerConfig) => {
   try {
     if (!contextConfig.endpoint) {
       return null
@@ -76,7 +79,11 @@ export const downloadFile = async (contextConfig: ContextConfig, consumer: Consu
       url.protocol = overridingUrl.protocol
     }
 
-    const res = await netlifyFetch(url)
+    const res = await fetch(url, {
+      headers: {
+        'user-agent': `NetlifyCLI ${cliVersion}`,
+      },
+    })
 
     if (!res.ok) {
       return null
@@ -223,7 +230,7 @@ export const downloadAndWriteContextFiles = async (
       const contextConfig = consumer.contextScopes[contextKey]
 
       const { contents: downloadedFile, minimumCLIVersion } =
-        (await downloadFile(contextConfig, consumer).catch(() => null)) ?? {}
+        (await downloadFile(version, contextConfig, consumer).catch(() => null)) ?? {}
 
       if (!downloadedFile) {
         throw new Error(

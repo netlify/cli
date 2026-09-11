@@ -8,7 +8,6 @@ import { getPathInHome } from '../lib/settings.js'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, exit, log } from './command-helpers.js'
 import execa from './execa.js'
-import { netlifyFetch } from './netlify-fetch.js'
 import type { LocalState } from './types.js'
 
 const PACKAGE_NAME = 'live-tunnel-client'
@@ -38,7 +37,7 @@ const createTunnel = async function ({
   await installTunnelClient()
 
   const url = `https://api.netlify.com/api/v1/live_sessions?site_id=${siteId}&slug=${slug}`
-  const response = await netlifyFetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -142,7 +141,7 @@ export const startLiveTunnel = async ({
 
   const isLiveTunnelReady = async (): Promise<boolean> => {
     const url = `https://api.netlify.com/api/v1/live_sessions/${session.id}`
-    const response = await netlifyFetch(url, {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
