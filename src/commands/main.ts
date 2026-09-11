@@ -17,6 +17,7 @@ import {
   USER_AGENT,
   logError,
 } from '../utils/command-helpers.js'
+import { guardGlobalConfigFile } from '../utils/config-guard.js'
 import execa from '../utils/execa.js'
 import { EXIT_CODES } from '../utils/exit-codes.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
@@ -156,6 +157,7 @@ ${USER_AGENT}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
 const mainCommand = async function (options, command) {
+  guardGlobalConfigFile()
   const globalConfig = await getGlobalConfigStore()
 
   if (options.telemetryDisable) {
