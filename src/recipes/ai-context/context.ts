@@ -221,8 +221,11 @@ export const deleteFile = async (path: string) => {
   }
 }
 
-export const downloadAndWriteContextFiles = async (consumer: ConsumerConfig, { command }: RunRecipeOptions) => {
-  await Promise.allSettled(
+export const downloadAndWriteContextFiles = async (
+  consumer: ConsumerConfig,
+  { command }: RunRecipeOptions,
+): Promise<boolean> => {
+  const results = await Promise.allSettled(
     Object.keys(consumer.contextScopes).map(async (contextKey) => {
       const contextConfig = consumer.contextScopes[contextKey]
 
@@ -264,7 +267,7 @@ export const downloadAndWriteContextFiles = async (consumer: ConsumerConfig, { c
                 absoluteFilePath,
               )} contains the latest version of the context files.`,
             )
-            return
+            return false
           }
 
           // We must preserve any overrides found in the existing file.
@@ -289,6 +292,14 @@ export const downloadAndWriteContextFiles = async (consumer: ConsumerConfig, { c
       await writeFile(absoluteFilePath, contents)
 
       log(`${existing ? 'Updated' : 'Created'} context files at ${chalk.underline(absoluteFilePath)}`)
+      return true
     }),
   )
+
+  const failure = results.find((result): result is PromiseRejectedResult => result.status === 'rejected')
+  if (failure) {
+    throw failure.reason
+  }
+
+  return results.some((result) => result.status === 'fulfilled' && result.value)
 }

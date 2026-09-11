@@ -24,6 +24,7 @@ import {
   logAndThrowError,
   logJson,
   exit,
+  getRequestUserAgent,
   getToken,
   log,
   version,
@@ -670,7 +671,7 @@ export default class BaseCommand extends Command {
       host?: string
       pathPrefix?: string
     } = {
-      userAgent: USER_AGENT,
+      userAgent: getRequestUserAgent(),
     }
 
     if (process.env.NETLIFY_API_URL) {

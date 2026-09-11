@@ -1,6 +1,16 @@
 import { describe, expect, test } from 'vitest'
 
-import { normalizeConfig } from '../../../src/utils/command-helpers.js'
+import { USER_AGENT, getRequestUserAgent, normalizeConfig } from '../../../src/utils/command-helpers.js'
+
+describe('getRequestUserAgent', () => {
+  test('appends only the agent name, without its version or source', () => {
+    expect(getRequestUserAgent({ AI_AGENT: 'claude-code@2.1.0' })).toBe(`${USER_AGENT} agent/claude`)
+  })
+
+  test('returns the User-Agent unchanged when no agent is detected', () => {
+    expect(getRequestUserAgent({})).toBe(USER_AGENT)
+  })
+})
 
 describe('normalizeConfig', () => {
   test('should remove publish and publishOrigin property if publishOrigin is "default"', () => {

@@ -5,6 +5,7 @@ import execa from 'execa'
 
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
 import { logAndThrowError, log, version } from '../../utils/command-helpers.js'
+import { track } from '../../utils/telemetry/index.js'
 
 import {
   getExistingContext,
@@ -156,8 +157,9 @@ export const run = async (runOptions: RunRecipeOptions) => {
     return
   }
 
+  let wroteFiles = false
   try {
-    await downloadAndWriteContextFiles(consumer, runOptions)
+    wroteFiles = await downloadAndWriteContextFiles(consumer, runOptions)
 
     // the deprecated MCP file path
     // let's remove that file if it exists.
@@ -170,5 +172,9 @@ export const run = async (runOptions: RunRecipeOptions) => {
     log('All context files have been added!')
   } catch (error) {
     logAndThrowError(error)
+  }
+
+  if (wroteFiles) {
+    await track('sites_aiContextInstalled', { consumer: consumer.key })
   }
 }
