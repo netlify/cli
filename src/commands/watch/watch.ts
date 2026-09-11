@@ -5,6 +5,7 @@ import prettyjson from 'prettyjson'
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { BaseOptionValues } from '../base-command.js'
 import { init } from '../init/init.js'
 
 // 1 second
@@ -15,7 +16,7 @@ const BUILD_FINISH_INTERVAL = 1e3
 // 20 minutes
 const BUILD_FINISH_TIMEOUT = 12e5
 
-const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spinner: Spinner) {
+const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spinner?: Spinner) {
   let firstPass = true
 
   const waitForBuildToFinish = async function () {
@@ -27,7 +28,9 @@ const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spin
     // @TODO implement build error messages into this
 
     if (!currentBuilds || currentBuilds.length === 0) {
-      stopSpinner({ spinner })
+      if (spinner) {
+        stopSpinner({ spinner })
+      }
       return true
     }
     firstPass = false
@@ -46,7 +49,7 @@ const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spin
   return firstPass
 }
 
-export const watch = async (_options: unknown, command: BaseCommand) => {
+export const watch = async (options: BaseOptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   let siteId = command.netlify.site.id
@@ -56,6 +59,8 @@ export const watch = async (_options: unknown, command: BaseCommand) => {
     const siteData = await init({}, command)
     siteId = siteData.id
   }
+
+  const isSilent = options.silent
 
   // wait for 1 sec for everything to kickoff
   console.time('Deploy time')
@@ -80,7 +85,12 @@ export const watch = async (_options: unknown, command: BaseCommand) => {
   //     "created_at": "2018-07-17T17:14:03.423Z"
   // }
   //
-  const spinner = startSpinner({ text: 'Waiting for active project deploys to complete' })
+
+  let spinner
+  if (!isSilent) {
+    spinner = startSpinner({ text: 'Waiting for active project deploys to complete' })
+  }
+
   try {
     // Fetch all builds!
     // const builds = await client.listSiteBuilds({siteId})
