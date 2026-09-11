@@ -15,6 +15,15 @@ To get a list of available sub-commands, arguments & flags run
 netlify [command] help
 ```
 
+## Running the CLI from an AI agent
+
+Set `NETLIFY_AGENT` to the name of the AI agent or tool running the CLI, such as `claude-code` or `codex`, optionally with
+a version (`my-agent@1.2.0`). Netlify uses it to attribute CLI usage and signups to that agent, and it takes precedence
+over the markers agents set on their own, such as `AI_AGENT`.
+
+Use only a product name and version. Never put a token, session ID, or other sensitive value in it: the value is sent to
+Netlify and can appear in the login URL the CLI prints.
+
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
