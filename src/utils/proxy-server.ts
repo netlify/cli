@@ -7,7 +7,7 @@ import type { FunctionsRegistry } from '../lib/functions/registry.js'
 
 import { exit, log, NETLIFYDEVERR, type NormalizedCachedConfigConfig } from './command-helpers.js'
 import { startProxy } from './proxy.js'
-import type { LocalState } from './types.js'
+import type { LocalState, SiteInfo } from './types.js'
 import type { ServerSettings } from './types.js'
 
 interface InspectSettings {
@@ -87,7 +87,7 @@ export const startProxyServer = async ({
   settings: ServerSettings
   offline: boolean
   site: $TSFixMe
-  siteInfo: $TSFixMe
+  siteInfo: SiteInfo
   projectDir: string
   repositoryRoot?: string
   state: LocalState
