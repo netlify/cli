@@ -231,7 +231,7 @@ The CLI also recognizes markers that agent products set on their own, such as `A
 
 ### Login source
 
-A program that runs `netlify login` on a user's behalf can set `NETLIFY_LOGIN_SOURCE` so a signup is credited to it rather than to the CLI. The only recognized value is `mcp`, which the Netlify MCP server sets. Any other value is ignored and the login URL keeps `utm_source=cli`.
+A program that runs `netlify login` on a user’s behalf can set `NETLIFY_LOGIN_SOURCE` so a sign-up is credited to it rather than to the CLI. The only recognized value is `mcp`, which the Netlify MCP server sets. Any other value is ignored and the login URL keeps `utm_source=cli`.
 
 ### Telemetry
 
