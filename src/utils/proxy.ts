@@ -889,8 +889,14 @@ const onRequest = async (
         }
       }
     } catch (error) {
-      res.writeHead(500)
-      res.end(error instanceof Error ? error.message : 'Failed to serve request from Netlify Server')
+      // The response may have failed mid-stream, in which case the head is
+      // out and the only remaining option is dropping the connection.
+      if (res.headersSent) {
+        res.destroy()
+      } else {
+        res.writeHead(500)
+        res.end(error instanceof Error ? error.message : 'Failed to serve request from Netlify Server')
+      }
 
       return
     }
@@ -1113,7 +1119,18 @@ export const startProxy = async function ({
     : http.createServer(onRequestWithOptions)
   const onUpgrade = async function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
     if (serverHandler) {
-      const handled = await serverHandler.handleUpgrade(req, socket, head).catch(() => false)
+      let handled = false
+
+      try {
+        handled = await serverHandler.handleUpgrade(req, socket, head)
+      } catch (error) {
+        logError(
+          `Failed to hand over upgrade request to server: ${error instanceof Error ? error.message : String(error)}`,
+        )
+        socket.destroy()
+
+        return
+      }
 
       if (handled) {
         return
