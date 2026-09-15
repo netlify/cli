@@ -10,6 +10,26 @@ test('tags the URL with only the CLI source and campaign when no agent is detect
   )
 })
 
+test('credits the MCP server as the source when it announces the login', () => {
+  const params = paramsFor({ NETLIFY_LOGIN_SOURCE: 'mcp' })
+
+  expect(params.get('utm_source')).toBe('mcp')
+  expect(params.get('utm_campaign')).toBe('integrations')
+})
+
+test('keeps the CLI as the source for a login source that is not on the allow-list', () => {
+  expect(paramsFor({ NETLIFY_LOGIN_SOURCE: 'https://evil.example' }).get('utm_source')).toBe('cli')
+  expect(paramsFor({ NETLIFY_LOGIN_SOURCE: '' }).get('utm_source')).toBe('cli')
+})
+
+test('combines the MCP source with the announced agent', () => {
+  const params = paramsFor({ NETLIFY_LOGIN_SOURCE: 'mcp', NETLIFY_AGENT: 'claude-code' })
+
+  expect(params.get('utm_source')).toBe('mcp')
+  expect(params.get('utm_content')).toBe('claude')
+  expect(params.get('utm_term')).toBe('NETLIFY_AGENT:claude-code')
+})
+
 test('adds the agent name and the deciding variable with its value', () => {
   const params = paramsFor({ AI_AGENT: 'claude-code_2-1-259_agent' })
 
