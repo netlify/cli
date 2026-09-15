@@ -37,6 +37,7 @@ import {
   logJson,
   warn,
   type APIError,
+  NETLIFYDEVWARN,
 } from '../../utils/command-helpers.js'
 import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
@@ -451,7 +452,17 @@ const reportDeployError = ({
 
 const deployProgressCb = function () {
   const spinnersByType: Record<DeployEvent['type'], Spinner> = {}
+  // Steps that produce concurrent stdout output (e.g., esbuild during bundling)
+  // should not use animated spinners to avoid mixing output (see #2391).
+  const noSpinnerTypes = new Set<DeployEvent['type']>(['edge-functions-bundling'])
   return (event: DeployEvent) => {
+    if (noSpinnerTypes.has(event.type)) {
+      // For concurrent-output steps, log text status only (no spinner).
+      if (event.phase === 'stop') {
+        log(event.msg)
+      }
+      return
+    }
     switch (event.phase) {
       case 'start': {
         spinnersByType[event.type] = startSpinner({
@@ -783,10 +794,11 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
   const argv = process.argv.slice(2)
   const statusCb =
     options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
-
+  // During bundling, esbuild outputs to stdout concurrently. deployProgressCb
+  // skips the spinner for this step to avoid mixing output (see #2391).
   statusCb({
     type: 'edge-functions-bundling',
-    msg: 'Bundling edge functions...\n',
+    msg: 'Bundling edge functions...',
     phase: 'start',
   })
 
@@ -958,6 +970,22 @@ const prepAndRunDeploy = async ({
 
   const deployFolder = await getDeployFolder({ command, options, config, site, siteData })
   const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
+  // When deploying without running a build, warn if build plugins are configured
+  // because their config mutations are lost without a build run
+  // (see https://github.com/netlify/cli/issues/3792).
+  if (!options.build) {
+    type ConfigPlugin = { package?: unknown; origin?: string }
+    const plugins =
+      (config?.plugins as ConfigPlugin[] | undefined) ??
+      (command.netlify.cachedConfig.config as { plugins?: ConfigPlugin[] } | undefined)?.plugins
+    const configuredPlugins = plugins?.filter((plugin) => plugin.origin !== 'default') ?? []
+    if (configuredPlugins.length > 0) {
+      log(
+        `${NETLIFYDEVWARN} Site uses build plugins (${configuredPlugins.map((p) => p.package).join(', ')}) but no build is being run.\n` +
+          `  Config changes made by these plugins will not be applied. Use ${chalk.cyanBright('netlify deploy --build')} to build and deploy together.`,
+      )
+    }
+  }
   const { configPath } = site
 
   // build flag wasn't used and edge functions directories exist
