@@ -37,7 +37,7 @@ interface RemoteMigration {
 }
 
 interface ListMigrationsResponse {
-  migrations: RemoteMigration[]
+  migrations: RemoteMigration[] | null
 }
 
 export const remoteAppliedMigrations =
@@ -59,7 +59,9 @@ export const remoteAppliedMigrations =
     }
 
     const data = (await response.json()) as ListMigrationsResponse
-    return data.migrations.filter((m) => m.applied).map((m) => ({ version: m.version, name: m.name, path: m.path }))
+    return (
+      data.migrations?.filter((m) => m.applied).map((m) => ({ version: m.version, name: m.name, path: m.path })) ?? []
+    )
   }
 
 interface LocalOptions {

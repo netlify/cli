@@ -410,9 +410,13 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
       throw new Error(`You must be logged in with ${netlifyCommand()} login to target a remote branch.`)
     }
 
-    connectionString = await fetchBranchConnectionString({ siteId, accessToken, basePath }, branch)
-    fetchApplied = remoteAppliedMigrations({ siteId, accessToken, basePath, branch })
     branchLabel = branch
+    if (siteHasDatabase) {
+      connectionString = await fetchBranchConnectionString({ siteId, accessToken, basePath }, branch)
+      fetchApplied = remoteAppliedMigrations({ siteId, accessToken, basePath, branch })
+    } else {
+      fetchApplied = () => Promise.resolve([])
+    }
   } else {
     isLocal = true
     branchLabel = 'local'
