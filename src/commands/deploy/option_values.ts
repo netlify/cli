@@ -21,6 +21,7 @@ export type DeployOptionValues = BaseOptionValues & {
   prod: boolean
   prodIfUnlocked: boolean
   secretEnv?: DeployEnvironmentVariable[]
+  showUploaded?: boolean
   site?: string
   siteName?: string
   skipFunctionsCache: boolean
