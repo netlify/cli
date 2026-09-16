@@ -35,12 +35,47 @@ const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string
       type: 'input',
       name: 'repoPath',
       message: 'The SSH URL of the remote git repo:',
-      default: repoData.url,
+      default: toSshUrl(repoData.url, repoData.provider),
       validate: (url: string) => (SSH_URL_REGEXP.test(url) ? true : 'The URL provided does not use the SSH protocol'),
     },
   ])
 
   return repoPath
+}
+
+/**
+ * Converts an https:// URL to its SSH equivalent for known Git providers.
+ * Returns the original URL if already SSH or if the provider is unknown.
+ */
+export const toSshUrl = (url: string, provider: string | null): string => {
+  if (SSH_URL_REGEXP.test(url)) {
+    return url
+  }
+  if (provider === 'github') {
+    return githubHttpsToSsh(url)
+  }
+  if (provider === 'gitlab') {
+    return gitlabHttpsToSsh(url)
+  }
+  return url
+}
+
+const githubHttpsToSsh = (url: string): string => {
+  try {
+    const parsed = new URL(url)
+    return `git@${parsed.hostname}:${parsed.pathname.replace(/^\//, '').replace(/\.git$/, '')}.git`
+  } catch {
+    return url
+  }
+}
+
+const gitlabHttpsToSsh = (url: string): string => {
+  try {
+    const parsed = new URL(url)
+    return `git@${parsed.hostname}:${parsed.pathname.replace(/^\//, '').replace(/\.git$/, '')}.git`
+  } catch {
+    return url
+  }
 }
 
 const addDeployHook = async (deployHook: string | undefined): Promise<boolean> => {
