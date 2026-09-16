@@ -4,7 +4,14 @@ import { getDrivingAgent } from './agent-detection.js'
 // a session or run id, or a path, none of which may reach a URL.
 const SOURCES_WITH_ANNOUNCED_VALUE = new Set(['NETLIFY_AGENT', 'AI_AGENT'])
 
+const LOGIN_SOURCES = new Set(['mcp'])
+
 const sanitizeUtmTerm = (raw: string): string => raw.replace(/[^A-Za-z0-9_.:@-]/g, '').slice(0, 64)
+
+const getUtmSource = (env: NodeJS.ProcessEnv): string => {
+  const source = env.NETLIFY_LOGIN_SOURCE
+  return source !== undefined && LOGIN_SOURCES.has(source) ? source : 'cli'
+}
 
 const getUtmTerm = (source: string, env: NodeJS.ProcessEnv): string => {
   const value = SOURCES_WITH_ANNOUNCED_VALUE.has(source) ? env[source] : undefined
@@ -16,7 +23,7 @@ export const buildAuthorizeUrl = (ticketId: string, env: NodeJS.ProcessEnv = pro
   const params = new URLSearchParams({
     response_type: 'ticket',
     ticket: ticketId,
-    utm_source: 'cli',
+    utm_source: getUtmSource(env),
     utm_campaign: 'integrations',
   })
 
