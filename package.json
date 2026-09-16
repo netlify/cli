@@ -71,7 +71,7 @@
     "@netlify/server-dev": "^0.1.1",
     "@netlify/zip-it-and-ship-it": "^16.0.0",
     "@octokit/rest": "^22.0.0",
-    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/api": "~1.9.0",
     "@pnpm/tabtab": "^0.5.4",
     "ansi-escapes": "^7.3.0",
     "ansi-to-html": "^0.7.2",
