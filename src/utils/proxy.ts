@@ -13,8 +13,11 @@ import url from 'url'
 import util from 'util'
 import zlib from 'zlib'
 
-import { renderFunctionErrorPage } from '@netlify/dev-utils'
+import { FileWatcher, fromWebResponse, mockLocation, renderFunctionErrorPage } from '@netlify/dev-utils'
 import { ImageHandler } from '@netlify/images'
+import { ServerHandler } from '@netlify/server-dev'
+
+import { runBeforeProcessExit } from './shell.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import contentType from 'content-type'
 import { parseCookie } from 'cookie'
@@ -55,7 +58,7 @@ import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHead
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
-import type { Request, Rewriter, ServerSettings } from './types.js'
+import type { Request, Rewriter, ServerSettings, SiteInfo } from './types.js'
 
 const gunzip = util.promisify(zlib.gunzip)
 const gzip = util.promisify(zlib.gzip)
@@ -805,12 +808,15 @@ const onRequest = async (
     imageProxy,
     proxy,
     rewriter,
+    serverHandler,
     settings,
     siteInfo,
-  }: { rewriter: Rewriter; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy } & Record<
-    string,
-    $TSFixMe
-  >,
+  }: {
+    rewriter: Rewriter
+    settings: ServerSettings
+    edgeFunctionsProxy?: EdgeFunctionsProxy
+    serverHandler?: ServerHandler
+  } & Record<string, $TSFixMe>,
   req: Request,
   res: ServerResponse,
 ) => {
@@ -852,6 +858,48 @@ const onRequest = async (
   if (addonUrl) {
     handleAddonUrl({ req, res, addonUrl })
     return
+  }
+
+  if (serverHandler) {
+    try {
+      const requestURL = reqToURL(req, req.url)
+      const serverMatch = await serverHandler.match(new Request(requestURL))
+
+      if (serverMatch) {
+        const staticFile = await getStatic(decodeURIComponent(requestURL.pathname), settings.dist ?? '')
+
+        if (!staticFile) {
+          const headers = new Headers()
+
+          for (let index = 0; index < req.rawHeaders.length; index += 2) {
+            headers.append(req.rawHeaders[index], req.rawHeaders[index + 1])
+          }
+
+          const response = await serverMatch.handle(
+            new Request(requestURL, {
+              body: req.originalBody,
+              headers,
+              method: req.method,
+            }),
+          )
+
+          await fromWebResponse(response, res)
+
+          return
+        }
+      }
+    } catch (error) {
+      // The response may have failed mid-stream, in which case the head is
+      // out and the only remaining option is dropping the connection.
+      if (res.headersSent) {
+        res.destroy()
+      } else {
+        res.writeHead(500)
+        res.end(error instanceof Error ? error.message : 'Failed to serve request from Netlify Server')
+      }
+
+      return
+    }
   }
 
   const match = await rewriter(req)
@@ -956,6 +1004,7 @@ export const startProxy = async function ({
   disableEdgeFunctions: boolean
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   aiGatewayContext?: AIGatewayContext | null
+  siteInfo?: SiteInfo
   watchIgnore: string[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 } & Record<string, $TSFixMe>) {
@@ -999,6 +1048,31 @@ export const startProxy = async function ({
     logger: { log, warn, error: logError },
     imagesConfig: config.images,
   })
+
+  const serverEntryEnabled =
+    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' || Boolean(siteInfo?.feature_flags?.netlify_build_server_entry)
+
+  let serverHandler: ServerHandler | undefined
+
+  if (serverEntryEnabled) {
+    const serverFileWatcher = new FileWatcher()
+
+    serverHandler = new ServerHandler({
+      accountID: siteInfo?.account_id,
+      fileWatcher: serverFileWatcher,
+      geolocation: mockLocation,
+      logger: { log, warn, error: logError },
+      projectRoot: projectDir,
+      siteID: siteInfo?.id,
+    })
+
+    const handlerToStop = serverHandler
+
+    runBeforeProcessExit(async () => {
+      await handlerToStop.stop()
+      await serverFileWatcher.close()
+    })
+  }
   const imageProxy = initializeImageProxy({
     settings,
     imageHandler,
@@ -1029,6 +1103,7 @@ export const startProxy = async function ({
   const onRequestWithOptions = onRequest.bind(undefined, {
     proxy,
     rewriter,
+    serverHandler,
     settings,
     addonsUrls,
     functionsRegistry,
@@ -1043,6 +1118,25 @@ export const startProxy = async function ({
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
   const onUpgrade = async function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
+    if (serverHandler) {
+      let handled = false
+
+      try {
+        handled = await serverHandler.handleUpgrade(req, socket, head)
+      } catch (error) {
+        logError(
+          `Failed to hand over upgrade request to server: ${error instanceof Error ? error.message : String(error)}`,
+        )
+        socket.destroy()
+
+        return
+      }
+
+      if (handled) {
+        return
+      }
+    }
+
     const match = await rewriter(req)
     if (match && !match.force404 && isExternal(match)) {
       const reqUrl = reqToURL(req, req.url)

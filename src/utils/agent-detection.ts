@@ -28,7 +28,7 @@ export type DrivingAgent = {
 }
 
 const ANNOUNCED_NAME_TABLE = new Map<string, CanonicalAgentName>([
-  ...CANONICAL_AGENT_NAMES.map((name) => [name, name] as const),
+  ...CANONICAL_AGENT_NAMES.filter((name) => name !== 'other').map((name) => [name, name] as const),
   ['claude-code', 'claude'],
   ['claude-ai', 'claudeai'],
   ['github-copilot', 'copilot'],

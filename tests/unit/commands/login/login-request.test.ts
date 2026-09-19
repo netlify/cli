@@ -38,7 +38,7 @@ describe('loginRequest', () => {
     const output = stdoutOutput.join('')
     expect(output).toContain('Ticket ID: test-ticket-123')
     expect(output).toContain(
-      'Authorize URL: https://app.netlify.com/authorize?response_type=ticket&ticket=test-ticket-123',
+      'Authorize URL: https://app.netlify.com/authorize?response_type=ticket&ticket=test-ticket-123&utm_source=cli&utm_campaign=integrations',
     )
     expect(output).toContain('netlify login --check test-ticket-123')
     expect(output).toContain('After user opens the authorization URL and approves, the login will be complete.')
