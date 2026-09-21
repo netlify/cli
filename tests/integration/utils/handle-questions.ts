@@ -1,7 +1,9 @@
 import { Buffer } from 'node:buffer'
 
 interface Stdin {
+  writable: boolean
   write(data: Buffer): boolean
+  on(event: 'error', listener: (error: Error) => void): this
 }
 
 interface Stdout {
@@ -12,6 +14,14 @@ interface Process {
   stdin: Stdin | null
   stdout: Stdout | null
 }
+
+// eslint-disable-next-line no-control-regex
+const ANSI_ESCAPES = /\u001B\[[0-9;?]*[A-Za-z]/g
+// clack wraps long lines and prefixes continuation lines with its guide bar; joining them restores the original text
+const CLACK_LINE_CONTINUATION = /\r?\n[│|] {2}/g
+
+const normalize = (output: string): string =>
+  output.replace(ANSI_ESCAPES, '').replace(CLACK_LINE_CONTINUATION, '').replace(/\r?\n/g, '')
 
 /**
  * Utility to mock the stdin of the cli. You must provide the correct number of
@@ -30,9 +40,10 @@ export const handleQuestions = (
 
   let buffer = ''
   process.stdout.on('data', (data: Buffer) => {
-    buffer = (buffer + data.toString()).replace(/\n/g, '')
+    buffer += data.toString()
+    const normalized = normalize(buffer)
     const index = questions.findIndex(
-      ({ question }, questionIndex) => buffer.includes(question) && !prompts.includes(questionIndex),
+      ({ question }, questionIndex) => normalized.includes(question) && !prompts.includes(questionIndex),
     )
     if (index >= 0) {
       prompts.push(index)
@@ -50,7 +61,8 @@ const writeResponse = (process: Process, responses: string[]) => {
   }
 
   const response = responses.shift()
-  if (response) process.stdin.write(Buffer.from(response))
+  // the CLI may have exited already (e.g. a `y`/`n` answer submits immediately), so late keystrokes must not crash the test
+  if (response && process.stdin.writable) process.stdin.write(Buffer.from(response))
   if (responses.length !== 0)
     setTimeout(() => {
       writeResponse(process, responses)
@@ -59,6 +71,10 @@ const writeResponse = (process: Process, responses: string[]) => {
 
 export const answerWithValue = (value = '') => [value, CONFIRM].flat()
 
-export const CONFIRM = '\n'
+/** Enter. clack only submits on a carriage return (`\r`); a bare `\n` is a different key. */
+export const CONFIRM = '\r'
 export const DOWN = '\u001B[B'
+/** Answers a confirm prompt with "No" and submits immediately; do not follow it with CONFIRM. */
 export const NO = 'n'
+/** Answers a confirm prompt with "Yes" and submits immediately; do not follow it with CONFIRM. */
+export const YES = 'y'

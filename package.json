@@ -52,6 +52,7 @@
     "typecheck:watch": "node ./node_modules/typescript-native/bin/tsc --watch"
   },
   "dependencies": {
+    "@clack/prompts": "^1.8.1",
     "@fastify/static": "^10.0.0",
     "@netlify/ai": "^1.0.1",
     "@netlify/api": "^15.1.2",

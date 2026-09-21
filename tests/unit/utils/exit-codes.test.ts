@@ -9,6 +9,7 @@ describe('EXIT_CODES', () => {
       GENERAL_ERROR: 1,
       USAGE_ERROR: 2,
       NON_INTERACTIVE_PROMPT: 4,
+      CANCELLED: 130,
     })
   })
 

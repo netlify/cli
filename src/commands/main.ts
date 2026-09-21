@@ -303,7 +303,7 @@ export const createMainCommand = (): BaseCommand => {
       return `To get started run: ${NETLIFY_CYAN('netlify login')}
 To ask a human for credentials: ${NETLIFY_CYAN('netlify login --request <msg>')}
 
-Exit codes: 0 ok, 1 error, 2 usage, 4 needs-input
+Exit codes: 0 ok, 1 error, 2 usage, 4 needs-input, 130 cancelled
 
 → For more help with the CLI, visit ${NETLIFY_CYAN(
         terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl, { fallback: false }),
