@@ -168,9 +168,11 @@ export const logJson = (message: unknown = '') => {
   }
 }
 
+/** Whether human-facing output is suppressed, because the caller wants machine-readable or no output */
+export const isOutputSuppressed = (): boolean => argv.includes('--json') || argv.includes('--silent') || isDefaultJson()
+
 export const log = (message = '', ...args: string[]) => {
-  // If  --silent or --json flag passed disable logger
-  if (argv.includes('--json') || argv.includes('--silent') || isDefaultJson()) {
+  if (isOutputSuppressed()) {
     return
   }
   message = typeof message === 'string' ? message : inspect(message)

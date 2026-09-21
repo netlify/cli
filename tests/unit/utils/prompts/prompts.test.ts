@@ -1,7 +1,8 @@
 import { CANCEL_SYMBOL } from '@clack/prompts'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-const { mockClack, mockExit } = vi.hoisted(() => ({
+const { mockClack, mockExit, mockIsOutputSuppressed } = vi.hoisted(() => ({
+  mockIsOutputSuppressed: vi.fn(() => false),
   mockClack: {
     text: vi.fn(),
     password: vi.fn(),
@@ -26,11 +27,13 @@ vi.mock('@clack/prompts', async (importOriginal) => ({
 vi.mock('../../../../src/utils/command-helpers.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/utils/command-helpers.js')>()),
   exit: mockExit,
+  isOutputSuppressed: () => mockIsOutputSuppressed(),
 }))
 
 import {
   intro,
   note,
+  outro,
   promptAutocomplete,
   promptConfirm,
   promptPassword,
@@ -48,6 +51,7 @@ let pauseSpy: ReturnType<typeof vi.spyOn>
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mockIsOutputSuppressed.mockReturnValue(false)
   resumeSpy = vi.spyOn(process.stdin, 'resume').mockReturnValue(process.stdin)
   pauseSpy = vi.spyOn(process.stdin, 'pause').mockReturnValue(process.stdin)
   setStdinTTY(true)
@@ -108,24 +112,48 @@ describe('promptConfirm', () => {
     await expect(promptConfirm({ message: 'Continue?', initialValue: false })).resolves.toBe(false)
   })
 
-  test('treats a timed-out prompt as declining instead of exiting', async () => {
-    mockClack.confirm.mockResolvedValue(CANCEL_SYMBOL)
-    const controller = new AbortController()
-    controller.abort()
+  test('treats a prompt left unanswered past its timeout as declining instead of exiting', async () => {
+    mockClack.confirm.mockImplementation(
+      ({ signal }: { signal: AbortSignal }) =>
+        new Promise((resolve) => {
+          signal.addEventListener('abort', () => {
+            resolve(CANCEL_SYMBOL)
+          })
+        }),
+    )
 
-    await expect(promptConfirm({ message: 'Did you mean?', signal: controller.signal })).resolves.toBe(false)
+    await expect(promptConfirm({ message: 'Did you mean?', timeout: 5 })).resolves.toBe(false)
 
     expect(mockClack.cancel).not.toHaveBeenCalled()
     expect(mockExit).not.toHaveBeenCalled()
   })
 
-  test('exits when cancelled without an aborted signal', async () => {
+  test('exits when the user cancels a prompt that has a timeout', async () => {
     mockClack.confirm.mockResolvedValue(CANCEL_SYMBOL)
-    const controller = new AbortController()
 
-    await expect(promptConfirm({ message: 'Did you mean?', signal: controller.signal })).rejects.toThrow('exit(130)')
+    await expect(promptConfirm({ message: 'Did you mean?', timeout: 10_000 })).rejects.toThrow('exit(130)')
 
     expect(mockClack.cancel).toHaveBeenCalledWith('Cancelled.')
+  })
+
+  test('stops the timeout once answered, so the prompt is not closed a second time', async () => {
+    vi.useFakeTimers()
+    try {
+      let abortedAfterAnswer = false
+      mockClack.confirm.mockImplementation(({ signal }: { signal: AbortSignal }) => {
+        signal.addEventListener('abort', () => {
+          abortedAfterAnswer = true
+        })
+        return Promise.resolve(true)
+      })
+
+      await expect(promptConfirm({ message: 'Did you mean?', timeout: 10_000 })).resolves.toBe(true)
+      vi.advanceTimersByTime(60_000)
+
+      expect(abortedAfterAnswer).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 
@@ -195,5 +223,17 @@ describe('branding helpers', () => {
     note('body', 'Heads up')
 
     expect(mockClack.note).toHaveBeenCalledWith('body', 'Heads up')
+  })
+
+  test('write nothing when output is suppressed, so --json output stays machine-readable', () => {
+    mockIsOutputSuppressed.mockReturnValue(true)
+
+    intro('Netlify Link')
+    outro('done')
+    note('body', 'Heads up')
+
+    expect(mockClack.intro).not.toHaveBeenCalled()
+    expect(mockClack.outro).not.toHaveBeenCalled()
+    expect(mockClack.note).not.toHaveBeenCalled()
   })
 })

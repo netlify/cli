@@ -3,14 +3,14 @@ import process from 'process'
 import * as clack from '@clack/prompts'
 import type {
   AutocompleteOptions,
-  ConfirmOptions,
+  ConfirmOptions as ClackConfirmOptions,
   Option,
   PasswordOptions,
   SelectOptions,
   TextOptions,
 } from '@clack/prompts'
 
-import { chalk, exit, NETLIFY_CYAN } from '../command-helpers.js'
+import { chalk, exit, isOutputSuppressed, NETLIFY_CYAN } from '../command-helpers.js'
 import { EXIT_CODES } from '../exit-codes.js'
 
 export type PromptOption<Value> = Option<Value>
@@ -55,12 +55,33 @@ export const promptText = async (options: TextOptions): Promise<string> =>
 
 export const promptPassword = async (options: PasswordOptions): Promise<string> => settle(await clack.password(options))
 
+export type ConfirmOptions = Omit<ClackConfirmOptions, 'signal'> & {
+  /** Treat the prompt as declined when it goes unanswered for this many milliseconds. */
+  timeout?: number
+}
+
 /**
- * An aborted `signal` (e.g. a timeout) resolves to `false`; only an explicit user cancellation exits the process.
+ * A prompt left unanswered past its `timeout` resolves to `false`; only an explicit user cancellation
+ * exits the process.
  */
-export const promptConfirm = async (options: ConfirmOptions): Promise<boolean> => {
-  const value = await clack.confirm(options)
-  if (clack.isCancel(value) && options.signal?.aborted) {
+export const promptConfirm = async ({ timeout, ...options }: ConfirmOptions): Promise<boolean> => {
+  const controller = new AbortController()
+  // The prompt keeps its abort listener attached after it settles, so a timer left running would close
+  // it a second time and reset the terminal under whatever is running by then.
+  const timer =
+    timeout == null
+      ? undefined
+      : setTimeout(() => {
+          controller.abort()
+        }, timeout)
+  let value: Cancellable<boolean>
+  try {
+    value = await clack.confirm({ ...options, signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+
+  if (clack.isCancel(value) && controller.signal.aborted) {
     releaseStdin()
     return false
   }
@@ -74,13 +95,16 @@ export const promptAutocomplete = async <Value>(options: AutocompleteOptions<Val
   settle(await clack.autocomplete(options))
 
 export const intro = (title: string): void => {
+  if (isOutputSuppressed()) return
   clack.intro(`${NETLIFY_CYAN('⬥')} ${chalk.bold(title)}`)
 }
 
 export const outro = (message: string): void => {
+  if (isOutputSuppressed()) return
   clack.outro(message)
 }
 
 export const note = (message: string, title?: string): void => {
+  if (isOutputSuppressed()) return
   clack.note(message, title)
 }

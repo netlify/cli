@@ -220,7 +220,7 @@ const mainCommand = async function (options, command) {
   const applySuggestion = await promptConfirm({
     message: `Did you mean ${chalk.blue(suggestion)}?`,
     initialValue: false,
-    signal: AbortSignal.timeout(SUGGESTION_TIMEOUT),
+    timeout: SUGGESTION_TIMEOUT,
   })
   // create new log line
   log()

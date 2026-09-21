@@ -59,7 +59,7 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
     const applySuggestion = await promptConfirm({
       message: `Did you mean ${chalk.blue(suggestion)}?`,
       initialValue: false,
-      signal: AbortSignal.timeout(SUGGESTION_TIMEOUT),
+      timeout: SUGGESTION_TIMEOUT,
     })
 
     if (applySuggestion) {
