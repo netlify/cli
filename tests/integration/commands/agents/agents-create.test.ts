@@ -5,7 +5,7 @@ import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
-import { answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
+import { CONFIRM, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { mockSiteInfo, mockSiteInfoNoRepo, mockAgentRunner, mockAgentRunnerNoRepo } from './fixtures.js'
 
 // Mock spinner to avoid UI interference in tests
@@ -118,6 +118,44 @@ describe('agents:create command', () => {
 
         expect(result.stdout).toContain('Agent task created successfully!')
         expect(result.stdout).toContain('Prompt: Build a contact form')
+      })
+    })
+  })
+
+  test('should prompt for agent selection when --agent is omitted', async (t) => {
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners',
+        method: 'POST' as const,
+        response: mockAgentRunner,
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
+        const childProcess = execa(cliPath, ['agents:create', 'Build a contact form', '--branch', 'main'], {
+          cwd: builder.directory,
+          env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+        })
+
+        // Enter accepts the default (first) choice, which is claude
+        handleQuestions(childProcess, [
+          {
+            question: 'Which agent would you like to use?',
+            answer: CONFIRM,
+          },
+        ])
+
+        const result = await childProcess
+
+        expect(result.stdout).toContain('Agent task created successfully!')
+        expect(result.stdout).toContain('Agent: Claude')
+
+        const createRequest = requests.find(({ method, path }) => method === 'POST' && path === '/api/v1/agent_runners')
+        expect(createRequest?.body).toMatchObject({ agent: 'claude', prompt: 'Build a contact form', branch: 'main' })
       })
     })
   })
