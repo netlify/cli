@@ -155,6 +155,15 @@ The CLI integrates with Netlify's build plugin system, allowing plugins to:
 - Git LFS must be installed for full test suite
 - Some integration tests require Netlify Auth Token (`NETLIFY_AUTH_TOKEN`) or login via `./bin/run.js login`
 
+### Dependencies
+
+- Keep the install footprint small: this package is installed globally and via `npx`, so every dependency's size is
+  paid by every user.
+- **Do not add `@octokit/rest` (or other Octokit packages).** They were removed on purpose: the Octokit stack weighs
+  several MB (mostly generated OpenAPI types and endpoint tables) and we only call a handful of GitHub REST endpoints.
+  Use the hand-rolled client in `src/utils/github-api.ts` instead, which wraps native `fetch` and vendors only the
+  response fields we actually read. Add new endpoints/types there as needed.
+
 ### Coding Style:
 
 - Never write comments on what the code does, make the code clean and self explanatory instead

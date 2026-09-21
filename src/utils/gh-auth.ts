@@ -2,12 +2,12 @@
 import http from 'http'
 import process from 'process'
 
-import { Octokit } from '@octokit/rest'
 import getPort from 'get-port'
 import inquirer from 'inquirer'
 
 import { log } from './command-helpers.js'
 import createDeferred from './create-deferred.js'
+import { createGitHubClient } from './github-api.js'
 import openBrowser from './open-browser.js'
 
 const SERVER_PORT = 3000
@@ -104,10 +104,7 @@ const authWithToken = async (): Promise<Token> => {
     throw new Error('GitHub authentication failed')
   }
 
-  const octokit = new Octokit({ auth: `token ${token}` })
-  const {
-    data: { login: user },
-  } = await octokit.users.getAuthenticated()
+  const { login: user } = await createGitHubClient(token).getAuthenticatedUser()
 
   return { token, user, provider: 'github' }
 }
