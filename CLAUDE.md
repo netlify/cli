@@ -159,10 +159,12 @@ The CLI integrates with Netlify's build plugin system, allowing plugins to:
 
 - Keep the install footprint small: this package is installed globally and via `npx`, so every dependency's size is
   paid by every user.
-- **Do not add `@octokit/rest` (or other Octokit packages).** They were removed on purpose: the Octokit stack weighs
-  several MB (mostly generated OpenAPI types and endpoint tables) and we only call a handful of GitHub REST endpoints.
-  Use the hand-rolled client in `src/utils/github-api.ts` instead, which wraps native `fetch` and vendors only the
-  response fields we actually read. Add new endpoints/types there as needed.
+- **Do not add `@octokit/rest` (or other Octokit runtime packages).** They were removed on purpose: the Octokit stack
+  weighs ~7 MB and we only call a handful of GitHub REST endpoints. Use the hand-rolled client in
+  `src/utils/github-api.ts`, which wraps native `fetch`. Its request/response types are derived from
+  `@octokit/openapi-types`, which is a **devDependency** only: it is imported with `import type`, so it is erased from
+  the runtime output and costs users nothing, while typecheck still sees GitHub's real schemas. Add new endpoints there
+  by aliasing the relevant `operations[...]` entry.
 
 ### Coding Style:
 

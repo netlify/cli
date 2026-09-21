@@ -1,26 +1,27 @@
-// Hand-rolled GitHub REST client. We deliberately do not depend on @octokit/rest:
-// it pulls in ~7 MB of generated types and endpoint tables for the handful of calls below.
-// Only the response fields we actually read are typed here.
-export interface GitHubUser {
-  login: string
-}
+import type { operations } from '@octokit/openapi-types'
 
-export interface GitHubOrg {
-  login: string
-}
+// Hand-rolled GitHub REST client. @octokit/rest is deliberately not a dependency: it pulls
+// ~7 MB of runtime + types into every install for the handful of calls below.
+// @octokit/openapi-types is a devDependency only; `import type` is erased at runtime, so
+// these aliases cost users nothing while keeping the response shapes accurate.
+type JsonResponse<
+  Op extends keyof operations,
+  Status extends keyof operations[Op]['responses'],
+> = operations[Op]['responses'][Status] extends { content: { 'application/json': infer Body } } ? Body : never
 
-export interface GitHubRepo {
-  id: number
-  full_name: string
-  default_branch: string
-}
+type JsonRequestBody<Op extends keyof operations> = operations[Op] extends { requestBody?: infer Req }
+  ? NonNullable<Req> extends { content: { 'application/json': infer Body } }
+    ? Body
+    : never
+  : never
 
-export interface GitHubWebhook {
-  id: number
-  config: {
-    url?: string
-  }
-}
+export type GitHubUser = JsonResponse<'users/get-authenticated', 200>
+export type GitHubOrg = JsonResponse<'orgs/list-for-authenticated-user', 200>[number]
+export type GitHubRepo = JsonResponse<'repos/get', 200>
+export type GitHubWebhook = JsonResponse<'repos/list-webhooks', 200>[number]
+export type GitHubDeployKey = JsonResponse<'repos/create-deploy-key', 201>
+type CreateWebhookBody = JsonRequestBody<'repos/create-webhook'>
+type CreateDeployKeyBody = JsonRequestBody<'repos/create-deploy-key'>
 
 export class GitHubApiError extends Error {
   status: number
@@ -86,33 +87,14 @@ export const createGitHubClient = (token: string) => {
 
     getRepo: ({ owner, repo }: { owner: string; repo: string }) => request<GitHubRepo>('GET', repoPath(owner, repo)),
 
-    createDeployKey: ({
-      owner,
-      repo,
-      ...body
-    }: {
-      owner: string
-      repo: string
-      title: string
-      key: string
-      read_only: boolean
-    }) => request<unknown>('POST', `${repoPath(owner, repo)}/keys`, body),
+    createDeployKey: ({ owner, repo, ...body }: { owner: string; repo: string } & CreateDeployKeyBody) =>
+      request<GitHubDeployKey>('POST', `${repoPath(owner, repo)}/keys`, body),
 
     listWebhooks: ({ owner, repo, per_page }: { owner: string; repo: string; per_page: number }) =>
       request<GitHubWebhook[]>('GET', `${repoPath(owner, repo)}/hooks?per_page=${String(per_page)}`),
 
-    createWebhook: ({
-      owner,
-      repo,
-      ...body
-    }: {
-      owner: string
-      repo: string
-      name: string
-      config: { url: string; content_type: string }
-      events: string[]
-      active: boolean
-    }) => request<GitHubWebhook>('POST', `${repoPath(owner, repo)}/hooks`, body),
+    createWebhook: ({ owner, repo, ...body }: { owner: string; repo: string } & CreateWebhookBody) =>
+      request<GitHubWebhook>('POST', `${repoPath(owner, repo)}/hooks`, body),
   }
 }
 

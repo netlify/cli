@@ -255,7 +255,7 @@ export const configGithub = async ({
   ])
 
   const repo = {
-    id: githubRepo.id,
+    id: Number(githubRepo.id),
     provider: 'github',
     repo_path: githubRepo.full_name,
     repo_branch: githubRepo.default_branch,
