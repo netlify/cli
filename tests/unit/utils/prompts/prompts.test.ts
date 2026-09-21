@@ -185,6 +185,53 @@ describe('promptSelect, promptAutocomplete, promptPassword', () => {
   })
 })
 
+describe('promptAutocomplete filtering', () => {
+  const filterOf = async () => {
+    mockClack.autocomplete.mockResolvedValue('x')
+    await promptAutocomplete({
+      message: 'Pick a template',
+      options: [{ value: { name: 'hello-world' }, label: '[hello-world] Basic function', hint: 'starter' }],
+    })
+    const [{ filter }] = mockClack.autocomplete.mock.calls[0] as [
+      { filter: (search: string, option: { value: unknown; label?: string; hint?: string }) => boolean },
+    ]
+    return filter
+  }
+
+  test('matches the label and the hint', async () => {
+    const filter = await filterOf()
+    const option = { value: { name: 'hello-world' }, label: '[hello-world] Basic function', hint: 'starter' }
+
+    expect(filter('hello', option)).toBe(true)
+    expect(filter('BASIC', option)).toBe(true)
+    expect(filter('starter', option)).toBe(true)
+  })
+
+  test('does not match the stringified value, which is the same for every object option', async () => {
+    const filter = await filterOf()
+    const option = { value: { name: 'hello-world' }, label: '[hello-world] Basic function' }
+
+    expect(filter('j', option)).toBe(false)
+    expect(filter('object', option)).toBe(false)
+  })
+
+  test('matches a query spanning styled text, which the raw label would break apart', async () => {
+    const filter = await filterOf()
+    const styledLabel = "[\u001B[33mGatsby\u001B[39m] 'npm run develop'"
+
+    expect(filter('[gatsby', { value: { name: 'gatsby' }, label: styledLabel })).toBe(true)
+  })
+
+  test('lets a caller override the filter', async () => {
+    const filter = () => true
+    mockClack.autocomplete.mockResolvedValue('x')
+
+    await promptAutocomplete({ message: 'Pick', options: [{ value: 'a' }], filter })
+
+    expect(mockClack.autocomplete.mock.calls[0]?.[0]).toMatchObject({ filter })
+  })
+})
+
 describe('piped stdin', () => {
   test('signals a pause after a prompt so a piped stdin does not keep the process alive', async () => {
     setStdinTTY(undefined)

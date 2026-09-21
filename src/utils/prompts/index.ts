@@ -1,10 +1,12 @@
 import process from 'process'
 import readline from 'readline'
+import { stripVTControlCharacters } from 'util'
 
 import * as clack from '@clack/prompts'
 import type {
   AutocompleteOptions,
   ConfirmOptions as ClackConfirmOptions,
+  Option,
   PasswordOptions,
   SelectOptions,
   TextOptions,
@@ -115,8 +117,16 @@ export const promptConfirm = async ({ timeout, ...options }: ConfirmOptions): Pr
 export const promptSelect = async <Value>(options: SelectOptions<Value>): Promise<Value> =>
   settle(await withPipedInputSupport(() => clack.select(options)))
 
+// Matches what the option shows: the default filter also searches the stringified value, so options
+// holding objects all match any substring of "[object Object]", and it searches the styled label, so
+// a query spanning a colour boundary never matches.
+const matchesLabelOrHint = <Value>(search: string, option: Option<Value>): boolean =>
+  stripVTControlCharacters(`${option.label ?? String(option.value)} ${option.hint ?? ''}`)
+    .toLowerCase()
+    .includes(search.toLowerCase())
+
 export const promptAutocomplete = async <Value>(options: AutocompleteOptions<Value>): Promise<Value> =>
-  settle(await withPipedInputSupport(() => clack.autocomplete(options)))
+  settle(await withPipedInputSupport(() => clack.autocomplete({ filter: matchesLabelOrHint, ...options })))
 
 export const intro = (title: string): void => {
   if (isOutputSuppressed()) return

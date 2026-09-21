@@ -3,7 +3,6 @@ import { Buffer } from 'node:buffer'
 interface Stdin {
   writable: boolean
   write(data: Buffer): boolean
-  on(event: 'error', listener: (error: Error) => void): this
 }
 
 interface Stdout {

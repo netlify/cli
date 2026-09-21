@@ -12,8 +12,15 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   log: () => {},
 }))
 
-vi.spyOn(prompts, 'promptSelect').mockResolvedValue('test-account')
-vi.spyOn(prompts, 'promptText').mockResolvedValue('')
+// vi.resetModules() would otherwise hand the dynamically imported subcommand a fresh copy of the prompt
+// wrapper that these spies are not attached to; a mocked module keeps a single instance across resets.
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
+}))
+
+// No test here should reach a prompt; these make an accidental regression fail instead of hang.
+vi.spyOn(prompts, 'promptSelect').mockRejectedValue(new Error('unexpected prompt: promptSelect'))
+vi.spyOn(prompts, 'promptText').mockRejectedValue(new Error('unexpected prompt: promptText'))
 
 const siteInfo = {
   admin_url: 'https://app.netlify.com/projects/site-name/overview',
