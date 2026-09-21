@@ -1,10 +1,10 @@
 import process from 'process'
 
-import inquirer from 'inquirer'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createSitesCommand, createSitesCreateCommand } from '../../../../src/commands/sites/sites.js'
+import * as prompts from '../../../../src/utils/prompts/index.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -12,7 +12,8 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   log: () => {},
 }))
 
-vi.spyOn(inquirer, 'prompt').mockImplementation(() => Promise.resolve({ accountSlug: 'test-account' }))
+vi.spyOn(prompts, 'promptSelect').mockResolvedValue('test-account')
+vi.spyOn(prompts, 'promptText').mockResolvedValue('')
 
 const siteInfo = {
   admin_url: 'https://app.netlify.com/projects/site-name/overview',

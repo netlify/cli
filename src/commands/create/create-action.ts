@@ -8,7 +8,6 @@ import { pipeline } from 'stream/promises'
 import { promisify } from 'util'
 
 import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
 import type { NetlifyAPI } from '@netlify/api'
@@ -18,6 +17,7 @@ import { Octokit } from '@octokit/rest'
 import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getGitHubToken as promptForGitHubToken } from '../../utils/gh-auth.js'
+import { promptSelect } from '../../utils/prompts/index.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -152,19 +152,15 @@ const selectRepoOwner = async (ghToken: string, repoOwnerFlag?: string): Promise
     return user.login
   }
 
-  const choices = [
-    { name: `${user.login} (personal)`, value: user.login },
-    ...orgs.map((org) => ({ name: org.login, value: org.login })),
+  const options = [
+    { value: user.login, label: `${user.login} (personal)` },
+    ...orgs.map((org) => ({ value: org.login, label: org.login })),
   ]
 
-  const { owner } = await inquirer.prompt<{ owner: string }>([
-    {
-      type: 'list',
-      name: 'owner',
-      message: 'Where should the GitHub repo be created?',
-      choices,
-    },
-  ])
+  const owner = await promptSelect({
+    message: 'Where should the GitHub repo be created?',
+    options,
+  })
 
   return owner
 }
@@ -285,18 +281,10 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   if (accountSlugFlag) {
     accountSlug = accountSlugFlag
   } else if (accounts.length > 1) {
-    const { accountSlug: selected } = await inquirer.prompt<{ accountSlug: string }>([
-      {
-        type: 'list',
-        name: 'accountSlug',
-        message: 'Team:',
-        choices: accounts.map((account) => ({
-          value: account.slug,
-          name: account.name,
-        })),
-      },
-    ])
-    accountSlug = selected
+    accountSlug = await promptSelect({
+      message: 'Team',
+      options: accounts.map((account) => ({ value: account.slug, label: account.name })),
+    })
   } else {
     accountSlug = accounts[0]?.slug
   }

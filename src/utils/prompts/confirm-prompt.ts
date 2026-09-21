@@ -1,21 +1,11 @@
-import inquirer from 'inquirer'
-
 import { log, exit } from '../command-helpers.js'
 
+import { promptConfirm } from './index.js'
+
 export const confirmPrompt = async (message: string): Promise<void> => {
-  try {
-    const { confirm } = await inquirer.prompt({
-      type: 'confirm',
-      name: 'confirm',
-      message,
-      default: false,
-    })
-    log()
-    if (!confirm) {
-      exit()
-    }
-  } catch (error) {
-    console.error(error)
+  const confirm = await promptConfirm({ message, initialValue: false })
+  log()
+  if (!confirm) {
     exit()
   }
 }

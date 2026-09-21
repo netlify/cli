@@ -67,7 +67,7 @@ describe('completion:install command', () => {
         },
         {
           question: 'Would you like to add it?',
-          answer: answerWithValue(NO),
+          answer: NO,
         },
       ])
 

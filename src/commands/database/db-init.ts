@@ -3,10 +3,10 @@ import { mkdir, readdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
 import { applyMigrations } from '@netlify/dev'
-import inquirer from 'inquirer'
 
 import { chalk, log, netlifyCommand } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { promptConfirm, promptSelect } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import BaseCommand from '../base-command.js'
 import { generateNextPrefix } from './db-migration-new.js'
@@ -54,17 +54,10 @@ const success = (text: string): void => {
 
 const carefullyWriteFile = async (filePath: string, data: string, projectRoot: string) => {
   if (existsSync(filePath)) {
-    type Answers = {
-      overwrite: boolean
-    }
-    const answers = await inquirer.prompt<Answers>([
-      {
-        type: 'confirm',
-        name: 'overwrite',
-        message: `Overwrite existing file .${filePath.replace(projectRoot, '')}?`,
-      },
-    ])
-    if (answers.overwrite) {
+    const overwrite = await promptConfirm({
+      message: `Overwrite existing file .${filePath.replace(projectRoot, '')}?`,
+    })
+    if (overwrite) {
       await writeFile(filePath, data)
     }
   } else {
@@ -87,18 +80,14 @@ const promptForQueryStyle = async (interactive: boolean): Promise<QueryStyle> =>
   }
 
   log('')
-  const { queryStyle } = await inquirer.prompt<{ queryStyle: QueryStyle }>([
-    {
-      type: 'list',
-      name: 'queryStyle',
-      message: 'What is your preferred style?',
-      default: 'drizzle',
-      choices: [
-        { name: 'Drizzle ORM (recommended)', value: 'drizzle' },
-        { name: 'Direct SQL', value: 'raw' },
-      ],
-    },
-  ])
+  const queryStyle = await promptSelect<QueryStyle>({
+    message: 'What is your preferred style?',
+    initialValue: 'drizzle',
+    options: [
+      { value: 'drizzle', label: 'Drizzle ORM (recommended)' },
+      { value: 'raw', label: 'Direct SQL' },
+    ],
+  })
 
   return queryStyle
 }
@@ -113,14 +102,10 @@ const promptForStarter = async (interactive: boolean): Promise<boolean> => {
   log('and then query it. Alternatively, you can do this yourself at any time.')
 
   log('')
-  const { answer } = await inquirer.prompt<{ answer: boolean }>([
-    {
-      type: 'confirm',
-      name: 'answer',
-      message: 'Do you want to create sample data?',
-      default: true,
-    },
-  ])
+  const answer = await promptConfirm({
+    message: 'Do you want to create sample data?',
+    initialValue: true,
+  })
   return answer
 }
 

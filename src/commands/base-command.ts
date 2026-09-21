@@ -12,8 +12,6 @@ import { isCI } from 'ci-info'
 import { Command, CommanderError, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
 import { findUp } from 'find-up'
-import inquirer from 'inquirer'
-import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import { deepMerge, pick } from '../utils/object-utilities.js'
 
 import { getAgent } from '../lib/http-agent.js'
@@ -41,6 +39,7 @@ import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
 import { buildAuthorizeUrl } from '../utils/login-url.js'
 import openBrowser from '../utils/open-browser.js'
+import { promptAutocomplete } from '../utils/prompts/index.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
@@ -52,8 +51,6 @@ type Analytics = {
   payload?: Record<string, unknown>
 }
 
-// load the autocomplete plugin
-inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 /** Netlify CLI client id. Lives in bot@netlify.com */
 // TODO: setup client for multiple environments
 export const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
@@ -149,21 +146,13 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
       )
     }
 
-    const { result } = await inquirer.prompt({
-      name: 'result',
-      // @ts-expect-error(serhalp) -- I think this is because `inquirer-autocomplete-prompt` extends known
-      // `type`s but TS doesn't know about it
-      type: 'autocomplete',
+    const result = await promptAutocomplete({
       message: 'Select the project you want to work with',
-      source: (_unused: unknown, input = '') =>
-        (project.workspace?.packages || [])
-          .filter((pkg) => pkg.path.includes(input))
-          .map((pkg) => ({
-            name: `${pkg.name ? `${chalk.bold(pkg.name)}  ` : ''}${pkg.path}  ${chalk.dim(
-              `--filter ${pkg.name || pkg.path}`,
-            )}`,
-            value: pkg.path,
-          })),
+      options: (project.workspace?.packages || []).map((pkg) => ({
+        value: pkg.path,
+        label: pkg.name ? `${chalk.bold(pkg.name)}  ${pkg.path}` : pkg.path,
+        hint: `--filter ${pkg.name || pkg.path}`,
+      })),
     })
 
     return result

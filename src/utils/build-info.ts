@@ -1,38 +1,20 @@
 import type { Settings } from '@netlify/build-info'
 import { isCI } from 'ci-info'
-import fuzzy from 'fuzzy'
-import inquirer from 'inquirer'
 
 import type BaseCommand from '../commands/base-command.js'
 import { chalk, log } from './command-helpers.js'
+import { promptAutocomplete } from './prompts/index.js'
 import type { DefaultConfig } from '../lib/build.js'
 
 /**
- * Filters the inquirer settings based on the input
+ * Formats the settings as prompt options so that the user can choose one
  */
-const filterSettings = function (
-  scriptInquirerOptions: ReturnType<typeof formatSettingsArrForInquirer>,
-  input: string,
-) {
-  const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
-  // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
-  const filteredSettings = fuzzy.filter(input, filterOptions)
-  const filteredSettingNames = new Set(
-    filteredSettings.map((filteredSetting) => (input ? filteredSetting.string : filteredSetting)),
-  )
-  return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
-}
-
-/**
- * Formats the settings to present it as an array for the inquirer input so that it can choose one
- */
-const formatSettingsArrForInquirer = function (settings: Settings[], type = 'dev') {
+const formatSettingsOptions = function (settings: Settings[], type = 'dev') {
   return settings.map((setting) => {
     const cmd = type === 'dev' ? setting.devCommand : setting.buildCommand
     return {
-      name: `[${chalk.yellow(setting.framework.name)}] '${cmd}'`,
+      label: `[${chalk.yellow(setting.framework.name)}] '${cmd}'`,
       value: { ...setting, commands: [cmd] },
-      short: `${setting.name}-${cmd}`,
     }
   })
 }
@@ -95,17 +77,9 @@ export const detectFrameworkSettings = async (
     }
 
     // multiple matching detectors, make the user choose
-    const scriptInquirerOptions = formatSettingsArrForInquirer(settings, type)
-    const { chosenSettings } = await inquirer.prompt<{ chosenSettings: Settings }>({
-      name: 'chosenSettings',
+    const chosenSettings = await promptAutocomplete({
       message: `Multiple possible ${type} commands found`,
-      // @ts-expect-error is not known by the types as it uses the autocomplete plugin
-      type: 'autocomplete',
-      source(_: string, input = '') {
-        if (!input) return scriptInquirerOptions
-        // only show filtered results
-        return filterSettings(scriptInquirerOptions, input)
-      },
+      options: formatSettingsOptions(settings, type),
     })
 
     log(`

@@ -15,7 +15,8 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 const {
   mockSpawnAsync,
   mockConnectRawClient,
-  mockInquirerPrompt,
+  mockPromptConfirm,
+  mockPromptSelect,
   mockIsInteractive,
   mockFormatQueryResult,
   mockApplyMigrations,
@@ -25,7 +26,8 @@ const {
 } = vi.hoisted(() => ({
   mockSpawnAsync: vi.fn(),
   mockConnectRawClient: vi.fn(),
-  mockInquirerPrompt: vi.fn(),
+  mockPromptConfirm: vi.fn<(...args: unknown[]) => Promise<boolean>>(),
+  mockPromptSelect: vi.fn<(...args: unknown[]) => Promise<string>>(),
   mockIsInteractive: vi.fn().mockReturnValue(true),
   mockFormatQueryResult: vi.fn(),
   mockApplyMigrations: vi.fn(),
@@ -34,11 +36,10 @@ const {
   logMessages: [] as string[],
 }))
 
-vi.mock('inquirer', () => ({
-  default: {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    prompt: (...args: unknown[]) => mockInquirerPrompt(...args),
-  },
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
+  promptConfirm: (...args: unknown[]) => mockPromptConfirm(...args),
+  promptSelect: (...args: unknown[]) => mockPromptSelect(...args),
 }))
 
 vi.mock('../../../../src/commands/database/util/spawn-async.js', async (importOriginal) => ({
@@ -99,13 +100,9 @@ function createCommand(projectRoot: string) {
   } as unknown as Parameters<typeof initDatabase>[1]
 }
 
-const setPrompts = (...responses: Record<string, unknown>[]) => {
-  const queue = [...responses]
-  mockInquirerPrompt.mockImplementation(() => {
-    const next = queue.shift()
-    if (!next) throw new Error('Unexpected inquirer.prompt call — no response queued')
-    return Promise.resolve(next)
-  })
+const setPrompts = (queryStyle: 'raw' | 'drizzle', withStarter: boolean) => {
+  mockPromptSelect.mockResolvedValueOnce(queryStyle)
+  mockPromptConfirm.mockResolvedValueOnce(withStarter)
 }
 
 const exists = async (path: string): Promise<boolean> => {
@@ -175,7 +172,7 @@ afterEach(async () => {
 
 describe('initDatabase (integration)', () => {
   test('raw SQL + starter writes a timestamp-prefixed migration with a CREATE TABLE and seed data', async () => {
-    setPrompts({ queryStyle: 'raw' }, { answer: true })
+    setPrompts('raw', true)
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -199,7 +196,7 @@ describe('initDatabase (integration)', () => {
   })
 
   test('Drizzle + starter writes schema/config, runs drizzle-kit generate, and seeds after it', async () => {
-    setPrompts({ queryStyle: 'drizzle' }, { answer: true })
+    setPrompts('drizzle', true)
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -242,7 +239,7 @@ describe('initDatabase (integration)', () => {
   })
 
   test('Drizzle without starter scaffolds drizzle.config.ts only (no schema, no migration, no generate)', async () => {
-    setPrompts({ queryStyle: 'drizzle' }, { answer: false })
+    setPrompts('drizzle', false)
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -260,7 +257,7 @@ describe('initDatabase (integration)', () => {
   })
 
   test('raw without starter writes nothing extra; next steps point at `database migrations new`', async () => {
-    setPrompts({ queryStyle: 'raw' }, { answer: false })
+    setPrompts('raw', false)
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -282,7 +279,8 @@ describe('initDatabase (integration)', () => {
     await initDatabase({}, createCommand(projectRoot()))
 
     expect(await readMigrations(projectRoot())).toEqual(['0001_existing.sql'])
-    expect(mockInquirerPrompt).not.toHaveBeenCalled()
+    expect(mockPromptSelect).not.toHaveBeenCalled()
+    expect(mockPromptConfirm).not.toHaveBeenCalled()
     expect(mockSpawnAsync).not.toHaveBeenCalled()
     expect(mockConnectRawClient).not.toHaveBeenCalled()
     expect(logMessages.join('\n')).toContain('you already have migrations set up')
@@ -293,7 +291,8 @@ describe('initDatabase (integration)', () => {
 
     await initDatabase({}, createCommand(projectRoot()))
 
-    expect(mockInquirerPrompt).not.toHaveBeenCalled()
+    expect(mockPromptSelect).not.toHaveBeenCalled()
+    expect(mockPromptConfirm).not.toHaveBeenCalled()
     expect(await exists(join(projectRoot(), 'drizzle.config.ts'))).toBe(true)
     expect(await exists(join(projectRoot(), 'db', 'schema.ts'))).toBe(true)
     expect((await readMigrations(projectRoot())).some((name) => name.includes('seed_planets'))).toBe(true)

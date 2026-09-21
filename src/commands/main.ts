@@ -3,7 +3,6 @@ import process from 'process'
 import { Option, CommanderError } from 'commander'
 import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
-import inquirer from 'inquirer'
 
 import { getGlobalConfigStore } from '@netlify/dev-utils'
 
@@ -22,6 +21,7 @@ import { EXIT_CODES } from '../utils/exit-codes.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
 import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import { promptConfirm } from '../utils/prompts/index.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
@@ -217,23 +217,10 @@ const mainCommand = async function (options, command) {
     exit(EXIT_CODES.USAGE_ERROR)
   }
 
-  const applySuggestion = await new Promise((resolve) => {
-    const prompt = inquirer.prompt({
-      type: 'confirm',
-      name: 'suggestion',
-      message: `Did you mean ${chalk.blue(suggestion)}`,
-      default: false,
-    })
-
-    setTimeout(() => {
-      // @ts-expect-error TS(2445) FIXME: Property 'close' is protected and only accessible ... Remove this comment to see the full error message
-      prompt.ui.close()
-      resolve(false)
-    }, SUGGESTION_TIMEOUT)
-
-    prompt.then((value) => {
-      resolve(value.suggestion)
-    })
+  const applySuggestion = await promptConfirm({
+    message: `Did you mean ${chalk.blue(suggestion)}?`,
+    initialValue: false,
+    signal: AbortSignal.timeout(SUGGESTION_TIMEOUT),
   })
   // create new log line
   log()

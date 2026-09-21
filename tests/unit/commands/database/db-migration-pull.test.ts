@@ -1,15 +1,17 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
-const { mockRm, mockMkdir, mockWriteFile, mockFetch, mockExeca, logMessages, jsonMessages } = vi.hoisted(() => {
-  const mockRm = vi.fn().mockResolvedValue(undefined)
-  const mockMkdir = vi.fn().mockResolvedValue(undefined)
-  const mockWriteFile = vi.fn().mockResolvedValue(undefined)
-  const mockFetch = vi.fn()
-  const mockExeca = vi.fn()
-  const logMessages: string[] = []
-  const jsonMessages: unknown[] = []
-  return { mockRm, mockMkdir, mockWriteFile, mockFetch, mockExeca, logMessages, jsonMessages }
-})
+const { mockRm, mockMkdir, mockWriteFile, mockFetch, mockExeca, mockPromptConfirm, logMessages, jsonMessages } =
+  vi.hoisted(() => {
+    const mockRm = vi.fn().mockResolvedValue(undefined)
+    const mockMkdir = vi.fn().mockResolvedValue(undefined)
+    const mockWriteFile = vi.fn().mockResolvedValue(undefined)
+    const mockFetch = vi.fn()
+    const mockExeca = vi.fn()
+    const mockPromptConfirm = vi.fn<(...args: unknown[]) => Promise<boolean>>()
+    const logMessages: string[] = []
+    const jsonMessages: unknown[] = []
+    return { mockRm, mockMkdir, mockWriteFile, mockFetch, mockExeca, mockPromptConfirm, logMessages, jsonMessages }
+  })
 
 vi.mock('fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('fs/promises')>()
@@ -24,8 +26,9 @@ vi.mock('fs/promises', async (importOriginal) => {
   }
 })
 
-vi.mock('inquirer', () => ({
-  default: { prompt: vi.fn() },
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
+  promptConfirm: (...args: unknown[]) => mockPromptConfirm(...args),
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -47,7 +50,6 @@ vi.stubGlobal('fetch', mockFetch)
 
 import { resolve } from 'path'
 
-import inquirer from 'inquirer'
 import { migrationPull } from '../../../../src/commands/database/db-migration-pull.js'
 
 interface SampleMigration {
@@ -148,7 +150,7 @@ describe('migrationPull', () => {
 
   test('fetches migrations from the correct API endpoint', async () => {
     mockFetchResponse(sampleMigrations)
-    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
+    mockPromptConfirm.mockResolvedValueOnce(true)
 
     await migrationPull({}, createMockCommand())
 
@@ -250,11 +252,17 @@ describe('migrationPull', () => {
 
   test('prompts for confirmation before overwriting', async () => {
     mockFetchResponse(sampleMigrations)
-    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: false })
+    mockPromptConfirm.mockResolvedValueOnce(false)
 
     await migrationPull({}, createMockCommand())
 
-    expect(inquirer.prompt).toHaveBeenCalledTimes(1)
+    expect(mockPromptConfirm).toHaveBeenCalledTimes(1)
+    expect(mockPromptConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('overwrite all local migrations') as unknown as string,
+        initialValue: false,
+      }),
+    )
     expect(mockRm).not.toHaveBeenCalled()
     expect(logMessages).toContain('Pull cancelled.')
   })
@@ -264,13 +272,13 @@ describe('migrationPull', () => {
 
     await migrationPull({ force: true }, createMockCommand())
 
-    expect(inquirer.prompt).not.toHaveBeenCalled()
+    expect(mockPromptConfirm).not.toHaveBeenCalled()
     expect(mockRm).toHaveBeenCalled()
   })
 
   test('removes existing migrations directory and writes fetched migrations', async () => {
     mockFetchResponse(sampleMigrations)
-    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
+    mockPromptConfirm.mockResolvedValueOnce(true)
 
     const migrationsPath = '/project/netlify/database/migrations'
     const resolved = resolve(migrationsPath)
@@ -295,7 +303,7 @@ describe('migrationPull', () => {
 
   test('logs pulled migration names', async () => {
     mockFetchResponse(sampleMigrations)
-    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
+    mockPromptConfirm.mockResolvedValueOnce(true)
 
     await migrationPull({}, createMockCommand())
 

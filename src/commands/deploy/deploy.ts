@@ -6,7 +6,6 @@ import { stdin, stdout } from 'process'
 
 import type { NetlifyAPI } from '@netlify/api'
 import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
-import inquirer from 'inquirer'
 import { parseAllHeaders } from '@netlify/headers-parser'
 import { parseAllRedirects } from '@netlify/redirect-parser'
 import prettyjson from 'prettyjson'
@@ -47,6 +46,7 @@ import { mergeDeployEnvVars } from '../../utils/env/deploy-env-vars.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import { isEmpty } from '../../utils/object-utilities.js'
 import openBrowser from '../../utils/open-browser.js'
+import { promptConfirm, promptSelect, promptText } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { resolveTeamForNonInteractive } from '../../utils/team.js'
 import {
@@ -150,16 +150,12 @@ const getDeployFolder = async ({
 
     log(`\nTo specify directory non-interactively, use: ${copyableCommand}\n`)
 
-    const { promptPath } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'promptPath',
-        message: 'Publish directory',
-        default: '.',
-        filter: (input) => resolve(command.workingDir, input),
-      },
-    ])
-    deployFolder = promptPath as string
+    const promptPath = await promptText({
+      message: 'Publish directory',
+      placeholder: '.',
+      defaultValue: '.',
+    })
+    deployFolder = resolve(command.workingDir, promptPath)
   }
 
   return deployFolder
@@ -391,14 +387,10 @@ const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
     log(`  ${overrideCommand}`)
     log('\nWarning: Only use --prod-if-unlocked if you are absolutely sure you want to override the deployment lock.\n')
 
-    const { unlockChoice } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'unlockChoice',
-        message: 'Would you like to "unlock" deployments for production context to proceed?',
-        default: false,
-      },
-    ])
+    const unlockChoice = await promptConfirm({
+      message: 'Would you like to "unlock" deployments for production context to proceed?',
+      initialValue: false,
+    })
     if (!unlockChoice) exit(0)
     await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
     log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
@@ -1102,23 +1094,13 @@ const promptForSiteAction = async (options: DeployOptionValues, command: BaseCom
     log(`\nYou must pick a --team: ${availableTeams.map((team) => team.slug).join(', ')}`)
   }
 
-  const { initChoice } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'initChoice',
-      message: 'What would you like to do?',
-      choices: [
-        {
-          name: '⇄  Link this directory to an existing project',
-          value: 'link',
-        },
-        {
-          name: '+  Create & configure a new project',
-          value: 'create',
-        },
-      ],
-    },
-  ])
+  const initChoice = await promptSelect({
+    message: 'What would you like to do?',
+    options: [
+      { value: 'link', label: '⇄  Link this directory to an existing project' },
+      { value: 'create', label: '+  Create & configure a new project' },
+    ],
+  })
 
   const siteData = initChoice === 'create' ? await sitesCreate({}, command) : await link({}, command)
 

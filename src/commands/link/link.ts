@@ -1,6 +1,5 @@
 import assert from 'node:assert'
 
-import inquirer from 'inquirer'
 import { isEmpty } from '../../utils/object-utilities.js'
 import type { NetlifyAPI } from '@netlify/api'
 
@@ -9,6 +8,7 @@ import { startSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
+import { intro, outro, promptSelect, promptText } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
@@ -60,25 +60,14 @@ To search for projects:
 
   spinner.warn({ text: `Found ${matchingSites.length} projects connected to ${repoUrl}` })
 
-  const { selectedSite } = await inquirer.prompt<{
-    selectedSite: SiteInfo | undefined
-  }>([
-    {
-      type: 'list',
-      name: 'selectedSite',
-      message: 'Which project do you want to link?',
-      choices: matchingSites.map((matchingSite) => ({
-        name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
-        value: matchingSite,
-      })),
-    },
-  ])
-
-  if (!selectedSite) {
-    return logAndThrowError('No project selected')
-  }
-
-  return selectedSite
+  return promptSelect({
+    message: 'Which project do you want to link?',
+    options: matchingSites.map((matchingSite) => ({
+      value: matchingSite,
+      label: matchingSite.name,
+      hint: matchingSite.ssl_url,
+    })),
+  })
 }
 
 const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Promise<SiteInfo> => {
@@ -101,17 +90,13 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
     linkChoices = [GIT_REMOTE_PROMPT, ...linkChoices]
   }
 
-  log()
+  intro('Netlify Link')
   log(`${chalk.cyanBright(`${netlifyCommand()} link`)} will connect this folder to a project on Netlify`)
   log()
-  const { linkType } = await inquirer.prompt<{ linkType: string | undefined }>([
-    {
-      type: 'list',
-      name: 'linkType',
-      message: 'How do you want to link this folder to a project?',
-      choices: linkChoices,
-    },
-  ])
+  const linkType = await promptSelect({
+    message: 'How do you want to link this folder to a project?',
+    options: linkChoices.map((choice) => ({ value: choice })),
+  })
 
   let kind
   switch (linkType) {
@@ -125,13 +110,7 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
     }
     case SITE_NAME_PROMPT: {
       kind = 'byName'
-      const { searchTerm } = await inquirer.prompt<{ searchTerm: string }>([
-        {
-          type: 'input',
-          name: 'searchTerm',
-          message: 'Enter the project name (or just part of it):',
-        },
-      ])
+      const searchTerm = await promptText({ message: 'Enter the project name (or just part of it):' })
       log(`Looking for projects with names containing '${searchTerm}'...`)
       log()
 
@@ -164,21 +143,10 @@ To create a new project:
 
       if (matchingSites.length > 1) {
         log(`Found ${matchingSites.length} matching projects!`)
-        const { selectedSite } = await inquirer.prompt<{
-          selectedSite: SiteInfo | undefined
-        }>([
-          {
-            type: 'list',
-            name: 'selectedSite',
-            message: 'Which project do you want to link?',
-            paginated: true,
-            choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
-          },
-        ])
-        if (!selectedSite) {
-          return logAndThrowError('No project selected')
-        }
-        site = selectedSite
+        site = await promptSelect({
+          message: 'Which project do you want to link?',
+          options: matchingSites.map((matchingSite) => ({ value: matchingSite, label: matchingSite.name })),
+        })
       } else {
         const [firstSite] = matchingSites
         site = firstSite
@@ -205,30 +173,15 @@ To create a new project:
         )
       }
 
-      const { selectedSite } = await inquirer.prompt<{ selectedSite: SiteInfo | undefined }>([
-        {
-          type: 'list',
-          name: 'selectedSite',
-          message: 'Which project do you want to link?',
-          paginated: true,
-          choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
-        },
-      ])
-      if (!selectedSite) {
-        return logAndThrowError('No project selected')
-      }
-      site = selectedSite
+      site = await promptSelect({
+        message: 'Which project do you want to link?',
+        options: sites.map((matchingSite) => ({ value: matchingSite, label: matchingSite.name })),
+      })
       break
     }
     case SITE_ID_PROMPT: {
       kind = 'bySiteId'
-      const { siteId } = await inquirer.prompt<{ siteId: string }>([
-        {
-          type: 'input',
-          name: 'siteId',
-          message: 'What is the project ID?',
-        },
-      ])
+      const siteId = await promptText({ message: 'What is the project ID?' })
 
       try {
         site = await api.getSite({ siteId })
@@ -262,8 +215,7 @@ To create a new project:
   log()
   log(`Admin url: ${chalk.magentaBright(site.admin_url)}`)
   log(`Project url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
-  log()
-  log(`You can now run other \`netlify\` cli commands in this directory`)
+  outro(`You can now run other \`netlify\` cli commands in this directory`)
 
   // FIXME(serhalp): Mismatch between hardcoded `SiteInfo` and generated Netlify API types.
   return site as SiteInfo

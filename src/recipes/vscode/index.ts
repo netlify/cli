@@ -2,9 +2,9 @@ import { join } from 'path'
 
 import { DenoBridge } from '@netlify/edge-bundler'
 import execa from 'execa'
-import inquirer from 'inquirer'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
+import { promptConfirm } from '../../utils/prompts/index.js'
 
 import { applySettings, getSettings, writeSettings } from './settings.js'
 
@@ -17,12 +17,7 @@ const getPrompt = ({ fileExists, path }) => {
     ? `There is a VS Code settings file at ${formattedPath}. Can we update it?`
     : `A new VS Code settings file will be created at ${formattedPath}`
 
-  return inquirer.prompt({
-    type: 'confirm',
-    name: 'confirm',
-    message,
-    default: true,
-  })
+  return promptConfirm({ message })
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
@@ -55,12 +50,7 @@ const getDenoVSCodeExt = async (repositoryRoot) => {
 const getDenoExtPrompt = () => {
   const message = 'The Deno VS Code extension is recommended. Would you like to install it now?'
 
-  return inquirer.prompt({
-    type: 'confirm',
-    name: 'confirm',
-    message,
-    default: true,
-  })
+  return promptConfirm({ message })
 }
 
 /**
@@ -81,7 +71,7 @@ export const run = async ({ config, repositoryRoot }) => {
   const edgeFunctionsPath = getEdgeFunctionsPath({ config, repositoryRoot })
   const { fileExists, settings: existingSettings } = await getSettings(settingsPath)
   const settings = applySettings(existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot })
-  const { confirm } = await getPrompt({ fileExists, path: settingsPath })
+  const confirm = await getPrompt({ fileExists, path: settingsPath })
 
   if (!confirm) {
     return
@@ -89,7 +79,7 @@ export const run = async ({ config, repositoryRoot }) => {
 
   try {
     if (!(await hasDenoVSCodeExt(repositoryRoot))) {
-      const { confirm: denoExtConfirm } = await getDenoExtPrompt()
+      const denoExtConfirm = await getDenoExtPrompt()
       if (denoExtConfirm) {
         getDenoVSCodeExt(repositoryRoot)
       }

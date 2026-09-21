@@ -33,8 +33,9 @@ vi.mock('../../../../src/utils/telemetry/index.js', () => ({
   track: vi.fn(),
 }))
 
-vi.mock('inquirer', () => ({
-  default: { prompt: vi.fn().mockResolvedValue({ consumerKey: 'cursor' }) },
+vi.mock('../../../../src/utils/prompts/index.js', () => ({
+  promptSelect: vi.fn().mockResolvedValue('cursor'),
+  promptText: vi.fn(),
 }))
 
 import { downloadAndWriteContextFiles } from '../../../../src/recipes/ai-context/context.js'

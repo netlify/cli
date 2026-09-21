@@ -8,8 +8,6 @@ import { fileURLToPath, pathToFileURL } from 'url'
 
 import { OptionValues } from 'commander'
 import { findUp } from 'find-up'
-import fuzzy from 'fuzzy'
-import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 import { createSpinner } from 'nanospinner'
 
@@ -27,6 +25,7 @@ import {
 import { copyTemplateDir } from '../../utils/copy-template-dir/copy-template-dir.js'
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import execa from '../../utils/execa.js'
+import { promptAutocomplete, promptConfirm, promptSelect, promptText } from '../../utils/prompts/index.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import BaseCommand from '../base-command.js'
 
@@ -39,8 +38,8 @@ const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../.
  * each `value` property in this list.
  */
 const languages = [
-  { name: 'JavaScript', value: 'javascript' },
-  { name: 'TypeScript', value: 'typescript' },
+  { label: 'JavaScript', value: 'javascript' },
+  { label: 'TypeScript', value: 'typescript' },
 ]
 
 const MOON_SPINNER = {
@@ -82,43 +81,16 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
     return argumentName
   }
 
-  const { name } = await inquirer.prompt([
-    {
-      name: 'name',
-      message: 'Name your function:',
-      default: defaultName,
-      type: 'input',
-      validate: (val) => isValidFunctionName(val),
-      // make sure it is not undefined and is a valid filename.
-      // this has some nuance i have ignored, eg crossenv and i18n concerns
-    },
-  ])
+  const name = await promptText({
+    message: 'Name your function',
+    placeholder: defaultName,
+    defaultValue: defaultName,
+    validate: (value) =>
+      isValidFunctionName(value)
+        ? undefined
+        : 'Function names must only contain letters, numbers, hyphens, underscores, or dots.',
+  })
   return name
-}
-
-// @ts-expect-error TS(7006) FIXME: Parameter 'registry' implicitly has an 'any' type.
-const filterRegistry = function (registry, input) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-  const temp = registry.map((value) => value.name + value.description)
-  const filteredTemplates = fuzzy.filter(input, temp)
-  const filteredTemplateNames = new Set(
-    filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
-  )
-  return (
-    registry
-      // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
-      .filter((t) => filteredTemplateNames.has(t.name + t.description))
-      // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
-      .map((t) => {
-        // add the score
-        // @ts-expect-error TS(2339) FIXME: Property 'score' does not exist on type 'FilterRes... Remove this comment to see the full error message
-        const { score } = filteredTemplates.find(
-          (filteredTemplate) => filteredTemplate.string === t.name + t.description,
-        )
-        t.score = score
-        return t
-      })
-  )
 }
 
 /**
@@ -126,7 +98,7 @@ const filterRegistry = function (registry, input) {
  * @param {'edge' | 'serverless'} funcType
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'lang' implicitly has an 'any' type.
-const formatRegistryArrayForInquirer = async function (lang, funcType) {
+const formatTemplateOptions = async function (lang, funcType) {
   const folders = await readdir(path.join(templatesDir, lang), { withFileTypes: true })
 
   const imports = await Promise.all(
@@ -139,7 +111,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
           const template = await import(pathToFileURL(templatePath))
           return template.default
         } catch {
-          // noop if import fails we don't break the whole inquirer
+          // noop if import fails we don't break the whole prompt
         }
       }),
   )
@@ -161,10 +133,8 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
     .map((t) => {
       t.lang = lang
       return {
-        // confusing but this is the format inquirer wants
-        name: `[${t.name}] ${t.description}`,
+        label: `[${t.name}] ${t.description}`,
         value: t,
-        short: `${lang}-${t.name}`,
       }
     })
   return registry
@@ -178,18 +148,16 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
 // @ts-expect-error TS(7031) FIXME: Binding element 'languageFromFlag' implicitly has ... Remove this comment to see the full error message
 const pickTemplate = async function ({ language: languageFromFlag, template: templateFromFlag }, funcType) {
   const specialCommands = [
-    new inquirer.Separator(),
     {
-      name: `Clone template from GitHub URL`,
+      label: 'Clone template from GitHub URL',
       value: 'url',
-      short: 'gh-url',
+      hint: 'prompts for a URL',
     },
     {
-      name: `Report issue with, or suggest a new template`,
+      label: 'Report issue with, or suggest a new template',
       value: 'report',
-      short: 'gh-report',
+      hint: 'github.com/netlify/cli/issues',
     },
-    new inquirer.Separator(),
   ]
 
   let language = languageFromFlag
@@ -200,20 +168,16 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
         ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
         : languages.filter(Boolean)
 
-    const { language: languageFromPrompt } = await inquirer.prompt({
-      choices: langs,
+    language = await promptSelect({
       message: 'Select the language of your function',
-      name: 'language',
-      type: 'list',
+      options: langs,
     })
-
-    language = languageFromPrompt
   }
 
   let templatesForLanguage
 
   try {
-    templatesForLanguage = await formatRegistryArrayForInquirer(language, funcType)
+    templatesForLanguage = await formatTemplateOptions(language, funcType)
   } catch {
     return logAndThrowError(`Invalid language: ${language}`)
   }
@@ -230,49 +194,27 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
     return match.value
   }
 
-  const { chosenTemplate } = await inquirer.prompt({
-    name: 'chosenTemplate',
-    message: 'Pick a template',
-    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-    type: 'autocomplete',
-    source(_answersSoFar: unknown, input: string | undefined) {
-      // if Edge Functions template, don't show url option
-      // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Separator... Remove this comment to see the full error message
-      const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
-      const parsedSpecialCommands = funcType === 'edge' ? edgeCommands : specialCommands
+  // if Edge Functions template, don't show url option
+  const parsedSpecialCommands =
+    funcType === 'edge' ? specialCommands.filter((cmd) => cmd.value !== 'url') : specialCommands
 
-      if (!input || input === '') {
-        // show separators
-        return [...templatesForLanguage, ...parsedSpecialCommands]
-      }
-      // only show filtered results sorted by score
-      const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
-        (answerA, answerB) => answerB.score - answerA.score,
-      )
-      return answers
-    },
+  const chosenTemplate = await promptAutocomplete({
+    message: 'Pick a template',
+    options: [...templatesForLanguage, ...parsedSpecialCommands],
   })
   return chosenTemplate
 }
 
 const DEFAULT_PRIORITY = 999
 
-const selectTypeOfFunc = async (): Promise<'edge' | 'serverless'> => {
-  const functionTypes = [
-    { name: 'Edge function (Deno)', value: 'edge' },
-    { name: 'Serverless function (Node)', value: 'serverless' },
-  ]
-
-  const { functionType } = await inquirer.prompt([
-    {
-      name: 'functionType',
-      message: "Select the type of function you'd like to create",
-      type: 'list',
-      choices: functionTypes,
-    },
-  ])
-  return functionType
-}
+const selectTypeOfFunc = async (): Promise<'edge' | 'serverless'> =>
+  promptSelect<'edge' | 'serverless'>({
+    message: "Select the type of function you'd like to create",
+    options: [
+      { label: 'Edge function (Deno)', value: 'edge' },
+      { label: 'Serverless function (Node)', value: 'serverless' },
+    ],
+  })
 
 /**
  * @param {import('../base-command.js').default} command
@@ -322,14 +264,11 @@ const promptFunctionsDirectory = async (command) => {
     )
   }
 
-  const { functionsDir } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'functionsDir',
-      message: 'Enter the path, relative to your project, where your functions should live:',
-      default: 'netlify/functions',
-    },
-  ])
+  const functionsDir = await promptText({
+    message: 'Enter the path, relative to your project, where your functions should live',
+    placeholder: 'netlify/functions',
+    defaultValue: 'netlify/functions',
+  })
 
   try {
     log(`${NETLIFYDEVLOG} updating project settings with ${chalk.magenta.inverse(functionsDir)}`)
@@ -513,16 +452,10 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, funcType)
   if (chosenTemplate === 'url') {
-    const { chosenUrl } = await inquirer.prompt([
-      {
-        name: 'chosenUrl',
-        message: 'URL to clone: ',
-        type: 'input',
-        validate: (/** @type {string} */ val) => Boolean(validateRepoURL(val)),
-        // make sure it is not undefined and is a valid filename.
-        // this has some nuance i have ignored, eg crossenv and i18n concerns
-      },
-    ])
+    const chosenUrl = await promptText({
+      message: 'URL to clone',
+      validate: (value) => (validateRepoURL(value ?? '') ? undefined : 'Enter a GitHub repository URL'),
+    })
     options.url = chosenUrl.trim()
     try {
       await downloadFromURL(command, options, argumentName, functionsDir)
@@ -645,14 +578,11 @@ const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, f
     return
   }
 
-  const { confirmPostInstall } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'confirmPostInstall',
-      message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-      default: false,
-    },
-  ])
+  const confirmPostInstall = await promptConfirm({
+    message:
+      'This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?',
+    initialValue: false,
+  })
 
   if (!confirmPostInstall) {
     return
@@ -721,20 +651,16 @@ const registerEFInToml = async (funcName, options) => {
     log(`${NETLIFYDEVLOG} \`${relConfigFilePath}\` file does not exist yet. Creating it...`)
   }
 
-  let { funcPath } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'funcPath',
-      message: `What route do you want your edge function to be invoked on?`,
-      default: '/test',
-      validate: (val) => Boolean(val),
-      // Make sure route isn't undefined and is valid
-      // Todo: add more validation?
-    },
-  ])
+  // Todo: add more validation?
+  let funcPath = await promptText({
+    message: 'What route do you want your edge function to be invoked on?',
+    placeholder: '/test',
+    defaultValue: '/test',
+    validate: (value) => (value ? undefined : 'Enter a route'),
+  })
 
   // Make sure path begins with a '/'
-  if (funcPath[0] !== '/') {
+  if (!funcPath.startsWith('/')) {
     funcPath = `/${funcPath}`
   }
 

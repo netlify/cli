@@ -3,11 +3,11 @@ import { createRequire } from 'module'
 import path from 'path'
 
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
 import { APIError, NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
+import { promptSelect } from '../../utils/prompts/index.js'
 import BaseCommand from '../base-command.js'
 
 const require = createRequire(import.meta.url)
@@ -99,7 +99,7 @@ const processPayloadFromFlag = function (payloadString, workingDir) {
 const getNameFromArgs = async function (functions, options, argumentName) {
   const functionToTrigger = getFunctionToTrigger(options, argumentName)
   // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
-  const functionNames = functions.map(({ name }) => name)
+  const functionNames: string[] = functions.map(({ name }) => name)
 
   if (functionToTrigger) {
     if (functionNames.includes(functionToTrigger)) {
@@ -113,14 +113,10 @@ const getNameFromArgs = async function (functions, options, argumentName) {
     )
   }
 
-  const { trigger } = await inquirer.prompt([
-    {
-      type: 'list',
-      message: 'Pick a function to trigger',
-      name: 'trigger',
-      choices: functionNames,
-    },
-  ])
+  const trigger = await promptSelect({
+    message: 'Pick a function to trigger',
+    options: functionNames.map((name) => ({ value: name })),
+  })
   return trigger
 }
 

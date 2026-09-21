@@ -1,12 +1,10 @@
-import ansiEscapes from 'ansi-escapes'
 import AsciiTable from 'ascii-table'
 import { isCI } from 'ci-info'
 import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
-import logUpdate from 'log-update'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { SUPPORTED_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
+import { promptConfirm } from '../../utils/prompts/index.js'
 import type BaseCommand from '../base-command.js'
 import { EnvironmentVariables } from '../../utils/types.js'
 import { getSiteInfo } from './utils.js'
@@ -100,20 +98,10 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
-  logUpdate(getTable({ environment, hideValues: true, scopesColumn: true }))
-  const { showValues } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'showValues',
-      message: 'Show values?',
-      default: false,
-    },
-  ])
+  log(getTable({ environment, hideValues: true, scopesColumn: true }))
+  const showValues = await promptConfirm({ message: 'Show values?', initialValue: false })
 
   if (showValues) {
-    // since inquirer adds a prompt, we need to account for it when printing the table again
-    log(ansiEscapes.eraseLines(3))
-    logUpdate(getTable({ environment, hideValues: false, scopesColumn: true }))
-    log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
+    log(getTable({ environment, hideValues: false, scopesColumn: true }))
   }
 }

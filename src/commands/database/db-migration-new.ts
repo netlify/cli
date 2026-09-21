@@ -1,9 +1,8 @@
 import { readdir, mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
-import inquirer from 'inquirer'
-
 import { log, logJson } from '../../utils/command-helpers.js'
+import { promptSelect, promptText } from '../../utils/prompts/index.js'
 import BaseCommand from '../base-command.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import { utcTimestampPrefix } from './util/timestamp.js'
@@ -91,15 +90,10 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
 
   if (!description) {
     if (isInteractive()) {
-      const answers = await inquirer.prompt<{ description: string }>([
-        {
-          type: 'input',
-          name: 'description',
-          message: 'What is the purpose of this migration?',
-          validate: (input: string) => (input.trim().length > 0 ? true : 'Description cannot be empty'),
-        },
-      ])
-      description = answers.description
+      description = await promptText({
+        message: 'What is the purpose of this migration?',
+        validate: (input) => (input?.trim() ? undefined : 'Description cannot be empty'),
+      })
     } else {
       throw new Error(
         `--description <description> argument is required when not running interactively. Provide a description of the migration (e.g. --description "add users table").`,
@@ -111,19 +105,14 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
     const defaultScheme = detectedScheme ?? 'timestamp'
 
     if (isInteractive()) {
-      const answers = await inquirer.prompt<{ scheme: NumberingScheme }>([
-        {
-          type: 'list',
-          name: 'scheme',
-          message: 'Numbering scheme:',
-          choices: [
-            { name: 'Timestamp (e.g. 20260312143000) [Recommended]', value: 'timestamp' },
-            { name: 'Sequential (e.g. 0001, 0002, ...)', value: 'sequential' },
-          ],
-          default: defaultScheme,
-        },
-      ])
-      scheme = answers.scheme
+      scheme = await promptSelect<NumberingScheme>({
+        message: 'Numbering scheme',
+        options: [
+          { value: 'timestamp', label: 'Timestamp (e.g. 20260312143000) [Recommended]' },
+          { value: 'sequential', label: 'Sequential (e.g. 0001, 0002, ...)' },
+        ],
+        initialValue: defaultScheme,
+      })
     } else {
       scheme = defaultScheme
     }

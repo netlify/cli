@@ -1,10 +1,10 @@
 import { resolve } from 'node:path'
 
-import inquirer from 'inquirer'
 import execa from 'execa'
 
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
 import { logAndThrowError, log, version } from '../../utils/command-helpers.js'
+import { promptSelect, promptText } from '../../utils/prompts/index.js'
 import { track } from '../../utils/telemetry/index.js'
 
 import {
@@ -34,36 +34,29 @@ const rulesForDefaultConsumer = allContextConsumers.find((consumer) => consumer.
 }
 
 const presets = cliContextConsumers.map((consumer) => ({
-  name: consumer.presentedName,
   value: consumer.key,
+  label: consumer.presentedName,
 }))
 
 // always add the custom location option (not preset from API)
-presets.push({ name: 'Custom location', value: rulesForDefaultConsumer.key })
+presets.push({ value: rulesForDefaultConsumer.key, label: 'Custom location' })
 
 const promptForContextConsumerSelection = async (): Promise<ConsumerConfig> => {
-  const { consumerKey } = await inquirer.prompt([
-    {
-      name: 'consumerKey',
-      message: 'Where should we put the context files?',
-      type: 'list',
-      choices: presets,
-    },
-  ])
+  const consumerKey = await promptSelect({
+    message: 'Where should we put the context files?',
+    options: presets,
+  })
 
   const contextConsumer = consumerKey ? cliContextConsumers.find((consumer) => consumer.key === consumerKey) : null
   if (contextConsumer) {
     return contextConsumer
   }
 
-  const { customPath } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'customPath',
-      message: 'Enter the path, relative to the project root, where the context files should be placed',
-      default: './ai-context',
-    },
-  ])
+  const customPath = await promptText({
+    message: 'Enter the path, relative to the project root, where the context files should be placed',
+    placeholder: './ai-context',
+    defaultValue: './ai-context',
+  })
 
   if (customPath) {
     return { ...rulesForDefaultConsumer, path: customPath || rulesForDefaultConsumer.path }

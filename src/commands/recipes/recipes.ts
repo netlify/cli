@@ -2,9 +2,9 @@ import { basename } from 'path'
 
 import { OptionValues } from 'commander'
 import { closest } from 'fastest-levenshtein'
-import inquirer from 'inquirer'
 
 import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.js'
+import { promptConfirm } from '../../utils/prompts/index.js'
 import BaseCommand from '../base-command.js'
 
 import { getRecipe, listRecipes } from './common.js'
@@ -51,23 +51,10 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
     const recipes = await listRecipes()
     const recipeNames = recipes.map(({ name }) => name)
     const suggestion = closest(recipeName, recipeNames)
-    const applySuggestion = await new Promise((resolve) => {
-      const prompt = inquirer.prompt({
-        type: 'confirm',
-        name: 'suggestion',
-        message: `Did you mean ${chalk.blue(suggestion)}`,
-        default: false,
-      })
-
-      setTimeout(() => {
-        // @ts-expect-error TS(2445) FIXME: Property 'close' is protected and only accessible ... Remove this comment to see the full error message
-        prompt.ui.close()
-        resolve(false)
-      }, SUGGESTION_TIMEOUT)
-
-      prompt.then((value) => {
-        resolve(value.suggestion)
-      })
+    const applySuggestion = await promptConfirm({
+      message: `Did you mean ${chalk.blue(suggestion)}?`,
+      initialValue: false,
+      signal: AbortSignal.timeout(SUGGESTION_TIMEOUT),
     })
 
     if (applySuggestion) {

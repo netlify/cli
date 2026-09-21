@@ -1,7 +1,7 @@
 import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 
 import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
+import { promptSelect, promptText } from '../../utils/prompts/index.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
@@ -30,17 +30,13 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
 
   // Interactive prompt if not provided
   if (!prompt && !promptArg) {
-    const { promptInput } = await inquirer.prompt<{
-      promptInput: string
-    }>([
-      {
-        type: 'input',
-        name: 'promptInput',
-        message: 'What would you like the agent to do?',
-        validate: validatePrompt,
+    finalPrompt = await promptText({
+      message: 'What would you like the agent to do?',
+      validate: (value) => {
+        const result = validatePrompt(value ?? '')
+        return typeof result === 'string' ? result : undefined
       },
-    ])
-    finalPrompt = promptInput
+    })
   } else {
     finalPrompt = (promptArg || prompt) ?? ''
   }
@@ -52,18 +48,11 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
 
   // Agent selection if not provided
   if (!agent) {
-    const { agentInput } = await inquirer.prompt<{
-      agentInput: string
-    }>([
-      {
-        type: 'list',
-        name: 'agentInput',
-        message: 'Which agent would you like to use?',
-        choices: AVAILABLE_AGENTS,
-        default: 'claude',
-      },
-    ])
-    agent = agentInput
+    agent = await promptSelect({
+      message: 'Which agent would you like to use?',
+      options: AVAILABLE_AGENTS.map(({ name, value }) => ({ value, label: name })),
+      initialValue: 'claude',
+    })
   } else {
     const agentIsValid = validateAgent(agent)
     if (agentIsValid !== true) {
@@ -75,22 +64,12 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     if (!branch) {
       const defaultBranch = siteInfo.build_settings?.repo_branch
 
-      const { branchInput } = await inquirer.prompt<{
-        branchInput: string
-      }>([
-        {
-          type: 'input',
-          name: 'branchInput',
-          message: 'Which branch would you like to work on?',
-          default: defaultBranch,
-          validate: (input: string) => {
-            if (!input || input.trim().length === 0) {
-              return 'Branch name is required'
-            }
-            return true
-          },
-        },
-      ])
+      const branchInput = await promptText({
+        message: 'Which branch would you like to work on?',
+        placeholder: defaultBranch,
+        defaultValue: defaultBranch,
+        validate: (value) => (value?.trim() ? undefined : 'Branch name is required'),
+      })
 
       branch = branchInput.trim()
     }

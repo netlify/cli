@@ -10,26 +10,45 @@ import { createLinkCommand } from '../../../../src/commands/link/index.js'
 import { getEnvironmentVariables, withMockApi, type MockApiTestContext, type Route } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
-type Choice = string | { name: string; value: unknown }
-
-interface Question {
-  type: string
-  name: string
-  message: string
-  choices?: Choice[]
+interface AskedOption {
+  value: unknown
+  label?: string | undefined
+  hint?: string | undefined
 }
 
-const { askedQuestions, exitCalls, logMessages, mockPrompt, mockTrack, promptAnswers } = vi.hoisted(() => ({
-  askedQuestions: [] as Question[],
-  exitCalls: [] as number[],
-  logMessages: [] as string[],
-  mockPrompt: vi.fn(),
-  mockTrack: vi.fn(),
-  promptAnswers: new Map<string, unknown>(),
-}))
+interface SelectQuestion {
+  message: string
+  options: AskedOption[]
+}
 
-vi.mock('inquirer', () => ({
-  default: { prompt: mockPrompt, registerPrompt: vi.fn() },
+interface TextQuestion {
+  message: string
+}
+
+interface AskedPrompt {
+  type: 'select' | 'text'
+  message: string
+  options?: AskedOption[]
+}
+
+const { askedPrompts, exitCalls, logMessages, mockPromptSelect, mockPromptText, mockTrack, promptAnswers } = vi.hoisted(
+  () => ({
+    askedPrompts: [] as AskedPrompt[],
+    exitCalls: [] as number[],
+    logMessages: [] as string[],
+    mockPromptSelect: vi.fn<(question: SelectQuestion) => Promise<unknown>>(),
+    mockPromptText: vi.fn<(question: TextQuestion) => Promise<string>>(),
+    mockTrack: vi.fn(),
+    promptAnswers: [] as unknown[],
+  }),
+)
+
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
+  intro: vi.fn(),
+  outro: vi.fn(),
+  promptSelect: (question: SelectQuestion) => mockPromptSelect(question),
+  promptText: (question: TextQuestion) => mockPromptText(question),
 }))
 
 vi.mock('../../../../src/utils/scripted-commands.js', async (importOriginal) => ({
@@ -59,46 +78,53 @@ vi.mock('../../../../src/utils/telemetry/report-error.js', async (importOriginal
   reportError: vi.fn(),
 }))
 
-// Answers are looked up by inquirer question `name`. List answers are given as the choice label the
-// user would pick, and resolve to that choice's `value` like inquirer does.
-const answerFor = (question: Question): unknown => {
-  if (!promptAnswers.has(question.name)) {
-    throw new Error(`Unexpected prompt '${question.name}' ("${question.message}") with no answer queued`)
-  }
-  const answer = promptAnswers.get(question.name)
-  promptAnswers.delete(question.name)
+const optionLabel = (option: AskedOption): string => option.label ?? String(option.value)
 
-  if (question.type !== 'list') {
-    return answer
+// Answers are consumed in the order the prompts are asked. Select answers are given as the option label the
+// user would pick, and resolve to that option's `value` like the real prompt does.
+const nextAnswer = (message: string): unknown => {
+  if (promptAnswers.length === 0) {
+    throw new Error(`Unexpected prompt "${message}" with no answer queued`)
   }
-  const choice = (question.choices ?? []).find((item) => (typeof item === 'string' ? item : item.name) === answer)
-  if (choice === undefined) {
-    throw new Error(`Prompt '${question.name}' did not offer a choice labelled '${String(answer)}'`)
-  }
-  return typeof choice === 'string' ? choice : choice.value
+  return promptAnswers.shift()
 }
 
-mockPrompt.mockImplementation((questions: Question | Question[]) => {
-  const list = Array.isArray(questions) ? questions : [questions]
-  askedQuestions.push(...list)
-  return Promise.resolve().then(() => Object.fromEntries(list.map((question) => [question.name, answerFor(question)])))
+mockPromptSelect.mockImplementation((question) => {
+  askedPrompts.push({ type: 'select', message: question.message, options: question.options })
+  return Promise.resolve().then(() => {
+    const answer = nextAnswer(question.message)
+    const option = question.options.find((item) => optionLabel(item) === answer)
+    if (option === undefined) {
+      throw new Error(`Prompt "${question.message}" did not offer a choice labelled '${String(answer)}'`)
+    }
+    return option.value
+  })
 })
 
-const setPromptAnswers = (answers: Record<string, unknown>) => {
-  promptAnswers.clear()
-  for (const [name, answer] of Object.entries(answers)) {
-    promptAnswers.set(name, answer)
-  }
+mockPromptText.mockImplementation((question) => {
+  askedPrompts.push({ type: 'text', message: question.message })
+  return Promise.resolve().then(() => String(nextAnswer(question.message)))
+})
+
+const queuePromptAnswers = (...answers: unknown[]) => {
+  promptAnswers.length = 0
+  promptAnswers.push(...answers)
 }
 
-const promptNames = () => askedQuestions.map((question) => question.name)
+const askedMessages = () => askedPrompts.map((prompt) => prompt.message)
 
-const offeredChoices = (name: string) =>
-  askedQuestions
-    .find((question) => question.name === name)
-    ?.choices?.map((choice) => (typeof choice === 'string' ? choice : choice.name))
+const offeredOptions = (message: string) => askedPrompts.find((prompt) => prompt.message === message)?.options
+
+const offeredChoices = (message: string) => offeredOptions(message)?.map(optionLabel)
+
+const offeredHints = (message: string) => offeredOptions(message)?.map((option) => option.hint)
 
 const output = () => stripAnsi(logMessages.join('\n'))
+
+const HOW_TO_LINK = 'How do you want to link this folder to a project?'
+const WHICH_PROJECT = 'Which project do you want to link?'
+const SEARCH_TERM = 'Enter the project name (or just part of it):'
+const PROJECT_ID = 'What is the project ID?'
 
 const LINK_BY_NAME = 'Search by full or partial project name'
 const LINK_FROM_LIST = 'Choose from a list of your recently updated projects'
@@ -183,10 +209,10 @@ const expectNotLinked = async (directory: string) => {
 describe('link command interactive prompts', () => {
   beforeEach(() => {
     savedEnv = Object.fromEntries(MANAGED_ENV_KEYS.map((key) => [key, process.env[key]]))
-    askedQuestions.length = 0
+    askedPrompts.length = 0
     exitCalls.length = 0
     logMessages.length = 0
-    promptAnswers.clear()
+    promptAnswers.length = 0
     mockTrack.mockClear()
   })
 
@@ -210,12 +236,12 @@ describe('link command interactive prompts', () => {
 
         await withMockApi(routes, async ({ apiUrl, requests }) => {
           useMockApi(apiUrl)
-          setPromptAnswers({ linkType: LINK_BY_ID, siteId: site.id })
+          queuePromptAnswers(LINK_BY_ID, site.id)
 
           await runLink(builder.directory)
 
-          expect(promptNames()).toEqual(['linkType', 'siteId'])
-          expect(offeredChoices('linkType')).toEqual([LINK_BY_NAME, LINK_FROM_LIST, LINK_BY_ID])
+          expect(askedMessages()).toEqual([HOW_TO_LINK, PROJECT_ID])
+          expect(offeredChoices(HOW_TO_LINK)).toEqual([LINK_BY_NAME, LINK_FROM_LIST, LINK_BY_ID])
           expect(getRequests(requests, `sites/${site.id}`)).toHaveLength(1)
           expect(getRequests(requests, 'sites')).toHaveLength(0)
           await expectLinkedTo(builder.directory, site, 'bySiteId')
@@ -231,7 +257,7 @@ describe('link command interactive prompts', () => {
           routesWithSites([]),
           async ({ apiUrl, requests }) => {
             useMockApi(apiUrl)
-            setPromptAnswers({ linkType: LINK_BY_ID, siteId: 'missing-id' })
+            queuePromptAnswers(LINK_BY_ID, 'missing-id')
 
             await expect(runLink(builder.directory)).rejects.toThrow("Project ID 'missing-id' not found")
 
@@ -253,12 +279,12 @@ describe('link command interactive prompts', () => {
 
         await withMockApi(routesWithSites(sites), async ({ apiUrl, requests }) => {
           useMockApi(apiUrl)
-          setPromptAnswers({ linkType: LINK_BY_NAME, searchTerm: 'unicorn', selectedSite: 'unicorn-staging' })
+          queuePromptAnswers(LINK_BY_NAME, 'unicorn', 'unicorn-staging')
 
           await runLink(builder.directory)
 
-          expect(promptNames()).toEqual(['linkType', 'searchTerm', 'selectedSite'])
-          expect(offeredChoices('selectedSite')).toEqual(['unicorn-prod', 'unicorn-staging'])
+          expect(askedMessages()).toEqual([HOW_TO_LINK, SEARCH_TERM, WHICH_PROJECT])
+          expect(offeredChoices(WHICH_PROJECT)).toEqual(['unicorn-prod', 'unicorn-staging'])
           expect(output()).toContain("Looking for projects with names containing 'unicorn'")
           expect(output()).toContain('Found 2 matching projects!')
           expect(getRequests(requests, 'sites')).toMatchObject([{ query: { name: 'unicorn', filter: 'all' } }])
@@ -275,11 +301,11 @@ describe('link command interactive prompts', () => {
 
         await withMockApi(routesWithSites([site]), async ({ apiUrl, requests }) => {
           useMockApi(apiUrl)
-          setPromptAnswers({ linkType: LINK_BY_NAME, searchTerm: 'unicorn' })
+          queuePromptAnswers(LINK_BY_NAME, 'unicorn')
 
           await runLink(builder.directory)
 
-          expect(promptNames()).toEqual(['linkType', 'searchTerm'])
+          expect(askedMessages()).toEqual([HOW_TO_LINK, SEARCH_TERM])
           expect(getRequests(requests, 'sites')).toMatchObject([{ query: { name: 'unicorn', filter: 'all' } }])
           await expectLinkedTo(builder.directory, site, 'byName')
         })
@@ -292,11 +318,11 @@ describe('link command interactive prompts', () => {
 
         await withMockApi(routesWithSites([]), async ({ apiUrl, requests }) => {
           useMockApi(apiUrl)
-          setPromptAnswers({ linkType: LINK_BY_NAME, searchTerm: 'nothing-here' })
+          queuePromptAnswers(LINK_BY_NAME, 'nothing-here')
 
           await expect(runLink(builder.directory)).rejects.toThrow("No project names found containing 'nothing-here'")
 
-          expect(promptNames()).toEqual(['linkType', 'searchTerm'])
+          expect(askedMessages()).toEqual([HOW_TO_LINK, SEARCH_TERM])
           expect(getRequests(requests, 'sites')).toMatchObject([{ query: { name: 'nothing-here', filter: 'all' } }])
           await expectNotLinked(builder.directory)
         })
@@ -313,12 +339,12 @@ describe('link command interactive prompts', () => {
 
         await withMockApi(routesWithSites(sites), async ({ apiUrl, requests }) => {
           useMockApi(apiUrl)
-          setPromptAnswers({ linkType: LINK_FROM_LIST, selectedSite: 'second-site' })
+          queuePromptAnswers(LINK_FROM_LIST, 'second-site')
 
           await runLink(builder.directory)
 
-          expect(promptNames()).toEqual(['linkType', 'selectedSite'])
-          expect(offeredChoices('selectedSite')).toEqual(['first-site', 'second-site', 'third-site'])
+          expect(askedMessages()).toEqual([HOW_TO_LINK, WHICH_PROJECT])
+          expect(offeredChoices(WHICH_PROJECT)).toEqual(['first-site', 'second-site', 'third-site'])
           expect(output()).toContain('Fetching recently updated projects...')
           expect(getRequests(requests, 'sites')).toHaveLength(1)
           await expectLinkedTo(builder.directory, sites[1], 'fromList')
@@ -332,11 +358,11 @@ describe('link command interactive prompts', () => {
 
         await withMockApi(routesWithSites([]), async ({ apiUrl }) => {
           useMockApi(apiUrl)
-          setPromptAnswers({ linkType: LINK_FROM_LIST })
+          queuePromptAnswers(LINK_FROM_LIST)
 
           await expect(runLink(builder.directory)).rejects.toThrow("You don't have any projects yet")
 
-          expect(promptNames()).toEqual(['linkType'])
+          expect(askedMessages()).toEqual([HOW_TO_LINK])
           await expectNotLinked(builder.directory)
         })
       })
@@ -356,19 +382,14 @@ describe('link command interactive prompts', () => {
           routesWithSites([connected[0], unrelatedSite, connected[1]]),
           async ({ apiUrl, requests }) => {
             useMockApi(apiUrl)
-            setPromptAnswers({
-              linkType: LINK_BY_GIT_REMOTE,
-              selectedSite: `${connected[1].name} - ${connected[1].ssl_url}`,
-            })
+            queuePromptAnswers(LINK_BY_GIT_REMOTE, connected[1].name)
 
             await runLink(builder.directory)
 
-            expect(promptNames()).toEqual(['linkType', 'selectedSite'])
-            expect(offeredChoices('linkType')).toEqual([LINK_BY_GIT_REMOTE, LINK_BY_NAME, LINK_FROM_LIST, LINK_BY_ID])
-            expect(offeredChoices('selectedSite')).toEqual([
-              `${connected[0].name} - ${connected[0].ssl_url}`,
-              `${connected[1].name} - ${connected[1].ssl_url}`,
-            ])
+            expect(askedMessages()).toEqual([HOW_TO_LINK, WHICH_PROJECT])
+            expect(offeredChoices(HOW_TO_LINK)).toEqual([LINK_BY_GIT_REMOTE, LINK_BY_NAME, LINK_FROM_LIST, LINK_BY_ID])
+            expect(offeredChoices(WHICH_PROJECT)).toEqual([connected[0].name, connected[1].name])
+            expect(offeredHints(WHICH_PROJECT)).toEqual([connected[0].ssl_url, connected[1].ssl_url])
             expect(getRequests(requests, 'sites')).toHaveLength(1)
             await expectLinkedTo(builder.directory, connected[1], 'gitRemote')
           },
@@ -384,11 +405,11 @@ describe('link command interactive prompts', () => {
 
         await withMockApi(routesWithSites([unrelatedSite, connected]), async ({ apiUrl, requests }) => {
           useMockApi(apiUrl)
-          setPromptAnswers({ linkType: LINK_BY_GIT_REMOTE })
+          queuePromptAnswers(LINK_BY_GIT_REMOTE)
 
           await runLink(builder.directory)
 
-          expect(promptNames()).toEqual(['linkType'])
+          expect(askedMessages()).toEqual([HOW_TO_LINK])
           expect(getRequests(requests, 'sites')).toHaveLength(1)
           await expectLinkedTo(builder.directory, connected, 'gitRemote')
         })
@@ -401,12 +422,12 @@ describe('link command interactive prompts', () => {
 
         await withMockApi(routesWithSites([unrelatedSite]), async ({ apiUrl }) => {
           useMockApi(apiUrl)
-          setPromptAnswers({ linkType: LINK_BY_GIT_REMOTE })
+          queuePromptAnswers(LINK_BY_GIT_REMOTE)
 
           await expect(runLink(builder.directory)).rejects.toThrow('process.exit(1)')
 
           expect(exitCalls).toEqual([1])
-          expect(promptNames()).toEqual(['linkType'])
+          expect(askedMessages()).toEqual([HOW_TO_LINK])
           expect(output()).toContain('No matching project found')
           expect(output()).toContain(`No project found with the remote ${REPO_URL}`)
           expect(output()).toContain('link --id <project-id>')
