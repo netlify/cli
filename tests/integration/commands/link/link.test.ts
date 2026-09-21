@@ -54,8 +54,6 @@ describe('link command', () => {
   })
   test.todo('should print an error and exit when no project with given `--git-remote-url` is found')
 
-  test.todo("should prompt user when a project matching the local git repo's remote origin HTTPS URL is found")
-
   test('should create gitignore in repository root when is root', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withGit().build()

@@ -21,6 +21,7 @@ const stubInteractiveTerminal = () => {
   stubTTY(process.stdin, true)
   stubTTY(process.stdout, true)
   vi.stubEnv('CI', undefined)
+  vi.stubEnv('TESTING_PROMPTS', undefined)
 }
 
 afterEach(() => {

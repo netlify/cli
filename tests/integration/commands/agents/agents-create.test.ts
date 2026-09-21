@@ -151,6 +151,7 @@ describe('agents:create command', () => {
 
         const result = await childProcess
 
+        expect(result.stdout).toContain('Which agent would you like to use?')
         expect(result.stdout).toContain('Agent task created successfully!')
         expect(result.stdout).toContain('Agent: Claude')
 

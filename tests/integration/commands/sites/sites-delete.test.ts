@@ -147,8 +147,8 @@ describe('sites:delete command', () => {
         const { stdout } = await childProcess
 
         expect(stdout).toContain('The project ID supplied does not match the current working directory project ID')
-        expect(stdout).toContain('Supplied:       "site_id"')
-        expect(stdout).toContain('Current Project: "other_site"')
+        expect(stdout).toMatch(/Supplied:\s+"site_id"/)
+        expect(stdout).toMatch(/Current Project:\s+"other_site"/)
         expect(stdout).toContain(VERIFY_QUESTION)
         expect(stdout).toContain(DELETED_MESSAGE)
         expect(deleteRequests(requests)).toHaveLength(1)
