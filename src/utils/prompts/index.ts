@@ -1,10 +1,10 @@
 import process from 'process'
+import readline from 'readline'
 
 import * as clack from '@clack/prompts'
 import type {
   AutocompleteOptions,
   ConfirmOptions as ClackConfirmOptions,
-  Option,
   PasswordOptions,
   SelectOptions,
   TextOptions,
@@ -13,17 +13,40 @@ import type {
 import { chalk, exit, isOutputSuppressed, NETLIFY_CYAN } from '../command-helpers.js'
 import { EXIT_CODES } from '../exit-codes.js'
 
-export type PromptOption<Value> = Option<Value>
-
 type Cancellable<T> = T | typeof clack.CANCEL_SYMBOL
 type TextValidator = Extract<NonNullable<TextOptions['validate']>, (...args: never[]) => unknown>
 
-// Node only stops reading a piped stdin after a `pause` event. clack closes its readline with the stream already paused,
-// so the handle would keep reading (and keep the process alive) after the last prompt. Cycling resume/pause emits the event.
+// Node only stops reading a piped stdin when it sees a `pause` event, and the prompt leaves the stream
+// already paused, so the handle would keep reading and hold the process open. Emitting the event directly
+// stops the read without resuming first, which would flush input meant for the next prompt.
 const releaseStdin = (): void => {
   if (process.stdin.isTTY) return
-  process.stdin.resume()
-  process.stdin.pause()
+  process.stdin.emit('pause')
+}
+
+// The prompts submit on a carriage return, which is what a terminal sends, but a pipe or a here-doc
+// sends a line feed. Without this, `printf 'value\n' | netlify …` would leave the prompt unanswered.
+let previousKeyName: string | undefined
+const treatLineFeedAsEnter = (_char: string | undefined, key: { name?: string } | undefined): void => {
+  const name = key?.name
+  // A line feed closing a CRLF pair belongs to the carriage return that already submitted.
+  if (key != null && name === 'enter' && previousKeyName !== 'return') {
+    key.name = 'return'
+  }
+  previousKeyName = name
+}
+
+const withPipedInputSupport = async <T>(prompt: () => Promise<T>): Promise<T> => {
+  if (process.stdin.isTTY) {
+    return prompt()
+  }
+  readline.emitKeypressEvents(process.stdin)
+  process.stdin.prependListener('keypress', treatLineFeedAsEnter)
+  try {
+    return await prompt()
+  } finally {
+    process.stdin.removeListener('keypress', treatLineFeedAsEnter)
+  }
 }
 
 const cancelAndExit = (): never => {
@@ -51,9 +74,10 @@ const withDefaultAwareValidation = (options: TextOptions): TextOptions => {
 }
 
 export const promptText = async (options: TextOptions): Promise<string> =>
-  settle(await clack.text(withDefaultAwareValidation(options)))
+  settle(await withPipedInputSupport(() => clack.text(withDefaultAwareValidation(options))))
 
-export const promptPassword = async (options: PasswordOptions): Promise<string> => settle(await clack.password(options))
+export const promptPassword = async (options: PasswordOptions): Promise<string> =>
+  settle(await withPipedInputSupport(() => clack.password(options)))
 
 export type ConfirmOptions = Omit<ClackConfirmOptions, 'signal'> & {
   /** Treat the prompt as declined when it goes unanswered for this many milliseconds. */
@@ -76,7 +100,7 @@ export const promptConfirm = async ({ timeout, ...options }: ConfirmOptions): Pr
         }, timeout)
   let value: Cancellable<boolean>
   try {
-    value = await clack.confirm({ ...options, signal: controller.signal })
+    value = await withPipedInputSupport(() => clack.confirm({ ...options, signal: controller.signal }))
   } finally {
     clearTimeout(timer)
   }
@@ -89,10 +113,10 @@ export const promptConfirm = async ({ timeout, ...options }: ConfirmOptions): Pr
 }
 
 export const promptSelect = async <Value>(options: SelectOptions<Value>): Promise<Value> =>
-  settle(await clack.select(options))
+  settle(await withPipedInputSupport(() => clack.select(options)))
 
 export const promptAutocomplete = async <Value>(options: AutocompleteOptions<Value>): Promise<Value> =>
-  settle(await clack.autocomplete(options))
+  settle(await withPipedInputSupport(() => clack.autocomplete(options)))
 
 export const intro = (title: string): void => {
   if (isOutputSuppressed()) return
@@ -102,9 +126,4 @@ export const intro = (title: string): void => {
 export const outro = (message: string): void => {
   if (isOutputSuppressed()) return
   clack.outro(message)
-}
-
-export const note = (message: string, title?: string): void => {
-  if (isOutputSuppressed()) return
-  clack.note(message, title)
 }

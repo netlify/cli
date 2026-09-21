@@ -94,6 +94,27 @@ describe('sites:delete command', () => {
     })
   })
 
+  test('accepts an answer piped with a line feed, as a shell script sends it', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
+        const childProcess = execa(
+          cliPath,
+          ['sites:delete', 'site_id'],
+          getCLIOptions({ apiUrl, builder, env: promptingEnv }),
+        )
+
+        handleQuestions(childProcess, [{ question: CONFIRM_QUESTION, answer: 'y\n' }])
+
+        const { stdout } = await childProcess
+
+        expect(stdout).toContain(DELETED_MESSAGE)
+        expect(deleteRequests(requests)).toHaveLength(1)
+      })
+    })
+  })
+
   test('skips the confirmation prompt with --force', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()

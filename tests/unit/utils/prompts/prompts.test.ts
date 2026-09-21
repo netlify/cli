@@ -12,7 +12,6 @@ const { mockClack, mockExit, mockIsOutputSuppressed } = vi.hoisted(() => ({
     cancel: vi.fn(),
     intro: vi.fn(),
     outro: vi.fn(),
-    note: vi.fn(),
   },
   mockExit: vi.fn((code?: number) => {
     throw new Error(`exit(${String(code)})`)
@@ -32,7 +31,6 @@ vi.mock('../../../../src/utils/command-helpers.js', async (importOriginal) => ({
 
 import {
   intro,
-  note,
   outro,
   promptAutocomplete,
   promptConfirm,
@@ -188,25 +186,38 @@ describe('promptSelect, promptAutocomplete, promptPassword', () => {
 })
 
 describe('piped stdin', () => {
-  test('cycles resume/pause after a prompt so a piped stdin does not keep the process alive', async () => {
+  test('signals a pause after a prompt so a piped stdin does not keep the process alive', async () => {
     setStdinTTY(undefined)
     mockClack.text.mockResolvedValue('value')
+    const paused = vi.fn()
+    process.stdin.on('pause', paused)
 
-    await promptText({ message: 'Anything' })
+    try {
+      await promptText({ message: 'Anything' })
 
-    expect(resumeSpy).toHaveBeenCalledOnce()
-    expect(pauseSpy).toHaveBeenCalledOnce()
-    expect(resumeSpy.mock.invocationCallOrder[0]).toBeLessThan(pauseSpy.mock.invocationCallOrder[0] ?? 0)
+      // Emitting the event is what makes Node stop reading; resuming first would flush input that a
+      // following prompt still has to read.
+      expect(paused).toHaveBeenCalledOnce()
+    } finally {
+      process.stdin.off('pause', paused)
+    }
   })
 
   test('leaves a TTY stdin alone', async () => {
     setStdinTTY(true)
     mockClack.confirm.mockResolvedValue(true)
+    const paused = vi.fn()
+    process.stdin.on('pause', paused)
 
-    await promptConfirm({ message: 'Continue?' })
+    try {
+      await promptConfirm({ message: 'Continue?' })
 
-    expect(resumeSpy).not.toHaveBeenCalled()
-    expect(pauseSpy).not.toHaveBeenCalled()
+      expect(paused).not.toHaveBeenCalled()
+      expect(resumeSpy).not.toHaveBeenCalled()
+      expect(pauseSpy).not.toHaveBeenCalled()
+    } finally {
+      process.stdin.off('pause', paused)
+    }
   })
 })
 
@@ -219,21 +230,13 @@ describe('branding helpers', () => {
     expect(mockClack.intro.mock.calls[0]?.[0]).toContain('Netlify Link')
   })
 
-  test('note forwards message and title', () => {
-    note('body', 'Heads up')
-
-    expect(mockClack.note).toHaveBeenCalledWith('body', 'Heads up')
-  })
-
   test('write nothing when output is suppressed, so --json output stays machine-readable', () => {
     mockIsOutputSuppressed.mockReturnValue(true)
 
     intro('Netlify Link')
     outro('done')
-    note('body', 'Heads up')
 
     expect(mockClack.intro).not.toHaveBeenCalled()
     expect(mockClack.outro).not.toHaveBeenCalled()
-    expect(mockClack.note).not.toHaveBeenCalled()
   })
 })
