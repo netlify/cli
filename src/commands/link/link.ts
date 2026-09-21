@@ -332,7 +332,7 @@ Link by project name:
   ${chalk.cyanBright(`${netlifyCommand()} link --name <project-name>`)}
 
 Link by git remote URL:
-  ${chalk.cyanBright(`${netlifyCommand()} link --gitRemoteUrl <url>`)}
+  ${chalk.cyanBright(`${netlifyCommand()} link --git-remote-url <url>`)}
 
 To search for projects:
   ${chalk.cyanBright(`${netlifyCommand()} sites:search <search-term>`)}

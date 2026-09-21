@@ -58,12 +58,8 @@ export const completionGenerate = async (_options: OptionValues, command: BaseCo
     log(chalk.bold.cyan(`\n${AUTOLOAD_COMPINIT}\n`))
     const compinitAdded = await promptConfirm({ message: `Would you like to add it?` })
     if (compinitAdded) {
-      fs.readFile(zshConfigFilepath, 'utf8', (_err, data) => {
-        const updatedZshFile = AUTOLOAD_COMPINIT + '\n' + data
-
-        fs.writeFileSync(zshConfigFilepath, updatedZshFile, 'utf8')
-      })
-
+      const zshConfig = fs.readFileSync(zshConfigFilepath, 'utf8')
+      fs.writeFileSync(zshConfigFilepath, `${AUTOLOAD_COMPINIT}\n${zshConfig}`, 'utf8')
       log('Successfully added compinit line to .zshrc')
     }
   }

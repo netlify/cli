@@ -124,11 +124,7 @@ const formatTemplateOptions = async function (lang, funcType) {
         return priorityDiff
       }
 
-      // This branch is needed because `Array.prototype.sort` was not stable
-      // until Node 11, so the original sorting order from `fs.readdirSync`
-      // was not respected. We can simplify this once we drop support for
-      // Node 10.
-      return templateA - templateB
+      return 0
     })
     .map((t) => {
       t.lang = lang
@@ -460,7 +456,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     try {
       await downloadFromURL(command, options, argumentName, functionsDir)
     } catch {
-      return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
+      return logAndThrowError(`${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
     }
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
@@ -667,7 +663,7 @@ const registerEFInToml = async (funcName, options) => {
   const functionRegister = `\n\n[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
 
   try {
-    fs.promises.appendFile(configFilePath, functionRegister)
+    await fs.promises.appendFile(configFilePath, functionRegister)
     log(
       `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`${relConfigFilePath}\` file.`,
     )

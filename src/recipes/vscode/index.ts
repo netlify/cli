@@ -81,7 +81,7 @@ export const run = async ({ config, repositoryRoot }) => {
     if (!(await hasDenoVSCodeExt(repositoryRoot))) {
       const denoExtConfirm = await getDenoExtPrompt()
       if (denoExtConfirm) {
-        getDenoVSCodeExt(repositoryRoot)
+        await getDenoVSCodeExt(repositoryRoot)
       }
     }
   } catch {

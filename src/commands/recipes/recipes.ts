@@ -5,6 +5,7 @@ import { closest } from 'fastest-levenshtein'
 
 import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.js'
 import { promptConfirm } from '../../utils/prompts/index.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import BaseCommand from '../base-command.js'
 
 import { getRecipe, listRecipes } from './common.js'
@@ -51,6 +52,10 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
     const recipes = await listRecipes()
     const recipeNames = recipes.map(({ name }) => name)
     const suggestion = closest(recipeName, recipeNames)
+    if (!isInteractive()) {
+      log(`Did you mean ${chalk.blue(suggestion)}?`)
+      return
+    }
     const applySuggestion = await promptConfirm({
       message: `Did you mean ${chalk.blue(suggestion)}?`,
       initialValue: false,

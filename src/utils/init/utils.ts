@@ -75,7 +75,7 @@ const promptBuildSettings = async ({
     defaultBaseDir === ''
       ? undefined
       : await promptText({
-          message: 'Base directory `(blank for current dir):',
+          message: 'Base directory (blank for current dir):',
           placeholder: defaultBaseDir,
           defaultValue: defaultBaseDir,
         })

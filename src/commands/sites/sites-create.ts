@@ -56,7 +56,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   const MAX_NAME_RETRIES = 2
 
   const tryCreateSiteInteractive = async (nameToTry: string | undefined): Promise<void> => {
-    const { name: attemptName } = await getSiteNameInput(nameToTry)
+    const attemptName = nameToTry ?? (await getSiteNameInput(undefined)).name
     const body: { name?: string } = {}
     if (attemptName.trim()) {
       body.name = attemptName.trim()

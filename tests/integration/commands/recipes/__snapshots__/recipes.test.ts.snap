@@ -14,10 +14,5 @@ exports[`commands/recipes > Shows a list of all the available recipes 1`] = `
 
 exports[`commands/recipes > Suggests closest matching recipe on typo 1`] = `
 "⬥ vsc is not a valid recipe name.
-[?25l|
-*  Did you mean vscode?
-|    Yes / > No
-—
-
-[?25h"
+Did you mean vscode?"
 `;
