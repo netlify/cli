@@ -3,6 +3,11 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     include: ['tests/**/*.test.js', 'tests/**/*.test.ts'],
+    env: {
+      // Prompts fall back to ASCII glyphs when `TERM` is `linux`, which would make snapshots
+      // depend on the terminal the test run was recorded in.
+      TERM: 'xterm-256color',
+    },
     testTimeout: 90_000,
     hookTimeout: 90_000,
     server: {
