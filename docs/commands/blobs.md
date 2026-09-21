@@ -111,9 +111,9 @@ netlify blobs:list
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output list contents as JSON
 - `prefix` (*string*) - A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned
-- `region` (*string*) - The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `region` (*string*) - The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used
 
 ---
 ## `blobs:set`
