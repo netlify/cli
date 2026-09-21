@@ -53,7 +53,7 @@ describe('createGitHubClient', () => {
     })
   })
 
-  test('throws a GitHubApiError carrying status and an Octokit-style message', async () => {
+  test('throws a GitHubApiError exposing status and structured error details', async () => {
     mockFetch(422, {
       message: 'Validation Failed',
       errors: [{ resource: 'Hook', code: 'custom', message: 'Hook already exists on this repository' }],
@@ -65,7 +65,23 @@ describe('createGitHubClient', () => {
 
     expect(error).toBeInstanceOf(GitHubApiError)
     expect((error as GitHubApiError).status).toBe(422)
-    expect((error as GitHubApiError).message).toContain('Hook already exists on this repository')
-    expect((error as GitHubApiError).json).toMatchObject({ message: 'Validation Failed' })
+    expect((error as GitHubApiError).message).toBe('Validation Failed')
+    expect((error as GitHubApiError).errors).toEqual([
+      { resource: 'Hook', code: 'custom', message: 'Hook already exists on this repository' },
+    ])
+    expect((error as GitHubApiError).hasError((detail) => detail.resource === 'Hook')).toBe(true)
+    expect((error as GitHubApiError).hasError((detail) => detail.resource === 'Repository')).toBe(false)
+  })
+
+  test('falls back to a generic message and empty details when the body has neither', async () => {
+    mockFetch(500, undefined)
+
+    const error = await createGitHubClient('abc123')
+      .getRepo({ owner: 'o', repo: 'r' })
+      .catch((error_: unknown) => error_)
+
+    expect((error as GitHubApiError).status).toBe(500)
+    expect((error as GitHubApiError).message).toBe('GitHub API request failed')
+    expect((error as GitHubApiError).errors).toEqual([])
   })
 })

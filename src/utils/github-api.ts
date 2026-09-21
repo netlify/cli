@@ -23,30 +23,39 @@ export type GitHubDeployKey = JsonResponse<'repos/create-deploy-key', 201>
 type CreateWebhookBody = JsonRequestBody<'repos/create-webhook'>
 type CreateDeployKeyBody = JsonRequestBody<'repos/create-deploy-key'>
 
+export interface GitHubErrorDetail {
+  resource?: string
+  field?: string
+  code?: string
+  message?: string
+}
+
+interface GitHubErrorBody {
+  message?: string
+  errors?: GitHubErrorDetail[]
+}
+
 export class GitHubApiError extends Error {
   status: number
+  // Raw parsed body, consumed by `formatErrorMessage`.
   json: unknown
+  errors: GitHubErrorDetail[]
 
   constructor(status: number, body: unknown) {
-    super(formatBody(body))
+    const parsed: GitHubErrorBody | undefined = typeof body === 'object' && body !== null ? body : undefined
+    super(parsed?.message ?? (typeof body === 'string' && body.length > 0 ? body : `GitHub API request failed`))
     this.name = 'GitHubApiError'
     this.status = status
     this.json = body
+    this.errors = Array.isArray(parsed?.errors) ? parsed.errors : []
+  }
+
+  hasError(predicate: (detail: GitHubErrorDetail) => boolean): boolean {
+    return this.errors.some(predicate)
   }
 }
 
-// Mirrors the message Octokit built so existing string matching on errors keeps working.
-const formatBody = (body: unknown): string => {
-  if (typeof body === 'string') return body
-  if (typeof body === 'object' && body !== null && 'message' in body) {
-    const { message, errors } = body as { message: string; errors?: unknown[] }
-    if (Array.isArray(errors)) {
-      return `${message}: ${errors.map((error) => JSON.stringify(error)).join(', ')}`
-    }
-    return message
-  }
-  return `Unknown error: ${JSON.stringify(body)}`
-}
+export const isGitHubApiError = (error: unknown): error is GitHubApiError => error instanceof GitHubApiError
 
 const GITHUB_API_URL = 'https://api.github.com'
 

@@ -2,7 +2,7 @@ import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, logAndThrowError, log } from '../command-helpers.js'
 import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'
-import { createGitHubClient, type GitHubClient } from '../github-api.js'
+import { createGitHubClient, isGitHubApiError, type GitHubClient } from '../github-api.js'
 import type { GlobalConfigStore } from '../types.js'
 import type { BaseCommand } from '../../commands/index.js'
 
@@ -63,8 +63,7 @@ const addDeployKey = async ({
     return key
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed adding GitHub deploy key', error })
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error.status === 404) {
+    if (isGitHubApiError(error) && error.status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
     }
@@ -88,8 +87,7 @@ const getGitHubRepo = async ({
     })
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed retrieving GitHub repository information', error })
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error.status === 404) {
+    if (isGitHubApiError(error) && error.status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and accessible by ${owner}`
     }
@@ -121,6 +119,11 @@ const hookExists = async ({
   }
 }
 
+const isDuplicateHookError = (error: unknown): boolean =>
+  isGitHubApiError(error) &&
+  error.status === 422 &&
+  error.hasError((detail) => detail.resource === 'Hook' && (detail.message?.includes('already exists') ?? false))
+
 const addDeployHook = async ({
   deployHook,
   github,
@@ -147,12 +150,10 @@ const addDeployHook = async ({
         active: true,
       })
     } catch (error) {
-      // Ignore exists error if the list doesn't return all installed hooks
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      if (!error.message.includes('Hook already exists on this repository')) {
+      // `listWebhooks` only reads the first page, so a hook we missed surfaces here as a 422.
+      if (!isDuplicateHookError(error)) {
         let message = formatErrorMessage({ message: 'Failed creating repo hook', error })
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.status === 404) {
+        if (isGitHubApiError(error) && error.status === 404) {
           const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
           message = `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
         }
