@@ -19,6 +19,10 @@ describe('matchesRepoUrl', () => {
     expect(matchesRepoUrl('https://git.example-host.internal/acme/widget.git', 'acme/widget')).toBe(true)
   })
 
+  it('matches when the bare `owner/repo` stored value has a `.git` suffix', () => {
+    expect(matchesRepoUrl('git@git.example-host.internal:acme/widget.git', 'acme/widget.git')).toBe(true)
+  })
+
   it('does not match a bare `owner/repo` stored value for a different owner/repo', () => {
     expect(matchesRepoUrl('git@git.example-host.internal:acme/widget.git', 'someone-else/widget')).toBe(false)
   })

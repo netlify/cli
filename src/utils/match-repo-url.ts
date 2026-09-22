@@ -2,11 +2,6 @@ import parseGithubUrl from 'parse-github-url'
 
 const BARE_OWNER_REPO_PATTERN = /^[^\s/]+\/[^\s/]+$/
 
-/**
- * Checks whether a git remote URL matches a manual provider site's stored repo_url,
- * which may be a bare owner/repo path instead of a full URL. Intended as a fallback
- * to exact matching, gated on build_settings.provider === 'manual'.
- */
 export const matchesRepoUrl = (inputUrl: string, storedRepoUrl: string | undefined): boolean => {
   if (!storedRepoUrl) {
     return false
@@ -18,7 +13,8 @@ export const matchesRepoUrl = (inputUrl: string, storedRepoUrl: string | undefin
   }
 
   if (BARE_OWNER_REPO_PATTERN.test(storedRepoUrl)) {
-    return storedRepoUrl.toLowerCase() === `${parsedInput.owner}/${parsedInput.name}`.toLowerCase()
+    const normalizedStoredRepoUrl = storedRepoUrl.replace(/\.git$/i, '')
+    return normalizedStoredRepoUrl.toLowerCase() === `${parsedInput.owner}/${parsedInput.name}`.toLowerCase()
   }
 
   const parsedStored = parseGithubUrl(storedRepoUrl)
