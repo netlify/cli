@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs'
 import path, { join } from 'path'
 
-import { NetlifyConfig, type GeneratedFunction } from '@netlify/build'
+import { NetlifyConfig, type GeneratedFunction, type startDev } from '@netlify/build'
 
 import BaseCommand from '../commands/base-command.js'
 import { $TSFixMe } from '../commands/types.js'
@@ -57,7 +57,7 @@ type RunNetlifyBuildOptions = {
 }
 
 export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline: 'dev' }): Promise<{
-  configMutations: unknown
+  configMutations: Awaited<ReturnType<typeof startDev>>['configMutations']
   generatedFunctions: GeneratedFunction[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }>
@@ -93,7 +93,7 @@ export async function runNetlifyBuild({
     dry: options.dry,
     debug: options.debug,
     context: options.context,
-    mode: 'cli',
+    mode: 'cli' as const,
     telemetry: false,
     buffer: false,
     featureFlags: getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
