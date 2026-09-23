@@ -479,6 +479,9 @@ const deployProgressCb = function () {
   }
 }
 
+// `--env` is an array of deploy variables, not Netlify Build's `env` map, which these steps never read
+const withoutDeployEnvironment = ({ env: _deployEnvironment, ...options }: DeployOptionValues) => options
+
 const uploadDeployBlobs = async ({
   cachedConfig,
   deployId,
@@ -506,7 +509,7 @@ const uploadDeployBlobs = async ({
 
   const blobsToken = token || undefined
   const { success } = await runCoreSteps(['blobs_upload'], {
-    ...options,
+    ...withoutDeployEnvironment(options),
     // We log our own progress so we don't want this as well. Plus, this logs much of the same
     // information as the build that (likely) came before this as part of the deploy build.
     quiet: options.debug ?? true,
@@ -791,7 +794,7 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
   })
 
   const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], {
-    ...options,
+    ...withoutDeployEnvironment(options),
     packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,

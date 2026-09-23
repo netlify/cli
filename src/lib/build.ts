@@ -94,7 +94,7 @@ export interface CachedConfig {
   headersPath?: unknown
   logs?: unknown
   redirectsPath?: unknown
-  token?: unknown
+  token?: string
 }
 
 export interface DefaultConfig {
