@@ -249,8 +249,8 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     },
   })
 
-  // FIXME(serhalp): `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
-  const mutatedConfig: typeof config = applyMutations(config, configMutations)
+  // `applyMutations` returns a plain object type, but mutations only replace the config's mutable properties
+  const mutatedConfig = applyMutations(config, configMutations) as typeof config
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY?.value)
