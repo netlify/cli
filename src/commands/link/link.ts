@@ -4,12 +4,11 @@ import inquirer from 'inquirer'
 import { isEmpty } from '../../utils/object-utilities.js'
 import type { NetlifyAPI } from '@netlify/api'
 
-import { listSites } from '../../lib/api.js'
+import { findSiteByName, listSites, listSitesByRepoUrl } from '../../lib/api.js'
 import { startSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
-import { siteMatchesRepoUrl } from '../../utils/match-repo-url.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
@@ -20,18 +19,7 @@ const findSiteByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<Site
   log()
   const spinner = startSpinner({ text: `Looking for projects connected to '${repoUrl}'` })
 
-  const sites = await listSites({ api, options: { filter: 'all' } })
-
-  if (sites.length === 0) {
-    spinner.error()
-    return logAndThrowError(
-      `You don't have any projects yet. Run ${chalk.cyanBright(
-        `${netlifyCommand()} sites:create`,
-      )} to create a project.`,
-    )
-  }
-
-  const matchingSites = sites.filter((site) => siteMatchesRepoUrl(site, repoUrl))
+  const matchingSites = await listSitesByRepoUrl(api, repoUrl)
 
   if (matchingSites.length === 0) {
     spinner.error()
@@ -323,15 +311,11 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
       kind: 'byId',
     })
   } else if (options.name) {
-    let results: SiteInfo[] = []
+    let matchingSiteData: SiteInfo | undefined
     try {
-      results = await listSites({
-        api,
-        options: {
-          name: options.name,
-          filter: 'all',
-        },
-      })
+      matchingSiteData =
+        (await findSiteByName(api, options.name)) ??
+        (await listSites({ api, options: { name: options.name, filter: 'all', maxPages: 1 } }))[0]
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
         return logAndThrowError(new Error(`${options.name} not found`))
@@ -340,7 +324,7 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
       }
     }
 
-    if (results.length === 0) {
+    if (!matchingSiteData) {
       return logAndThrowError(`No projects found named ${options.name}.
 
 To search for projects:
@@ -350,13 +334,12 @@ To link by project ID:
   ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}`)
     }
 
-    const matchingSiteData = results.find((site: SiteInfo) => site.name === options.name) || results[0]
     state.set('siteId', matchingSiteData.id)
 
     log(`${chalk.green('✔')} Linked to ${matchingSiteData.name}`)
 
     await track('sites_linked', {
-      siteId: (matchingSiteData && matchingSiteData.id) || siteId,
+      siteId: matchingSiteData.id || siteId,
       linkType: 'manual',
       kind: 'byName',
     })

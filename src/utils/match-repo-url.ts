@@ -1,40 +1,55 @@
-import parseGithubUrl from 'parse-github-url'
-
 import type { SiteInfo } from './types.js'
 
-const BARE_OWNER_REPO_PATTERN = /^[^\s/]+\/[^\s/]+$/
-
-export const matchesRepoUrl = (inputUrl: string, storedRepoUrl: string | undefined): boolean => {
-  if (!storedRepoUrl) {
-    return false
-  }
-
-  const parsedInput = parseGithubUrl(inputUrl)
-  if (!parsedInput?.owner || !parsedInput.name) {
-    return false
-  }
-
-  if (BARE_OWNER_REPO_PATTERN.test(storedRepoUrl)) {
-    const normalizedStoredRepoUrl = storedRepoUrl.replace(/\.git$/i, '')
-    return normalizedStoredRepoUrl.toLowerCase() === `${parsedInput.owner}/${parsedInput.name}`.toLowerCase()
-  }
-
-  const parsedStored = parseGithubUrl(storedRepoUrl)
-  if (!parsedStored?.owner || !parsedStored.name || !parsedStored.host) {
-    return false
-  }
-
-  return (
-    parsedInput.host?.toLowerCase() === parsedStored.host.toLowerCase() &&
-    parsedInput.owner.toLowerCase() === parsedStored.owner.toLowerCase() &&
-    parsedInput.name.toLowerCase() === parsedStored.name.toLowerCase()
-  )
+interface ParsedRepoUrl {
+  host?: string
+  path: string
 }
 
+const URL_WITH_SCHEME = /^[a-z][a-z\d+.-]*:\/\//i
+const SCP_LIKE_URL = /^(?:[^@/\s]+@)?(?<host>[^:/\s]+):(?<path>[^/].*)$/
+
+// Accepts https, ssh, scp-like (`git@host:owner/repo`) and bare `owner/repo` forms.
+export const parseRepoUrl = (url: string): ParsedRepoUrl | undefined => {
+  const raw = url.trim()
+  let host: string | undefined
+  let path = raw
+
+  if (URL_WITH_SCHEME.test(raw)) {
+    try {
+      const parsed = new URL(raw)
+      host = parsed.hostname
+      path = parsed.pathname
+    } catch {
+      return undefined
+    }
+  } else {
+    const scpMatch = SCP_LIKE_URL.exec(raw)
+    if (scpMatch?.groups) {
+      host = scpMatch.groups.host
+      path = scpMatch.groups.path
+    }
+  }
+
+  const normalizedPath = path.replace(/^\/+|\/+$/g, '').replace(/\.git$/i, '')
+  if (normalizedPath === '') {
+    return undefined
+  }
+
+  return { host: host?.toLowerCase(), path: normalizedPath }
+}
+
+// Mirrors the API's `repo_url` site filter, so results agree whether or not the API applied it.
 export const siteMatchesRepoUrl = (site: SiteInfo, repoUrl: string): boolean => {
-  const buildSettings = site.build_settings
-  return (
-    repoUrl === buildSettings?.repo_url ||
-    (buildSettings?.provider === 'manual' && matchesRepoUrl(repoUrl, buildSettings.repo_url))
-  )
+  const target = parseRepoUrl(repoUrl)
+  const stored = parseRepoUrl(site.build_settings?.repo_url ?? '')
+  if (target === undefined || stored?.path.toLowerCase() !== target.path.toLowerCase()) {
+    return false
+  }
+
+  // Manual repos may store a bare `owner/repo`, which names that repo on any host.
+  if (site.build_settings?.provider === 'manual' && stored.host === undefined) {
+    return true
+  }
+
+  return target.host !== undefined && stored.host === target.host
 }
