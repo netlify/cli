@@ -40,3 +40,9 @@ export const listSites = async ({
   // FIXME(serhalp): See above
   return sites as unknown[] as SiteInfo[]
 }
+
+export const findSiteByName = async (api: NetlifyAPI, name: string): Promise<SiteInfo | undefined> => {
+  const sites = await api.listSites({ name, filter: 'all' })
+  // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
+  return (sites as unknown[] as SiteInfo[]).find((site) => site.name === name)
+}

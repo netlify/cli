@@ -4,13 +4,14 @@ import { LocalState } from '@netlify/dev-utils'
 import inquirer from 'inquirer'
 
 import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js'
-import { chalk, logAndThrowError, log, getToken, netlifyCommand, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, getToken, netlifyCommand } from '../../utils/command-helpers.js'
 import { runGit } from '../../utils/run-git.js'
 import execa from '../../utils/execa.js'
 import type BaseCommand from '../base-command.js'
 import { NETLIFY_GIT_HOST } from '../git-credential/git-credential.js'
 import { link } from '../link/link.js'
 import type { CloneOptionValues } from './option_values.js'
+import { findSiteByName } from '../../lib/api.js'
 import { startSpinner } from '../../lib/spinner.js'
 import type { SiteInfo } from '../../utils/types.js'
 
@@ -104,21 +105,6 @@ const parseNetlifySiteInput = (input: string): { isNetlifySite: true; siteName: 
   }
 
   return { isNetlifySite: false }
-}
-
-// FIXME(serhalp): This suffers from the same egregious performance problem as `link`/`init`.
-// We should fix it rather than keep spreading it.
-const lookupSiteByName = async (api: BaseCommand['netlify']['api'], siteName: string): Promise<SiteInfo | null> => {
-  try {
-    const sites = await api.listSites({ name: siteName, filter: 'all' })
-    const site = sites.find((s) => s.name === siteName)
-    return site ? (site as SiteInfo) : null
-  } catch (error) {
-    if ((error as APIError).status === 404) {
-      return null
-    }
-    throw error
-  }
 }
 
 export const finalizeClone = async (
@@ -252,7 +238,7 @@ export const clone = async (
   if (parsedInput.isNetlifySite) {
     const siteSpinner = startSpinner({ text: `Looking up site ${chalk.cyan(parsedInput.siteName)}...` })
 
-    const siteInfo = await lookupSiteByName(api, parsedInput.siteName)
+    const siteInfo = await findSiteByName(api, parsedInput.siteName)
 
     if (!siteInfo) {
       siteSpinner.error()

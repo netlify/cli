@@ -1,5 +1,6 @@
 import type { Command } from 'commander'
 
+import { findSiteByName } from '../../lib/api.js'
 import { logAndThrowError, warn, type APIError } from '../command-helpers.js'
 import type BaseCommand from '../../commands/base-command.js'
 
@@ -30,17 +31,12 @@ const requiresSiteInfoWithProject = async (command: Command) => {
       const error = error_ as APIError
       if (error.status === 404) {
         try {
-          const sites = await api.listSites({
-            filter: 'all',
-            name: options.project,
-          })
-          const matchedSite = sites.find((site) => site.name === options.project)
+          const matchedSite = await findSiteByName(api, options.project)
 
           if (matchedSite?.id) {
             siteId = matchedSite.id
             baseCommand.netlify.site.id = siteId
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-            baseCommand.netlify.siteInfo = matchedSite as any
+            baseCommand.netlify.siteInfo = matchedSite
           } else {
             return logAndThrowError(
               `Project "${options.project}" not found. Make sure you have access to this project.`,
