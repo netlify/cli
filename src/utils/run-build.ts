@@ -57,7 +57,8 @@ type RunNetlifyBuildOptions = {
 }
 
 export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline: 'dev' }): Promise<{
-  configMutations: Awaited<ReturnType<typeof startDev>>['configMutations']
+  // Only `startDev()`'s error result lacks it, and that throws below
+  configMutations: NonNullable<Awaited<ReturnType<typeof startDev>>['configMutations']>
   generatedFunctions: GeneratedFunction[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }>
@@ -96,7 +97,8 @@ export async function runNetlifyBuild({
     mode: 'cli' as const,
     telemetry: false,
     buffer: false,
-    featureFlags: getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
+    // Site feature flags can hold string and number variants, which Netlify Build types as booleans but passes on as-is
+    featureFlags: getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo) as Record<string, boolean>,
     offline: options.offline,
     packagePath: command.workspacePackage,
     cwd: cachedConfig.buildDir,
@@ -148,7 +150,6 @@ export async function runNetlifyBuild({
     }
 
     // Run Netlify Build using the main entry point.
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ outputConfigPath: string; save... Remove this comment to see the full error message
     const { netlifyConfig, success, generatedFunctions } = await buildSite(buildSiteOptions)
 
     if (!success) {
