@@ -827,8 +827,7 @@ export default class BaseCommand extends Command {
     const flags = this.opts()
 
     try {
-      // FIXME(serhalp): Type this in `netlify/build`! This is blocking a ton of proper types across the CLI.
-      return await resolveConfig({
+      const resolvedConfig = await resolveConfig({
         accountId: this.accountId,
         config: configFilePath,
         packagePath: packagePath,
@@ -837,7 +836,8 @@ export default class BaseCommand extends Command {
         context: flags.context || process.env.CONTEXT || this.getDefaultContext(),
         debug: flags.debug,
         siteId: this.siteId,
-        token: token,
+        // `@netlify/config` drops `null` options, so `undefined` behaves the same
+        token: token ?? undefined,
         mode: 'cli',
         host: host,
         pathPrefix: pathPrefix,
@@ -846,6 +846,9 @@ export default class BaseCommand extends Command {
         siteFeatureFlagPrefix: 'cli',
         featureFlags: this.featureFlags,
       })
+      // `CachedConfig` is stricter than `@netlify/config`'s `Config`: it assumes `siteInfo` and account fields that the
+      // API may leave out, and that are absent offline. Adopting `Config` means handling those across the CLI.
+      return resolvedConfig as unknown as CachedConfig
     } catch (error_) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       const isUserError = error_.customErrorInfo !== undefined && error_.customErrorInfo.type === 'resolveConfig'
