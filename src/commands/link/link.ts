@@ -9,6 +9,7 @@ import { startSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
+import { matchesRepoUrl } from '../../utils/match-repo-url.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
@@ -30,7 +31,11 @@ const findSiteByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<Site
     )
   }
 
-  const matchingSites = sites.filter(({ build_settings: buildSettings = {} }) => repoUrl === buildSettings.repo_url)
+  const matchingSites = sites.filter(
+    ({ build_settings: buildSettings = {} }) =>
+      repoUrl === buildSettings.repo_url ||
+      (buildSettings.provider === 'manual' && matchesRepoUrl(repoUrl, buildSettings.repo_url)),
+  )
 
   if (matchingSites.length === 0) {
     spinner.error()
