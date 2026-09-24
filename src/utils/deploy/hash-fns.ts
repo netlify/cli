@@ -14,6 +14,11 @@ import { hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
 
+interface ServerBundle {
+  path: string
+  region?: string
+}
+
 const getFunctionZips = async ({
   command,
   directories,
@@ -32,7 +37,7 @@ const getFunctionZips = async ({
   skipFunctionsCache?: boolean | undefined
   statusCb: $TSFixMe
   tmpDir: $TSFixMe
-}): Promise<(FunctionResult & { buildData?: unknown })[]> => {
+}): Promise<{ functions: (FunctionResult & { buildData?: unknown })[]; server?: ServerBundle }> => {
   statusCb({
     type: 'functions-manifest',
     msg: 'Looking for a functions cache...',
@@ -41,9 +46,11 @@ const getFunctionZips = async ({
 
   if (manifestPath) {
     try {
-      // read manifest.json file
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'Buffer' is not assignable to par... Remove this comment to see the full error message
-      const { functions, timestamp } = JSON.parse(await readFile(manifestPath))
+      const { functions, server, timestamp } = JSON.parse(await readFile(manifestPath, 'utf-8')) as {
+        functions: (FunctionResult & { buildData?: unknown })[]
+        server?: ServerBundle
+        timestamp: number
+      }
       const manifestAge = Date.now() - timestamp
 
       if (manifestAge > MANIFEST_FILE_TTL) {
@@ -56,7 +63,7 @@ const getFunctionZips = async ({
         phase: 'stop',
       })
 
-      return functions
+      return { functions, server }
     } catch {
       statusCb({
         type: 'functions-manifest',
@@ -76,11 +83,13 @@ const getFunctionZips = async ({
     })
   }
 
-  return await zipFunctions(directories, tmpDir, {
+  const functions = await zipFunctions(directories, tmpDir, {
     basePath: rootDir,
     configFileDirectories: [command.getPathInProject(INTERNAL_FUNCTIONS_FOLDER)],
     config: functionsConfig,
   })
+
+  return { functions }
 }
 
 const trafficRulesConfig = (trafficRules?: TrafficRules) => {
@@ -133,6 +142,8 @@ const hashFns = async (
   shaMap?: Record<string, $TSFixMe> | undefined
   fnShaMap?: Record<string, $TSFixMe[]> | undefined
   fnConfig?: Record<string, $TSFixMe> | undefined
+  server?: { sha: string; region?: string } | undefined
+  serverShaMap?: Record<string, $TSFixMe[]> | undefined
 }> => {
   // Exit early if no functions directories are configured.
   if (directories.length === 0) {
@@ -143,7 +154,7 @@ const hashFns = async (
     throw new Error('Missing tmpDir directory for zipping files')
   }
 
-  const functionZips = await getFunctionZips({
+  const { functions: functionZips, server: serverBundle } = await getFunctionZips({
     command,
     directories,
     functionsConfig,
@@ -247,7 +258,49 @@ const hashFns = async (
   const manifestCollector = manifestCollectorCtor(functions, fnShaMap, { statusCb })
 
   await pipeline([functionStream, hasher, manifestCollector])
-  return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
+
+  const { server, serverShaMap } = await hashServer(serverBundle, { concurrentHash, hashAlgorithm, statusCb, tmpDir })
+
+  return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig, server, serverShaMap }
+}
+
+// A deploy has at most one server, so it is declared on its own rather than in a
+// map keyed by name. It still goes through the same hashing pipeline, so the
+// upload flow can treat it like any other artifact.
+const hashServer = async (
+  serverBundle: ServerBundle | undefined,
+  {
+    concurrentHash,
+    hashAlgorithm,
+    statusCb,
+    tmpDir,
+  }: { concurrentHash?: number; hashAlgorithm?: string; statusCb: $TSFixMe; tmpDir: string },
+): Promise<{ server?: { sha: string; region?: string }; serverShaMap?: Record<string, $TSFixMe[]> }> => {
+  if (!serverBundle) {
+    return {}
+  }
+
+  const fileObj = {
+    filepath: serverBundle.path,
+    root: tmpDir,
+    relname: path.relative(tmpDir, serverBundle.path),
+    basename: path.basename(serverBundle.path),
+    extname: path.extname(serverBundle.path),
+    type: 'file',
+    assetType: 'server',
+    normalizedPath: path.basename(serverBundle.path, path.extname(serverBundle.path)),
+  }
+
+  const servers: Record<string, string> = {}
+  const serverShaMap: Record<string, $TSFixMe[]> = {}
+
+  await pipeline([
+    Readable.from([fileObj]),
+    hasherCtor({ concurrentHash, hashAlgorithm }),
+    manifestCollectorCtor(servers, serverShaMap, { statusCb }),
+  ])
+
+  return { server: { sha: Object.values(servers)[0], region: serverBundle.region }, serverShaMap }
 }
 
 export default hashFns

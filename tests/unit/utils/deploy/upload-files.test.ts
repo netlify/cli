@@ -117,3 +117,34 @@ test('Does not retry on 400 response from function upload requests', async () =>
 
   expect(uploadDeployFunction).toHaveBeenCalledTimes(1)
 })
+
+test('Uploads a Netlify Server addressed by its digest, and retries it', async () => {
+  const uploadDeployServer = vi.fn()
+  const mockError = new Error('Uh-oh')
+
+  Object.assign(mockError, { status: 500 })
+
+  uploadDeployServer.mockRejectedValueOnce(mockError)
+  uploadDeployServer.mockResolvedValueOnce(undefined)
+
+  const mockApi = {
+    uploadDeployServer,
+  } as unknown as UploadApi
+  const deployId = crypto.randomUUID()
+  const codeSha = 'abc123'
+  const files: UploadFile[] = [
+    {
+      assetType: 'server',
+      filepath: 'server.tgz',
+      normalizedPath: 'server',
+      hash: codeSha,
+    } as unknown as UploadFile,
+  ]
+
+  await uploadFiles(mockApi, deployId, files, { concurrentUpload: 1, maxRetry: 3, statusCb: () => {} })
+
+  expect(uploadDeployServer).toHaveBeenCalledTimes(2)
+  expect(uploadDeployServer.mock.calls[0][0]).not.toHaveProperty('name')
+  expect(uploadDeployServer.mock.calls[0][0]).toMatchObject({ deployId, codeSha })
+  expect(uploadDeployServer.mock.calls[1][0]).toMatchObject({ deployId, codeSha, xNfRetryCount: 1 })
+})
