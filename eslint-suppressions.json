@@ -567,7 +567,7 @@
   },
   "src/utils/deploy/util.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 2
+      "count": 1
     }
   },
   "src/utils/detect-server-settings.ts": {
