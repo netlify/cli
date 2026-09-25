@@ -367,11 +367,8 @@
     "@typescript-eslint/no-deprecated": {
       "count": 1
     },
-    "@typescript-eslint/no-unnecessary-type-conversion": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 9
+      "count": 1
     },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
