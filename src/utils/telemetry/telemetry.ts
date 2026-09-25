@@ -32,6 +32,7 @@ function send(type: 'track' | 'identify', payload: Record<string, unknown>) {
     detached: true,
     stdio: 'ignore',
   }).unref()
+  return undefined
 }
 
 const eventConfig = {

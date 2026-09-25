@@ -18,26 +18,25 @@ export const setCommandForErrorReporting = (command?: string): void => {
   currentCommand = command
 }
 
-/**
- *
- * @param {import('@bugsnag/js').NotifiableError} error
- * @param {object} config
- * @param {import('@bugsnag/js').Event['severity']} config.severity
- * @param {Record<string, Record<string, any>>} [config.metadata]
- * @returns {Promise<void>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'error' implicitly has an 'any' type.
-export const reportError = async function (error, config = {}) {
+export interface ErrorReportConfig {
+  severity?: 'info' | 'warning' | 'error'
+  metadata?: Record<string, Record<string, unknown>>
+}
+
+export const reportError = async function (error: unknown, config: ErrorReportConfig = {}): Promise<void> {
   if (isCI) {
     return
   }
   // convert a NotifiableError to an error class
-  const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
+  // FIXME: non-string, non-`Error` values are passed through as-is and may not have these properties
+  const err = (error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error) as Error
 
   // `@netlify/config` tags intentional user-input errors (malformed netlify.toml,
   // invalid redirects, etc.) with this shape. See @netlify/config/lib/error.js.
   // These are not CLI bugs and don't belong in Bugsnag.
-  if (error?.customErrorInfo?.type === 'resolveConfig') {
+  if (
+    (error as { customErrorInfo?: { type?: unknown } } | null | undefined)?.customErrorInfo?.type === 'resolveConfig'
+  ) {
     return
   }
 
@@ -50,13 +49,11 @@ export const reportError = async function (error, config = {}) {
       name: err.name,
       stack: err.stack,
       cause: err.cause,
-      // @ts-expect-error TS(2339) FIXME: Property 'severity' does not exist on type '{}'.
       severity: config.severity,
       user: {
         id: globalConfig.get('userId'),
       },
       metadata: {
-        // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type '{}'.
         ...config.metadata,
         ...(currentCommand === undefined ? {} : { command: { name: currentCommand } }),
       },

@@ -99,9 +99,8 @@ export const detectFrameworkSettings = async (
     const { chosenSettings } = await inquirer.prompt<{ chosenSettings: Settings }>({
       name: 'chosenSettings',
       message: `Multiple possible ${type} commands found`,
-      // @ts-expect-error is not known by the types as it uses the autocomplete plugin
       type: 'autocomplete',
-      source(_: string, input = '') {
+      source(_: unknown, input = '') {
         if (!input) return scriptInquirerOptions
         // only show filtered results
         return filterSettings(scriptInquirerOptions, input)
@@ -120,6 +119,7 @@ command = "${chosenSettings.devCommand}"
 `)
     return chosenSettings
   }
+  return undefined
 }
 
 /**

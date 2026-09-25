@@ -1,30 +1,26 @@
 import fs from 'fs'
 import { dirname } from 'path'
 
+import type { Command } from 'commander'
+
 import { sortOptions, warn } from '../../utils/command-helpers.js'
 
-import { AUTOCOMPLETION_FILE } from './constants.js'
+import { AUTOCOMPLETION_FILE, type AutocompletionData } from './constants.js'
 
 /**
  * Create or updates the autocompletion information for the CLI
- * @param {import('../../commands/base-command.js').default} program
- * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-const generateAutocompletion = (program) => {
+const generateAutocompletion = (program: Command) => {
   try {
-    const autocomplete = program.commands.reduce(
-      // @ts-expect-error TS(7006) FIXME: Parameter 'prev' implicitly has an 'any' type.
+    const autocomplete = program.commands.reduce<AutocompletionData>(
       (prev, cmd) => ({
         ...prev,
         [cmd.name()]: {
           name: cmd.name(),
           description: cmd.description().split('\n')[0],
           options: cmd.options
-            // @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
             .filter((option) => !option.hidden)
             .sort(sortOptions)
-            // @ts-expect-error TS(7006) FIXME: Parameter 'opt' implicitly has an 'any' type.
             .map((opt) => ({ name: `--${opt.name()}`, description: opt.description })),
         },
       }),

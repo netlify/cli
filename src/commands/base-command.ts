@@ -12,7 +12,7 @@ import { isCI } from 'ci-info'
 import { Command, type CommanderError, type Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
 import { findUp } from 'find-up'
-import inquirer from 'inquirer'
+import inquirer, { type Answers, type Question } from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import { deepMerge, pick } from '../utils/object-utilities.js'
 
@@ -52,7 +52,20 @@ type Analytics = {
   payload?: Record<string, unknown>
 }
 
-// load the autocomplete plugin
+// `@types/inquirer-autocomplete-prompt` doesn't register its question type, and wrongly requires `source` to be async
+declare module 'inquirer' {
+  interface AutocompleteQuestion<T extends Answers = Answers> extends Question<T> {
+    type: 'autocomplete'
+    source: (answersSoFar: T, input: string | undefined) => unknown[] | Promise<unknown[]>
+    pageSize?: number
+    suggestOnly?: boolean
+  }
+
+  interface QuestionMap<T extends Answers = Answers> {
+    autocomplete: AutocompleteQuestion<T>
+  }
+}
+
 inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 /** Netlify CLI client id. Lives in bot@netlify.com */
 // TODO: setup client for multiple environments
@@ -151,8 +164,6 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
 
     const { result } = await inquirer.prompt({
       name: 'result',
-      // @ts-expect-error(serhalp) -- I think this is because `inquirer-autocomplete-prompt` extends known
-      // `type`s but TS doesn't know about it
       type: 'autocomplete',
       message: 'Select the project you want to work with',
       source: (_unused: unknown, input = '') =>
@@ -176,6 +187,7 @@ async function getRepositoryRoot(cwd?: string): Promise<string | undefined> {
   if (res) {
     return join(res, '..')
   }
+  return undefined
 }
 
 export type BaseOptionValues = {
@@ -186,6 +198,17 @@ export type BaseOptionValues = {
   httpProxy?: string
   silent?: string
   verbose?: boolean
+}
+
+/** Options defined by some commands that affect how the base command initializes */
+type InitOptionValues = BaseOptionValues & {
+  config?: string
+  context?: string
+  httpProxyCertificateFilename?: string
+  offline?: boolean
+  // `netlify open --site` is a boolean flag, while other commands take a project name or ID
+  site?: string | boolean
+  siteId?: string
 }
 
 export function storeToken(
@@ -243,7 +266,7 @@ export default class BaseCommand extends Command {
    * This is called by .command() to create subcommands.
    * IMPORTANT: This function is called for each command! Don't do anything expensive here.
    */
-  createCommand(name?: string): BaseCommand {
+  override createCommand(name?: string): BaseCommand {
     const commandName = name || ''
     const base = new BaseCommand(commandName)
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
@@ -272,7 +295,7 @@ export default class BaseCommand extends Command {
 
     base.hook('preAction', async (_parentCommand, actionCommand) => {
       setCommandForErrorReporting(actionCommand.name())
-      if (actionCommand.opts()?.debug) {
+      if (actionCommand.opts<BaseOptionValues>()?.debug) {
         process.env.DEBUG = '*'
       }
       debug(`${commandName}:preAction`)('start')
@@ -286,7 +309,7 @@ export default class BaseCommand extends Command {
     // or modify command instances during registration, so we need to set it on
     // the final instance that will actually execute.
     const originalAction = base.action.bind(base)
-    base.action = function (this: BaseCommand, fn: any) {
+    base.action = function (this: BaseCommand, fn: Parameters<Command['action']>[0]) {
       // Set exitOverride for option-related errors in non-interactive environments.
       // In non-interactive mode, we show the full help output instead of just a
       // brief error message, making it easier for users in CI/CD environments to
@@ -326,7 +349,7 @@ export default class BaseCommand extends Command {
   }
 
   /** Overrides the help output of commander with custom styling */
-  createHelp(): Help {
+  override createHelp(): Help {
     const help = super.createHelp()
 
     help.commandUsage = (command) => {
@@ -502,6 +525,7 @@ export default class BaseCommand extends Command {
 
   private async refreshAccounts() {
     try {
+      // FIXME(@netlify/api): `listAccountsForUser` response is missing fields and marks required ones optional
       const accounts = (await this.netlify.api.listAccountsForUser()) as MinimalAccount[]
       this.netlify.accounts = accounts
     } catch {
@@ -595,7 +619,7 @@ export default class BaseCommand extends Command {
    */
   private async init(actionCommand: BaseCommand) {
     debug(`${actionCommand.name()}:init`)('start')
-    const flags = actionCommand.opts()
+    const flags = actionCommand.opts<InitOptionValues>()
 
     // here we actually want to use the process.cwd as we are setting the workingDir
     // eslint-disable-next-line no-restricted-properties
@@ -622,7 +646,7 @@ export default class BaseCommand extends Command {
     // Get framework, add to analytics payload for every command, if a framework is set
     const fs = new NodeFS()
     // disable logging inside the project and FS if not in debug mode
-    fs.logger = actionCommand.opts()?.debug ? new DefaultLogger('debug') : new NoopLogger()
+    fs.logger = actionCommand.opts<BaseOptionValues>()?.debug ? new DefaultLogger('debug') : new NoopLogger()
     this.project = new Project(fs, this.workingDir, rootDir)
       .setEnvironment(process.env)
       .setNodeVersion(process.version)
@@ -642,7 +666,7 @@ export default class BaseCommand extends Command {
       this.project.workspace?.packages.length &&
       this.project.workspace.isRoot
     ) {
-      this.workspacePackage = await selectWorkspace(this.project, actionCommand.opts().filter)
+      this.workspacePackage = await selectWorkspace(this.project, actionCommand.opts<BaseOptionValues>().filter)
       this.workingDir = join(this.project.jsWorkspaceRoot, this.workspacePackage)
     }
 
@@ -694,8 +718,12 @@ export default class BaseCommand extends Command {
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
     if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
       try {
-        // FIXME(serhalp): Remove `any` and fix errors. API types exist now.
-        const site = await (api as any).getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
+        const site = await api.getSite({
+          siteId: actionCommand.siteId,
+          // @ts-expect-error FIXME(@netlify/api): `getSite` is missing the `feature_flags` query param
+          feature_flags: 'cli',
+        })
+        // @ts-expect-error FIXME(@netlify/api): `feature_flags` is missing from the `getSite` response type
         actionCommand.featureFlags = site.feature_flags
         actionCommand.accountId = site.account_id
       } catch {
@@ -729,7 +757,8 @@ export default class BaseCommand extends Command {
     // deploy by name along with by id
     let siteData = siteInfo
     if (!siteData.url && flags.site) {
-      const result = await getSiteByName(api, flags.site)
+      // FIXME: `netlify open --site` is a boolean flag, so this can be `true`
+      const result = await getSiteByName(api, flags.site as string)
       if (result == null) {
         return logAndThrowError(`Project with name "${flags.site}" not found`)
       }
@@ -824,7 +853,7 @@ export default class BaseCommand extends Command {
   }): Promise<CachedConfig> {
     const { configFilePath, cwd, host, offline, packagePath, pathPrefix, repositoryRoot, scheme, token } = opts
     // the flags that are passed to the command like `--debug` or `--offline`
-    const flags = this.opts()
+    const flags = this.opts<InitOptionValues>()
 
     try {
       // FIXME(serhalp): Type this in `netlify/build`! This is blocking a ton of proper types across the CLI.
