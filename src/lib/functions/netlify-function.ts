@@ -199,12 +199,9 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   }
 
   async getNextRun() {
-    if (!(await this.isScheduled())) {
-      return null
-    }
+    await this.buildQueue
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return getNextRun(this.schedule!)
+    return this.schedule ? getNextRun(this.schedule) : null
   }
 
   // The `build` method transforms source files into invocable functions. Its
