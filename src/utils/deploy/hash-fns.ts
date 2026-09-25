@@ -163,18 +163,20 @@ const trafficRulesConfig = (trafficRules?: TrafficRules) => {
   }
 }
 
-interface FunctionConfigPayload {
-  display_name: FunctionResult['displayName']
-  excluded_routes: FunctionResult['excludedRoutes']
-  generator: FunctionResult['generator']
-  memory: FunctionResult['memory']
-  region: FunctionResult['region']
-  routes: FunctionResult['routes']
-  build_data: FunctionResult['buildData']
-  priority: FunctionResult['priority']
-  traffic_rules: ReturnType<typeof trafficRulesConfig>
-  vcpu: FunctionResult['vcpu']
-}
+const toFunctionConfigPayload = (func: FunctionResult) => ({
+  display_name: func.displayName,
+  excluded_routes: func.excludedRoutes,
+  generator: func.generator,
+  memory: func.memory,
+  region: func.region,
+  routes: func.routes,
+  build_data: func.buildData,
+  priority: func.priority,
+  traffic_rules: trafficRulesConfig(func.trafficRules),
+  vcpu: func.vcpu,
+})
+
+type FunctionConfigPayload = ReturnType<typeof toFunctionConfigPayload>
 
 const hashFns = async (
   command: BaseCommand,
@@ -282,38 +284,23 @@ const hashFns = async (
       trafficRules,
     }),
   )
-  const fnConfig = functionZips
-    .filter((func) =>
-      Boolean(
-        func.displayName ||
-        func.generator ||
-        func.routes ||
-        func.buildData ||
-        func.priority ||
-        func.trafficRules ||
-        func.region ||
-        func.memory ||
-        func.vcpu,
-      ),
-    )
-    .reduce<Record<string, FunctionConfigPayload>>(
-      (funcs, curr) => ({
-        ...funcs,
-        [curr.name]: {
-          display_name: curr.displayName,
-          excluded_routes: curr.excludedRoutes,
-          generator: curr.generator,
-          memory: curr.memory,
-          region: curr.region,
-          routes: curr.routes,
-          build_data: curr.buildData,
-          priority: curr.priority,
-          traffic_rules: trafficRulesConfig(curr.trafficRules),
-          vcpu: curr.vcpu,
-        },
-      }),
-      {},
-    )
+  const fnConfig = Object.fromEntries(
+    functionZips
+      .filter((func) =>
+        Boolean(
+          func.displayName ||
+          func.generator ||
+          func.routes ||
+          func.buildData ||
+          func.priority ||
+          func.trafficRules ||
+          func.region ||
+          func.memory ||
+          func.vcpu,
+        ),
+      )
+      .map((func) => [func.name, toFunctionConfigPayload(func)]),
+  )
   const functionSchedules = functionZips
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
     .filter((schedule): schedule is { name: string; cron: string } => schedule !== '' && schedule !== undefined)
