@@ -1,17 +1,14 @@
 import { NetlifyAPI } from '@netlify/api'
-import type { OptionValues } from 'commander'
 
 import { log, logAndThrowError, logJson } from '../../utils/command-helpers.js'
 import { storeToken } from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
 
 export const loginCheck = async (
-  options: OptionValues,
+  ticketId: string,
   apiOpts: NetlifyOptions['apiOpts'],
   globalConfig: NetlifyOptions['globalConfig'],
 ) => {
-  const ticketId = options.check as string
-
   const api = new NetlifyAPI('', apiOpts)
 
   let ticket: { authorized?: boolean }
