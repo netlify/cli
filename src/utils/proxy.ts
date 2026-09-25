@@ -590,15 +590,6 @@ const initializeProxy = async function ({
     headers = await parseHeaders({ headersFiles, configPath, config })
   })
 
-  // @ts-expect-error TS(2339) FIXME: Property 'before' does not exist on type 'Server'.
-  proxy.before('web', 'stream', (req: ProxyRequest) => {
-    // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
-    if (req.headers.expect) {
-      req.__expectHeader = req.headers.expect
-      delete req.headers.expect
-    }
-  })
-
   proxy.on('error', (err, req, res, proxyUrl) => {
     const options = req.proxyOptions
 
@@ -845,6 +836,11 @@ const initializeProxy = async function ({
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
+      // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
+      if (req.headers.expect) {
+        req.__expectHeader = req.headers.expect
+        delete req.headers.expect
+      }
       proxy.web(req, res, options)
       return undefined
     },
