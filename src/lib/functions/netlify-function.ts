@@ -391,9 +391,9 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
 
   get url() {
     // `netlify dev` serves functions through its main server; `functions:serve` only has the functions server
-    const port = this.settings.port || this.settings.functionsPort
+    const port = this.settings.port ?? this.settings.functionsPort
     const protocol = this.settings.https ? 'https' : 'http'
-    const url = new URL(`/.netlify/functions/${this.name}`, `${protocol}://localhost:${port}`)
+    const url = new URL(`/.netlify/functions/${this.name}`, `${protocol}://localhost:${port.toString()}`)
 
     return url.href
   }
