@@ -218,24 +218,19 @@ export const uploadDropFiles = async (
       phase: 'progress',
     })
 
-    let lastError: DropApiError | undefined
     for (let attempt = 0; attempt <= maxRetry; attempt++) {
       try {
         const body = fs.createReadStream(fileObj.filepath)
         await uploadDropFile(apiOptions, deployId, fileObj.normalizedPath, body, token)
         return
       } catch (error) {
-        lastError = error as DropApiError
-        if (lastError.status === 400 || lastError.status === 422) {
+        const { status } = error as DropApiError
+        const isPermanentFailure = status === 400 || status === 422
+        if (isPermanentFailure || attempt === maxRetry) {
           throw error
         }
-        if (attempt < maxRetry) {
-          await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
-        }
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
       }
-    }
-    if (lastError) {
-      throw lastError
     }
   }
 
