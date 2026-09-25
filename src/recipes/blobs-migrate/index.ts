@@ -2,7 +2,7 @@ import { getStore, listStores } from '@netlify/blobs'
 import inquirer from 'inquirer'
 import pMap from 'p-map'
 
-import BaseCommand from '../../commands/base-command.js'
+import type BaseCommand from '../../commands/base-command.js'
 import { logAndThrowError, log } from '../../utils/command-helpers.js'
 
 export const description = 'Migrate legacy Netlify Blobs stores'

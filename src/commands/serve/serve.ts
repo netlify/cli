@@ -32,7 +32,7 @@ import { generateInspectSettings, startProxyServer } from '../../utils/proxy-ser
 import { runBuildTimeline } from '../../utils/run-build.js'
 import type { ServerSettings } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
-import { type DevConfig } from '../dev/types.js'
+import type { DevConfig } from '../dev/types.js'
 
 export const serve = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, frameworksAPIPaths, repositoryRoot, site, siteInfo, state } = command.netlify

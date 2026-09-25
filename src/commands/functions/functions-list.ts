@@ -1,9 +1,9 @@
 import AsciiTable from 'ascii-table'
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import { exit, log, logJson } from '../../utils/command-helpers.js'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 interface DeployedFunction {
   n?: string

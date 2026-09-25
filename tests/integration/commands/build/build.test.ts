@@ -6,7 +6,7 @@ import { describe, expect, test, type TestContext } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { CONFIRM, handleQuestions } from '../../utils/handle-questions.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'

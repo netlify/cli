@@ -1,5 +1,5 @@
-import { OptionValues } from 'commander'
-import BaseCommand from '../base-command.js'
+import type { OptionValues } from 'commander'
+import type BaseCommand from '../base-command.js'
 import { validateSiteName } from '../../utils/validation.js'
 
 const sites = (_options: OptionValues, command: BaseCommand) => {

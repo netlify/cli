@@ -2,7 +2,7 @@ import { Option } from 'commander'
 
 import { normalizeContext } from '../../utils/env/index.js'
 import { getGeoCountryArgParser } from '../../utils/validation.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 export const createServeCommand = (program: BaseCommand) =>
   program

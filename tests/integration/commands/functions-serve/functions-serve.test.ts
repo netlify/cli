@@ -10,7 +10,7 @@ import { waitPort } from '../../../../src/lib/wait-port.js'
 import { cliPath } from '../../utils/cli-path.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { type SiteBuilder, withSiteBuilder } from '../../utils/site-builder.js'
-import { InvokeFunctionResult } from '../../../../src/lib/functions/runtimes/index.js'
+import type { InvokeFunctionResult } from '../../../../src/lib/functions/runtimes/index.js'
 import {
   assertAIGatewayValue,
   createAIGatewayCheckFunction,

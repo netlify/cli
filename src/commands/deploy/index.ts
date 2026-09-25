@@ -5,7 +5,7 @@ import terminalLink from 'terminal-link'
 
 import { normalizeContext } from '../../utils/env/index.js'
 import { findDuplicateKey, mergeDeployEnvVars, parseDeployEnvVar } from '../../utils/env/deploy-env-vars.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { chalk, logAndThrowError, warn } from '../../utils/command-helpers.js'
 import type { DeployOptionValues } from './option_values.js'
 

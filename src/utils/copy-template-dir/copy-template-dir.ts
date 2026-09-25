@@ -25,7 +25,7 @@ import { promisify } from 'util'
 
 import maxstache from 'maxstache'
 import maxstacheStream from 'maxstache-stream'
-import { readdirp, EntryInfo, ReaddirpStream } from 'readdirp'
+import { readdirp, type EntryInfo, type ReaddirpStream } from 'readdirp'
 
 // Remove a leading underscore
 function removeUnderscore(filepath: string): string {

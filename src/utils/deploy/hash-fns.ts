@@ -12,8 +12,8 @@ import {
   type TrafficRules,
 } from '@netlify/zip-it-and-ship-it'
 
-import BaseCommand from '../../commands/base-command.js'
-import { $TSFixMe } from '../../commands/types.js'
+import type BaseCommand from '../../commands/base-command.js'
+import type { $TSFixMe } from '../../commands/types.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.js'
 
 import { hasherCtor, manifestCollectorCtor } from './hasher-segments.js'

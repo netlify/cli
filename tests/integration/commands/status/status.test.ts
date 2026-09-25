@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import type { MinimalAccount } from '../../../../src/utils/types.js'
 

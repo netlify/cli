@@ -1,4 +1,4 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import execa from 'execa'
 
 import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
@@ -6,7 +6,7 @@ import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 import { NETLIFYDEVLOG, log } from '../../utils/command-helpers.js'
 import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 export const devExec = async (cmd: string, options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, site, siteInfo } = command.netlify

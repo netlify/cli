@@ -2,7 +2,7 @@ import { join } from 'path'
 
 import { getPathInProject } from '../settings.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
-import BaseCommand from '../../commands/base-command.js'
+import type BaseCommand from '../../commands/base-command.js'
 import { fileExistsAsync } from '../fs.js'
 
 export const getUserEdgeFunctionsDirectory = (command: BaseCommand): string | undefined => {

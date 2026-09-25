@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
 setupFixtureTests('plugin-changing-publish-dir', { devServer: { serve: true } }, () => {

@@ -3,7 +3,7 @@ import process from 'process'
 import terminalLink from 'terminal-link'
 
 import { normalizeContext } from '../../utils/env/index.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 export const createBuildCommand = (program: BaseCommand) =>
   program

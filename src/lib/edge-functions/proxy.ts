@@ -15,8 +15,8 @@ import {
   chalk,
   logAndThrowError,
 } from '../../utils/command-helpers.js'
-import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
-import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
+import { type FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
+import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { type Spinner, startSpinner, stopSpinner } from '../spinner.js'

@@ -1,6 +1,6 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 export const createWatchCommand = (program: BaseCommand) =>
   program

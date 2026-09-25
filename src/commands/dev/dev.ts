@@ -2,7 +2,7 @@ import process from 'process'
 
 import type { NetlifyAPI } from '@netlify/api'
 import { applyMutations } from '@netlify/config'
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'

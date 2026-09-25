@@ -1,10 +1,10 @@
 import { promises as fs } from 'fs'
 import path, { join } from 'path'
 
-import { NetlifyConfig, type GeneratedFunction } from '@netlify/build'
+import type { NetlifyConfig, GeneratedFunction } from '@netlify/build'
 
-import BaseCommand from '../commands/base-command.js'
-import { $TSFixMe } from '../commands/types.js'
+import type BaseCommand from '../commands/base-command.js'
+import type { $TSFixMe } from '../commands/types.js'
 import { getBootstrapURL } from '../lib/edge-functions/bootstrap.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.js'
 import { getPathInProject } from '../lib/settings.js'
@@ -13,7 +13,7 @@ import { logAndThrowError } from './command-helpers.js'
 import { getFeatureFlagsFromSiteInfo } from './feature-flags.js'
 import { startFrameworkServer } from './framework-server.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from './functions/index.js'
-import { ServerSettings } from './types.js'
+import type { ServerSettings } from './types.js'
 
 const netlifyBuildPromise = import('@netlify/build')
 

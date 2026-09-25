@@ -1,6 +1,6 @@
 // Handlers are meant to be async outside tests
 import fs from 'node:fs/promises'
-import { type AddressInfo } from 'node:net'
+import type { AddressInfo } from 'node:net'
 import path from 'node:path'
 import process from 'process'
 

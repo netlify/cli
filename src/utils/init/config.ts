@@ -1,4 +1,4 @@
-import BaseCommand from '../../commands/base-command.js'
+import type BaseCommand from '../../commands/base-command.js'
 import { chalk, log } from '../command-helpers.js'
 import type { RepoData } from '../get-repo-data.js'
 

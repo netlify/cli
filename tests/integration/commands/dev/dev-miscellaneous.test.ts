@@ -5,7 +5,7 @@ import { platform } from 'process'
 import { fileURLToPath } from 'url'
 
 import { setProperty } from 'dot-prop'
-import execa, { ExecaError } from 'execa'
+import execa, { type ExecaError } from 'execa'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'

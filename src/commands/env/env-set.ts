@@ -1,9 +1,9 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
 import { SUPPORTED_CONTEXTS, ALL_ENVELOPE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-set-prompts.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { getSiteInfo } from './utils.js'
 
 /**

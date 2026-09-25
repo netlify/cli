@@ -6,7 +6,7 @@ import { isEmpty } from './object-utilities.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 
-import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, APIError } from './command-helpers.js'
+import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, type APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
 import type { EnvironmentVariables, SiteInfo } from './types.js'
 

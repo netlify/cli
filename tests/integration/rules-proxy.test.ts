@@ -1,5 +1,5 @@
 import http from 'http'
-import net from 'net'
+import type net from 'net'
 import path from 'path'
 
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.js'
 
 import fetch from 'node-fetch'
-import { createSiteBuilder, SiteBuilder } from './utils/site-builder.js'
+import { createSiteBuilder, type SiteBuilder } from './utils/site-builder.js'
 
 describe('rules-proxy', () => {
   let server: http.Server

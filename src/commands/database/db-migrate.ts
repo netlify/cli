@@ -4,7 +4,7 @@ import { join } from 'path'
 import { applyMigrations } from '@netlify/dev'
 
 import { log, logJson } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { connectToDatabase } from './util/db-connection.js'
 import { DEFAULT_MIGRATIONS_PATH } from './util/migrations-path.js'
 

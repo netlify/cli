@@ -3,8 +3,8 @@ import { rm } from 'fs/promises'
 import { getVersion as getNetlifyBuildVersion } from '@netlify/build'
 import cleanDeep from 'clean-deep'
 
-import BaseCommand from '../../commands/base-command.js'
-import { type $TSFixMe } from '../../commands/types.js'
+import type BaseCommand from '../../commands/base-command.js'
+import type { $TSFixMe } from '../../commands/types.js'
 import { warn } from '../command-helpers.js'
 
 import {

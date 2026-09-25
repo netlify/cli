@@ -1,11 +1,11 @@
 import { basename } from 'path'
 
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
 
 import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 import { getRecipe, listRecipes } from './common.js'
 

@@ -1,6 +1,6 @@
 import { join } from 'path'
 
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 
@@ -17,7 +17,7 @@ import {
 } from '../../utils/dev.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 const DEFAULT_PORT = 9999
 

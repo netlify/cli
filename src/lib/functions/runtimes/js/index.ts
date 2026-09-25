@@ -8,7 +8,7 @@ import type { BuildFunction, GetBuildFunction, InvokeFunction } from '../index.j
 import { BLOBS_CONTEXT_VARIABLE } from '../../../blobs/blobs.js'
 import type NetlifyFunction from '../../netlify-function.js'
 
-import detectZisiBuilder, { getFunctionMetadata, ZisiBuildResult } from './builders/zisi.js'
+import detectZisiBuilder, { getFunctionMetadata, type ZisiBuildResult } from './builders/zisi.js'
 import { SECONDS_TO_MILLISECONDS } from './constants.js'
 import type { WorkerMessage } from './worker.js'
 
