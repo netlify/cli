@@ -720,7 +720,11 @@ const handleAddonDidInstall = async ({
   addonDidInstall(fnPath)
 }
 
-const installAddons = async function (command: BaseCommand, functionAddons: TemplateAddon[], fnPath: string) {
+const installAddons = async function (
+  command: BaseCommand,
+  functionAddons: TemplateAddon[],
+  fnPath: string,
+): Promise<void> {
   if (functionAddons.length === 0) {
     return
   }
@@ -729,29 +733,30 @@ const installAddons = async function (command: BaseCommand, functionAddons: Temp
   const siteId = site.id
   if (!siteId) {
     log('No project id found, please run inside a project directory or `netlify link`')
-    return false
+    return
   }
   log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
 
   const [siteData, siteAddons] = await Promise.all([getSiteData({ api, siteId }), getAddons({ api, siteId })])
 
-  const arr = functionAddons.map(async ({ addonDidInstall, addonName }) => {
-    log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
-    try {
-      const addonCreated = await createFunctionAddon({
-        api,
-        addons: siteAddons,
-        siteId,
-        addonName,
-        siteData,
-      })
+  await Promise.all(
+    functionAddons.map(async ({ addonDidInstall, addonName }) => {
+      log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
+      try {
+        const addonCreated = await createFunctionAddon({
+          api,
+          addons: siteAddons,
+          siteId,
+          addonName,
+          siteData,
+        })
 
-      await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
-    } catch (error_) {
-      return logAndThrowError(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
-    }
-  })
-  return Promise.all(arr)
+        await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
+      } catch (error_) {
+        return logAndThrowError(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
+      }
+    }),
+  )
 }
 
 const registerEFInToml = async (funcName: string, options: NetlifyOptions) => {
