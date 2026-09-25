@@ -174,6 +174,17 @@ test("should filter, sort, and format Envelope's response correctly", () => {
   })
 })
 
+test('should match the `post_processing` scope given the user-provided `post-processing` scope', () => {
+  const envelopeItems: EnvelopeItem[] = [
+    { key: 'FOO', scopes: ['post_processing'], values: [{ context: 'all', value: 'bar' }] },
+    { key: 'BAR', scopes: ['builds'], values: [{ context: 'all', value: 'baz' }] },
+  ]
+
+  expect(formatEnvelopeData({ context: 'dev', envelopeItems, scope: 'post-processing', source: 'ui' })).toEqual({
+    FOO: { branch: undefined, context: 'all', scopes: ['post_processing'], sources: ['ui'], value: 'bar' },
+  })
+})
+
 test('should convert scope keys into a human-readable list', () => {
   expect(getHumanReadableScopes([])).toBe('')
   expect(getHumanReadableScopes()).toBe('Builds, Post processing')
