@@ -6,9 +6,6 @@ import type { MinimalAccount, GlobalConfigStore, SiteInfo } from '../utils/types
 import type { NormalizedCachedConfigConfig } from '../utils/command-helpers.js'
 import type { CachedConfig } from '../lib/build.js'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type $TSFixMe = any
-
 export type NetlifySite = {
   root?: string
   configPath?: string
