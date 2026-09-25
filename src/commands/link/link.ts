@@ -255,9 +255,6 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
     state,
   } = command.netlify
 
-  let initialSiteData: SiteInfo | undefined
-  let newSiteData!: SiteInfo
-
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
@@ -270,12 +267,15 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
 
   if (!isEmpty(siteInfo)) {
     // If already linked to project, exit and prompt for unlink
-    initialSiteData = siteInfo
-    log(`Project already linked to "${initialSiteData.name}"`)
-    log(`Admin url: ${initialSiteData.admin_url}`)
+    log(`Project already linked to "${siteInfo.name}"`)
+    log(`Admin url: ${siteInfo.admin_url}`)
     log()
     log(`To unlink this project, run: ${chalk.cyanBright(`${netlifyCommand()} unlink`)}`)
-  } else if (options.id) {
+    return siteInfo
+  }
+
+  if (options.id) {
+    let newSiteData: SiteInfo
     try {
       // @ts-expect-error FIXME(@netlify/api): `getSite` response type doesn't match the hand-written `SiteInfo`
       newSiteData = await api.getSite({ site_id: options.id })
@@ -296,7 +296,10 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
       linkType: 'manual',
       kind: 'byId',
     })
-  } else if (options.name) {
+    return newSiteData
+  }
+
+  if (options.name) {
     let results: SiteInfo[] = []
     try {
       results = await listSites({
@@ -334,8 +337,11 @@ To link by project ID:
       linkType: 'manual',
       kind: 'byName',
     })
-  } else if (options.gitRemoteUrl) {
-    newSiteData = await findSiteByRepoUrl(api, options.gitRemoteUrl)
+    return matchingSiteData
+  }
+
+  if (options.gitRemoteUrl) {
+    const newSiteData = await findSiteByRepoUrl(api, options.gitRemoteUrl)
     state.set('siteId', newSiteData.id)
     log(`${chalk.green('✔')} Linked to ${newSiteData.name}`)
 
@@ -344,9 +350,11 @@ To link by project ID:
       linkType: 'clone',
       kind: 'byRepoUrl',
     })
-  } else {
-    if (!isInteractive()) {
-      return logAndThrowError(`No project specified. In non-interactive mode, you must specify how to link:
+    return newSiteData
+  }
+
+  if (!isInteractive()) {
+    return logAndThrowError(`No project specified. In non-interactive mode, you must specify how to link:
 
 Link by project ID:
   ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}
@@ -362,11 +370,7 @@ To search for projects:
 
 To list all projects:
   ${chalk.cyanBright(`${netlifyCommand()} sites:list`)}`)
-    }
-
-    newSiteData = await linkPrompt(command, options)
   }
-  // FIXME(serhalp): All the cases above except one (look up by site name) end up *returning*
-  // the site data. This is probably not intentional and may result in bugs in deploy/init. Investigate.
-  return initialSiteData || newSiteData
+
+  return await linkPrompt(command, options)
 }
