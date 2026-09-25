@@ -370,7 +370,7 @@ const renderPretty = (params: RenderParams) => {
 }
 
 export const statusDb = async (options: DatabaseStatusOptions, command: BaseCommand) => {
-  const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
+  const buildDir = command.netlify.site.root
   if (!buildDir) {
     throw new Error('Could not determine the project root directory.')
   }

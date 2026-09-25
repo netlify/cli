@@ -15,7 +15,7 @@ export const resolveMigrationsDirectory = (command: BaseCommand): string => {
     return configuredPath
   }
 
-  const projectRoot = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
+  const projectRoot = command.netlify.site.root
   if (!projectRoot) {
     throw new Error('Could not determine the project root directory.')
   }
