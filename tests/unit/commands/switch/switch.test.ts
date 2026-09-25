@@ -59,7 +59,7 @@ describe('switchCommand', () => {
 
   test('--email falls through to prompt when no match is found', async () => {
     const { command } = createCommand()
-    mockSelect.mockResolvedValueOnce('Bob (bob@corp.com)')
+    mockSelect.mockResolvedValueOnce(users['user-2'])
 
     await switchCommand({ email: 'nobody@example.com' }, command)
 
@@ -69,7 +69,7 @@ describe('switchCommand', () => {
 
   test('--email does not match partial email strings', async () => {
     const { command } = createCommand()
-    mockSelect.mockResolvedValueOnce('Bob (bob@corp.com)')
+    mockSelect.mockResolvedValueOnce(users['user-2'])
 
     await switchCommand({ email: 'bob@corp' }, command)
 
@@ -79,7 +79,7 @@ describe('switchCommand', () => {
 
   test('without --email shows interactive prompt', async () => {
     const { command, mockSet } = createCommand()
-    mockSelect.mockResolvedValueOnce('Alice (alice@example.com)')
+    mockSelect.mockResolvedValueOnce(users['user-1'])
 
     await switchCommand({}, command)
 
