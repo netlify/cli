@@ -92,7 +92,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   }
 
   injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
+  await promptEditorHelper({ config, repositoryRoot, state })
 
   if (!site.root) {
     throw new Error('Site root not found')
