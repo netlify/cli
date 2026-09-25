@@ -47,7 +47,7 @@ const unsetInEnvelope = async ({
     if (context) {
       // if context(s) are passed, delete the matching contexts / branches, and the `all` context
       const values = variable.values.filter((val) =>
-        ([...contexts, 'all'] as (string | undefined)[]).includes(val.context_parameter || val.context),
+        [...contexts, 'all'].some((ctx) => ctx === (val.context_parameter || val.context)),
       )
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: always truthy, `filter` returns an array
       if (values) {
