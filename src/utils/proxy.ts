@@ -73,6 +73,7 @@ const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 type ImageProxy = ReturnType<typeof initializeImageProxy>
 type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy>>
 type InspectSettings = Parameters<typeof initializeEdgeFunctionsProxy>[0]['inspectSettings']
+type FunctionMatch = NonNullable<Awaited<ReturnType<FunctionsRegistry['getFunctionForURLPath']>>>
 
 interface BaseProxyOptions extends httpProxy.ServerOptions {
   target?: string | undefined
@@ -194,6 +195,11 @@ function isFunction(functionsPort: boolean | number | undefined, url: string | u
   // @ts-expect-error FIXME: throws when `url` is undefined
   return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
+
+const getFunctionHeaders = ({ func, route }: FunctionMatch): Record<string, string> => ({
+  ...(func && { [NFFunctionName]: func.name }),
+  ...(route && { [NFFunctionRoute]: route.pattern }),
+})
 
 function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessage) {
   const matches = req.url?.match(/^\/.netlify\/([^/]+)(\/.*)/)
@@ -510,18 +516,11 @@ const serveRedirect = async function ({
     }
 
     if (matchingFunction) {
-      const functionHeaders = matchingFunction.func
-        ? {
-            [NFFunctionName]: matchingFunction.func?.name,
-            [NFFunctionRoute]: matchingFunction.route,
-          }
-        : {}
       const url = reqToURL(req, originalURL)
       req.headers['x-netlify-original-pathname'] = url.pathname
       req.headers['x-netlify-original-search'] = url.search
 
-      // @ts-expect-error FIXME: sends the whole route object instead of its pattern in the function route header
-      return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
+      return proxy.web(req, res, { headers: getFunctionHeaders(matchingFunction), target: options.functionsServer })
     }
     if (isImageRequest(req)) {
       return imageProxy(req, res)
@@ -909,17 +908,7 @@ const onRequest = async (
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
-    const headers: Record<string, string> = {}
-
-    if (functionMatch.func) {
-      headers[NFFunctionName] = functionMatch.func.name
-    }
-
-    if (functionMatch.route) {
-      headers[NFFunctionRoute] = functionMatch.route.pattern
-    }
-
-    return proxy.web(req, res, { headers, target: functionsServer })
+    return proxy.web(req, res, { headers: getFunctionHeaders(functionMatch), target: functionsServer })
   }
 
   const addonUrl = getAddonUrl(addonsUrls, req)
