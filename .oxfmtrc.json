@@ -3,5 +3,5 @@
   "semi": false,
   "singleQuote": true,
   "sortPackageJson": true,
-  "ignorePatterns": ["node_modules", "CHANGELOG.md", "docs/**", "**/package-lock.json"]
+  "ignorePatterns": ["node_modules", "CHANGELOG.md", "docs/**", "**/package-lock.json", "eslint-suppressions.json"]
 }

@@ -8,8 +8,6 @@ import node from 'eslint-plugin-n'
 import vitest from '@vitest/eslint-plugin'
 import tseslint from 'typescript-eslint'
 
-import cliTemporarySuppressions from './eslint_temporary_suppressions.js'
-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -55,7 +53,19 @@ export default tseslint.config(
 
   // Project-specific rules
   {
-    ignores: ['.github/styles/', '**/__fixtures__/'],
+    ignores: ['.github/styles/', '**/__fixtures__/', 'functions-templates/**', 'site/**'],
+  },
+  {
+    rules: {
+      // We use these globals even though they're technically unstable features on our minimum
+      // supported node version.
+      'n/no-unsupported-features/node-builtins': [
+        'error',
+        {
+          ignores: ['FormData', 'ReadableStream', 'Response', 'Request', 'fetch', 'fs/promises.cp'],
+        },
+      ],
+    },
   },
   {
     files: ['**/*.?(c|m)ts?(x)'],
@@ -141,8 +151,6 @@ export default tseslint.config(
       ],
     },
   },
-
-  ...cliTemporarySuppressions,
 
   // Must be last
   prettier,
