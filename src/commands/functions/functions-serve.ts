@@ -21,8 +21,13 @@ import type BaseCommand from '../base-command.js'
 
 const DEFAULT_PORT = 9999
 
-// FIXME(serhalp): Replace `OptionValues` with more specific type. This is full of implicit `any`s.
-export const functionsServe = async (options: OptionValues, command: BaseCommand) => {
+// FIXME: `debug` and `offline` are `undefined` when their flags are omitted, but are passed on where booleans are expected
+interface FunctionsServeOptions extends OptionValues {
+  functions?: string
+  port?: number
+}
+
+export const functionsServe = async (options: FunctionsServeOptions, command: BaseCommand) => {
   const { api, config, site, siteInfo, state } = command.netlify
 
   const functionsDir = getFunctionsDir({ options, config }, join('netlify', 'functions'))
@@ -83,6 +88,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     capabilities,
     timeouts,
     generatedFunctions: [],
+    // FIXME: `functions:serve` has no `--geo` or `--country` flags, so these are always `undefined`
     geolocationMode: options.geo,
     geoCountry: options.country,
     offline: options.offline,
