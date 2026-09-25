@@ -27,6 +27,7 @@ describe('blobs:* commands', () => {
   const directory = temporaryDirectory()
 
   let server: BlobsServer
+  const requestedURLs: string[] = []
   const routes: Route[] = [
     { path: 'sites/site_id', response: siteInfo },
 
@@ -50,6 +51,7 @@ describe('blobs:* commands', () => {
       method: 'all',
       path: 'blobs/{*splat}',
       response: (req, res) => {
+        requestedURLs.push(req.url)
         blobsProxy.web(req, res, { target: `http://localhost:${address.port}` })
       },
     })
@@ -117,6 +119,37 @@ describe('blobs:* commands', () => {
           offline: false,
         }),
       ).rejects.toThrowError('Error: Blob my-key does not exist in store my-store')
+    })
+
+    test<FixtureTestContext>('should send the region to the API when one is given', async ({ fixture }) => {
+      const region = 'eu-central-1'
+
+      requestedURLs.length = 0
+      await fixture.callCli(['blobs:list', 'my-store', '--region', region, '--json'], {
+        offline: false,
+        parseJson: true,
+      })
+
+      expect(requestedURLs.some((url) => url.includes(`region=${region}`))).toBe(true)
+    })
+
+    test<FixtureTestContext>('should not send a region when none is given', async ({ fixture }) => {
+      requestedURLs.length = 0
+      await fixture.callCli(['blobs:list', 'my-store', '--json'], {
+        offline: false,
+        parseJson: true,
+      })
+
+      expect(requestedURLs.length).toBeGreaterThan(0)
+      expect(requestedURLs.some((url) => url.includes('region'))).toBe(false)
+    })
+
+    test<FixtureTestContext>('should reject a region the Blobs client does not support', async ({ fixture }) => {
+      await expect(
+        fixture.callCli(['blobs:list', 'my-store', '--region', 'mars-north-1', '--json'], {
+          offline: false,
+        }),
+      ).rejects.toThrowError('not a supported Netlify Blobs region')
     })
   })
 })

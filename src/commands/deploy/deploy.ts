@@ -44,7 +44,11 @@ import { getDeploySourceFields } from '../../utils/deploy/deploy-source.js'
 import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { mergeDeployEnvVars } from '../../utils/env/deploy-env-vars.js'
-import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
+import {
+  getFunctionsManifestPath,
+  getInternalFunctionsDir,
+  getServerManifestPath,
+} from '../../utils/functions/index.js'
 import { isEmpty } from '../../utils/object-utilities.js'
 import openBrowser from '../../utils/open-browser.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
@@ -634,6 +638,7 @@ const runDeploy = async ({
       functionsFolder,
     ].filter((folder): folder is string => Boolean(folder))
     const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
+    const serverManifestPath = await getServerManifestPath({ base: site.root, packagePath })
 
     const redirectsPath = `${deployFolder}/_redirects`
     const headersPath = `${deployFolder}/_headers`
@@ -676,6 +681,9 @@ const runDeploy = async ({
       filter: getDeployFilesFilter({ site, deployFolder }),
       workingDir: command.workingDir,
       manifestPath,
+      packagePath,
+      serverEnabled: Boolean(siteData?.feature_flags?.netlify_build_server_standalone),
+      serverManifestPath: serverManifestPath ?? undefined,
       skipFunctionsCache,
       siteRoot: site.root,
       environment: mergeDeployEnvVars(options.env, options.secretEnv),
