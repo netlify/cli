@@ -49,22 +49,19 @@ const unsetInEnvelope = async ({
       const values = variable.values.filter((val) =>
         ([...contexts, 'all'] as (string | undefined)[]).includes(val.context_parameter || val.context),
       )
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: always truthy, `filter` returns an array
-      if (values) {
+      await Promise.all(
+        // @ts-expect-error FIXME(@netlify/api): `envVarValue.id` is typed optional but is always present on returned values
+        values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })),
+      )
+      // if this was the `all` context, we need to create 3 values in the other contexts
+      if (values.length === 1 && values[0].context === 'all') {
+        const newContexts = SUPPORTED_CONTEXTS.filter((ctx) => !context.includes(ctx))
+        const allValue = values[0].value
         await Promise.all(
-          // @ts-expect-error FIXME(@netlify/api): `envVarValue.id` is typed optional but is always present on returned values
-          values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })),
+          newContexts
+            .filter((ctx) => ctx !== 'all')
+            .map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
         )
-        // if this was the `all` context, we need to create 3 values in the other contexts
-        if (values.length === 1 && values[0].context === 'all') {
-          const newContexts = SUPPORTED_CONTEXTS.filter((ctx) => !context.includes(ctx))
-          const allValue = values[0].value
-          await Promise.all(
-            newContexts
-              .filter((ctx) => ctx !== 'all')
-              .map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
-          )
-        }
       }
     } else {
       // otherwise, if no context passed, delete the whole key

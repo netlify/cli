@@ -68,24 +68,17 @@ export const envClone = async (options: EnvCloneOptionValues, command: BaseComma
   const { api, site } = command.netlify
   const { force } = options
 
-  if (!site.id && !options.from) {
-    log(
-      'Please include the source project ID as the `--from` option, or run `netlify link` to link this folder to a Netlify project',
-    )
-    return false
-  }
-
   const sourceId = options.from || site.id
 
   if (!sourceId) {
     log(
       'Please include the source project ID as the `--from` option, or run `netlify link` to link this folder to a Netlify project',
     )
+    return false
   }
 
   const siteId = {
-    // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style -- FIXME: never undefined here, the first guard above already returned
-    from: sourceId as string,
+    from: sourceId,
     to: options.to,
   }
 

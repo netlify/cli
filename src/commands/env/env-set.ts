@@ -142,10 +142,6 @@ export const envSet = async (key: string, value: string, options: EnvSetOptionVa
   // Get current environment variables set in the UI
   const finalEnv = await setInEnvelope({ api, siteInfo, force, key, value, context, scope, secret })
 
-  if (!finalEnv) {
-    return false
-  }
-
   // Return new environment variables of site if using json flag
   if (options.json) {
     logJson(finalEnv)
