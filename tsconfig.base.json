@@ -5,7 +5,24 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "typeRoots": ["node_modules/@types", "types"],
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedSideEffectImports": true,
+
+    // TODO: ~80 errors across ~40 files in src (~180 incl. tests), mostly unguarded `array[0]` / record lookups
+    "noUncheckedIndexedAccess": false,
+    // TODO: ~145 errors across ~55 files in src; many stem from @netlify/config and @netlify/api types
+    "exactOptionalPropertyTypes": false,
+    // TODO: ~190 errors across ~55 files in src; mechanical (`obj.key` -> `obj['key']` for index-signature access)
+    "noPropertyAccessFromIndexSignature": false,
+    // TODO: only `bin/` and `scripts/` are JS; they import `dist/`, so they can only be checked after a build
+    "checkJs": false
+    // `noUnusedLocals` and `noUnusedParameters` are intentionally left to `@typescript-eslint/no-unused-vars`
   },
   "exclude": ["**/__fixtures__/**", "dist/", "functions-templates/", "site/"]
 }
