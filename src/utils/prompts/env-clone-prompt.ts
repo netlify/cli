@@ -4,7 +4,8 @@ import type { EnvVar } from '../types.js'
 import { confirmPrompt } from './confirm-prompt.js'
 import { destructiveCommandMessages } from './prompt-messages.js'
 
-export const generateEnvVarsList = (envVarsToDelete: EnvVar[]) => envVarsToDelete.map((envVar) => envVar.key)
+export const generateEnvVarsList = (envVarsToDelete: Pick<EnvVar, 'key'>[]) =>
+  envVarsToDelete.map((envVar) => envVar.key)
 
 /**
  * Prompts the user to confirm overwriting environment variables on a project.
@@ -13,7 +14,7 @@ export const generateEnvVarsList = (envVarsToDelete: EnvVar[]) => envVarsToDelet
  * @param {EnvVar[]} existingEnvVars - The environment variables that already exist on the project.
  * @returns {Promise<void>} A promise that resolves when the user has confirmed the overwriting of the variables.
  */
-export async function promptEnvCloneOverwrite(siteId: string, existingEnvVars: EnvVar[]): Promise<void> {
+export async function promptEnvCloneOverwrite(siteId: string, existingEnvVars: Pick<EnvVar, 'key'>[]): Promise<void> {
   const { generateWarning } = destructiveCommandMessages.envClone
 
   const existingEnvVarKeys = generateEnvVarsList(existingEnvVars)

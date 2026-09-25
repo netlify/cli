@@ -1,33 +1,44 @@
-import type { OptionValues } from 'commander'
+import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { SUPPORTED_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import { SUPPORTED_CONTEXTS, translateFromEnvelopeToMongo, type EnvelopeItem } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
+import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
+import type { EnvUnsetOptionValues } from './option_values.js'
 import { getSiteInfo } from './utils.js'
 /**
  * Deletes a given key from the env of a site configured with Envelope
- * @returns {Promise<object>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
+const unsetInEnvelope = async ({
+  api,
+  context,
+  force,
+  key,
+  siteInfo,
+}: {
+  api: NetlifyAPI
+  context?: string[] | undefined
+  force?: boolean | undefined
+  key: string
+  siteInfo: SiteInfo
+}): Promise<Record<string, string>> => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars
-  const envelopeVariables = await api.getEnvVars({ accountId, siteId })
+  const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
   const contexts = context || ['all']
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
 
   // check if the given key exists
-  // @ts-expect-error TS(7006) FIXME: Parameter 'envVar' implicitly has an 'any' type.
   const variable = envelopeVariables.find((envVar) => envVar.key === key)
   if (!variable) {
     // if not, no need to call delete; return early
     return env
   }
 
-  if (Boolean(force) === false) {
+  if (!force) {
     await promptOverwriteEnvVariable(key)
   }
 
@@ -35,13 +46,15 @@ const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
   try {
     if (context) {
       // if context(s) are passed, delete the matching contexts / branches, and the `all` context
-      // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
       const values = variable.values.filter((val) =>
-        [...contexts, 'all'].includes(val.context_parameter || val.context),
+        ([...contexts, 'all'] as (string | undefined)[]).includes(val.context_parameter || val.context),
       )
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: always truthy, `filter` returns an array
       if (values) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        await Promise.all(values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })))
+        await Promise.all(
+          // @ts-expect-error FIXME(@netlify/api): `envVarValue.id` is typed optional but is always present on returned values
+          values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })),
+        )
         // if this was the `all` context, we need to create 3 values in the other contexts
         if (values.length === 1 && values[0].context === 'all') {
           const newContexts = SUPPORTED_CONTEXTS.filter((ctx) => !context.includes(ctx))
@@ -62,13 +75,12 @@ const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
     throw error_.json ? error_.json.msg : error_
   }
 
-  // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   delete env[key]
 
   return env
 }
 
-export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
+export const envUnset = async (key: string, options: EnvUnsetOptionValues, command: BaseCommand) => {
   const { context, force } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -88,7 +100,8 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
     return false
   }
 
-  const contextType = SUPPORTED_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
+  const contextType = (SUPPORTED_CONTEXTS as readonly unknown[]).includes(context || 'all') ? 'context' : 'branch'
   log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
+  return undefined
 }

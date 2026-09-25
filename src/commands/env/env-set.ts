@@ -1,22 +1,48 @@
-import type { OptionValues } from 'commander'
+import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
-import { SUPPORTED_CONTEXTS, ALL_ENVELOPE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import {
+  SUPPORTED_CONTEXTS,
+  ALL_ENVELOPE_SCOPES,
+  isSupportedContext,
+  translateFromEnvelopeToMongo,
+  type EnvelopeEnvVarValue,
+  type EnvelopeItem,
+  type UserProvidedScope,
+  type WritableEnvelopeScope,
+} from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-set-prompts.js'
+import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
+import type { EnvSetOptionValues } from './option_values.js'
 import { getSiteInfo } from './utils.js'
 
 /**
  * Updates the env for a site configured with Envelope with a new key/value pair
- * @returns {Promise<object | boolean>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo, value }) => {
+const setInEnvelope = async ({
+  api,
+  context,
+  force,
+  key,
+  scope,
+  secret,
+  siteInfo,
+  value,
+}: {
+  api: NetlifyAPI
+  context?: string[] | undefined
+  force?: boolean | undefined
+  key: string
+  scope?: UserProvidedScope[] | undefined
+  secret?: boolean | undefined
+  siteInfo: SiteInfo
+  value: string
+}): Promise<Record<string, string>> => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
 
   // secret values may not be used in the post-processing scope
-  // @ts-expect-error TS(7006) FIXME: Parameter 'sco' implicitly has an 'any' type.
   if (secret && scope?.some((sco) => /post[-_]processing/.test(sco))) {
     return logAndThrowError(`Secret values cannot be used within the post-processing scope.`)
   }
@@ -29,26 +55,23 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
   }
 
   // fetch envelope env vars
-  const envelopeVariables = await api.getEnvVars({ accountId, siteId })
+  const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
   const contexts = context || ['all']
-  let scopes = scope || ALL_ENVELOPE_SCOPES
+  let scopes: readonly WritableEnvelopeScope[] = scope || ALL_ENVELOPE_SCOPES
 
   if (secret) {
     // post_processing (aka post-processing) scope is not allowed with secrets
-    // @ts-expect-error TS(7006) FIXME: Parameter 'sco' implicitly has an 'any' type.
     scopes = scopes.filter((sco) => !/post[-_]processing/.test(sco))
   }
 
   // if the passed context is unknown, it is actually a branch name
-  // @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
-  let values = contexts.map((ctx) =>
-    SUPPORTED_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
+  let values: EnvelopeEnvVarValue[] = contexts.map((ctx) =>
+    isSupportedContext(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
   )
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'envVar' implicitly has an 'any' type.
   const existing = envelopeVariables.find((envVar) => envVar.key === key)
   // Checks if --force is passed and if it is an existing variaible, then we need to prompt the user
-  if (Boolean(force) === false && existing) {
+  if (!force && existing) {
     await promptOverwriteEnvVariable(key)
   }
 
@@ -68,31 +91,30 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
       }
       if (context) {
         // update individual value(s)
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
       } else {
         // otherwise update whole env var
         if (secret) {
-          // @ts-expect-error TS(7006) FIXME: Parameter 'sco' implicitly has an 'any' type.
           scopes = scopes.filter((sco) => !/post[-_]processing/.test(sco))
-          // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-          if (values.some((val) => val.context === 'all')) {
+          const allContextsValue = values.find((val) => val.context === 'all')
+          if (allContextsValue) {
             log(`This secret's value will be empty in the dev context.`)
             log(`Run \`netlify env:set ${key} <value> --context dev\` to set a new value for the dev context.`)
             values = SUPPORTED_CONTEXTS.filter((ctx) => ctx !== 'all').map((ctx) => ({
               context: ctx,
               // empty out dev value so that secret is indeed secret
-              // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-              value: ctx === 'dev' ? '' : values.find((val) => val.context === 'all').value,
+              value: ctx === 'dev' ? '' : allContextsValue.value,
             }))
           }
         }
         const body = { key, is_secret: secret, scopes, values }
+        // @ts-expect-error FIXME(@netlify/api): `updateEnvVar` body `scopes` rejects `post_processing`, which Envelope returns and accepts
         await api.updateEnvVar({ ...params, body })
       }
     } else {
       // create whole env var
       const body = [{ key, is_secret: secret, scopes, values }]
+      // @ts-expect-error FIXME(@netlify/api): `createEnvVars` body `scopes` rejects `post_processing`, which Envelope returns and accepts
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
@@ -103,12 +125,11 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
   return {
     ...env,
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     [key]: value || env[key],
   }
 }
 
-export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
+export const envSet = async (key: string, value: string, options: EnvSetOptionValues, command: BaseCommand) => {
   const { context, force, scope, secret } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -133,11 +154,12 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
 
   const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
   const withSecret = secret ? ` as a ${chalk.blue('secret')}` : ''
-  const contextType = SUPPORTED_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
+  const contextType = (SUPPORTED_CONTEXTS as readonly unknown[]).includes(context || 'all') ? 'context' : 'branch'
   log(
     `Set environment variable ${chalk.yellow(
       `${key}${value && !secret ? `=${value}` : ''}`,
     )}${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
   )
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
+  return undefined
 }

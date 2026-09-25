@@ -164,34 +164,8 @@
     }
   },
   "src/commands/env/env-clone.ts": {
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 27
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 9
-    },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 22
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 3
-    },
-    "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
-    }
-  },
-  "src/commands/env/env-get.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 4
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
@@ -199,85 +173,29 @@
   },
   "src/commands/env/env-import.ts": {
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 5
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 13
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 8
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 12
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 3
-    }
-  },
-  "src/commands/env/env-list.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
       "count": 1
     },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
-    },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 2
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 2
+      "count": 1
     }
   },
   "src/commands/env/env-set.ts": {
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
-      "count": 1
-    },
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
     },
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 8
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 35
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 13
-    },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 24
-    },
-    "@typescript-eslint/no-unsafe-return": {
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 5
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
+      "count": 4
     }
   },
   "src/commands/env/env-unset.ts": {
     "@typescript-eslint/no-dynamic-delete": {
       "count": 1
     },
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 20
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 8
-    },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 20
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 4
@@ -946,12 +864,6 @@
   },
   "src/utils/env/index.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 1
-    },
-    "@typescript-eslint/prefer-optional-chain": {
       "count": 1
     }
   },

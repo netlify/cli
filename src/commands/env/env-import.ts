@@ -1,41 +1,49 @@
 import { readFile } from 'fs/promises'
 
+import type { NetlifyAPI } from '@netlify/api'
 import AsciiTable from 'ascii-table'
-import type { OptionValues } from 'commander'
 import dotenv from 'dotenv'
 
 import { exit, log, logJson } from '../../utils/command-helpers.js'
-import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
+import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope, type EnvelopeItem } from '../../utils/env/index.js'
+import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
+import type { EnvImportOptionValues } from './option_values.js'
 import { getSiteInfo } from './utils.js'
 
 /**
  * Saves the imported env in the Envelope service
- * @returns {Promise<object>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const importDotEnv = async ({ api, importedEnv, options, siteInfo }) => {
+const importDotEnv = async ({
+  api,
+  importedEnv,
+  options,
+  siteInfo,
+}: {
+  api: NetlifyAPI
+  importedEnv: Record<string, string>
+  options: EnvImportOptionValues
+  siteInfo: SiteInfo
+}): Promise<Record<string, string>> => {
   // fetch env vars
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   const dotEnvKeys = Object.keys(importedEnv)
-  const envelopeVariables = await api.getEnvVars({ accountId, siteId })
-  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
+  const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
   const envelopeKeys = envelopeVariables.map(({ key }) => key)
 
   // if user intends to replace all existing env vars
   // either replace; delete all existing env vars on the site
   // or, merge; delete only the existing env vars that would collide with new .env entries
-  // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
   const keysToDelete = options.replaceExisting ? envelopeKeys : envelopeKeys.filter((key) => dotEnvKeys.includes(key))
 
   // delete marked env vars in parallel
-  // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
   await Promise.all(keysToDelete.map((key) => api.deleteEnvVar({ accountId, siteId, key })))
 
   // hit create endpoint
   const body = translateFromMongoToEnvelope(importedEnv)
   try {
+    // @ts-expect-error FIXME(@netlify/api): `createEnvVars` body `scopes` rejects `post_processing`, which Envelope returns and accepts
     await api.createEnvVars({ accountId, siteId, body })
   } catch (error) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
@@ -44,13 +52,12 @@ const importDotEnv = async ({ api, importedEnv, options, siteInfo }) => {
 
   // return final env to aid in --json output (for testing)
   return {
-    // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
     ...translateFromEnvelopeToMongo(envelopeVariables.filter(({ key }) => !keysToDelete.includes(key))),
     ...importedEnv,
   }
 }
 
-export const envImport = async (fileName: string, options: OptionValues, command: BaseCommand) => {
+export const envImport = async (fileName: string, options: EnvImportOptionValues, command: BaseCommand) => {
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
@@ -61,7 +68,7 @@ export const envImport = async (fileName: string, options: OptionValues, command
 
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
 
-  let importedEnv = {}
+  let importedEnv: Record<string, string> = {}
   try {
     const envFileContents = await readFile(fileName, 'utf-8')
     importedEnv = dotenv.parse(envFileContents)
@@ -92,4 +99,5 @@ export const envImport = async (fileName: string, options: OptionValues, command
   table.addRowMatrix(Object.entries(importedEnv))
   log(table.toString())
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
+  return undefined
 }

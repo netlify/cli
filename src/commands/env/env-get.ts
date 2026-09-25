@@ -1,11 +1,10 @@
-import type { OptionValues } from 'commander'
-
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { SUPPORTED_CONTEXTS, getEnvelopeEnv } from '../../utils/env/index.js'
+import { getEnvelopeEnv, isSupportedContext } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
+import type { EnvGetOptionValues } from './option_values.js'
 import { getSiteInfo } from './utils.js'
 
-export const envGet = async (name: string, options: OptionValues, command: BaseCommand) => {
+export const envGet = async (name: string, options: EnvGetOptionValues, command: BaseCommand) => {
   const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -18,7 +17,7 @@ export const envGet = async (name: string, options: OptionValues, command: BaseC
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
   const env = await getEnvelopeEnv({ api, context, env: cachedConfig.env, key: name, scope, siteInfo })
 
-  // @ts-expect-error FIXME(ndhoule)
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: `env` has no entry for an unset `name`
   const { value } = env[name] || {}
 
   // Return json response for piping commands
@@ -28,7 +27,7 @@ export const envGet = async (name: string, options: OptionValues, command: BaseC
   }
 
   if (!value) {
-    const contextType = SUPPORTED_CONTEXTS.includes(context) ? 'context' : 'branch'
+    const contextType = isSupportedContext(context) ? 'context' : 'branch'
     const withContext = `in the ${chalk.magenta(context)} ${contextType}`
     const withScope = scope === 'any' ? '' : ` and the ${chalk.magenta(scope)} scope`
     log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellow(name)}`)
@@ -36,4 +35,5 @@ export const envGet = async (name: string, options: OptionValues, command: BaseC
   }
 
   log(value)
+  return undefined
 }
