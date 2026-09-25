@@ -5,6 +5,8 @@ import terminalLink from 'terminal-link'
 import { normalizeContext } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
 
+import type { BuildOptions } from './build.js'
+
 export const createBuildCommand = (program: BaseCommand) =>
   program
     .command('build')
@@ -28,7 +30,7 @@ export const createBuildCommand = (program: BaseCommand) =>
 For more information about Netlify builds, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
-    .action(async (options, command) => {
+    .action(async (options: BuildOptions, command: BaseCommand) => {
       const { build } = await import('./build.js')
       await build(options, command)
     })

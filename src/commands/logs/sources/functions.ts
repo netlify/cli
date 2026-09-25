@@ -19,9 +19,11 @@ export const listFunctions = async (
   deployId?: string,
 ): Promise<NetlifyFunction[]> => {
   if (deployId) {
+    // FIXME(@netlify/api): `getSiteDeploy` response is missing `available_functions`
     const deploy = (await client.getSiteDeploy({ siteId, deployId })) as { available_functions?: NetlifyFunction[] }
     return deploy.available_functions ?? []
   }
+  // FIXME(@netlify/api): `searchSiteFunctions` is typed as an array, but responds with `{ functions }`
   const searchResponse = (await client.searchSiteFunctions({ siteId })) as { functions?: NetlifyFunction[] }
   return searchResponse.functions ?? []
 }

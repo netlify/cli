@@ -1,10 +1,14 @@
-import type { OptionValues } from 'commander'
 import { confirm } from '@inquirer/prompts'
 
 import { chalk, logAndThrowError, exit, log, type APIError } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { BaseOptionValues } from '../base-command.js'
 
-export const sitesDelete = async (siteId: string, options: OptionValues, command: BaseCommand) => {
+type SitesDeleteOptions = BaseOptionValues & {
+  force?: boolean
+}
+
+export const sitesDelete = async (siteId: string, options: SitesDeleteOptions, command: BaseCommand) => {
   command.setAnalyticsPayload({ force: options.force })
 
   const { api, site } = command.netlify
