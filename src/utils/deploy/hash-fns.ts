@@ -202,13 +202,12 @@ const hashFns = async (
     serverManifestPath?: string | undefined
     skipFunctionsCache?: boolean | undefined
     statusCb: StatusCallback
-    tmpDir?: string | undefined
+    tmpDir: string
   },
 ): Promise<{
   functionSchedules?: { name: string; cron: string }[] | undefined
   functions: Record<string, string>
   functionsWithNativeModules: FunctionResult[]
-  shaMap?: Record<string, never> | undefined
   fnShaMap?: Record<string, HashedFunctionFile[]> | undefined
   fnConfig?: Record<string, FunctionConfigPayload> | undefined
   server?: { sha: string; region?: string } | undefined
@@ -217,11 +216,7 @@ const hashFns = async (
   // Exit early if there is nothing to bundle. A site can have a server without
   // any functions directory.
   if (directories.length === 0 && !serverEnabled) {
-    return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
-  }
-
-  if (!tmpDir) {
-    throw new Error('Missing tmpDir directory for zipping files')
+    return { functions: {}, functionsWithNativeModules: [] }
   }
 
   const [functionZips, serverBundle] = await Promise.all([
