@@ -63,7 +63,12 @@ export type EnvelopeItem = {
 // AFAICT, Envelope uses only `post_processing` on returned env vars; the CLI documents and expects
 // only `post-processing` as a valid user-provided scope; the code handles both everywhere. Consider
 // explicitly normalizing and dropping undocumented support for user-provided `post_processing`.
-type SupportedScope = EnvelopeEnvVarScope | 'post_processing' | 'any'
+// `--scope` accepts `post-processing`, while Envelope returns `post_processing`
+type UserProvidedScope = 'builds' | 'functions' | 'post-processing' | 'runtime'
+type SupportedScope = EnvelopeEnvVarScope | UserProvidedScope | 'any'
+
+const toEnvelopeScope = (scope: EnvelopeEnvVarScope | UserProvidedScope): EnvelopeEnvVarScope =>
+  scope === 'post-processing' ? 'post_processing' : scope
 
 type ContextOrBranch = string
 
@@ -216,7 +221,7 @@ export const formatEnvelopeData = ({
     // filter by context
     .filter(({ values }) => Boolean(getValueForContext(values, context)))
     // filter by scope
-    .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(scope)))
+    .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(toEnvelopeScope(scope))))
     // sort alphabetically, case insensitive
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     // format the data
