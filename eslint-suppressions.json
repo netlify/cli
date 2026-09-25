@@ -467,11 +467,6 @@
       "count": 1
     }
   },
-  "src/recipes/vscode/settings.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
   "src/utils/agent-detection.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
