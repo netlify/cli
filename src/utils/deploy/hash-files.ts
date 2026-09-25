@@ -3,7 +3,7 @@ import { pipeline } from 'stream/promises'
 import walker from 'folder-walker'
 
 import { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
-import { $TSFixMe } from '../../commands/types.js'
+import type { $TSFixMe } from '../../commands/types.js'
 
 const hashFiles = async ({
   assetType = 'file',

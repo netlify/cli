@@ -6,14 +6,14 @@ import type { NetlifyAPI } from '@netlify/api'
 
 import { listSites } from '../../lib/api.js'
 import { startSpinner } from '../../lib/spinner.js'
-import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, log, type APIError, netlifyCommand } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { matchesRepoUrl } from '../../utils/match-repo-url.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import type { LinkOptionValues } from './option_values.js'
 
 const findSiteByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<SiteInfo> => {

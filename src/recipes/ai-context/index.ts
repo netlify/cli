@@ -11,7 +11,7 @@ import {
   getExistingContext,
   NTL_DEV_MCP_FILE_NAME,
   getContextConsumers,
-  ConsumerConfig,
+  type ConsumerConfig,
   deleteFile,
   downloadAndWriteContextFiles,
 } from './context.js'

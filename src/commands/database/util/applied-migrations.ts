@@ -1,4 +1,4 @@
-import { type SQLExecutor } from '@netlify/dev'
+import type { SQLExecutor } from '@netlify/dev'
 
 import { readApiErrorMessage } from './api-errors.js'
 import { MIGRATIONS_TABLE } from './constants.js'

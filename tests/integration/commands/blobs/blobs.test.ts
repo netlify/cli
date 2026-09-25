@@ -2,13 +2,13 @@ import { readFile, rm } from 'fs/promises'
 import { join } from 'path'
 import { env } from 'process'
 
-import { ListResultBlob } from '@netlify/blobs'
+import type { ListResultBlob } from '@netlify/blobs'
 import { BlobsServer } from '@netlify/blobs/server'
 import httpProxy from 'http-proxy'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import { Route } from '../../utils/mock-api-vitest.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import type { Route } from '../../utils/mock-api-vitest.js'
 import { temporaryDirectory } from '../../../../src/utils/temporary-file.js'
 
 const blobsProxy = httpProxy.createProxyServer({})

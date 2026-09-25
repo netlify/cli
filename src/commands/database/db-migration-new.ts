@@ -4,7 +4,7 @@ import { join } from 'path'
 import inquirer from 'inquirer'
 
 import { log, logJson } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import { utcTimestampPrefix } from './util/timestamp.js'
 import { isInteractive } from '../../utils/scripted-commands.js'

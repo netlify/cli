@@ -1,8 +1,8 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import { chalk, exit, getToken, log, logAndThrowError } from '../../utils/command-helpers.js'
-import { TokenLocation } from '../../utils/types.js'
-import BaseCommand from '../base-command.js'
+import type { TokenLocation } from '../../utils/types.js'
+import type BaseCommand from '../base-command.js'
 
 const msg = function (location: TokenLocation) {
   switch (location) {

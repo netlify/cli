@@ -6,7 +6,7 @@ import { resetDatabase } from '@netlify/dev'
 
 import { log, logJson } from '../../utils/command-helpers.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { connectToDatabase, LocalDatabaseStartError } from './util/db-connection.js'
 
 export interface ResetOptions {

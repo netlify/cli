@@ -8,7 +8,7 @@ import inquirer from 'inquirer'
 import { chalk, log, netlifyCommand } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { generateNextPrefix } from './db-migration-new.js'
 import { connectRawClient, describeError } from './util/db-connection.js'
 import {

@@ -5,7 +5,7 @@ import inquirer from 'inquirer'
 
 import { log, logJson } from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { readApiErrorMessage } from './util/api-errors.js'
 import { PRODUCTION_BRANCH } from './util/constants.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'

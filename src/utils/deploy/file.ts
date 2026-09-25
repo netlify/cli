@@ -1,4 +1,4 @@
-import walker from 'folder-walker'
+import type walker from 'folder-walker'
 
 export type OriginalFile = walker.Entry
 

@@ -1,4 +1,4 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import { isEmpty } from '../../utils/object-utilities.js'
 

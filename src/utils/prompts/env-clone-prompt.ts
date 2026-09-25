@@ -1,5 +1,5 @@
 import { log } from '../command-helpers.js'
-import { EnvVar } from '../types.js'
+import type { EnvVar } from '../types.js'
 
 import { confirmPrompt } from './confirm-prompt.js'
 import { destructiveCommandMessages } from './prompt-messages.js'
