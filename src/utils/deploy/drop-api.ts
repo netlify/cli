@@ -121,42 +121,34 @@ export const waitForDropDeploy = async (
   siteId: string,
   deployId: string,
   timeout: number = DEFAULT_DEPLOY_TIMEOUT,
-): Promise<DropSiteDeploy> => {
-  let deploy: DropSiteDeploy | undefined
+): Promise<DropSiteDeploy> =>
+  await pWaitFor(
+    async () => {
+      const response = await fetch(`${apiBase}/sites/${siteId}/deploys/${deployId}`, {
+        headers: makeHeaders(userAgent),
+      })
 
-  const checkDeploy = async (): Promise<boolean> => {
-    const response = await fetch(`${apiBase}/sites/${siteId}/deploys/${deployId}`, {
-      headers: makeHeaders(userAgent),
-    })
+      if (!response.ok) {
+        return false
+      }
 
-    if (!response.ok) {
+      const data = (await response.json()) as DropSiteDeploy
+      if (data.state === 'ready') {
+        return pWaitFor.resolveWith(data)
+      }
+      if (data.state === 'error') {
+        throw new Error(data.error_message ?? `Deploy ${deployId} had an error`)
+      }
       return false
-    }
-
-    const data = (await response.json()) as DropSiteDeploy
-    if (data.state === 'ready') {
-      deploy = data
-      return true
-    }
-    if (data.state === 'error') {
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty error message falls back to the generic one
-      throw new Error(data.error_message || `Deploy ${deployId} had an error`)
-    }
-    return false
-  }
-
-  await pWaitFor(checkDeploy, {
-    interval: DEPLOY_POLL,
-    timeout: {
-      milliseconds: timeout,
-      message: 'Timeout while waiting for deploy',
     },
-  })
-
-  // deploy is guaranteed to be set when pWaitFor resolves
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return deploy!
-}
+    {
+      interval: DEPLOY_POLL,
+      timeout: {
+        milliseconds: timeout,
+        message: 'Timeout while waiting for deploy',
+      },
+    },
+  )
 
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
 export const claimDropSite = async (
