@@ -136,9 +136,6 @@
   },
   "src/commands/functions/functions-create.ts": {
     "@typescript-eslint/await-thenable": {
-      "count": 2
-    },
-    "@typescript-eslint/no-confusing-void-expression": {
       "count": 1
     },
     "@typescript-eslint/no-floating-promises": {
