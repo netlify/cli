@@ -6,14 +6,13 @@ import { promptEnvCloneOverwrite } from '../../utils/prompts/env-clone-prompt.js
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 import type { EnvCloneOptionValues } from './option_values.js'
+import { fetchSiteInfo } from './utils.js'
 
-const safeGetSite = async (api: NetlifyAPI, siteId: string): Promise<{ data?: SiteInfo; error?: unknown }> => {
+const safeGetSite = async (api: NetlifyAPI, siteId: string): Promise<SiteInfo | undefined> => {
   try {
-    const data = await api.getSite({ siteId })
-    // FIXME(@netlify/api): `getSite` response type doesn't match the hand-written `SiteInfo` (e.g. optional `account_slug`)
-    return { data: data as unknown as SiteInfo }
-  } catch (error) {
-    return { error }
+    return await fetchSiteInfo(api, siteId)
+  } catch {
+    return undefined
   }
 }
 
@@ -89,19 +88,15 @@ export const envClone = async (options: EnvCloneOptionValues, command: BaseComma
     to: options.to,
   }
 
-  // FIXME: `data` is only undefined past the error checks below if `getSite` rejects with a falsy reason
-  const [{ data: siteFrom, error: errorFrom }, { data: siteTo, error: errorTo }] = (await Promise.all([
-    safeGetSite(api, siteId.from),
-    safeGetSite(api, siteId.to),
-  ])) as [{ data: SiteInfo; error?: unknown }, { data: SiteInfo; error?: unknown }]
+  const [siteFrom, siteTo] = await Promise.all([safeGetSite(api, siteId.from), safeGetSite(api, siteId.to)])
 
-  if (errorFrom) {
+  if (!siteFrom) {
     return logAndThrowError(
       `Can't find project with id ${chalk.bold(siteId.from)}. Please make sure the project exists.`,
     )
   }
 
-  if (errorTo) {
+  if (!siteTo) {
     return logAndThrowError(`Can't find project with id ${chalk.bold(siteId.to)}. Please make sure the project exists.`)
   }
 
