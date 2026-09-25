@@ -36,7 +36,7 @@ import { temporaryDirectory } from '../temporary-file.js'
 export type { DeployEvent }
 
 // FIXME(@netlify/api): every `deploy` field is optional, even those always set once a deploy is diffed
-type DiffedDeploy = Deploy & Required<Pick<Deploy, 'id' | 'required'>>
+type DiffedDeploy = Deploy & Required<Pick<Deploy, 'id'>>
 
 const buildStatsString = (possibleParts: (string | false | undefined)[]) => {
   const parts = possibleParts.filter(Boolean)
@@ -236,9 +236,9 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   statusCb({
     type: 'create-deploy',
-    msg: `CDN requesting ${requiredFiles.length} files${
-      Array.isArray(requiredFns) ? ` and ${requiredFns.length} functions` : ''
-    }${Array.isArray(requiredEdgeFns) ? ` and ${requiredEdgeFns.length} edge functions` : ''}`,
+    msg: `CDN requesting ${(requiredFiles?.length ?? 0).toString()} files${
+      Array.isArray(requiredFns) ? ` and ${requiredFns.length.toString()} functions` : ''
+    }${Array.isArray(requiredEdgeFns) ? ` and ${requiredEdgeFns.length.toString()} edge functions` : ''}`,
     phase: 'stop',
   })
 
