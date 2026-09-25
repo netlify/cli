@@ -346,9 +346,6 @@
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 2
     },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
-    },
     "no-empty": {
       "count": 1
     }

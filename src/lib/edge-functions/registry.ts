@@ -203,7 +203,7 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
         this.logEvent('loaded', { functionName: func.name, warnings: warnings[func.name] })
       })
     } catch (error) {
-      this.logEvent('buildError', { buildError: error as NodeJS.ErrnoException })
+      this.logEvent('buildError', { buildError: error })
     }
   }
 
@@ -435,9 +435,7 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
         })
       }
     } catch (error) {
-      if (error instanceof Error) {
-        this.logEvent('buildError', { buildError: error })
-      }
+      this.logEvent('buildError', { buildError: error })
     }
   }
 
@@ -450,14 +448,14 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
    */
   private logEvent(
     event: EdgeFunctionEvent,
-    { buildError, functionName, warnings = [] }: { buildError?: Error; functionName?: string; warnings?: string[] },
+    { buildError, functionName, warnings = [] }: { buildError?: unknown; functionName?: string; warnings?: string[] },
   ) {
     const subject = functionName ? `edge function ${chalk.yellow(this.getDisplayName(functionName))}` : 'edge functions'
     const warningsText =
       warnings.length === 0 ? '' : ` with warnings:\n${warnings.map((warning) => `  - ${warning}`).join('\n')}`
 
     if (event === 'buildError') {
-      log(`${NETLIFYDEVERR} ${chalk.red('Failed to load')} ${subject}: ${buildError}`)
+      log(`${NETLIFYDEVERR} ${chalk.red('Failed to load')} ${subject}: ${String(buildError)}`)
 
       return
     }
