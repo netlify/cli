@@ -274,13 +274,7 @@ export const getEnvelopeEnv = (async ({
 
   if (raw) {
     const entries = Object.entries({ ...accountEnv, ...siteEnv })
-    return entries.reduce<Record<string, string>>(
-      (obj, [envVarKey, metadata]) => ({
-        ...obj,
-        [envVarKey]: metadata.value,
-      }),
-      {},
-    )
+    return Object.fromEntries(entries.map(([envVarKey, metadata]) => [envVarKey, metadata.value]))
   }
 
   const generalEnv = filterEnvBySource(env, 'general')
