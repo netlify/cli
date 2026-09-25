@@ -1,11 +1,10 @@
-import type { CompletionItem } from '@pnpm/tabtab'
+import type { CompletionItem, ParseEnvResult } from '@pnpm/tabtab'
+
+import type { AutocompletionData } from './constants.js'
 
 const getAutocompletion = function (
-  env: { complete: boolean; lastPartial: string; line: string; words: number },
-  program: Record<
-    string,
-    CompletionItem & { description?: string | undefined; name?: string | undefined; options: CompletionItem[] }
-  >,
+  env: Pick<ParseEnvResult, 'complete' | 'lastPartial' | 'line' | 'words'>,
+  program: AutocompletionData,
 ): CompletionItem[] | undefined {
   if (!env.complete) {
     return
@@ -40,6 +39,7 @@ const getAutocompletion = function (
     // suggest options that are not used
     return unusedOptions
   }
+  return undefined
 }
 
 export default getAutocompletion

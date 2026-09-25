@@ -1,8 +1,9 @@
+import type { GlobalConfigStore } from '@netlify/dev-utils'
+
 import getCLIPackageJson from '../get-cli-package-json.js'
 
 export const { version: cliVersion } = await getCLIPackageJson()
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const isTelemetryDisabled = function (config) {
+export const isTelemetryDisabled = function (config: GlobalConfigStore): unknown {
   return config.get('telemetryDisabled')
 }

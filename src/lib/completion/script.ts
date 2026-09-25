@@ -8,14 +8,14 @@ import process from 'process'
 
 import { getShellFromEnv, log, parseEnv } from '@pnpm/tabtab'
 
-import { AUTOCOMPLETION_FILE } from './constants.js'
+import { AUTOCOMPLETION_FILE, type AutocompletionData } from './constants.js'
 import getAutocompletion from './get-autocompletion.js'
 
 const env = parseEnv(process.env)
 const shell = getShellFromEnv(process.env)
 
 if (existsSync(AUTOCOMPLETION_FILE)) {
-  const program = JSON.parse(readFileSync(AUTOCOMPLETION_FILE, 'utf-8'))
+  const program = JSON.parse(readFileSync(AUTOCOMPLETION_FILE, 'utf-8')) as AutocompletionData
   const autocomplete = getAutocompletion(env, program)
 
   if (autocomplete && autocomplete.length !== 0) {
