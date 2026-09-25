@@ -105,8 +105,7 @@ describe('the registry handles duplicate functions based on extension precedence
       config: {},
       timeouts: { syncFunctions: 1, backgroundFunctions: 1 },
       settings: {
-        // @ts-expect-error TS(2322) FIXME: Type '{ port: number; }' is not assignable to type... Remove this comment to see the full error message
-        port: 8888,
+        functionsPort: 8888,
       },
       frameworksAPIPaths: getFrameworksAPIPaths(projectRoot),
     })

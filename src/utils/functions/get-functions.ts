@@ -1,41 +1,38 @@
-import { listFunctions } from '@netlify/zip-it-and-ship-it'
+import type { NetlifyConfig } from '@netlify/build'
+import { type Config as ZisiConfig, type ListedFunction, listFunctions } from '@netlify/zip-it-and-ship-it'
 
 import { fileExistsAsync } from '../../lib/fs.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionName' implicitly has an 'any' t... Remove this comment to see the full error message
-const getUrlPath = (functionName) => `/.netlify/functions/${functionName}`
+const getUrlPath = (functionName: string) => `/.netlify/functions/${functionName}`
 
 export const BACKGROUND = '-background'
 const JS = 'js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'mainFile' implicitly has an 'any'... Remove this comment to see the full error message
-const addFunctionProps = ({ mainFile, name, runtime, schedule }) => {
+const addFunctionProps = ({ mainFile, name, runtime, schedule }: ListedFunction) => {
   const urlPath = getUrlPath(name)
   const isBackground = name.endsWith(BACKGROUND)
   return { mainFile, name, runtime, urlPath, isBackground, schedule }
 }
 
-/**
- * @param {Record<string, { schedule?: string }>} functionConfigRecord
- * @returns {Record<string, { schedule?: string }>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionConfigRecord' implicitly has an... Remove this comment to see the full error message
-const extractSchedule = (functionConfigRecord) =>
-  // @ts-expect-error TS(2339) FIXME: Property 'schedule' does not exist on type 'unknow... Remove this comment to see the full error message
-  Object.fromEntries(Object.entries(functionConfigRecord).map(([name, { schedule }]) => [name, { schedule }]))
+export type LocalFunction = ReturnType<typeof addFunctionProps>
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionsSrcDir' implicitly has an 'any... Remove this comment to see the full error message
-export const getFunctions = async (functionsSrcDir, config = {}) => {
+const extractSchedule = (functionsConfig: NetlifyConfig['functions']): ZisiConfig =>
+  Object.fromEntries(
+    // @ts-expect-error FIXME(@netlify/build): `schedule` is missing from the functions config type
+    Object.entries(functionsConfig).map(([name, { schedule }]) => [name, { schedule }]),
+  )
+
+export const getFunctions = async (
+  functionsSrcDir: string,
+  config: { functions?: NetlifyConfig['functions'] | undefined } = {},
+) => {
   if (!(await fileExistsAsync(functionsSrcDir))) {
     return []
   }
 
   const functions = await listFunctions(functionsSrcDir, {
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type '{}'.
     config: config.functions ? extractSchedule(config.functions) : undefined,
     parseISC: true,
   })
-  // @ts-expect-error TS(2345) FIXME: Argument of type 'ListedFunction' is not assignabl... Remove this comment to see the full error message
-  const functionsWithProps = functions.filter(({ runtime }) => runtime === JS).map((func) => addFunctionProps(func))
-  return functionsWithProps
+  return functions.filter(({ runtime }) => runtime === JS).map(addFunctionProps)
 }

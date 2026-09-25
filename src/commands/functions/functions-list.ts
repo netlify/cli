@@ -9,6 +9,11 @@ interface DeployedFunction {
   n?: string
 }
 
+interface FunctionsListOptions extends OptionValues {
+  functions?: string
+  json?: boolean
+}
+
 const normalizeFunction = function (
   deployedFunctions: DeployedFunction[],
   {
@@ -23,10 +28,10 @@ const normalizeFunction = function (
   return { name, url, isDeployed }
 }
 
-export const functionsList = async (options: OptionValues, command: BaseCommand) => {
+export const functionsList = async (options: FunctionsListOptions, command: BaseCommand) => {
   const { config, relConfigFilePath, siteInfo } = command.netlify
 
-  // @ts-expect-error FIXME(serhalp): Investigate. This is either dead code or a type error in the API client package.
+  // @ts-expect-error FIXME(@netlify/api): `available_functions` is missing from the deploy type
   const deployedFunctions = (siteInfo.published_deploy?.available_functions as DeployedFunction[] | undefined) ?? []
 
   const functionsDir = getFunctionsDir({ options, config })

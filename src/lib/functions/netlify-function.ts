@@ -3,7 +3,6 @@ import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
 
 import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
-import type { MemoizeCache } from '@netlify/dev-utils'
 import { CronExpressionParser } from 'cron-parser'
 import semver from 'semver'
 
@@ -13,13 +12,17 @@ import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import type { ServerSettings } from '../../utils/types.js'
 
-import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'
+import type { BaseBuildResult, BuildCache, InvokeFunctionResult, Runtime } from './runtimes/index.js'
 
 export interface InvocationError {
   errorMessage: string
   errorType: string
   stackTrace: string[]
 }
+
+// `netlify dev` passes its full server settings, while `functions:serve` only passes the functions ones
+export type FunctionsSettings = Pick<ServerSettings, 'functions' | 'functionsPort'> &
+  Partial<Pick<ServerSettings, 'port' | 'https'>>
 
 export type InvokeFunctionResultWithError = { error: Error | InvocationError; result: null }
 export type InvokeFunctionResultWithSuccess = { error: null; result: InvokeFunctionResult }
@@ -51,7 +54,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   private readonly projectRoot: string
   private readonly timeoutBackground?: number
   private readonly timeoutSynchronous?: number
-  private readonly settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
+  private readonly settings: FunctionsSettings
 
   public readonly displayName: string
   public mainFile: string
@@ -115,8 +118,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     name: string
     projectRoot: string
     runtime: Runtime<BuildResult>
-    // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
-    settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
+    settings: FunctionsSettings
     srcPath: string
     timeoutBackground?: number
     timeoutSynchronous?: number
@@ -137,7 +139,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     this.srcPath = srcPath
 
     const functionConfig = config.functions?.[name]
-    // @ts-expect-error -- XXX(serhalp): fixed in stack PR (bumps to https://github.com/netlify/build/pull/6165)
+    // @ts-expect-error FIXME(@netlify/build): `schedule` is missing from the functions config type
     this.schedule = functionConfig?.schedule
 
     this.srcFiles = new Set()
@@ -170,6 +172,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     if (extension === '.js') {
       return '.mjs'
     }
+    return undefined
   }
 
   hasValidName() {
@@ -209,7 +212,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   //
   // - `srcFilesDiff`: Files that were added and removed since the last time
   //    the function was built.
-  async build({ cache }: { cache?: MemoizeCache<Record<string, unknown>> }) {
+  async build({ cache }: { cache?: BuildCache }) {
     const buildFunction = await this.runtime.getBuildFunction({
       config: this.config,
       directory: this.directory,
@@ -225,6 +228,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
       const srcFilesSet = new Set<string>(srcFiles)
       const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
+      // TS can't relate a rest-destructured generic (`Omit`) to `MappedOmit` of the same type
       this.buildData = buildData as unknown as MappedOmit<BuildResult, 'includedFiles' | 'schedule' | 'srcFiles'>
       this.buildError = null
       this.srcFiles = srcFilesSet
@@ -386,12 +390,8 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   }
 
   get url() {
-    // This line fixes the issue here https://github.com/netlify/cli/issues/4116
-    // Not sure why `settings.port` was used here nor does a valid reference exist.
-    // However, it remains here to serve whatever purpose for which it was added.
-    // @ts-expect-error(serhalp) -- Remove use of `port` here? Otherwise, pass it in from `functions:serve`.
+    // `netlify dev` serves functions through its main server; `functions:serve` only has the functions server
     const port = this.settings.port || this.settings.functionsPort
-    // @ts-expect-error(serhalp) -- Same as above for `https`
     const protocol = this.settings.https ? 'https' : 'http'
     const url = new URL(`/.netlify/functions/${this.name}`, `${protocol}://localhost:${port}`)
 

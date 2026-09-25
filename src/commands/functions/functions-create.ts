@@ -27,6 +27,7 @@ import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import type BaseCommand from '../base-command.js'
+import type { NetlifyOptions } from '../types.js'
 
 const require = createRequire(import.meta.url)
 
@@ -46,9 +47,52 @@ const MOON_SPINNER = {
   frames: ['🌑 ', '🌒 ', '🌓 ', '🌔 ', '🌕 ', '🌖 ', '🌗 ', '🌘 '],
 }
 
+type FunctionType = 'edge' | 'serverless'
+
+interface FunctionsCreateOptions extends OptionValues {
+  name?: string
+  url?: string
+  language?: string
+  template?: string
+  offline?: boolean
+}
+
+type FunctionsCreateOptionsWithURL = FunctionsCreateOptions & { url: string }
+
+/** The default export of a template's `.netlify-function-template.mjs` file */
+interface FunctionTemplateMetadata {
+  name: string
+  description: string
+  functionType: FunctionType
+  priority?: number
+  onComplete?: (this: BaseCommand) => unknown
+}
+
+interface FunctionTemplate extends FunctionTemplateMetadata {
+  lang: string
+}
+
+interface TemplateChoice {
+  name: string
+  value: FunctionTemplate
+  short: string
+  score?: number
+}
+
+interface TemplatePackageJson {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+}
+
+interface RepoContentsEntry {
+  name: string
+  // FIXME: GitHub returns `null` for directories
+  download_url: string
+}
+
 const isValidFunctionName = (name: unknown): name is string => typeof name === 'string' && /^[\w.-]+$/i.test(name)
 
-const validateFunctionName = (name: unknown): void => {
+const validateFunctionName: (name: unknown) => asserts name is string = (name) => {
   if (!isValidFunctionName(name)) {
     throw new Error(
       `Invalid function name "${String(
@@ -60,13 +104,12 @@ const validateFunctionName = (name: unknown): void => {
 
 /**
  * prompt for a name if name not supplied
- * @param {string} argumentName
- * @param {import('commander').OptionValues} options
- * @param {string} [defaultName]
- * @returns
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'argumentName' implicitly has an 'any' t... Remove this comment to see the full error message
-const getNameFromArgs = async function (argumentName, options, defaultName) {
+const getNameFromArgs = async function (
+  argumentName: string | undefined,
+  options: FunctionsCreateOptions,
+  defaultName?: string,
+): Promise<string> {
   if (options.name) {
     if (argumentName) {
       throw new Error('function name specified in both flag and arg format, pick one')
@@ -88,37 +131,28 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
   })
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'registry' implicitly has an 'any' type.
-const filterRegistry = function (registry, input) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
+// FIXME: template choices have no `description`, so every searched string ends with "undefined"
+const filterRegistry = function (registry: (TemplateChoice & { description?: undefined })[], input: string) {
   const temp = registry.map((value) => value.name + value.description)
   const filteredTemplates = fuzzy.filter(input, temp)
   const filteredTemplateNames = new Set(
     filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
   )
-  return (
-    registry
-      // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
-      .filter((t) => filteredTemplateNames.has(t.name + t.description))
-      // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
-      .map((t) => {
-        // add the score
-        // @ts-expect-error TS(2339) FIXME: Property 'score' does not exist on type 'FilterRes... Remove this comment to see the full error message
-        const { score } = filteredTemplates.find(
-          (filteredTemplate) => filteredTemplate.string === t.name + t.description,
-        )
-        t.score = score
-        return t
-      })
-  )
+  return registry
+    .filter((t) => filteredTemplateNames.has(t.name + t.description))
+    .map((t) => {
+      // add the score
+      // @ts-expect-error FIXME: `find` can return `undefined`, which would make this destructuring throw
+      const { score } = filteredTemplates.find((filteredTemplate) => filteredTemplate.string === t.name + t.description)
+      t.score = score
+      return t
+    })
 }
 
-/**
- * @param {string} lang
- * @param {'edge' | 'serverless'} funcType
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'lang' implicitly has an 'any' type.
-const formatRegistryArrayForInquirer = async function (lang, funcType) {
+const formatRegistryArrayForInquirer = async function (
+  lang: string,
+  funcType: FunctionType,
+): Promise<TemplateChoice[]> {
   const folders = await readdir(path.join(templatesDir, lang), { withFileTypes: true })
 
   const imports = await Promise.all(
@@ -128,15 +162,16 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
         try {
           const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
           // @ts-expect-error TS(7036) FIXME: Dynamic import's specifier must be of type 'string... Remove this comment to see the full error message
-          const template = await import(pathToFileURL(templatePath))
+          const template = (await import(pathToFileURL(templatePath))) as { default?: FunctionTemplateMetadata }
           return template.default
         } catch {
           // noop if import fails we don't break the whole inquirer
+          return undefined
         }
       }),
   )
   const registry = imports
-    .filter((template) => template?.functionType === funcType)
+    .filter((template): template is FunctionTemplateMetadata => template?.functionType === funcType)
     .sort((templateA, templateB) => {
       const priorityDiff = (templateA.priority || DEFAULT_PRIORITY) - (templateB.priority || DEFAULT_PRIORITY)
 
@@ -148,15 +183,16 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
       // until Node 11, so the original sorting order from `fs.readdirSync`
       // was not respected. We can simplify this once we drop support for
       // Node 10.
+      // @ts-expect-error FIXME: subtracting two objects always yields `NaN`
       return templateA - templateB
     })
-    .map((t) => {
-      t.lang = lang
+    .map((t): TemplateChoice => {
+      const template = Object.assign(t, { lang })
       return {
         // confusing but this is the format inquirer wants
-        name: `[${t.name}] ${t.description}`,
-        value: t,
-        short: `${lang}-${t.name}`,
+        name: `[${template.name}] ${template.description}`,
+        value: template,
+        short: `${lang}-${template.name}`,
       }
     })
   return registry
@@ -164,21 +200,21 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
 
 /**
  * pick template from our existing templates
- * @param {import('commander').OptionValues} config
- * @param {'edge' | 'serverless'} funcType
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'languageFromFlag' implicitly has ... Remove this comment to see the full error message
-const pickTemplate = async function ({ language: languageFromFlag, template: templateFromFlag }, funcType) {
+const pickTemplate = async function (
+  { language: languageFromFlag, template: templateFromFlag }: FunctionsCreateOptions,
+  funcType: FunctionType,
+): Promise<FunctionTemplate | 'url' | 'report'> {
   const specialCommands = [
     new Separator(),
     {
       name: `Clone template from GitHub URL`,
-      value: 'url',
+      value: 'url' as const,
       short: 'gh-url',
     },
     {
       name: `Report issue with, or suggest a new template`,
-      value: 'report',
+      value: 'report' as const,
       short: 'gh-report',
     },
     new Separator(),
@@ -198,7 +234,7 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
     })
   }
 
-  let templatesForLanguage
+  let templatesForLanguage: TemplateChoice[]
 
   try {
     templatesForLanguage = await formatRegistryArrayForInquirer(language, funcType)
@@ -207,9 +243,7 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
   }
 
   if (templateFromFlag) {
-    const match = templatesForLanguage.find(
-      (entry: { value?: { name?: string } }) => entry.value?.name === templateFromFlag,
-    )
+    const match = templatesForLanguage.find((entry) => entry.value?.name === templateFromFlag)
     if (!match) {
       return logAndThrowError(
         `Template "${templateFromFlag}" not found for language "${language}". Run \`netlify functions:create\` without --template to browse available templates.`,
@@ -218,11 +252,11 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
     return match.value
   }
 
-  const chosenTemplate = await search({
+  const chosenTemplate = await search<FunctionTemplate | 'url' | 'report'>({
     message: 'Pick a template',
     source(input: string | undefined) {
       // if Edge Functions template, don't show url option
-      // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Separator... Remove this comment to see the full error message
+      // @ts-expect-error FIXME: separators have no `value`
       const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
       const parsedSpecialCommands = funcType === 'edge' ? edgeCommands : specialCommands
 
@@ -232,6 +266,7 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
       }
       // only show filtered results sorted by score
       const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
+        // @ts-expect-error FIXME: special commands have no `score`, so this comparator can return `NaN`
         (answerA, answerB) => answerB.score - answerA.score,
       )
       return answers
@@ -242,7 +277,7 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
 
 const DEFAULT_PRIORITY = 999
 
-const selectTypeOfFunc = async (): Promise<'edge' | 'serverless'> => {
+const selectTypeOfFunc = async (): Promise<FunctionType> => {
   const functionTypes = [
     { name: 'Edge function (Deno)', value: 'edge' as const },
     { name: 'Serverless function (Node)', value: 'serverless' as const },
@@ -254,11 +289,7 @@ const selectTypeOfFunc = async (): Promise<'edge' | 'serverless'> => {
   })
 }
 
-/**
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const ensureEdgeFuncDirExists = function (command) {
+const ensureEdgeFuncDirExists = function (command: BaseCommand) {
   const { config, site } = command.netlify
   const siteId = site.id
 
@@ -288,11 +319,8 @@ const ensureEdgeFuncDirExists = function (command) {
 
 /**
  * Prompts the user to choose a functions directory
- * @param {import('../base-command.js').default} command
- * @returns {Promise<string>} - functions directory or throws an error
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const promptFunctionsDirectory = async (command) => {
+const promptFunctionsDirectory = async (command: BaseCommand): Promise<string> => {
   const { api, relConfigFilePath, site } = command.netlify
   log(`\n${NETLIFYDEVLOG} functions directory not specified in ${relConfigFilePath} or UI settings`)
 
@@ -328,11 +356,8 @@ const promptFunctionsDirectory = async (command) => {
 
 /**
  * Get functions directory (and make it if necessary)
- * @param {import('../base-command.js').default} command
- * @returns {Promise<string>} - functions directory or throws an error
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const ensureFunctionDirExists = async function (command) {
+const ensureFunctionDirExists = async function (command: BaseCommand): Promise<string> {
   const { config } = command.netlify
   const functionsDirHolder =
     config.functionsDirectory || join(command.workingDir, await promptFunctionsDirectory(command))
@@ -355,18 +380,18 @@ const ensureFunctionDirExists = async function (command) {
 
 /**
  * Download files from a given GitHub URL
- * @param {import('../base-command.js').default} command
- * @param {import('commander').OptionValues} options
- * @param {string} argumentName
- * @param {string} functionsDir
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const downloadFromURL = async function (command, options, argumentName, functionsDir) {
+const downloadFromURL = async function (
+  command: BaseCommand,
+  options: FunctionsCreateOptionsWithURL,
+  argumentName: string | undefined,
+  functionsDir: string,
+) {
   const [functionName] = options.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
   const fnFolder = getSafeFunctionPath(functionsDir, nameToUse)
 
-  const folderContents = await readRepoURL(options.url)
+  const folderContents = (await readRepoURL(options.url)) as RepoContentsEntry[]
 
   if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
     log(
@@ -381,7 +406,6 @@ const downloadFromURL = async function (command, options, argumentName, function
     // Ignore
   }
   await Promise.all(
-    // @ts-expect-error TS(7031) FIXME: Binding element 'downloadUrl' implicitly has an 'a... Remove this comment to see the full error message
     folderContents.map(async ({ download_url: downloadUrl, name }) => {
       try {
         const res = await fetch(downloadUrl)
@@ -405,7 +429,7 @@ const downloadFromURL = async function (command, options, argumentName, function
   if (await fileExistsAsync(fnTemplateFile)) {
     const {
       default: { onComplete },
-    } = await import(pathToFileURL(fnTemplateFile).href)
+    } = (await import(pathToFileURL(fnTemplateFile).href)) as { default: FunctionTemplateMetadata }
 
     await handleOnComplete({ command, onComplete })
     // delete
@@ -419,9 +443,11 @@ const downloadFromURL = async function (command, options, argumentName, function
  * in the former. The packages are returned as an array of strings with the
  * name and version range (e.g. '@netlify/functions@0.1.0').
  */
-const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
+const getNpmInstallPackages = (
+  existingPackages: Record<string, string> = {},
+  neededPackages: Record<string, string> = {},
+) =>
   Object.entries(neededPackages)
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     .filter(([name]) => existingPackages[name] === undefined)
     .map(([name, version]) => `${name}@${version}`)
 
@@ -432,9 +458,18 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
  * we don't do this check, we may be upgrading the version of a module used in
  * another part of the project, which we don't want to do.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'functionPackageJson' implicitly h... Remove this comment to see the full error message
-const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
-  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
+const installDeps = async ({
+  functionPackageJson,
+  functionPath,
+  functionsDir,
+}: {
+  functionPackageJson: string
+  functionPath: string
+  functionsDir: string
+}) => {
+  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(
+    functionPackageJson,
+  ) as TemplatePackageJson
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
 
@@ -447,7 +482,9 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     return
   }
 
-  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(sitePackageJson)
+  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(
+    sitePackageJson,
+  ) as TemplatePackageJson
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
   const npmInstallPath = path.dirname(sitePackageJson)
@@ -476,15 +513,14 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
 
 /**
  * no --url flag specified, pick from a provided template
- * @param {import('../base-command.js').default} command
- * @param {import('commander').OptionValues} options
- * @param {string} argumentName
- * @param {string} functionsDir Absolute path of the functions directory
- * @param {'edge' | 'serverless'} funcType
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-
-const scaffoldFromTemplate = async function (command, options, argumentName, functionsDir, funcType) {
+const scaffoldFromTemplate = async function (
+  command: BaseCommand,
+  options: FunctionsCreateOptions,
+  argumentName: string | undefined,
+  functionsDir: string,
+  funcType: FunctionType,
+) {
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, funcType)
   if (chosenTemplate === 'url') {
@@ -494,7 +530,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     })
     options.url = chosenUrl.trim()
     try {
-      await downloadFromURL(command, options, argumentName, functionsDir)
+      await downloadFromURL(command, options as FunctionsCreateOptionsWithURL, argumentName, functionsDir)
     } catch {
       return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
     }
@@ -515,7 +551,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     const functionPath = ensureFunctionPathIsOk(functionsDir, name)
 
     const vars = { name }
-    let functionPackageJson
+    let functionPackageJson: string | undefined
 
     // These files will not be part of the log message because they'll likely
     // be removed before the command finishes.
@@ -557,14 +593,13 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
 const TEMPLATE_PERMISSIONS = 0o777
 
-/**
- *
- * @param {object} config
- * @param {import('../base-command.js').default} config.command
- * @param {(command: import('../base-command.js').default) => any} config.onComplete
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-const handleOnComplete = async ({ command, onComplete }) => {
+const handleOnComplete = async ({
+  command,
+  onComplete,
+}: {
+  command: BaseCommand
+  onComplete: FunctionTemplateMetadata['onComplete']
+}) => {
   const { config } = command.netlify
 
   if (onComplete) {
@@ -578,13 +613,7 @@ const handleOnComplete = async ({ command, onComplete }) => {
   }
 }
 
-/**
- *
- * @param {string} funcName
- * @param {import('../types.js').NetlifyOptions} options
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'funcName' implicitly has an 'any' type.
-const registerEFInToml = async (funcName, options) => {
+const registerEFInToml = async (funcName: string, options: NetlifyOptions) => {
   const { configFilePath, relConfigFilePath } = options
   if (!fs.existsSync(configFilePath)) {
     log(`${NETLIFYDEVLOG} \`${relConfigFilePath}\` file does not exist yet. Creating it...`)
@@ -646,7 +675,7 @@ const ensureFunctionPathIsOk = function (functionsDir: string, name: string): st
 const resolveTemplateMetadata = async (
   templateName: string,
   languageHint?: string,
-): Promise<{ functionType: 'edge' | 'serverless'; language: string } | null> => {
+): Promise<{ functionType: FunctionType; language: string } | null> => {
   const langs = languageHint
     ? [languageHint]
     : (languages.map((lang) => lang.value as string | undefined).filter(Boolean) as string[])
@@ -662,7 +691,7 @@ const resolveTemplateMetadata = async (
       try {
         const templatePath = path.join(templatesDir, lang, folder.name, '.netlify-function-template.mjs')
         const mod = (await import(pathToFileURL(templatePath).href)) as {
-          default?: { name?: string; functionType?: 'edge' | 'serverless' }
+          default?: { name?: string; functionType?: FunctionType }
         }
         const template = mod.default
         if (template?.name === templateName && template.functionType) {
@@ -676,16 +705,18 @@ const resolveTemplateMetadata = async (
   return null
 }
 
-export const functionsCreate = async (name: string, options: OptionValues, command: BaseCommand) => {
-  let functionType: 'edge' | 'serverless'
+export const functionsCreate = async (
+  name: string | undefined,
+  options: FunctionsCreateOptions,
+  command: BaseCommand,
+) => {
+  let functionType: FunctionType
 
   if (typeof options.template === 'string') {
-    const resolved = await resolveTemplateMetadata(options.template, options.language as string | undefined)
+    const resolved = await resolveTemplateMetadata(options.template, options.language)
     if (!resolved) {
       return logAndThrowError(
-        `Template "${options.template}" not found${
-          options.language ? ` for language "${options.language as string}"` : ''
-        }.`,
+        `Template "${options.template}" not found${options.language ? ` for language "${options.language}"` : ''}.`,
       )
     }
     functionType = resolved.functionType
@@ -700,6 +731,9 @@ export const functionsCreate = async (name: string, options: OptionValues, comma
     functionType === 'edge' ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
 
   /* either download from URL or scaffold from template */
-  const mainFunc = options.url ? downloadFromURL : scaffoldFromTemplate
-  await mainFunc(command, options, name, functionsDir, functionType)
+  if (options.url) {
+    await downloadFromURL(command, options as FunctionsCreateOptionsWithURL, name, functionsDir)
+  } else {
+    await scaffoldFromTemplate(command, options, name, functionsDir, functionType)
+  }
 }

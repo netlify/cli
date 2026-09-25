@@ -58,7 +58,7 @@ const getCrateName = async (cwd: string): Promise<string> => {
     throw new Error('Cargo.toml not found')
   }
 
-  const parsedManifest = toml.parse(await readFile(manifestPath, 'utf-8')) as unknown
+  const parsedManifest: unknown = toml.parse(await readFile(manifestPath, 'utf-8'))
   // TODO(serhalp): Also validate `.package.name`?
   if (parsedManifest == null || typeof parsedManifest !== 'object' || !('package' in parsedManifest)) {
     throw new Error('Cargo.toml is missing or invalid')

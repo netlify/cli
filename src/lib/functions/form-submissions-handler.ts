@@ -60,14 +60,15 @@ export const createFormSubmissionHandler = function ({
       return
     }
 
-    const fakeRequest = new Readable({
-      read() {
-        this.push(req.body)
-        this.push(null)
-      },
-    })
-    // @ts-expect-error TS(2339) FIXME: Property 'headers' does not exist on type 'Readabl... Remove this comment to see the full error message
-    fakeRequest.headers = req.headers
+    const fakeRequest = Object.assign(
+      new Readable({
+        read() {
+          this.push(req.body)
+          this.push(null)
+        },
+      }),
+      { headers: req.headers },
+    )
 
     const handlerName = getFormHandler({ functionsRegistry })
     if (!handlerName) {
