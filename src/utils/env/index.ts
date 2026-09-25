@@ -222,8 +222,8 @@ export const formatEnvelopeData = ({
           branch,
           scopes: cur.scopes,
           sources: [source],
-          // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style -- FIXME: Envelope may omit the value, in which case this is `undefined`
-          value: value as string,
+          // Envelope may omit the value, which must not reach `process.env` as `"undefined"`
+          value: value ?? '',
         },
       }
     }, {})
