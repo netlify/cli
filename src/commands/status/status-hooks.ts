@@ -24,8 +24,7 @@ export const statusHooks = async (_options: OptionValues, command: BaseCommand):
   }
 
   ntlHooks.forEach((hook) => {
-    // TODO(serhalp): Surely the `listHooksBySiteId` type is wrong about `id` being optional. Fix.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME(@netlify/api): `listHooksBySiteId` marks `id` as optional
     const id = hook.id!
     data.hooks[id] = {
       type: hook.type,

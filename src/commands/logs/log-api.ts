@@ -290,6 +290,7 @@ export const resolveDeployIdFromUrl = async (
     return prefix
   }
 
+  // FIXME(@netlify/api): deploy `id` and `state` are typed as optional
   const deploys = (await client.listSiteDeploys({ siteId, branch: prefix, per_page: 20 })) as {
     id: string
     state: string

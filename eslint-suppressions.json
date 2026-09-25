@@ -12,22 +12,6 @@
       "count": 7
     }
   },
-  "src/commands/api/api.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
-    }
-  },
-  "src/commands/api/index.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 3
-    }
-  },
   "src/commands/base-command.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 1
@@ -60,34 +44,7 @@
       "count": 5
     }
   },
-  "src/commands/blobs/blobs-delete.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 5
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 2
-    }
-  },
-  "src/commands/blobs/blobs-get.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 3
-    }
-  },
-  "src/commands/build/build.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    }
-  },
   "src/commands/build/index.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     }
@@ -261,26 +218,11 @@
     }
   },
   "src/commands/logs/build.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 7
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 6
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 2
+      "count": 1
     }
   },
   "src/commands/logs/index.ts": {
@@ -317,15 +259,6 @@
     }
   },
   "src/commands/sites/sites-create.ts": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     },
@@ -334,9 +267,6 @@
     }
   },
   "src/commands/sites/sites-delete.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 2
     }

@@ -6,7 +6,11 @@ import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 
-export const sitesList = async (options: OptionValues, command: BaseCommand) => {
+interface SitesListOptions extends OptionValues {
+  json?: boolean
+}
+
+export const sitesList = async (options: SitesListOptions, command: BaseCommand) => {
   const { api } = command.netlify
   let spinner
   if (!options.json) {
@@ -67,4 +71,5 @@ Count: ${logSites.length}
       log(`─────────────────────────────────────────────────`)
     })
   }
+  return undefined
 }

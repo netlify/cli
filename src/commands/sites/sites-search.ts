@@ -5,7 +5,11 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 
-export const sitesSearch = async (searchTerm: string, options: OptionValues, command: BaseCommand) => {
+interface SitesSearchOptions extends OptionValues {
+  json?: boolean
+}
+
+export const sitesSearch = async (searchTerm: string, options: SitesSearchOptions, command: BaseCommand) => {
   const { api } = command.netlify
 
   await command.authenticate()
