@@ -1,7 +1,12 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { SUPPORTED_CONTEXTS, translateFromEnvelopeToMongo, type EnvelopeItem } from '../../utils/env/index.js'
+import {
+  SUPPORTED_CONTEXTS,
+  isSupportedContext,
+  translateFromEnvelopeToMongo,
+  type EnvelopeItem,
+} from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
@@ -100,8 +105,9 @@ export const envUnset = async (key: string, options: EnvUnsetOptionValues, comma
     return false
   }
 
-  const contextType = (SUPPORTED_CONTEXTS as readonly unknown[]).includes(context || 'all') ? 'context' : 'branch'
-  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
+  const contexts = context ?? ['all']
+  const contextType = contexts.every(isSupportedContext) ? 'context' : 'branch'
+  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(contexts.join(','))} ${contextType}`)
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
   return undefined
 }
