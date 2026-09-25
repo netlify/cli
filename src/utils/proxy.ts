@@ -288,8 +288,7 @@ const alternativePathsFor = function (url: string): string[] {
   }
 
   const paths = []
-  // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with -- FIXME: `endsWith` differs for non-string values
-  if (url[url.length - 1] === '/') {
+  if (url.endsWith('/')) {
     const end = url.length - 1
     if (url !== '/') {
       paths.push(`${url.slice(0, end)}.html`, `${url.slice(0, end)}.htm`)
