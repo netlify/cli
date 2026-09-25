@@ -45,7 +45,7 @@
       "count": 7
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 14
+      "count": 12
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 2
@@ -697,19 +697,7 @@
     }
   },
   "src/lib/http-agent.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 4
-    },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 6
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-return": {
       "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
