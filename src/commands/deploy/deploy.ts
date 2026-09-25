@@ -503,8 +503,7 @@ const deployProgressCb = function () {
         return
       case 'stop':
       default: {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME: a `stop` event is assumed to follow a `start` event of the same type
-        spinnersByType[event.type]!.success(event.msg)
+        spinnersByType[event.type]?.success(event.msg)
         delete spinnersByType[event.type]
       }
     }
