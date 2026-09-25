@@ -97,6 +97,11 @@ interface RepoContentsEntry {
   download_url: string
 }
 
+const importTemplateMetadata = async (templatePath: string): Promise<FunctionTemplateMetadata | undefined> => {
+  const templateModule = (await import(pathToFileURL(templatePath).href)) as { default?: FunctionTemplateMetadata }
+  return templateModule.default
+}
+
 const isValidFunctionName = (name: unknown): name is string => typeof name === 'string' && /^[\w.-]+$/i.test(name)
 
 const validateFunctionName: (name: unknown) => asserts name is string = (name) => {
@@ -173,10 +178,7 @@ const formatRegistryArrayForInquirer = async function (
       .filter((folder) => Boolean(folder?.isDirectory()))
       .map(async ({ name }) => {
         try {
-          const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
-          // @ts-expect-error TS(7036) FIXME: Dynamic import's specifier must be of type 'string... Remove this comment to see the full error message
-          const template = (await import(pathToFileURL(templatePath))) as { default?: FunctionTemplateMetadata }
-          return template.default
+          return await importTemplateMetadata(path.join(templatesDir, lang, name, '.netlify-function-template.mjs'))
         } catch {
           // noop if import fails we don't break the whole inquirer
           return undefined
@@ -456,9 +458,7 @@ const downloadFromURL = async function (
   // read, execute, and delete function template file if exists
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.mjs')
   if (await fileExistsAsync(fnTemplateFile)) {
-    const {
-      default: { addons = [], onComplete },
-    } = (await import(pathToFileURL(fnTemplateFile).href)) as { default: FunctionTemplateMetadata }
+    const { addons = [], onComplete } = (await importTemplateMetadata(fnTemplateFile)) ?? {}
 
     await installAddons(command, addons, path.resolve(fnFolder))
     await handleOnComplete({ command, onComplete })
@@ -823,9 +823,7 @@ const resolveTemplateMetadata = async (
   templateName: string,
   languageHint?: string,
 ): Promise<{ functionType: FunctionType; language: string } | null> => {
-  const langs = languageHint
-    ? [languageHint]
-    : (languages.map((lang) => lang.value as string | undefined).filter(Boolean) as string[])
+  const langs = languageHint ? [languageHint] : languages.map((lang) => lang.value)
   for (const lang of langs) {
     let folders
     try {
@@ -836,12 +834,10 @@ const resolveTemplateMetadata = async (
     for (const folder of folders) {
       if (!folder.isDirectory()) continue
       try {
-        const templatePath = path.join(templatesDir, lang, folder.name, '.netlify-function-template.mjs')
-        const mod = (await import(pathToFileURL(templatePath).href)) as {
-          default?: { name?: string; functionType?: FunctionType }
-        }
-        const template = mod.default
-        if (template?.name === templateName && template.functionType) {
+        const template = await importTemplateMetadata(
+          path.join(templatesDir, lang, folder.name, '.netlify-function-template.mjs'),
+        )
+        if (template?.name === templateName) {
           return { functionType: template.functionType, language: lang }
         }
       } catch {
