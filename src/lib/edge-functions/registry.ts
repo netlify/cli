@@ -16,7 +16,6 @@ import {
   chalk,
   log,
   warn,
-  isNodeError,
   type NormalizedCachedConfigConfig,
 } from '../../utils/command-helpers.js'
 import type { FeatureFlags } from '../../utils/feature-flags.js'
@@ -42,7 +41,7 @@ interface EdgeFunctionsRegistryOptions {
   bundler: typeof import('@netlify/edge-bundler')
   command: BaseCommand
   config: NormalizedCachedConfigConfig
-  configPath: string
+  configPath?: string | undefined
   debug: boolean
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
@@ -120,7 +119,7 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
   /** @internal Exposed for testing - not part of the public EdgeFunctionsRegistry interface */
   public buildPromise: Promise<{ warnings: Record<string, string[]> }> | null = null
   private bundler: typeof import('@netlify/edge-bundler')
-  private configPath: string
+  private configPath: string | undefined
   private importMapFromTOML?: string
   private declarationsFromDeployConfig: Declaration[] = []
   private declarationsFromTOML: Declaration[]
@@ -436,7 +435,7 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
         })
       }
     } catch (error) {
-      if (isNodeError(error)) {
+      if (error instanceof Error) {
         this.logEvent('buildError', { buildError: error })
       }
     }

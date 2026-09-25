@@ -1,26 +1,37 @@
+import type { Buffer } from 'buffer'
 import { readFile } from 'fs/promises'
+import type { ClientRequest } from 'http'
 
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.js'
 import { waitPort } from './wait-port.js'
 
+type ConnectOptions = Parameters<HttpsProxyAgent<string>['connect']>[1]
+
+interface HttpsProxyAgentWithCAOptions {
+  port: string
+  host: string
+  hostname: string
+  protocol: string
+  ca: Buffer | undefined
+}
+
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
 // Maybe replace with https://github.com/delvedor/hpagent
-// @ts-expect-error TS(2507) FIXME: Type 'typeof createHttpsProxyAgent' is not a const... Remove this comment to see the full error message
-class HttpsProxyAgentWithCA extends HttpsProxyAgent {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'opts' implicitly has an 'any' type.
-  constructor(opts) {
+class HttpsProxyAgentWithCA extends HttpsProxyAgent<string> {
+  declare ca: Buffer | undefined
+
+  constructor(opts: HttpsProxyAgentWithCAOptions) {
+    // @ts-expect-error FIXME(https-proxy-agent): written against the v2 API; v8 expects a proxy URL, not an options object
     super(opts)
-    // @ts-expect-error TS(2339) FIXME: Property 'ca' does not exist on type 'HttpsProxyAg... Remove this comment to see the full error message
     this.ca = opts.ca
   }
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-  callback(req, opts) {
+  callback(req: ClientRequest, opts: ConnectOptions) {
+    // @ts-expect-error FIXME(https-proxy-agent): `callback()` is the v2 API; agent-base v7 never calls it, so `ca` is ignored
     return super.callback(req, {
       ...opts,
-      // @ts-expect-error TS(2339) FIXME: Property 'ca' does not exist on type 'HttpsProxyAg... Remove this comment to see the full error message
       ...(this.ca && { ca: this.ca }),
     })
   }
@@ -31,23 +42,17 @@ const DEFAULT_HTTPS_PORT = 443
 // 50 seconds
 const AGENT_PORT_TIMEOUT = 50_000
 
+type TryGetAgentResult =
+  | { agent?: undefined; error?: string; warning?: string; message?: string }
+  | { agent: HttpsProxyAgentWithCA; error?: undefined; warning?: string; message?: string }
+
 export const tryGetAgent = async ({
   certificateFile,
   httpProxy,
 }: {
   httpProxy?: string | undefined
   certificateFile?: string | undefined
-}): Promise<
-  | {
-      error?: string | undefined
-      warning?: string | undefined
-      message?: string | undefined
-    }
-  | {
-      agent: HttpsProxyAgentWithCA
-      response: unknown
-    }
-> => {
+}): Promise<TryGetAgentResult> => {
   if (!httpProxy) {
     return {}
   }
@@ -82,9 +87,9 @@ export const tryGetAgent = async ({
     return { error: `Could not connect to '${httpProxy}'` }
   }
 
-  let response = {}
+  let response: { warning?: string; message?: string } = {}
 
-  let certificate
+  let certificate: Buffer | undefined
   if (certificateFile) {
     try {
       certificate = await readFile(certificateFile)
@@ -94,7 +99,7 @@ export const tryGetAgent = async ({
     }
   }
 
-  const opts = {
+  const opts: HttpsProxyAgentWithCAOptions = {
     port: proxyUrl.port,
     host: proxyUrl.host,
     hostname: proxyUrl.hostname,
@@ -103,13 +108,16 @@ export const tryGetAgent = async ({
   }
 
   const agent = new HttpsProxyAgentWithCA(opts)
-  response = { ...response, agent }
-  return response
+  return { ...response, agent }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'certificateFile' implicitly has a... Remove this comment to see the full error message
-export const getAgent = async ({ certificateFile, httpProxy }) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'agent' does not exist on type '{ error?:... Remove this comment to see the full error message
+export const getAgent = async ({
+  certificateFile,
+  httpProxy,
+}: {
+  httpProxy?: string | undefined
+  certificateFile?: string | undefined
+}) => {
   const { agent, error, message, warning } = await tryGetAgent({ httpProxy, certificateFile })
   if (error) {
     log(NETLIFYDEVERR, error, message || '')

@@ -711,6 +711,7 @@ export default class BaseCommand extends Command {
       certificateFile: flags.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }
+    // @ts-expect-error FIXME(@netlify/api): `agent` option is typed as `string` instead of `http.Agent`
     const api = new NetlifyAPI(token ?? '', apiOpts)
 
     actionCommand.siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')

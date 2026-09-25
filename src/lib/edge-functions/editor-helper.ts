@@ -3,11 +3,30 @@ import { env, stdin, stdout } from 'process'
 import inquirer from 'inquirer'
 
 import { runRecipe } from '../../commands/recipes/recipes.js'
+import type {
+  NormalizedCachedConfigConfig,
+  chalk as helpersChalk,
+  log as helpersLog,
+} from '../../utils/command-helpers.js'
+import type { LocalState } from '../../utils/types.js'
 
 const STATE_PROMPT_PROPERTY = 'promptVSCodeSettings'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'NETLIFYDEVLOG' implicitly has an ... Remove this comment to see the full error message
-export const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, repositoryRoot, state }) => {
+export const promptEditorHelper = async ({
+  NETLIFYDEVLOG,
+  chalk,
+  config,
+  log,
+  repositoryRoot,
+  state,
+}: {
+  NETLIFYDEVLOG: string
+  chalk: typeof helpersChalk
+  config: NormalizedCachedConfigConfig
+  log: typeof helpersLog
+  repositoryRoot: string
+  state: LocalState
+}) => {
   // This prevents tests from hanging when running them inside the VS Code
   // terminal, as otherwise we'll show the prompt and wait for a response.
   if (env.NODE_ENV === 'test') return

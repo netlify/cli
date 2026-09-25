@@ -13,6 +13,22 @@ interface FrameworksAPIPath {
 
 export type FrameworksAPIPaths = ReturnType<typeof getFrameworksAPIPaths>
 
+const createFrameworksAPIPath = (path: string): FrameworksAPIPath => ({
+  path,
+  ensureExists: async () => {
+    await mkdir(path, { recursive: true })
+  },
+  exists: async () => {
+    try {
+      await access(path)
+
+      return true
+    } catch {
+      return false
+    }
+  },
+})
+
 /**
  * Returns an object containing the paths for all the operations of the
  * Frameworks API. Each key maps to an object containing a `path` property with
@@ -22,36 +38,15 @@ export type FrameworksAPIPaths = ReturnType<typeof getFrameworksAPIPaths>
 export const getFrameworksAPIPaths = (basePath: string, packagePath?: string) => {
   const root = resolve(basePath, packagePath || '', '.netlify/v1')
   const edgeFunctions = resolve(root, 'edge-functions')
-  const paths = {
-    root,
-    config: resolve(root, 'config.json'),
-    functions: resolve(root, 'functions'),
-    edgeFunctions,
-    edgeFunctionsImportMap: resolve(edgeFunctions, 'import_map.json'),
-    blobs: resolve(root, 'blobs'),
+
+  return {
+    root: createFrameworksAPIPath(root),
+    config: createFrameworksAPIPath(resolve(root, 'config.json')),
+    functions: createFrameworksAPIPath(resolve(root, 'functions')),
+    edgeFunctions: createFrameworksAPIPath(edgeFunctions),
+    edgeFunctionsImportMap: createFrameworksAPIPath(resolve(edgeFunctions, 'import_map.json')),
+    blobs: createFrameworksAPIPath(resolve(root, 'blobs')),
   }
-
-  return Object.entries(paths).reduce(
-    (acc, [name, path]) => ({
-      ...acc,
-      [name]: {
-        path,
-        ensureExists: async () => {
-          await mkdir(path, { recursive: true })
-        },
-        exists: async () => {
-          try {
-            await access(path)
-
-            return true
-          } catch {
-            return false
-          }
-        },
-      },
-    }),
-    {} as Record<keyof typeof paths, FrameworksAPIPath>,
-  )
 }
 
 /**
@@ -68,5 +63,6 @@ export const getFrameworksAPIConfig = async (config: NetlifyOptions['config'], f
 
   const frameworksAPIConfig = JSON.parse(frameworksAPIConfigFile)
 
+  // FIXME(@netlify/config): `mergeConfigs()` returns `object`
   return mergeConfigs([frameworksAPIConfig, config], { concatenateArrays: true }) as NetlifyOptions['config']
 }

@@ -23,14 +23,12 @@ export const headers = {
 /**
  * Takes an array of feature flags and produces a Base64-encoded JSON object
  * that the bootstrap layer can understand.
- *
- * @param {Array<string>} featureFlags
- * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'featureFlags' implicitly has an 'any' t... Remove this comment to see the full error message
-export const getFeatureFlagsHeader = (featureFlags) => {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'acc' implicitly has an 'any' type.
-  const featureFlagsObject = featureFlags.reduce((acc, flagName) => ({ ...acc, [flagName]: true }), {})
+export const getFeatureFlagsHeader = (featureFlags: string[]): string => {
+  const featureFlagsObject = featureFlags.reduce<Record<string, boolean>>(
+    (acc, flagName) => ({ ...acc, [flagName]: true }),
+    {},
+  )
 
   return Buffer.from(JSON.stringify(featureFlagsObject)).toString('base64')
 }
@@ -38,9 +36,6 @@ export const getFeatureFlagsHeader = (featureFlags) => {
 /**
  * Takes the invocation metadata object and produces a Base64-encoded JSON
  * object that the bootstrap layer can understand.
- *
- * @param {object} metadata
- * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'metadata' implicitly has an 'any' type.
-export const getInvocationMetadataHeader = (metadata) => Buffer.from(JSON.stringify(metadata)).toString('base64')
+export const getInvocationMetadataHeader = (metadata: unknown): string =>
+  Buffer.from(JSON.stringify(metadata)).toString('base64')

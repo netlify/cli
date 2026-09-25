@@ -5,7 +5,7 @@ import { NETLIFYDEVERR, type NormalizedCachedConfigConfig, log } from './command
 /**
  * Get the matching headers for `path` given a set of `rules`.
  */
-export const headersForPath = function (headers: Header[], path: string) {
+export const headersForPath = function (headers: Header[], path: string): Record<string, string> {
   const matchingHeaders = headers.filter(({ forRegExp }) => forRegExp.test(path)).map(getHeaderValues)
   const headersRules = Object.assign({}, ...matchingHeaders)
   return headersRules
@@ -32,7 +32,7 @@ export const parseHeaders = async function ({
     configHeaders: config.headers ?? [],
   })
   handleHeadersErrors(errors)
-  // TODO(serhalp): Make `parseAllHeaders()` smart enough to conditionally return a refined type based on `minimal`
+  // FIXME(@netlify/headers-parser): `parseAllHeaders()` return type isn't refined to `Header[]` by `minimal: false`
   return headers as Header[]
 }
 

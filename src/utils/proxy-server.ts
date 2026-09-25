@@ -1,9 +1,10 @@
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 
 import type BaseCommand from '../commands/base-command.js'
-import type { $TSFixMe, NetlifyOptions } from '../commands/types.js'
+import type { NetlifyOptions, NetlifySite } from '../commands/types.js'
 import type { BlobsContextWithEdgeAccess } from '../lib/blobs/blobs.js'
 import type { FunctionsRegistry } from '../lib/functions/registry.js'
+import type { GeolocationMode } from '../lib/geo-location.js'
 
 import { exit, log, NETLIFYDEVERR, type NormalizedCachedConfigConfig } from './command-helpers.js'
 import { startProxy } from './proxy.js'
@@ -32,6 +33,7 @@ export const generateInspectSettings = (
     if (edgeInspectBrk) {
       return typeof edgeInspectBrk === 'string' ? edgeInspectBrk : undefined
     }
+    return undefined
   }
 
   return {
@@ -69,7 +71,7 @@ export const startProxyServer = async ({
   deployEnvironment,
 }: {
   accountId: string | undefined
-  addonsUrls: $TSFixMe
+  addonsUrls: Record<string, string>
   aiGatewayContext?: AIGatewayContext | null
   api?: NetlifyOptions['api']
   blobsContext?: BlobsContextWithEdgeAccess
@@ -82,11 +84,11 @@ export const startProxyServer = async ({
   env: NetlifyOptions['cachedConfig']['env']
   inspectSettings: InspectSettings
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
-  geolocationMode: string
+  geolocationMode: GeolocationMode
   geoCountry: string
   settings: ServerSettings
   offline: boolean
-  site: $TSFixMe
+  site: NetlifySite
   siteInfo: SiteInfo
   projectDir: string
   repositoryRoot?: string

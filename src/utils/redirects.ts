@@ -1,24 +1,40 @@
 import { parseAllRedirects } from '@netlify/redirect-parser'
 
-import { NETLIFYDEVERR, log } from './command-helpers.js'
+import { NETLIFYDEVERR, type NormalizedCachedConfigConfig, log } from './command-helpers.js'
+
+interface ParsedRedirect {
+  from: string
+  query?: Record<string, string>
+  signed?: string
+  conditions: { country?: string[]; language?: string[]; role?: string[]; [key: string]: unknown }
+  [key: string]: unknown
+}
 
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`
-// @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
-export const parseRedirects = async function ({ config, configPath, redirectsFiles }) {
+export const parseRedirects = async function ({
+  config,
+  configPath,
+  redirectsFiles,
+}: {
+  config?: Pick<NormalizedCachedConfigConfig, 'redirects'> | undefined
+  configPath?: string | undefined
+  redirectsFiles: string[]
+}) {
   const { errors, redirects } = await parseAllRedirects({
     redirectsFiles,
     netlifyConfigPath: configPath,
     minimal: false,
+    // @ts-expect-error FIXME(@netlify/redirect-parser): `configRedirects` is typed as `string[]` instead of redirect objects
     configRedirects: config?.redirects || [],
   })
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- FIXME(@netlify/redirect-parser): `errors` is typed as `any[]`
   handleRedirectParsingErrors(errors)
-  // @ts-expect-error TS(2345) FIXME: Argument of type '({ conditions: { country, langua... Remove this comment to see the full error message
-  return redirects.map(normalizeRedirect)
+  // FIXME(@netlify/redirect-parser): `parseAllRedirects()` returns `unknown[]` instead of its normalized redirects
+  return (redirects as ParsedRedirect[]).map(normalizeRedirect)
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'errors' implicitly has an 'any' type.
-const handleRedirectParsingErrors = function (errors) {
+const handleRedirectParsingErrors = function (errors: Error[]) {
   if (errors.length === 0) {
     return
   }
@@ -27,8 +43,7 @@ const handleRedirectParsingErrors = function (errors) {
   log(NETLIFYDEVERR, `Redirects syntax errors:\n${errorMessage}`)
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
-const getErrorMessage = function ({ message }) {
+const getErrorMessage = function ({ message }: Error) {
   return message
 }
 
@@ -37,16 +52,12 @@ const getErrorMessage = function ({ message }) {
 //  - `query` is called `params`
 //  - `conditions.role|country|language` are capitalized
 const normalizeRedirect = function ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'country' implicitly has an 'any' ... Remove this comment to see the full error message
   conditions: { country, language, role, ...conditions },
-  // @ts-expect-error TS(7031) FIXME: Binding element 'from' implicitly has an 'any' typ... Remove this comment to see the full error message
   from,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'query' implicitly has an 'any' ty... Remove this comment to see the full error message
   query,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'signed' implicitly has an 'any' t... Remove this comment to see the full error message
   signed,
   ...redirect
-}) {
+}: ParsedRedirect) {
   return {
     ...redirect,
     origin: from,
