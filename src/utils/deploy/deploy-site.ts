@@ -6,7 +6,7 @@ import type { Config as FunctionsConfig } from '@netlify/zip-it-and-ship-it'
 import cleanDeep from 'clean-deep'
 
 import type BaseCommand from '../../commands/base-command.js'
-import { warn } from '../command-helpers.js'
+import { nonNullable, warn } from '../command-helpers.js'
 
 import {
   DEFAULT_CONCURRENT_HASH,
@@ -125,7 +125,7 @@ export const deploySite = async (
     hashFiles({
       assetType,
       concurrentHash,
-      directories: [dir, edgeFunctionsDistPath, deployConfigPath, dbMigrationsDistPath].filter(Boolean) as string[],
+      directories: [dir, edgeFunctionsDistPath, deployConfigPath, dbMigrationsDistPath].filter(nonNullable),
       filter,
       hashAlgorithm,
       normalizer: deployFileNormalizer.bind(null, workingDir),

@@ -35,6 +35,7 @@ import {
   getToken,
   log,
   logJson,
+  nonNullable,
   warn,
   type APIError,
 } from '../../utils/command-helpers.js'
@@ -1269,7 +1270,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
   const filter = getDeployFilesFilter({ site, deployFolder })
   const { files, filesShaMap } = await hashFiles({
     concurrentHash: DEFAULT_CONCURRENT_HASH,
-    directories: [deployFolder, edgeFunctionsDistPath].filter(Boolean) as string[],
+    directories: [deployFolder, edgeFunctionsDistPath].filter(nonNullable),
     filter,
     normalizer: deployFileNormalizer.bind(null, workingDir),
     statusCb: options.json ? () => {} : deployProgressCb(),
