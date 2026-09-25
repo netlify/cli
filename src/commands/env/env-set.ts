@@ -135,7 +135,7 @@ export const envSet = async (key: string, value: string, options: EnvSetOptionVa
   const siteId = site.id
   if (!siteId) {
     log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return
   }
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
 
@@ -143,13 +143,13 @@ export const envSet = async (key: string, value: string, options: EnvSetOptionVa
   const finalEnv = await setInEnvelope({ api, siteInfo, force, key, value, context, scope, secret })
 
   if (!finalEnv) {
-    return false
+    return
   }
 
   // Return new environment variables of site if using json flag
   if (options.json) {
     logJson(finalEnv)
-    return false
+    return
   }
 
   const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
@@ -161,5 +161,4 @@ export const envSet = async (key: string, value: string, options: EnvSetOptionVa
     )}${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
   )
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
-  return undefined
 }

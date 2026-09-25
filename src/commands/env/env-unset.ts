@@ -87,7 +87,7 @@ export const envUnset = async (key: string, options: EnvUnsetOptionValues, comma
 
   if (!siteId) {
     log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return
   }
 
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
@@ -97,11 +97,10 @@ export const envUnset = async (key: string, options: EnvUnsetOptionValues, comma
   // Return new environment variables of site if using json flag
   if (options.json) {
     logJson(finalEnv)
-    return false
+    return
   }
 
   const contextType = (SUPPORTED_CONTEXTS as readonly unknown[]).includes(context || 'all') ? 'context' : 'branch'
   log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
-  return undefined
 }
