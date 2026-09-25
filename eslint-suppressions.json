@@ -174,7 +174,7 @@
   },
   "src/commands/functions/functions-invoke.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 3
+      "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1

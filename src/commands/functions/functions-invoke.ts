@@ -7,7 +7,13 @@ import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
 import { NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
-import { BACKGROUND, CLOCKWORK_USERAGENT, type LocalFunction, getFunctions } from '../../utils/functions/index.js'
+import {
+  BACKGROUND,
+  CLOCKWORK_USERAGENT,
+  type LocalFunction,
+  getFunctions,
+  getFunctionsDir,
+} from '../../utils/functions/index.js'
 import type BaseCommand from '../base-command.js'
 
 const require = createRequire(import.meta.url)
@@ -151,7 +157,7 @@ export const functionsInvoke = async (
 ) => {
   const { config, relConfigFilePath } = command.netlify
 
-  const functionsDir = options.functions || config.dev?.functions || config.functionsDirectory
+  const functionsDir = getFunctionsDir({ options, config })
   if (typeof functionsDir === 'undefined') {
     return logAndThrowError(`Functions directory is undefined, did you forget to set it in ${relConfigFilePath}?`)
   }
