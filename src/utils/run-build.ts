@@ -177,7 +177,7 @@ export async function runNetlifyBuild({
     return {
       configPath: tempConfigPath,
       deployEnvironment,
-      generatedFunctions,
+      generatedFunctions: generatedFunctions ?? [],
     }
   }
 
