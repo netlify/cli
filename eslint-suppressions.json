@@ -466,9 +466,6 @@
     }
   },
   "src/recipes/vscode/index.ts": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     }
