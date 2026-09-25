@@ -9,6 +9,7 @@ import semver from 'semver'
 import { logAndThrowError, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
 import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
+import { getFunctionConfigSchedule } from './config.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import type { ServerSettings } from '../../utils/types.js'
 
@@ -138,9 +139,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     this.settings = settings
     this.srcPath = srcPath
 
-    const functionConfig = config.functions?.[name]
-    // @ts-expect-error FIXME(@netlify/build): `schedule` is missing from the functions config type
-    this.schedule = functionConfig?.schedule
+    this.schedule = getFunctionConfigSchedule(config.functions?.[name])
 
     this.srcFiles = new Set()
   }

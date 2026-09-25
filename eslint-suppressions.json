@@ -386,9 +386,6 @@
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 8
     },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     },
@@ -624,11 +621,6 @@
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
-  "src/utils/functions/get-functions.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
       "count": 1
     }
   },
