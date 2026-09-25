@@ -16,7 +16,7 @@ import { link } from '../link/link.js'
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {
-    const { name: nameInput } = await inquirer.prompt<{ name: unknown }>([
+    const { name: nameInput } = await inquirer.prompt<{ name: string }>([
       {
         type: 'input',
         name: 'name',
@@ -25,7 +25,7 @@ export const getSiteNameInput = async (name: string | undefined): Promise<{ name
           !input || /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
       },
     ])
-    name = typeof nameInput === 'string' ? nameInput : ''
+    name = nameInput
   }
 
   return { name }
@@ -183,8 +183,7 @@ export const sitesCreate = async (options: SitesCreateOptions, command: BaseComm
       return logAndThrowError('Failed to get repo data')
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME: `configureRepo` requires `manual`, but the flag is unset unless passed
-    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual! })
+    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual ?? false })
   }
 
   if (options.json) {
