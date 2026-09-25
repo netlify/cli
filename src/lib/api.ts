@@ -32,11 +32,8 @@ export const listSites = async ({
   // TODO: use pagination headers when js-client returns them
   if (sites.length === MAX_PER_PAGE && page + 1 <= maxPages) {
     // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
-    return [
-      ...sites,
-      ...(await listSites({ api, options: { page: page + 1, maxPages, ...rest } })),
-    ] as unknown[] as SiteInfo[]
+    return [...sites, ...(await listSites({ api, options: { page: page + 1, maxPages, ...rest } }))] as SiteInfo[]
   }
   // FIXME(serhalp): See above
-  return sites as unknown[] as SiteInfo[]
+  return sites as SiteInfo[]
 }

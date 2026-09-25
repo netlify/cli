@@ -2,6 +2,7 @@ import type { Command } from 'commander'
 
 import { logAndThrowError, warn, type APIError } from '../command-helpers.js'
 import type BaseCommand from '../../commands/base-command.js'
+import type { SiteInfo } from '../types.js'
 
 /**
  * A preAction hook that errors out if siteInfo is an empty object
@@ -23,8 +24,8 @@ const requiresSiteInfoWithProject = async (command: Command) => {
       if (siteData.id) {
         siteId = siteData.id
         baseCommand.netlify.site.id = siteId
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-        baseCommand.netlify.siteInfo = siteData as any
+        // FIXME(@netlify/api): site responses mark required fields optional, hence the casts to `SiteInfo`
+        baseCommand.netlify.siteInfo = siteData as SiteInfo
       }
     } catch (error_) {
       const error = error_ as APIError
@@ -39,8 +40,7 @@ const requiresSiteInfoWithProject = async (command: Command) => {
           if (matchedSite?.id) {
             siteId = matchedSite.id
             baseCommand.netlify.site.id = siteId
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-            baseCommand.netlify.siteInfo = matchedSite as any
+            baseCommand.netlify.siteInfo = matchedSite as SiteInfo
           } else {
             return logAndThrowError(
               `Project "${options.project}" not found. Make sure you have access to this project.`,
@@ -70,8 +70,7 @@ const requiresSiteInfoWithProject = async (command: Command) => {
     const siteData = await api.getSite({ siteId })
     // Update siteInfo if we haven't already
     if (!baseCommand.netlify.siteInfo.id) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-      baseCommand.netlify.siteInfo = siteData as any // Type assertion needed due to API type mismatch
+      baseCommand.netlify.siteInfo = siteData as SiteInfo
     }
   } catch (error_) {
     // unauthorized

@@ -8,7 +8,13 @@ import getPackageJson from '../get-cli-package-json.js'
 
 const { name, version } = await getPackageJson()
 
-const options = JSON.parse(process.argv[2])
+interface TelemetryRequest {
+  type: 'track' | 'identify' | 'error'
+  data: unknown
+}
+
+// Serialized by the parent process in `telemetry.ts` and `report-error.ts`
+const options = JSON.parse(process.argv[2]) as TelemetryRequest
 
 const CLIENT_ID = 'NETLIFY_CLI'
 const TRACK_URL = process.env.NETLIFY_TEST_TRACK_URL || 'https://cli.netlify.com/telemetry/track'

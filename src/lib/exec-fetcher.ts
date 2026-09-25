@@ -153,12 +153,9 @@ export const shouldFetchLatestVersion = async ({
       latestVersion,
     })
     return outdated
-  } catch (error_) {
-    if (exists) {
-      log(NETLIFYDEVWARN, `failed checking for new version of '${packageName}'. Using existing version`)
-      return false
-    }
-    throw error_
+  } catch {
+    log(NETLIFYDEVWARN, `failed checking for new version of '${packageName}'. Using existing version`)
+    return false
   }
 }
 

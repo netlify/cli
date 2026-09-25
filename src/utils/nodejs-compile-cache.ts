@@ -35,7 +35,7 @@ export const maybeEnableCompileCache = (): void => {
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   if ('enableCompileCache' in module && typeof module.enableCompileCache === 'function') {
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
-    const { directory } = (module.enableCompileCache as () => { directory: string | undefined })()
+    const { directory } = module.enableCompileCache()
 
     if (directory == null) return
     didEnableCompileCache = true
