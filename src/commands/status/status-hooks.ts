@@ -18,24 +18,22 @@ export const statusHooks = async (_options: OptionValues, command: BaseCommand):
   await command.authenticate()
 
   const ntlHooks = await api.listHooksBySiteId({ siteId: siteInfo.id })
-  const data = {
-    project: siteInfo.name,
-    hooks: {} as Record<string, StatusHook>,
-  }
+  const hooks: Record<string, StatusHook> = {}
 
   ntlHooks.forEach((hook) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME(@netlify/api): `listHooksBySiteId` marks `id` as optional
     const id = hook.id!
-    data.hooks[id] = {
+    hooks[id] = {
       type: hook.type,
       event: hook.event,
       id,
       disabled: hook.disabled ?? false,
     }
     if (siteInfo.build_settings?.repo_url) {
-      data.hooks[id].repo_url = siteInfo.build_settings.repo_url
+      hooks[id].repo_url = siteInfo.build_settings.repo_url
     }
   })
+  const data = { project: siteInfo.name, hooks }
   log(`─────────────────┐
 Project Hook Status │
 ─────────────────┘`)
