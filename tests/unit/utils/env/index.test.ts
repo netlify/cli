@@ -174,6 +174,14 @@ test("should filter, sort, and format Envelope's response correctly", () => {
   })
 })
 
+test('should default a value omitted by Envelope to an empty string', () => {
+  const envelopeItems: EnvelopeItem[] = [{ key: 'FOO', scopes: ['builds'], values: [{ context: 'all' }] }]
+
+  expect(formatEnvelopeData({ context: 'dev', envelopeItems, source: 'ui' })).toEqual({
+    FOO: { branch: undefined, context: 'all', scopes: ['builds'], sources: ['ui'], value: '' },
+  })
+})
+
 test('should convert scope keys into a human-readable list', () => {
   expect(getHumanReadableScopes([])).toBe('')
   expect(getHumanReadableScopes()).toBe('Builds, Post processing')
