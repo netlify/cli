@@ -6,7 +6,7 @@ import type { NetlifyAPI } from '@netlify/api'
 
 import { listSites } from '../../lib/api.js'
 import { startSpinner } from '../../lib/spinner.js'
-import { chalk, logAndThrowError, exit, log, type APIError, netlifyCommand } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, log, netlifyCommand, type APIError } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { matchesRepoUrl } from '../../utils/match-repo-url.js'
@@ -63,7 +63,7 @@ To search for projects:
     return firstSite
   }
 
-  spinner.warn({ text: `Found ${matchingSites.length} projects connected to ${repoUrl}` })
+  spinner.warn({ text: `Found ${matchingSites.length.toString()} projects connected to ${repoUrl}` })
 
   const { selectedSite } = await inquirer.prompt<{
     selectedSite: SiteInfo | undefined
@@ -270,7 +270,7 @@ To create a new project:
   log()
   log(`You can now run other \`netlify\` cli commands in this directory`)
 
-  // FIXME(serhalp): Mismatch between hardcoded `SiteInfo` and generated Netlify API types.
+  // FIXME(@netlify/api): `getSite` response type doesn't match the hand-written `SiteInfo`
   return site as SiteInfo
 }
 
@@ -307,7 +307,7 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
     log(`To unlink this project, run: ${chalk.cyanBright(`${netlifyCommand()} unlink`)}`)
   } else if (options.id) {
     try {
-      // @ts-expect-error FIXME(serhalp): Mismatch between hardcoded `SiteInfo` and new generated Netlify API types.
+      // @ts-expect-error FIXME(@netlify/api): `getSite` response type doesn't match the hand-written `SiteInfo`
       newSiteData = await api.getSite({ site_id: options.id })
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
@@ -360,7 +360,7 @@ To link by project ID:
     log(`${chalk.green('✔')} Linked to ${matchingSiteData.name}`)
 
     await track('sites_linked', {
-      siteId: (matchingSiteData && matchingSiteData.id) || siteId,
+      siteId: matchingSiteData.id || siteId,
       linkType: 'manual',
       kind: 'byName',
     })

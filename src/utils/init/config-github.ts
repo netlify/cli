@@ -1,7 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 import { Octokit } from '@octokit/rest'
 
-import { chalk, logAndThrowError, log } from '../command-helpers.js'
+import { chalk, logAndThrowError, log, type APIError } from '../command-helpers.js'
 import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'
 import type { GlobalConfigStore } from '../types.js'
 import type { BaseCommand } from '../../commands/index.js'
@@ -71,8 +71,7 @@ const addDeployKey = async ({
     return key
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed adding GitHub deploy key', error })
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error.status === 404) {
+    if ((error as APIError).status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
     }
@@ -97,8 +96,7 @@ const getGitHubRepo = async ({
     return data
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed retrieving GitHub repository information', error })
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error.status === 404) {
+    if ((error as APIError).status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and accessible by ${owner}`
     }
@@ -106,15 +104,20 @@ const getGitHubRepo = async ({
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployHook' implicitly has an 'an... Remove this comment to see the full error message
-const hookExists = async ({ deployHook, octokit, repoName, repoOwner }) => {
+interface DeployHookOptions {
+  deployHook: string | undefined
+  octokit: Octokit
+  repoName: string
+  repoOwner: string
+}
+
+const hookExists = async ({ deployHook, octokit, repoName, repoOwner }: DeployHookOptions) => {
   try {
     const { data: hooks } = await octokit.repos.listWebhooks({
       owner: repoOwner,
       repo: repoName,
       per_page: PAGE_SIZE,
     })
-    // @ts-expect-error TS(7006) FIXME: Parameter 'hook' implicitly has an 'any' type.
     const exists = hooks.some((hook) => hook.config.url === deployHook)
     return exists
   } catch {
@@ -123,8 +126,7 @@ const hookExists = async ({ deployHook, octokit, repoName, repoOwner }) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployHook' implicitly has an 'an... Remove this comment to see the full error message
-const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
+const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }: DeployHookOptions) => {
   const exists = await hookExists({ deployHook, octokit, repoOwner, repoName })
   if (!exists) {
     try {
@@ -141,11 +143,9 @@ const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
       })
     } catch (error) {
       // Ignore exists error if the list doesn't return all installed hooks
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      if (!error.message.includes('Hook already exists on this repository')) {
+      if (!(error as Error).message.includes('Hook already exists on this repository')) {
         let message = formatErrorMessage({ message: 'Failed creating repo hook', error })
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.status === 404) {
+        if ((error as APIError).status === 404) {
           const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
           message = `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
         }
@@ -158,9 +158,21 @@ const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
 const GITHUB_HOOK_EVENTS = ['deploy_created', 'deploy_failed', 'deploy_building']
 const GITHUB_HOOK_TYPE = 'github_commit_status'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const upsertHook = async ({ api, event, ntlHooks, siteId, token }) => {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'hook' implicitly has an 'any' type.
+type NetlifyHook = Awaited<ReturnType<NetlifyAPI['listHooksBySiteId']>>[number]
+
+const upsertHook = async ({
+  api,
+  event,
+  ntlHooks,
+  siteId,
+  token,
+}: {
+  api: NetlifyAPI
+  event: string
+  ntlHooks: NetlifyHook[]
+  siteId: string
+  token: string
+}) => {
   const ntlHook = ntlHooks.find((hook) => hook.type === GITHUB_HOOK_TYPE && hook.event === event)
 
   if (!ntlHook || ntlHook.disabled) {
@@ -177,6 +189,7 @@ const upsertHook = async ({ api, event, ntlHooks, siteId, token }) => {
   }
 
   return await api.updateHook({
+    // @ts-expect-error FIXME(@netlify/api): `id` is optional in the `hook` response type
     hook_id: ntlHook.id,
     body: {
       data: {
@@ -186,8 +199,7 @@ const upsertHook = async ({ api, event, ntlHooks, siteId, token }) => {
   })
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const addNotificationHooks = async ({ api, siteId, token }) => {
+const addNotificationHooks = async ({ api, siteId, token }: { api: NetlifyAPI; siteId: string; token: string }) => {
   log(`Creating Netlify GitHub Notification Hooks...`)
 
   let ntlHooks

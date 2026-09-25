@@ -1,4 +1,3 @@
-import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import { isEmpty } from '../../utils/object-utilities.js'
 
@@ -7,6 +6,7 @@ import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
+import type { BaseOptionValues } from '../base-command.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
@@ -220,13 +220,20 @@ const logExistingRepoSetupAndExit = ({
 
 type InitExitMessageCustomizer = (code: InitExitCode, defaultMessage: string) => string | undefined
 
+export type InitOptionValues = BaseOptionValues & {
+  disableLinking?: boolean | undefined
+  force?: boolean | undefined
+  gitRemoteName?: string | undefined
+  manual?: boolean | undefined
+}
+
 type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
 }
 
 export const init = async (
-  options: OptionValues,
+  options: InitOptionValues,
   command: BaseCommand,
   { customizeExitMessage, exitAfterConfiguringRepo = false }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
@@ -254,7 +261,7 @@ export const init = async (
       command,
       error: repoData.error,
       state,
-      disableLinking: options.disableLinking,
+      disableLinking: options.disableLinking ?? false,
       customizeExitMessage,
     })
   }
@@ -271,7 +278,7 @@ export const init = async (
 
   persistState({ state, siteInfo })
 
-  await configureRepo({ command, siteId: siteInfo.id, repoData, manual: options.manual })
+  await configureRepo({ command, siteId: siteInfo.id, repoData, manual: options.manual ?? false })
   if (exitAfterConfiguringRepo) {
     const customErrorMessage = customizeExitMessage?.(LINKED_EXISTING_SITE_EXIT_CODE, '')
     if (customErrorMessage) {

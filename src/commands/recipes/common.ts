@@ -2,20 +2,26 @@ import fs from 'fs/promises'
 import { dirname, join, resolve } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 
+import type { RunRecipeOptions } from './recipes.js'
+
+export interface Recipe {
+  description: string
+  run: (options: RunRecipeOptions) => Promise<unknown>
+}
+
 const directoryPath = dirname(fileURLToPath(import.meta.url))
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export const getRecipe = async (name) => {
+export const getRecipe = async (name: string): Promise<Recipe> => {
   const recipePath = resolve(directoryPath, '../../recipes', name, 'index.js')
 
   // windows needs a URL for absolute paths
 
-  const recipe = await import(pathToFileURL(recipePath).href)
+  const recipe = (await import(pathToFileURL(recipePath).href)) as Recipe
 
   return recipe
 }
 
-export const listRecipes = async () => {
+export const listRecipes = async (): Promise<(Recipe & { name: string })[]> => {
   const recipesPath = resolve(directoryPath, '../../recipes')
   const recipeNames = await fs.readdir(recipesPath)
   const recipes = await Promise.all(
@@ -24,7 +30,7 @@ export const listRecipes = async () => {
 
       // windows needs a URL for absolute paths
 
-      const recipe = await import(pathToFileURL(recipePath).href)
+      const recipe = (await import(pathToFileURL(recipePath).href)) as Recipe
 
       return {
         ...recipe,

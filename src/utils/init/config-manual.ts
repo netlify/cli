@@ -15,14 +15,14 @@ const addDeployKey = async (deployKey: DeployKey) => {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   log(`\n${deployKey.public_key}\n\n`)
 
-  const { sshKeyAdded } = (await inquirer.prompt([
+  const { sshKeyAdded } = await inquirer.prompt<{ sshKeyAdded: boolean }>([
     {
       type: 'confirm',
       name: 'sshKeyAdded',
       message: 'Continue?',
       default: true,
     },
-  ])) as { sshKeyAdded: boolean }
+  ])
 
   if (!sshKeyAdded) {
     return exit()
