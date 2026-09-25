@@ -9,31 +9,17 @@ import { waitPort } from './wait-port.js'
 
 type ConnectOptions = Parameters<HttpsProxyAgent<string>['connect']>[1]
 
-interface HttpsProxyAgentWithCAOptions {
-  port: string
-  host: string
-  hostname: string
-  protocol: string
-  ca: Buffer | undefined
-}
-
-// https://github.com/TooTallNate/node-https-proxy-agent/issues/89
-// Maybe replace with https://github.com/delvedor/hpagent
 class HttpsProxyAgentWithCA extends HttpsProxyAgent<string> {
-  declare ca: Buffer | undefined
+  readonly #ca: Buffer | undefined
 
-  constructor(opts: HttpsProxyAgentWithCAOptions) {
-    // @ts-expect-error FIXME(https-proxy-agent): written against the v2 API; v8 expects a proxy URL, not an options object
-    super(opts)
-    this.ca = opts.ca
+  constructor(proxy: URL, ca: Buffer | undefined) {
+    super(proxy, { ca })
+    this.#ca = ca
   }
 
-  callback(req: ClientRequest, opts: ConnectOptions) {
-    // @ts-expect-error FIXME(https-proxy-agent): `callback()` is the v2 API; agent-base v7 never calls it, so `ca` is ignored
-    return super.callback(req, {
-      ...opts,
-      ...(this.ca && { ca: this.ca }),
-    })
+  // The constructor's `ca` only covers the connection to the proxy; the TLS upgrade to the target needs it too
+  override connect(req: ClientRequest, opts: ConnectOptions) {
+    return super.connect(req, opts.secureEndpoint && this.#ca ? { ...opts, ca: this.#ca } : opts)
   }
 }
 
@@ -87,28 +73,21 @@ export const tryGetAgent = async ({
     return { error: `Could not connect to '${httpProxy}'` }
   }
 
-  let response: { warning?: string; message?: string } = {}
-
   let certificate: Buffer | undefined
+  let certificateWarning: { warning: string; message: string } | undefined
   if (certificateFile) {
     try {
       certificate = await readFile(certificateFile)
     } catch (error) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      response = { warning: `Could not read certificate file '${certificateFile}'.`, message: error.message }
+      certificateWarning = {
+        warning: `Could not read certificate file '${certificateFile}'.`,
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+        message: error.message,
+      }
     }
   }
 
-  const opts: HttpsProxyAgentWithCAOptions = {
-    port: proxyUrl.port,
-    host: proxyUrl.host,
-    hostname: proxyUrl.hostname,
-    protocol: proxyUrl.protocol,
-    ca: certificate,
-  }
-
-  const agent = new HttpsProxyAgentWithCA(opts)
-  return { ...response, agent }
+  return { ...certificateWarning, agent: new HttpsProxyAgentWithCA(proxyUrl, certificate) }
 }
 
 export const getAgent = async ({
