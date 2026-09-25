@@ -436,6 +436,38 @@ const prepareProductionDeploy = async ({
   }
 }
 
+const createDeploy = async ({
+  alias,
+  api,
+  command,
+  deployToProduction,
+  options,
+  siteData,
+  siteId,
+}: {
+  alias: string | undefined
+  api: NetlifyAPI
+  command: BaseCommand
+  deployToProduction: boolean
+  options: DeployOptionValues
+  siteData: SiteInfo
+  siteId: string
+}): Promise<CreatedDeploy> => {
+  if (deployToProduction) {
+    await prepareProductionDeploy({ siteData, api, options, command })
+  }
+
+  const draft = options.draft || (!deployToProduction && !alias)
+  const createDeployBody = {
+    draft,
+    branch: alias,
+    include_upload_url: options.uploadSourceZip,
+    ...getDeploySourceFields(),
+  }
+
+  return (await api.createSiteDeploy({ siteId, title: options.message, body: createDeployBody })) as CreatedDeploy
+}
+
 const hasErrorMessage = (actual: unknown, expected: string): boolean => {
   if (typeof actual === 'string') {
     return actual.includes(expected)
@@ -584,7 +616,6 @@ const runDeploy = async ({
   siteData,
   siteId,
   skipFunctionsCache,
-  title,
   deployId: existingDeployId,
 }: {
   alias: string | undefined
@@ -604,7 +635,6 @@ const runDeploy = async ({
   siteData: SiteInfo
   siteId: string
   skipFunctionsCache: boolean
-  title: string | undefined
 }): Promise<{
   siteId: string
   siteName: string
@@ -624,23 +654,15 @@ const runDeploy = async ({
     // We won't have a deploy ID if we run the command with `--no-build`.
     // In this case, we must create the deploy.
     if (!deployId) {
-      if (deployToProduction) {
-        await prepareProductionDeploy({ siteData, api, options, command })
-      }
-
-      const draft = options.draft || (!deployToProduction && !alias)
-      const createDeployBody = {
-        draft,
-        branch: alias,
-        include_upload_url: options.uploadSourceZip,
-        ...getDeploySourceFields(),
-      }
-
-      const createDeployResponse = (await api.createSiteDeploy({
+      const createDeployResponse = await createDeploy({
+        alias,
+        api,
+        command,
+        deployToProduction,
+        options,
+        siteData,
         siteId,
-        title,
-        body: createDeployBody,
-      })) as CreatedDeploy
+      })
       deployId = createDeployResponse.id
 
       if (
@@ -1065,7 +1087,6 @@ const prepAndRunDeploy = async ({
     siteData,
     siteId,
     skipFunctionsCache: options.skipFunctionsCache,
-    title: options.message,
     deployId,
   })
 
@@ -1427,24 +1448,8 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
   if (options.build) {
-    if (deployToProduction) {
-      await prepareProductionDeploy({ siteData, api, options, command })
-    }
-
-    const draft = options.draft || (!deployToProduction && !alias)
-    const createDeployBody = {
-      draft,
-      branch: alias,
-      include_upload_url: options.uploadSourceZip,
-      ...getDeploySourceFields(),
-    }
-
-    const deployMetadata = (await api.createSiteDeploy({
-      siteId,
-      title: options.message,
-      body: createDeployBody,
-    })) as CreatedDeploy
-    const deployId = deployMetadata.id || ''
+    const deployMetadata = await createDeploy({ alias, api, command, deployToProduction, options, siteData, siteId })
+    const deployId = deployMetadata.id
     const skewProtectionToken = deployMetadata.skew_protection_token
     let sourceZipFileName: string | undefined
 
