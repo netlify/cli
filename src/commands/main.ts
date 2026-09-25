@@ -149,13 +149,17 @@ ${USER_AGENT}
 `
 }
 
+type MainOptionValues = {
+  telemetryDisable?: boolean
+  telemetryEnable?: boolean
+  verbose?: boolean
+  version?: boolean
+}
+
 /**
  * The main CLI command without any command (root action)
- * @param {import('commander').OptionValues} options
- * @param {import('./base-command.js').default} command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const mainCommand = async function (options, command) {
+const mainCommand = async function (options: MainOptionValues, command: BaseCommand) {
   const globalConfig = await getGlobalConfigStore()
 
   if (options.telemetryDisable) {
@@ -188,7 +192,6 @@ const mainCommand = async function (options, command) {
 
   if (command.args[0] === 'help') {
     if (command.args[1]) {
-      // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
       const subCommand = command.commands.find((cmd) => cmd.name() === command.args[1])
       if (!subCommand) {
         return logAndThrowError(`command ${command.args[1]} not found`)
@@ -202,7 +205,6 @@ const mainCommand = async function (options, command) {
     ` ${chalk.yellow(BANG)}   Warning: ${chalk.yellow(command.args[0])} is not a ${command.name()} command.\n`,
   )
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
   const allCommands = command.commands.map((cmd) => cmd.name())
   const suggestion = closest(command.args[0], allCommands)
 
@@ -217,8 +219,8 @@ const mainCommand = async function (options, command) {
     exit(EXIT_CODES.USAGE_ERROR)
   }
 
-  const applySuggestion = await new Promise((resolve) => {
-    const prompt = inquirer.prompt({
+  const applySuggestion = await new Promise<boolean>((resolve) => {
+    const prompt = inquirer.prompt<{ suggestion: boolean }>({
       type: 'confirm',
       name: 'suggestion',
       message: `Did you mean ${chalk.blue(suggestion)}`,
@@ -226,7 +228,7 @@ const mainCommand = async function (options, command) {
     })
 
     setTimeout(() => {
-      // @ts-expect-error TS(2445) FIXME: Property 'close' is protected and only accessible ... Remove this comment to see the full error message
+      // @ts-expect-error FIXME(@types/inquirer): `ui.close()` is public at runtime but typed as protected
       prompt.ui.close()
       resolve(false)
     }, SUGGESTION_TIMEOUT)

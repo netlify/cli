@@ -233,7 +233,6 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
   const { chosenTemplate } = await inquirer.prompt({
     name: 'chosenTemplate',
     message: 'Pick a template',
-    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
     type: 'autocomplete',
     source(_answersSoFar: unknown, input: string | undefined) {
       // if Edge Functions template, don't show url option

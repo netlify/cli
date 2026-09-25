@@ -35,7 +35,7 @@ export const aggressiveJSONParse = function (value: string): unknown {
   if (value === 'false') {
     return false
   }
-  let parsed
+  let parsed: unknown
   try {
     parsed = JSON.parse(value)
   } catch {

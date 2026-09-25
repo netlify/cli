@@ -29,6 +29,9 @@ const isCommandResult = (value: unknown): value is CommandResult =>
     typeof (value as CommandResult).stderr === 'string' ||
     typeof (value as CommandResult).stdout === 'string')
 
+// With `reject: false`, a failed command resolves to an `ExecaError` instead of rejecting
+const isFailedResult = (result: execa.ExecaReturnValue | execa.ExecaError): result is execa.ExecaError => result.failed
+
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 export const getCommandName = (command: string) => {
@@ -86,6 +89,7 @@ const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined }
 const ensureCleanupOnExit = () => {
   if (!cleanupRegistered) {
     cleanupRegistered = true
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- FIXME: `processOnExit` doesn't await its callbacks
     processOnExit(async () => {
       await cleanupBeforeExit({})
     })
@@ -170,10 +174,8 @@ export const runCommand = (
         )} exists`,
       )
     } else {
-      const errorMessage = result.failed
-        ? // @ts-expect-error FIXME(serhalp): We use `reject: false` which means the resolved value is either the resolved value
-          // or the rejected value, but the types aren't smart enough to know this.
-          `${NETLIFYDEVERR} ${result.shortMessage as string}`
+      const errorMessage = isFailedResult(result)
+        ? `${NETLIFYDEVERR} ${result.shortMessage}`
         : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode.toString()}`
 
       log(`${errorMessage}. Shutting down Netlify Dev server`)

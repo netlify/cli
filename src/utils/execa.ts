@@ -9,7 +9,7 @@ import execaLib from 'execa'
 let execa: typeof execaLib
 
 if (env.NETLIFY_CLI_EXECA_PATH) {
-  const execaMock = await import(env.NETLIFY_CLI_EXECA_PATH)
+  const execaMock = (await import(env.NETLIFY_CLI_EXECA_PATH)) as { default: typeof execaLib }
   execa = execaMock.default
 } else {
   execa = execaLib
