@@ -149,13 +149,17 @@ ${USER_AGENT}
 `
 }
 
+type MainOptionValues = {
+  telemetryDisable?: boolean
+  telemetryEnable?: boolean
+  verbose?: boolean
+  version?: boolean
+}
+
 /**
  * The main CLI command without any command (root action)
- * @param {import('commander').OptionValues} options
- * @param {import('./base-command.js').default} command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const mainCommand = async function (options, command) {
+const mainCommand = async function (options: MainOptionValues, command: BaseCommand) {
   const globalConfig = await getGlobalConfigStore()
 
   if (options.telemetryDisable) {
@@ -188,7 +192,6 @@ const mainCommand = async function (options, command) {
 
   if (command.args[0] === 'help') {
     if (command.args[1]) {
-      // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
       const subCommand = command.commands.find((cmd) => cmd.name() === command.args[1])
       if (!subCommand) {
         return logAndThrowError(`command ${command.args[1]} not found`)
@@ -202,7 +205,6 @@ const mainCommand = async function (options, command) {
     ` ${chalk.yellow(BANG)}   Warning: ${chalk.yellow(command.args[0])} is not a ${command.name()} command.\n`,
   )
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
   const allCommands = command.commands.map((cmd) => cmd.name())
   const suggestion = closest(command.args[0], allCommands)
 

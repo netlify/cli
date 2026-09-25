@@ -117,6 +117,7 @@ command = "${chosenSettings.devCommand}"
 `)
     return chosenSettings
   }
+  return undefined
 }
 
 /**
