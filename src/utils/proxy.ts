@@ -571,10 +571,12 @@ const initializeProxy = async function ({
   projectDir: string
   siteInfo: SiteInfo
 }): Promise<ProxyHandlers> {
+  // Kept as a reference so that the host can be switched later on; http-proxy shallow-copies its options per request.
+  // The fallbacks are what Node and http-proxy default to anyway.
+  const target = { host: host ?? 'localhost', port: port ?? 80 }
   const proxy = httpProxy.createProxyServer<ProxyRequest>({
     selfHandleResponse: true,
-    // @ts-expect-error FIXME: `host` and `port` may be undefined
-    target: { host, port },
+    target,
   })
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
@@ -665,24 +667,24 @@ const initializeProxy = async function ({
       res.setHeader(NFRequestID, requestID)
     }
 
-    // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style -- FIXME: always set by `handlers.web`
-    const options = req.proxyOptions as ProxyOptions
+    const options = req.proxyOptions
+    // Always set on responses; Node only types it as optional because `IncomingMessage` also models requests
+    const proxyStatusCode = proxyRes.statusCode ?? 500
 
-    if (options.isChangingTarget) {
+    if (options?.isChangingTarget) {
       // got a response after switching the ipVer for host (and its not an error since we will be in on('error') handler) - let's remember this host now
+      if (options.targetHostname) {
+        target.host = options.targetHostname
+      }
 
-      // options are not exported in ts for the proxy:
-      // @ts-expect-error TS(2339) FIXME: Property 'options' does not exist on type 'In...
-      proxy.options.target.host = options.targetHostname
-
-      options.changeSettings?.({
+      options.changeSettings({
         frameworkHost: options.targetHostname,
         detectFrameworkHost: false,
       })
       console.log(`${NETLIFYDEVLOG} Switched host to ${options.targetHostname}`)
     }
 
-    if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
+    if (proxyStatusCode === 404 || proxyStatusCode === 403) {
       // If a request for `/path` has failed, we'll a few variations like
       // `/path/index.html` to mimic the CDN behavior.
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
@@ -691,14 +693,14 @@ const initializeProxy = async function ({
         // clearing them first, retries leak listeners and the closures retain per-attempt proxyReq objects.
         req.removeAllListeners('aborted')
         req.removeAllListeners('error')
-        proxy.web(req, res, req.proxyOptions)
+        proxy.web(req, res, options)
         return
       }
 
       // The request has failed but we might still have a matching redirect
       // rule (without `force`) that should kick in. This is how we mimic the
       // file shadowing behavior from the CDN.
-      if (options && options.match) {
+      if (options?.match) {
         return serveRedirect({
           // We don't want to match functions at this point because any redirects
           // to functions will have already been processed, so we don't supply a
@@ -716,7 +718,7 @@ const initializeProxy = async function ({
       }
     }
 
-    if (options.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
+    if (options?.staticFile && isRedirect({ status: proxyStatusCode }) && proxyRes.headers.location) {
       req.url = proxyRes.headers.location
       return serveRedirect({
         // We don't want to match functions at this point because any redirects
@@ -753,8 +755,7 @@ const initializeProxy = async function ({
       Object.entries(headersRules).forEach(([key, val]) => {
         res.setHeader(key, val)
       })
-      // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
-      res.writeHead(options.status || proxyRes.statusCode, proxyRes.headers)
+      res.writeHead(options?.status || proxyStatusCode, proxyRes.headers)
 
       proxyRes.on('data', function onData(data: Buffer) {
         res.write(data)
@@ -774,13 +775,12 @@ const initializeProxy = async function ({
     proxyRes.on('end', async function onEnd() {
       let responseBody: Buffer = Buffer.concat(responseData)
 
-      let responseStatus = options.status || proxyRes.statusCode
+      let responseStatus = options?.status || proxyStatusCode
 
       // `req[shouldGenerateETag]` may contain a function that determines
       // whether the response should have an ETag header.
       if (
         typeof req[shouldGenerateETag] === 'function' &&
-        // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
         req[shouldGenerateETag]({ statusCode: responseStatus }) === true
       ) {
         const etag = generateETag(responseBody, { weak: true })
@@ -824,7 +824,6 @@ const initializeProxy = async function ({
         delete proxyResHeaders['transfer-encoding']
       }
 
-      // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
       res.writeHead(responseStatus, proxyResHeaders)
 
       if (responseStatus !== 304) {

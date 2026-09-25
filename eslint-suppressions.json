@@ -707,7 +707,7 @@
       "count": 7
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 14
+      "count": 12
     },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
@@ -719,13 +719,13 @@
       "count": 4
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 3
+      "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 12
     },
     "@typescript-eslint/prefer-optional-chain": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 14
