@@ -6,7 +6,11 @@ import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 
-export const sitesList = async (options: OptionValues, command: BaseCommand) => {
+interface SitesListOptions extends OptionValues {
+  json?: boolean
+}
+
+export const sitesList = async (options: SitesListOptions, command: BaseCommand) => {
   const { api } = command.netlify
   let spinner
   if (!options.json) {
@@ -28,7 +32,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
         account_name: site.account_name,
       }
 
-      if (site.build_settings && site.build_settings.repo_url) {
+      if (site.build_settings?.repo_url) {
         siteInfo.repo_url = site.build_settings.repo_url
       }
 
@@ -67,4 +71,5 @@ Count: ${logSites.length}
       log(`─────────────────────────────────────────────────`)
     })
   }
+  return undefined
 }

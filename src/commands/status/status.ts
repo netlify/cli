@@ -21,7 +21,11 @@ export const STATUS_ERROR_CODES = {
   NOT_LINKED: 'NOT_LINKED',
 } as const
 
-export const status = async (options: OptionValues, command: BaseCommand) => {
+interface StatusOptions extends OptionValues {
+  json?: boolean
+}
+
+export const status = async (options: StatusOptions, command: BaseCommand) => {
   const { accounts, api, globalConfig, site, siteInfo } = command.netlify
   const currentUserId = globalConfig.get('userId') as string | undefined
   const [accessToken] = await getToken()
@@ -93,10 +97,8 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     Teams: accounts.map(({ name }) => name),
   }
 
-  const cleanAccountData =
-    // TODO(serhalp) `deep-clean` type declaration is invalid (this is obscured by `skipLibCheck`). Open a PR or use
-    // another lib.
-    (clean as unknown as <T extends Record<string | number | symbol, unknown>>(obj: T) => Partial<T>)(accountData)
+  // FIXME(clean-deep): its CJS `module.exports` function is declared as an ES `export default`
+  const cleanAccountData = (clean as unknown as typeof clean.default)(accountData)
 
   log(prettyjson.render(cleanAccountData))
 

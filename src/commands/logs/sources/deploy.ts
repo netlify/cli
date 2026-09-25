@@ -182,24 +182,24 @@ export const streamDeploy = (
 }
 
 export const findCurrentBuildingDeploy = async (client: NetlifyAPI, siteId: string): Promise<string | undefined> => {
-  const deploys = (await client.listSiteDeploys({ siteId, state: 'building' })) as { id: string }[]
+  const deploys = await client.listSiteDeploys({ siteId, state: 'building' })
   return deploys.length > 0 ? deploys[0].id : undefined
 }
 
 export const findLatestReadyDeploy = async (client: NetlifyAPI, siteId: string): Promise<string | undefined> => {
-  const deploys = (await client.listSiteDeploys({ siteId, state: 'ready', per_page: 1 })) as { id: string }[]
+  const deploys = await client.listSiteDeploys({ siteId, state: 'ready', per_page: 1 })
   return deploys.length > 0 ? deploys[0].id : undefined
 }
 
-const FINISHED_DEPLOY_STATES = new Set(['ready', 'error', 'cancelled'])
+const FINISHED_DEPLOY_STATES = new Set<string | undefined>(['ready', 'error', 'cancelled'])
 
 export const findLatestFinishedDeploy = async (client: NetlifyAPI, siteId: string): Promise<string | undefined> => {
-  const deploys = (await client.listSiteDeploys({ siteId, per_page: 10 })) as { id: string; state: string }[]
+  const deploys = await client.listSiteDeploys({ siteId, per_page: 10 })
   const finished = deploys.find((deploy) => FINISHED_DEPLOY_STATES.has(deploy.state))
   return finished?.id
 }
 
 export const isDeployFinished = async (client: NetlifyAPI, siteId: string, deployId: string): Promise<boolean> => {
-  const deploy = (await client.getSiteDeploy({ siteId, deployId })) as { state?: unknown }
+  const deploy = await client.getSiteDeploy({ siteId, deployId })
   return typeof deploy.state === 'string' && FINISHED_DEPLOY_STATES.has(deploy.state)
 }

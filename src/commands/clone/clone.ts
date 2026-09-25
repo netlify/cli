@@ -112,6 +112,7 @@ const lookupSiteByName = async (api: BaseCommand['netlify']['api'], siteName: st
   try {
     const sites = await api.listSites({ name: siteName, filter: 'all' })
     const site = sites.find((s) => s.name === siteName)
+    // FIXME(@netlify/api): site responses have all-optional fields, unlike `SiteInfo`
     return site ? (site as SiteInfo) : null
   } catch (error) {
     if ((error as APIError).status === 404) {

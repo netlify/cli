@@ -13,14 +13,21 @@ const isValidApiMethod = (api: NetlifyAPI, apiMethod: string): apiMethod is ApiM
 
 const isCallable = (value: unknown): value is ApiMethod => typeof value === 'function'
 
-export const apiCommand = async (apiMethodName: string, options: OptionValues, command: BaseCommand) => {
+// FIXME(@netlify/api): `methods` is typed as `any[]`
+const apiMethodSpecs = methods as { operationId: string; parameters: { path?: Record<string, unknown> } }[]
+
+interface ApiOptions extends OptionValues {
+  data?: unknown
+  list?: boolean
+}
+
+export const apiCommand = async (apiMethodName: string | undefined, options: ApiOptions, command: BaseCommand) => {
   const { api } = command.netlify
 
   if (options.list) {
     const table = new AsciiTable(`Netlify API Methods`)
     table.setHeading('API Method', 'Docs Link')
-    methods.forEach((method) => {
-      const { operationId } = method
+    apiMethodSpecs.forEach(({ operationId }) => {
       table.addRow(operationId, `https://open-api.netlify.com/#operation/${operationId}`)
     })
     log(table.toString())
@@ -43,7 +50,7 @@ export const apiCommand = async (apiMethodName: string, options: OptionValues, c
     )
   }
 
-  let payload
+  let payload: unknown
   if (options.data) {
     if (typeof options.data === 'string') {
       try {
@@ -68,8 +75,7 @@ Note: key=value pairs are not accepted; use JSON syntax instead.`,
     logJson(apiResponse)
   } catch (error_) {
     if (error_ instanceof Error && error_.message.includes('Missing required path variable')) {
-      const apiMethods = methods as { operationId: string; parameters: { path?: Record<string, unknown> } }[]
-      const pathVariables = apiMethods.find((method) => method.operationId === apiMethodName)?.parameters.path ?? {}
+      const pathVariables = apiMethodSpecs.find((method) => method.operationId === apiMethodName)?.parameters.path ?? {}
       const requiredNames = Object.keys(pathVariables).join(', ')
       return logAndThrowError(
         `${error_.message}

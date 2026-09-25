@@ -1,10 +1,14 @@
-import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { chalk, logAndThrowError, exit, log, type APIError } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { BaseOptionValues } from '../base-command.js'
 
-export const sitesDelete = async (siteId: string, options: OptionValues, command: BaseCommand) => {
+type SitesDeleteOptions = BaseOptionValues & {
+  force?: boolean
+}
+
+export const sitesDelete = async (siteId: string, options: SitesDeleteOptions, command: BaseCommand) => {
   command.setAnalyticsPayload({ force: options.force })
 
   const { api, site } = command.netlify
@@ -34,7 +38,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     log()
     log(chalk.bold('Be careful here. There is no undo!'))
     log()
-    const { wantsToDelete } = await inquirer.prompt({
+    const { wantsToDelete } = await inquirer.prompt<{ wantsToDelete: boolean }>({
       type: 'confirm',
       name: 'wantsToDelete',
       message: `WARNING: Are you sure you want to delete the "${siteData.name}" project?`,
@@ -57,7 +61,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     log()
     log(`Verify this project ID "${siteId}" supplied is correct and proceed.`)
     log('To skip this prompt, pass a --force flag to the delete command')
-    const { wantsToDelete } = await inquirer.prompt({
+    const { wantsToDelete } = await inquirer.prompt<{ wantsToDelete: boolean }>({
       type: 'confirm',
       name: 'wantsToDelete',
       message: `Verify & Proceed with deletion of project "${siteId}"?`,

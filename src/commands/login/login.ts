@@ -17,14 +17,21 @@ const msg = function (location: TokenLocation) {
   }
 }
 
-export const login = async (options: OptionValues, command: BaseCommand) => {
+interface LoginOptions extends OptionValues {
+  new?: boolean
+  request?: string
+  check?: string
+  json?: boolean
+}
+
+export const login = async (options: LoginOptions, command: BaseCommand) => {
   if (options.request && options.check) {
     return logAndThrowError('`--request` and `--check` are mutually exclusive')
   }
 
   if (options.request) {
     const { loginRequest } = await import('./login-request.js')
-    await loginRequest(options.request as string, command.netlify.apiOpts)
+    await loginRequest(options.request, command.netlify.apiOpts)
     return
   }
 

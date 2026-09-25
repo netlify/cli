@@ -82,10 +82,13 @@ interface CreateOptions extends OptionValues {
 const POLL_INTERVAL = 2000
 const TERMINAL_STATES = ['done', 'error', 'cancelled']
 
-const fetchAgentRunner = async (id: string, api: NetlifyAPI): Promise<AgentRunner> => {
-  const result = await api.getAgentRunner({ agent_runner_id: id })
-  return result as unknown as AgentRunner
-}
+const fetchAgentRunner = async (id: string, api: NetlifyAPI): Promise<AgentRunner> =>
+  // FIXME(@netlify/api): `getAgentRunner` response has all-optional fields and an untyped `state`
+  (await api.getAgentRunner({ agent_runner_id: id })) as AgentRunner
+
+const getSiteInfo = (api: NetlifyAPI, siteId: string) =>
+  // FIXME(@netlify/api): site responses have all-optional fields, unlike `SiteInfo`
+  api.getSite({ siteId }) as Promise<SiteInfo>
 
 const readMultilineInput = (): Promise<string> =>
   new Promise((resolve) => {
@@ -227,7 +230,7 @@ const pollRepoPush = async (
   while (true) {
     await sleep(POLL_INTERVAL)
 
-    const siteData = (await api.getSite({ siteId })) as unknown as SiteInfo
+    const siteData = await getSiteInfo(api, siteId)
     const progress = siteData.git_initial_push_progress
 
     if (progress && progress.state !== lastState) {
@@ -321,10 +324,11 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
         body.name = nameAttempt.trim()
       }
 
+      // FIXME(@netlify/api): site responses have all-optional fields, unlike `SiteInfo`
       site = (await api.createSiteInTeam({
         accountSlug,
         body,
-      })) as unknown as SiteInfo
+      })) as SiteInfo
 
       stopSpinner({ spinner: siteSpinner })
       log(`${chalk.green('✓')} Project created: ${chalk.cyan(site.name)}`)
@@ -470,7 +474,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   // Fetch final site info for URL
   let finalSite: SiteInfo
   try {
-    finalSite = (await api.getSite({ siteId: site.id })) as unknown as SiteInfo
+    finalSite = await getSiteInfo(api, site.id)
   } catch {
     finalSite = site
   }

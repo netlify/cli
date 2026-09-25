@@ -1,3 +1,5 @@
+import type { OptionValues } from 'commander'
+
 import { chalk } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 
@@ -14,7 +16,7 @@ For more information on available methods check out https://open-api.netlify.com
     .option('-d, --data <data>', 'Data to use')
     .option('--list', 'List out available API methods', false)
     .addExamples(['netlify api --list', `netlify api getSite --data '{ "site_id": "123456" }'`])
-    .action(async (apiMethod, options, command) => {
+    .action(async (apiMethod: string | undefined, options: OptionValues, command: BaseCommand) => {
       const { apiCommand } = await import('./api.js')
       await apiCommand(apiMethod, options, command)
     })

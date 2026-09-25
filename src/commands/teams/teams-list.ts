@@ -1,10 +1,13 @@
-import type { OptionValues } from 'commander'
-
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { BaseOptionValues } from '../base-command.js'
 
-export const teamsList = async (options: OptionValues, command: BaseCommand) => {
-  await command.authenticate(options.auth as string)
+type TeamsListOptions = BaseOptionValues & {
+  json?: boolean
+}
+
+export const teamsList = async (options: TeamsListOptions, command: BaseCommand) => {
+  await command.authenticate(options.auth)
 
   const { accounts } = command.netlify
 
