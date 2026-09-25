@@ -3,18 +3,14 @@ import { confirm } from '@inquirer/prompts'
 import pMap from 'p-map'
 
 import type BaseCommand from '../../commands/base-command.js'
+import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
 import { logAndThrowError, log } from '../../utils/command-helpers.js'
 
 export const description = 'Migrate legacy Netlify Blobs stores'
 
 const BLOB_OPS_CONCURRENCY = 5
 
-interface Options {
-  args: string[]
-  command: BaseCommand
-}
-
-export const run = async ({ args, command }: Options) => {
+export const run = async ({ args, command }: RunRecipeOptions & { command: BaseCommand }) => {
   if (args.length !== 1) {
     return logAndThrowError(`Usage: netlify recipes blobs-migrate <name of store>`)
   }

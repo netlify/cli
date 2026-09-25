@@ -1,10 +1,13 @@
-import { type APIError, logAndThrowError } from '../command-helpers.js'
+import type { NetlifyAPI } from '@netlify/api'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonName' implicitly has an 'any... Remove this comment to see the full error message
-export const getCurrentAddon = ({ addonName, addons }) => addons.find((addon) => addon.service_slug === addonName)
+import { logAndThrowError, type APIError } from '../command-helpers.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const getSiteData = async ({ api, siteId }) => {
+type Addon = Awaited<ReturnType<NetlifyAPI['listServiceInstancesForSite']>>[number]
+
+export const getCurrentAddon = ({ addonName, addons }: { addonName: string; addons: Addon[] }) =>
+  addons.find((addon) => addon.service_slug === addonName)
+
+export const getSiteData = async ({ api, siteId }: { api: NetlifyAPI; siteId: string }) => {
   let siteData
   try {
     siteData = await api.getSite({ siteId })
@@ -14,8 +17,7 @@ export const getSiteData = async ({ api, siteId }) => {
   return siteData
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const getAddons = async ({ api, siteId }) => {
+export const getAddons = async ({ api, siteId }: { api: NetlifyAPI; siteId: string }) => {
   let addons
   try {
     addons = await api.listServiceInstancesForSite({ siteId })

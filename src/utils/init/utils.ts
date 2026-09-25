@@ -158,7 +158,7 @@ export const saveNetlifyToml = async ({
   // We don't want to create a `netlify.toml` file that overrides existing configuration
   // In a monorepo the configuration can come from a repo level netlify.toml
   // so we make sure it doesn't by checking `configPath === undefined`
-  // @ts-expect-error TS(2349)
+  // @ts-expect-error FIXME(clean-deep): typings declare `export default` for a CommonJS `module.exports =` function
   if (configPath === undefined && Object.keys(cleanDeep(config)).length !== 0) {
     return
   }
@@ -180,9 +180,9 @@ export const saveNetlifyToml = async ({
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'error' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const formatErrorMessage = ({ error, message }) => {
-  const errorMessage = error.json ? `${error.message} - ${JSON.stringify(error.json)}` : error.message
+export const formatErrorMessage = ({ error, message }: { error: unknown; message: string }) => {
+  const apiError = error as { json?: unknown; message: string }
+  const errorMessage = apiError.json ? `${apiError.message} - ${JSON.stringify(apiError.json)}` : apiError.message
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
 
@@ -236,7 +236,7 @@ export const setupSite = async ({
     siteId,
     api,
     // merge existing plugins with new ones
-    // @ts-expect-error(serhalp) -- `plugins` is missing from `api.updateSite()` req body type
+    // @ts-expect-error FIXME(@netlify/api): `plugins` is missing from the `updateSite` request body type
     options: { repo, plugins: [...getUIPlugins(configPlugins), ...pluginsToInstall] },
   })
 
