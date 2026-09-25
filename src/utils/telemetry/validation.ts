@@ -10,9 +10,8 @@ export interface EventConfig {
 
 export default function isValidEventName(eventName: string, config: EventConfig): boolean {
   const validProject = [config.projectName]
-  const validObjects = config.objects || []
-  // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec -- FIXME: `RegExp#exec` would coerce non-string input instead of throwing
-  const matches = eventName.match(/([a-zA-Z]*):([a-zA-Z]*)_([a-zA-Z]*$)/)
+  const validObjects = config.objects ?? []
+  const matches = /([a-zA-Z]*):([a-zA-Z]*)_([a-zA-Z]*$)/.exec(eventName)
   if (!containsSeparators(eventName) || !matches) {
     return formattingWarning(eventName)
   }
@@ -35,12 +34,12 @@ export default function isValidEventName(eventName: string, config: EventConfig)
 }
 
 const containsSeparators = function (eventName: string): boolean {
-  const underscores = (eventName.match(/_/g) || []).length
+  const underscores = (eventName.match(/_/g) ?? []).length
   if (underscores !== 1) {
     log(`Event name must have single underscore. "${eventName}" contains ${underscores}`)
     return false
   }
-  const colons = (eventName.match(/:/g) || []).length
+  const colons = (eventName.match(/:/g) ?? []).length
   if (colons !== 1) {
     log(`Event name must have single colon. "${eventName}" contains ${colons}`)
     return false

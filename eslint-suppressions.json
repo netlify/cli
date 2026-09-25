@@ -784,9 +784,6 @@
     }
   },
   "src/utils/telemetry/validation.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 3
-    },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 2
     }
