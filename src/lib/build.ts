@@ -120,11 +120,11 @@ interface HandlerResult {
   status?: string
 }
 // The @netlify/build type incorrectly states a `void | Promise<void>` return type.
-export type PatchedHandlerType<T extends (opts: any) => void | Promise<void>> = (
+export type PatchedHandlerType<T extends (opts: never) => void | Promise<void>> = (
   opts: Parameters<T>[0],
 ) => HandlerResult | Promise<HandlerResult>
 
-type EventHandler<T extends (opts: any) => void | Promise<void>> = {
+type EventHandler<T extends (opts: never) => void | Promise<void>> = {
   handler: PatchedHandlerType<T>
   description: string
 }
@@ -199,7 +199,7 @@ export const getRunBuildOptions = async ({
       ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
       functionsBundlingManifest: true,
     },
-    // @ts-expect-error(serhalp) -- TODO(serhalp): Upstream the type fixes above into @netlify/build
+    // @ts-expect-error FIXME(@netlify/build): event handlers are typed as returning `void` instead of a handler result
     eventHandlers,
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
     skewProtectionToken,
@@ -226,8 +226,7 @@ export const runBuild = async (
       scheme: apiUrl.protocol.slice(0, -1),
       host: apiUrl.host,
     }
-    // @ts-expect-error(serhalp) -- I don't know what's going on here and I can't convince myself it even works as
-    // intended. TODO(serhalp): Investigate and fix types.
+    // @ts-expect-error FIXME(@netlify/build): `TestOptions` is missing `scheme` and `host`, which it forwards to the API client
     options = { ...options, testOpts }
   }
 
@@ -236,7 +235,7 @@ export const runBuild = async (
     netlifyConfig: newConfig,
     severityCode: exitCode,
     logs,
-    // TODO(serhalp): Upstream the type fixes above into @netlify/build and remove this type assertion
+    // FIXME(@netlify/build): `cachedConfig`, `defaultConfig` and `edgeFunctionsBootstrapURL` flags are mistyped
   } = await (build as unknown as (opts: RunBuildOptions) => Promise<ReturnType<typeof build>>)(options)
   return { exitCode, newConfig, configMutations, logs: logsAreBuffered(logs) ? logs : undefined }
 }

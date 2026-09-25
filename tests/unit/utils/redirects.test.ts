@@ -133,7 +133,6 @@ test('should parse redirect rules from _redirects file', async (t) => {
       })
       .build()
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ redirectsFiles: string[]; }' i... Remove this comment to see the full error message
     const redirects = await parseRedirects({ redirectsFiles: [`${builder.directory}/_redirects`] })
     const expected = [
       {
@@ -160,7 +159,6 @@ test('should parse redirect rules from _redirects file and netlify.toml', async 
       })
       .build()
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ redirectsFiles: string[]; conf... Remove this comment to see the full error message
     const redirects = await parseRedirects({
       redirectsFiles: [`${builder.directory}/_redirects`],
       configPath: `${builder.directory}/netlify.toml`,

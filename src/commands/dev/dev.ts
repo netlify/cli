@@ -77,6 +77,8 @@ const handleLiveTunnel = async ({
 
     return sessionUrl
   }
+
+  return undefined
 }
 
 export const dev = async (options: OptionValues, command: BaseCommand) => {

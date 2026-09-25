@@ -11,9 +11,16 @@ const REQUEST_TIMEOUT = 1e4
 
 export type { Geolocation }
 
+export type GeolocationMode = 'cache' | 'update' | 'mock'
+
 interface State {
   get(key: string): unknown
   set(key: string, value: unknown): void
+}
+
+interface GeolocationCache {
+  data: Geolocation
+  timestamp: number
 }
 
 /**
@@ -26,12 +33,12 @@ export const getGeoLocation = async ({
   offline = false,
   state,
 }: {
-  mode: 'cache' | 'update' | 'mock'
+  mode: GeolocationMode
   geoCountry?: string | undefined
   offline?: boolean | undefined
   state: State
 }): Promise<Geolocation> => {
-  const cacheObject = state.get(STATE_GEO_PROPERTY) as { data: Geolocation; timestamp: number } | undefined
+  const cacheObject = state.get(STATE_GEO_PROPERTY) as GeolocationCache | undefined
 
   // If `--country` was used, we also set `--mode=mock`.
   if (geoCountry) {
@@ -74,7 +81,7 @@ export const getGeoLocation = async ({
   // Trying to retrieve geolocation data from the API and caching it locally.
   try {
     const data = await getGeoLocationFromAPI()
-    const newCacheObject = {
+    const newCacheObject: GeolocationCache = {
       data,
       timestamp: Date.now(),
     }

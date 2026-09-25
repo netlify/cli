@@ -89,6 +89,7 @@ const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined }
 const ensureCleanupOnExit = () => {
   if (!cleanupRegistered) {
     cleanupRegistered = true
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- FIXME: `processOnExit` doesn't await its callbacks
     processOnExit(async () => {
       await cleanupBeforeExit({})
     })

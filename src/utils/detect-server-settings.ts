@@ -259,8 +259,8 @@ const detectServerSettings = async (
 ): Promise<ServerSettings> => {
   validateProperty(devConfig, 'framework', 'string')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO(serhalp): Set to `BaseServerSettings`. Good luck!
-  let settings: any = {}
+  // FIXME: an empty `framework` matches none of the branches below and leaves this `{}`
+  let settings = {} as BaseServerSettings
 
   if (flags.dir || devConfig.framework === '#static') {
     // serving files statically without a framework server

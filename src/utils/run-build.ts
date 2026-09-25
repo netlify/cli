@@ -4,7 +4,6 @@ import path, { join } from 'path'
 import type { NetlifyConfig, GeneratedFunction } from '@netlify/build'
 
 import type BaseCommand from '../commands/base-command.js'
-import type { $TSFixMe } from '../commands/types.js'
 import { getBootstrapURL } from '../lib/edge-functions/bootstrap.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.js'
 import { getPathInProject } from '../lib/settings.js'
@@ -47,10 +46,23 @@ const cleanInternalDirectory = async (basePath?: string) => {
   await Promise.all(ops)
 }
 
+interface RunNetlifyBuildFlags {
+  context?: string | undefined
+  cwd?: string | undefined
+  debug?: boolean | undefined
+  dir?: string | undefined
+  dry?: boolean | undefined
+  offline?: boolean | undefined
+  quiet?: boolean | undefined
+  saveConfig?: boolean | undefined
+  skipWaitPort?: boolean | undefined
+}
+
+type DeployEnvironment = { key: string; value: string; isSecret: boolean; scopes: string[] }[]
+
 type RunNetlifyBuildOptions = {
   command: BaseCommand
-  // The flags of the command
-  options: $TSFixMe
+  options: RunNetlifyBuildFlags
   settings: ServerSettings
   env: NodeJS.ProcessEnv
   timeline: 'dev' | 'build'
@@ -59,12 +71,12 @@ type RunNetlifyBuildOptions = {
 export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline: 'dev' }): Promise<{
   configMutations: unknown
   generatedFunctions: GeneratedFunction[]
-  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
+  deployEnvironment: DeployEnvironment
 }>
 export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline: 'build' }): Promise<{
   configPath: string
   generatedFunctions: GeneratedFunction[]
-  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
+  deployEnvironment: DeployEnvironment
 }>
 export async function runNetlifyBuild({
   command,
@@ -72,14 +84,7 @@ export async function runNetlifyBuild({
   options,
   settings,
   timeline,
-}: {
-  command: BaseCommand
-  // The flags of the command
-  options: $TSFixMe
-  settings: ServerSettings
-  env?: NodeJS.ProcessEnv
-  timeline: 'build' | 'dev'
-}) {
+}: Omit<RunNetlifyBuildOptions, 'env'> & { env?: NodeJS.ProcessEnv }) {
   const { apiOpts, cachedConfig, site } = command.netlify
 
   const { default: buildSite, startDev } = await netlifyBuildPromise
@@ -148,7 +153,7 @@ export async function runNetlifyBuild({
     }
 
     // Run Netlify Build using the main entry point.
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ outputConfigPath: string; save... Remove this comment to see the full error message
+    // @ts-expect-error FIXME(@netlify/build): `BuildFlags.cachedConfig` is `Record<string, unknown>`, which rejects interfaces
     const { netlifyConfig, success, generatedFunctions } = await buildSite(buildSiteOptions)
 
     if (!success) {
@@ -167,9 +172,11 @@ export async function runNetlifyBuild({
     }
     await devCommand({ netlifyConfig, settingsOverrides })
 
+    const deployEnvironment: DeployEnvironment = []
+
     return {
       configPath: tempConfigPath,
-      deployEnvironment: [] as { key: string; value: string; isSecret: boolean }[],
+      deployEnvironment,
       generatedFunctions,
     }
   }
@@ -189,8 +196,10 @@ export async function runNetlifyBuild({
     error: startDevError,
     success,
     generatedFunctions,
-    deployEnvVars: deployEnvironment,
+    deployEnvVars,
   } = await startDev(devCommand, startDevOptions)
+  // FIXME(@netlify/build): `startDev()` returns `deployEnvVars` as `any`
+  const deployEnvironment: DeployEnvironment = deployEnvVars
 
   if (!success && startDevError) {
     return logAndThrowError(
@@ -200,7 +209,7 @@ export async function runNetlifyBuild({
 
   return {
     configMutations,
-    deployEnvironment: deployEnvironment as { key: string; value: string; isSecret: boolean }[],
+    deployEnvironment,
     generatedFunctions,
   }
 }
