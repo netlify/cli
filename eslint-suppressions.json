@@ -280,9 +280,6 @@
     }
   },
   "src/commands/watch/watch.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     }
