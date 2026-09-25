@@ -4,6 +4,7 @@ import { getPathInProject } from '../settings.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 import type BaseCommand from '../../commands/base-command.js'
 import { fileExistsAsync } from '../fs.js'
+import { nonNullable } from '../../utils/command-helpers.js'
 
 export const getUserEdgeFunctionsDirectory = (command: BaseCommand): string | undefined => {
   return command.netlify.config.build.edge_functions
@@ -22,7 +23,7 @@ const getAllEdgeFunctionsDirectories = (command: BaseCommand) => {
     getUserEdgeFunctionsDirectory(command),
     getInternalEdgeFunctionsDirectory(command),
     getFrameworkEdgeFunctionsDirectory(command),
-  ].filter(Boolean) as string[]
+  ].filter(nonNullable)
 }
 
 export const anyEdgeFunctionsDirectoryExists = async (command: BaseCommand): Promise<boolean> => {
