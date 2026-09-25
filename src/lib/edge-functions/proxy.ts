@@ -8,7 +8,6 @@ import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import getAvailablePort from 'get-port'
 
 import type BaseCommand from '../../commands/base-command.js'
-import type { $TSFixMe } from '../../commands/types.js'
 import {
   NETLIFYDEVERR,
   type NormalizedCachedConfigConfig,
@@ -17,10 +16,10 @@ import {
 } from '../../utils/command-helpers.js'
 import { type FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
-import { getGeoLocation } from '../geo-location.js'
+import { type GeolocationMode, getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { type Spinner, startSpinner, stopSpinner } from '../spinner.js'
-import type { LocalState, ServerSettings } from '../../utils/types.js'
+import type { EnvironmentVariables, LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
 
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
@@ -34,6 +33,9 @@ const headersSymbol = Symbol('Edge Functions Headers')
 const LOCAL_HOST = '127.0.0.1'
 
 type ExtendedIncomingMessage = IncomingMessage & { [headersSymbol]: Record<string, string> }
+type EdgeFunctionsCandidateRequest = IncomingMessage & { [headersSymbol]?: Record<string, string> }
+
+type InspectSettings = Parameters<typeof bundler.serve>[0]['inspectSettings']
 
 const getDownloadUpdateFunctions = () => {
   let spinner: Spinner
@@ -68,7 +70,7 @@ export const createSiteInfoHeader = (
   return Buffer.from(siteString).toString('base64')
 }
 
-const createAccountInfoHeader = ({ id }: { id: string }) => {
+const createAccountInfoHeader = ({ id }: { id: string | undefined }) => {
   const account = { id }
   const accountString = JSON.stringify(account)
   return Buffer.from(accountString).toString('base64')
@@ -98,25 +100,25 @@ export const initializeProxy = async ({
   watchIgnore,
   deployEnvironment,
 }: {
-  accountId: string
+  accountId: string | undefined
   aiGatewayContext?: AIGatewayContext | null
-  blobsContext: BlobsContextWithEdgeAccess
+  blobsContext?: BlobsContextWithEdgeAccess | undefined
   command: BaseCommand
   config: NormalizedCachedConfigConfig
-  configPath: string
+  configPath?: string | undefined
   debug: boolean
-  env: $TSFixMe
-  offline: $TSFixMe
-  geoCountry: $TSFixMe
-  geolocationMode: $TSFixMe
+  env: EnvironmentVariables
+  offline: boolean
+  geoCountry?: string | undefined
+  geolocationMode: GeolocationMode
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
-  inspectSettings: $TSFixMe
-  mainPort: $TSFixMe
-  passthroughPort: $TSFixMe
+  inspectSettings: InspectSettings
+  mainPort: number
+  passthroughPort: number
   projectDir: string
   repositoryRoot?: string
   settings: ServerSettings
-  siteInfo: $TSFixMe
+  siteInfo: SiteInfo
   state: LocalState
   watchIgnore: string[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
@@ -146,7 +148,7 @@ export const initializeProxy = async ({
     watchIgnore,
     deployEnvironment,
   })
-  return async (req: ExtendedIncomingMessage) => {
+  return async (req: EdgeFunctionsCandidateRequest) => {
     if (req.headers[headers.Passthrough] !== undefined) {
       return
     }
@@ -226,12 +228,12 @@ const prepareServer = async ({
   aiGatewayContext?: AIGatewayContext | null
   command: BaseCommand
   config: NormalizedCachedConfigConfig
-  configPath: string
+  configPath?: string | undefined
   debug: boolean
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
-  inspectSettings: Parameters<typeof bundler.serve>[0]['inspectSettings']
+  inspectSettings: InspectSettings
   port: number
   projectDir: string
   publishDir: string

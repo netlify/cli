@@ -29,7 +29,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 6
+      "count": 4
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 1
@@ -284,41 +284,10 @@
     }
   },
   "src/lib/build.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 2
-    },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 6
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
-  "src/lib/edge-functions/editor-helper.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 5
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 2
-    }
-  },
-  "src/lib/edge-functions/headers.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-return": {
       "count": 1
     }
   },
@@ -327,13 +296,7 @@
       "count": 2
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-argument": {
       "count": 2
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 5
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 4
@@ -444,20 +407,14 @@
     }
   },
   "src/lib/http-agent.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 4
-    },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 6
+      "count": 2
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/no-unsafe-return": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 2
@@ -594,13 +551,7 @@
       "count": 2
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 5
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 1
+      "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 13
@@ -610,35 +561,17 @@
     }
   },
   "src/utils/dev.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 9
-    },
-    "@typescript-eslint/no-unsafe-call": {
+    "@typescript-eslint/non-nullable-type-assertion-style": {
       "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 7
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 2
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 4
+      "count": 1
     }
   },
   "src/utils/dot-env.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 2
-    },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
     }
@@ -718,9 +651,6 @@
     }
   },
   "src/utils/proxy-server.ts": {
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 1
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     },
@@ -730,43 +660,31 @@
   },
   "src/utils/proxy.ts": {
     "@typescript-eslint/no-deprecated": {
-      "count": 1
+      "count": 2
     },
     "@typescript-eslint/no-empty-function": {
-      "count": 1
-    },
-    "@typescript-eslint/no-explicit-any": {
       "count": 1
     },
     "@typescript-eslint/no-misused-promises": {
       "count": 7
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 7
-    },
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 32
+      "count": 15
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 61
+      "count": 4
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 28
+      "count": 4
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 96
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 13
-    },
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
+      "count": 3
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 10
+      "count": 8
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 23
+      "count": 14
     }
   },
   "src/utils/read-repo-url.ts": {
@@ -775,22 +693,7 @@
     }
   },
   "src/utils/redirects.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 11
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 3
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    },
-    "@typescript-eslint/restrict-template-expressions": {
       "count": 1
     }
   },
@@ -804,10 +707,7 @@
   },
   "src/utils/run-build.ts": {
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 10
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 11
+      "count": 4
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
@@ -816,25 +716,6 @@
   "src/utils/scripted-commands.ts": {
     "@typescript-eslint/no-unnecessary-type-conversion": {
       "count": 2
-    }
-  },
-  "src/utils/sign-redirect.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
-    }
-  },
-  "src/utils/static-server.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 3
     }
   },
   "src/utils/telemetry/report-error.ts": {

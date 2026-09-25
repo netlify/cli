@@ -7,28 +7,47 @@ import { isFileAsync } from '../lib/fs.js'
 
 import { warn } from './command-helpers.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'envFiles' implicitly has an 'any'... Remove this comment to see the full error message
-export const loadDotEnvFiles = async function ({ envFiles, projectDir }) {
+interface DotEnvFile {
+  file: string
+  env: dotenv.DotenvParseOutput
+  warning?: undefined
+}
+
+interface DotEnvFileWarning {
+  file?: undefined
+  env?: undefined
+  warning: string
+}
+
+export const loadDotEnvFiles = async function ({
+  envFiles,
+  projectDir,
+}: {
+  envFiles?: string[] | undefined
+  projectDir: string
+}): Promise<DotEnvFile[]> {
   const response = await tryLoadDotEnvFiles({ projectDir, dotenvFiles: envFiles })
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   const filesWithWarning = response.filter((el) => el.warning)
   filesWithWarning.forEach((el) => {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     warn(el.warning)
   })
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-  return response.filter((el) => el.file && el.env)
+  return response.filter((el): el is DotEnvFile => Boolean(el.file && el.env))
 }
 
 // in the user configuration, the order is highest to lowest
 const defaultEnvFiles = ['.env.development.local', '.env.local', '.env.development', '.env']
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'an... Remove this comment to see the full error message
-export const tryLoadDotEnvFiles = async ({ dotenvFiles = defaultEnvFiles, projectDir }) => {
+export const tryLoadDotEnvFiles = async ({
+  dotenvFiles = defaultEnvFiles,
+  projectDir,
+}: {
+  dotenvFiles?: string[] | undefined
+  projectDir: string
+}): Promise<(DotEnvFile | DotEnvFileWarning)[]> => {
   const results = await Promise.all(
-    dotenvFiles.map(async (file) => {
+    dotenvFiles.map(async (file): Promise<DotEnvFile | DotEnvFileWarning | undefined> => {
       const filepath = path.resolve(projectDir, file)
       try {
         const isFile = await isFileAsync(filepath)
@@ -48,5 +67,5 @@ export const tryLoadDotEnvFiles = async ({ dotenvFiles = defaultEnvFiles, projec
   )
 
   // we return in order of lowest to highest priority
-  return results.filter(Boolean).reverse()
+  return results.filter((result) => result !== undefined).reverse()
 }

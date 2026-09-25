@@ -30,7 +30,8 @@ import { throttle } from './object-utilities.js'
 import pFilter from 'p-filter'
 
 import type { BaseCommand } from '../commands/index.js'
-import type { $TSFixMe, NetlifyOptions } from '../commands/types.js'
+import type { NetlifyOptions } from '../commands/types.js'
+import type { BlobsContextWithEdgeAccess } from '../lib/blobs/blobs.js'
 import {
   handleProxyRequest,
   initializeProxy as initializeEdgeFunctionsProxy,
@@ -38,7 +39,8 @@ import {
 } from '../lib/edge-functions/proxy.js'
 import { fileExistsAsync, isFileAsync } from '../lib/fs.js'
 import { getFormHandler } from '../lib/functions/form-submissions-handler.js'
-import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
+import { DEFAULT_FUNCTION_URL_EXPRESSION, type FunctionsRegistry } from '../lib/functions/registry.js'
+import type { GeolocationMode } from '../lib/geo-location.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 
 import {
@@ -55,7 +57,7 @@ import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHead
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
-import type { Request, Rewriter, ServerSettings, SiteInfo } from './types.js'
+import type { EnvironmentVariables, LocalState, Request, Rewriter, ServerSettings, SiteInfo } from './types.js'
 
 const gunzip = util.promisify(zlib.gunzip)
 const gzip = util.promisify(zlib.gzip)
@@ -64,6 +66,54 @@ const brotliCompress = util.promisify(zlib.brotliCompress)
 const deflate = util.promisify(zlib.deflate)
 const inflate = util.promisify(zlib.inflate)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
+
+type ImageProxy = ReturnType<typeof initializeImageProxy>
+type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy>>
+type InspectSettings = Parameters<typeof initializeEdgeFunctionsProxy>[0]['inspectSettings']
+
+interface BaseProxyOptions extends httpProxy.ServerOptions {
+  target?: string | undefined
+  headers?: Record<string, string>
+}
+
+// Options for requests that go through redirect matching and may fall back to a redirect or an alternative target
+interface RoutingProxyOptions extends BaseProxyOptions {
+  match: MatchResult | null
+  target: string
+  detectTarget?: boolean | undefined
+  targetHostname?: ServerSettings['frameworkHost']
+  isChangingTarget?: boolean
+  publicFolder: string
+  functionsServer?: string | undefined
+  functionsPort: number
+  jwtRolePath: string
+  framework?: string | undefined
+  changeSettings: (newSettings: Partial<ServerSettings>) => void
+  staticFile?: string | false
+  status?: number | undefined
+}
+
+interface PassthroughProxyOptions extends BaseProxyOptions {
+  match?: undefined
+  detectTarget?: undefined
+  isChangingTarget?: undefined
+  staticFile?: undefined
+  status?: undefined
+}
+
+type ProxyOptions = RoutingProxyOptions | PassthroughProxyOptions
+
+interface ProxyRequest extends Request {
+  proxyOptions?: ProxyOptions
+  alternativePaths?: string[]
+  __expectHeader?: string | undefined
+  [shouldGenerateETag]?: (response: { statusCode: number }) => unknown
+}
+
+interface ProxyHandlers {
+  web: (req: ProxyRequest, res: ServerResponse, options: ProxyOptions) => unknown
+  ws: (req: http.IncomingMessage, socket: Duplex, head: Buffer, options: ProxyOptions) => void
+}
 
 const decompressResponseBody = async function (body: Buffer, contentEncoding = ''): Promise<Buffer> {
   switch (contentEncoding) {
@@ -136,7 +186,8 @@ function isInternal(url?: string): boolean {
   return url?.startsWith('/.netlify/') ?? false
 }
 
-function isFunction(functionsPort: boolean | number | undefined, url: string) {
+function isFunction(functionsPort: boolean | number | undefined, url: string | undefined) {
+  // @ts-expect-error FIXME: throws when `url` is undefined
   return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
 
@@ -158,7 +209,7 @@ const isEndpointExists = async function (endpoint: string, origin: string) {
   try {
     const res = await fetch(url, { method: 'HEAD' })
     return res.status !== 404
-  } catch (e) {
+  } catch {
     return false
   }
 }
@@ -214,13 +265,13 @@ const render404 = async function (publicFolder: string): Promise<string> {
 // Used as an optimization to avoid dual lookups for missing assets
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-const alternativePathsFor = function (url) {
+const alternativePathsFor = function (url: string): string[] {
   if (isFunction(true, url)) {
     return []
   }
 
   const paths = []
+  // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with -- FIXME: `endsWith` differs for non-string values
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
     if (url !== '/') {
@@ -235,8 +286,7 @@ const alternativePathsFor = function (url) {
 }
 
 const notifyActivity = throttle((api: NetlifyOptions['api'], siteId: string, devServerId: string) => {
-  // @ts-expect-error(serhalp) -- It looks like the generated API types don't include "internal" methods
-  // (https://github.com/netlify/open-api/blob/66813d46e47f207443b7aebce2c22c4a4c8ca867/swagger.yml#L2642). Fix?
+  // @ts-expect-error FIXME(@netlify/api): internal `markDevServerActivity` method is missing from the generated types
   api.markDevServerActivity({ siteId, devServerId }).catch((error: unknown) => {
     console.error(`${NETLIFYDEVWARN} Failed to notify activity`, error)
   })
@@ -253,10 +303,19 @@ const serveRedirect = async function ({
   res,
   siteInfo,
 }: {
+  env: EnvironmentVariables
+  functionsRegistry?: FunctionsRegistry | null | undefined
+  imageProxy: ImageProxy
   match: MatchResult | null
-} & Record<string, $TSFixMe>) {
+  options: RoutingProxyOptions
+  proxy: ProxyHandlers
+  req: ProxyRequest
+  res: ServerResponse
+  siteInfo: SiteInfo
+}) {
   if (!match) return proxy.web(req, res, options)
 
+  // FIXME: `options` is always set by callers, so neither fallback applies
   options = options || req.proxyOptions || {}
   options.match = null
 
@@ -372,6 +431,7 @@ const serveRedirect = async function ({
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     const matchingFunction =
       functionsRegistry &&
+      // @ts-expect-error FIXME: `req.method` may be undefined and the static file callback returns a boolean, not a promise
       (await functionsRegistry.getFunctionForURLPath(destURL, req.method, () => Boolean(destStaticFile)))
     let statusValue
     if (
@@ -395,6 +455,7 @@ const serveRedirect = async function ({
       req.headers['x-netlify-original-pathname'] = url.pathname
       req.headers['x-netlify-original-search'] = url.search
 
+      // @ts-expect-error FIXME: sends the whole route object instead of its pattern in the function route header
       return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
     }
     if (isImageRequest(req)) {
@@ -406,9 +467,9 @@ const serveRedirect = async function ({
   return proxy.web(req, res, options)
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-const reqToURL = function (req, pathname) {
+const reqToURL = function (req: Request, pathname: string | undefined) {
   return new URL(
+    // @ts-expect-error FIXME: an undefined `pathname` resolves to `/undefined`
     pathname,
     `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
       req.headers.host || req.hostname
@@ -426,13 +487,21 @@ const initializeProxy = async function ({
   port,
   projectDir,
   siteInfo,
-}: { config: NormalizedCachedConfigConfig } & Record<string, $TSFixMe>) {
-  const proxy = httpProxy.createProxyServer({
+}: {
+  config: NormalizedCachedConfigConfig
+  configPath?: string | undefined
+  distDir: string
+  env: EnvironmentVariables
+  host?: string | undefined
+  imageProxy: ImageProxy
+  port?: number | undefined
+  projectDir: string
+  siteInfo: SiteInfo
+}): Promise<ProxyHandlers> {
+  const proxy = httpProxy.createProxyServer<ProxyRequest>({
     selfHandleResponse: true,
-    target: {
-      host,
-      port,
-    },
+    // @ts-expect-error FIXME: `host` and `port` may be undefined
+    target: { host, port },
   })
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
@@ -449,7 +518,7 @@ const initializeProxy = async function ({
   })
 
   // @ts-expect-error TS(2339) FIXME: Property 'before' does not exist on type 'Server'.
-  proxy.before('web', 'stream', (req) => {
+  proxy.before('web', 'stream', (req: ProxyRequest) => {
     // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
     if (req.headers.expect) {
       req.__expectHeader = req.headers.expect
@@ -458,7 +527,6 @@ const initializeProxy = async function ({
   })
 
   proxy.on('error', (err, req, res, proxyUrl) => {
-    // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
     const options = req.proxyOptions
 
     const isConRefused = 'code' in err && err.code === 'ECONNREFUSED'
@@ -507,14 +575,10 @@ const initializeProxy = async function ({
       handleProxyRequest(req, proxyReq)
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property '__expectHeader' does not exist on type '... Remove this comment to see the full error message
     if (req.__expectHeader) {
-      // @ts-expect-error TS(2339) FIXME: Property '__expectHeader' does not exist on type '... Remove this comment to see the full error message
       proxyReq.setHeader('Expect', req.__expectHeader)
     }
-    // @ts-expect-error TS(2339) FIXME: Property 'originalBody' does not exist on type 'In... Remove this comment to see the full error message
     if (req.originalBody) {
-      // @ts-expect-error TS(2339) FIXME: Property 'originalBody' does not exist on type 'In... Remove this comment to see the full error message
       proxyReq.write(req.originalBody)
     }
   })
@@ -528,8 +592,8 @@ const initializeProxy = async function ({
       res.setHeader(NFRequestID, requestID)
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-    const options = req.proxyOptions
+    // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style -- FIXME: always set by `handlers.web`
+    const options = req.proxyOptions as ProxyOptions
 
     if (options.isChangingTarget) {
       // got a response after switching the ipVer for host (and its not an error since we will be in on('error') handler) - let's remember this host now
@@ -548,15 +612,12 @@ const initializeProxy = async function ({
     if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
       // If a request for `/path` has failed, we'll a few variations like
       // `/path/index.html` to mimic the CDN behavior.
-      // @ts-expect-error TS(2339) FIXME: Property 'alternativePaths' does not exist on type... Remove this comment to see the full error message
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
-        // @ts-expect-error TS(2339) FIXME: Property 'alternativePaths' does not exist on type... Remove this comment to see the full error message
         req.url = req.alternativePaths.shift()
         // http-proxy attaches new 'aborted'/'error' listeners on req for every proxy.web call; without
         // clearing them first, retries leak listeners and the closures retain per-attempt proxyReq objects.
         req.removeAllListeners('aborted')
         req.removeAllListeners('error')
-        // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
         proxy.web(req, res, req.proxyOptions)
         return
       }
@@ -600,9 +661,8 @@ const initializeProxy = async function ({
       })
     }
 
-    // @ts-expect-error TS(7034) FIXME: Variable 'responseData' implicitly has type 'any[]... Remove this comment to see the full error message
-    const responseData = []
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
+    const responseData: Buffer[] = []
+    // @ts-expect-error FIXME: an undefined `req.url` resolves to `/undefined`
     const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
@@ -618,12 +678,12 @@ const initializeProxy = async function ({
     const isStreamedResponse = proxyRes.headers['content-length'] === undefined
     if (isStreamedResponse && !htmlInjections) {
       Object.entries(headersRules).forEach(([key, val]) => {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         res.setHeader(key, val)
       })
+      // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
       res.writeHead(options.status || proxyRes.statusCode, proxyRes.headers)
 
-      proxyRes.on('data', function onData(data) {
+      proxyRes.on('data', function onData(data: Buffer) {
         res.write(data)
       })
 
@@ -634,12 +694,11 @@ const initializeProxy = async function ({
       return
     }
 
-    proxyRes.on('data', function onData(data) {
+    proxyRes.on('data', function onData(data: Buffer) {
       responseData.push(data)
     })
 
     proxyRes.on('end', async function onEnd() {
-      // @ts-expect-error TS(7005) FIXME: Variable 'responseData' implicitly has an 'any[]' ... Remove this comment to see the full error message
       let responseBody: Buffer = Buffer.concat(responseData)
 
       let responseStatus = options.status || proxyRes.statusCode
@@ -647,9 +706,8 @@ const initializeProxy = async function ({
       // `req[shouldGenerateETag]` may contain a function that determines
       // whether the response should have an ETag header.
       if (
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         typeof req[shouldGenerateETag] === 'function' &&
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
         req[shouldGenerateETag]({ statusCode: responseStatus }) === true
       ) {
         const etag = generateETag(responseBody, { weak: true })
@@ -662,7 +720,6 @@ const initializeProxy = async function ({
       }
 
       Object.entries(headersRules).forEach(([key, val]) => {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         res.setHeader(key, val)
       })
 
@@ -694,6 +751,7 @@ const initializeProxy = async function ({
         delete proxyResHeaders['transfer-encoding']
       }
 
+      // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
       res.writeHead(responseStatus, proxyResHeaders)
 
       if (responseStatus !== 304) {
@@ -701,20 +759,22 @@ const initializeProxy = async function ({
       }
 
       res.end()
+      return undefined
     })
+    return undefined
   })
 
-  const handlers = {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
+  const handlers: ProxyHandlers = {
     web: (req, res, options) => {
+      // @ts-expect-error FIXME: an undefined `req.url` resolves to `/undefined`
       const requestURL = new URL(req.url, 'http://127.0.0.1')
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       proxy.web(req, res, options)
+      return undefined
     },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
     ws: (req, socket, head, options) => {
       proxy.ws(req, socket, head, options)
     },
@@ -737,12 +797,19 @@ const onRequest = async (
     settings,
     siteInfo,
   }: {
+    api?: NetlifyOptions['api'] | undefined
+    edgeFunctionsProxy?: EdgeFunctionsProxy | undefined
+    env: EnvironmentVariables
+    functionsRegistry?: FunctionsRegistry | undefined
+    functionsServer?: string | undefined
+    imageProxy: ImageProxy
+    proxy: ProxyHandlers
     rewriter: Rewriter
+    serverHandler?: ServerHandler | undefined
     settings: ServerSettings
-    edgeFunctionsProxy?: EdgeFunctionsProxy
-    serverHandler?: ServerHandler
-  } & Record<string, $TSFixMe>,
-  req: Request,
+    siteInfo: SiteInfo
+  },
+  req: ProxyRequest,
   res: ServerResponse,
 ) => {
   req.originalBody =
@@ -752,7 +819,7 @@ const onRequest = async (
     return imageProxy(req, res)
   }
 
-  const edgeFunctionsProxyURL = await edgeFunctionsProxy?.(req as any)
+  const edgeFunctionsProxyURL = await edgeFunctionsProxy?.(req)
 
   if (edgeFunctionsProxyURL !== undefined) {
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
@@ -760,6 +827,7 @@ const onRequest = async (
 
   const functionMatch =
     functionsRegistry &&
+    // @ts-expect-error FIXME: `req.url` and `req.method` may be undefined and the static file callback resolves to a path, not a boolean
     (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () =>
       getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist ?? ''),
     ))
@@ -822,7 +890,7 @@ const onRequest = async (
   }
 
   const match = await rewriter(req)
-  const options = {
+  const options: RoutingProxyOptions = {
     match,
     target: `http://${
       settings.frameworkHost && isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost
@@ -852,7 +920,6 @@ const onRequest = async (
     maybeNotifyActivity()
 
     // We don't want to generate an ETag for 3xx redirects.
-    // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
     req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
 
     return serveRedirect({ req, res, proxy, imageProxy, match, options, siteInfo, env, functionsRegistry })
@@ -861,11 +928,9 @@ const onRequest = async (
   // The request will be served by the framework server, which means we want to
   // generate an ETag unless we're rendering an error page. The only way for
   // us to know that is by looking at the status code
-  // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
   req[shouldGenerateETag] = ({ statusCode }) => statusCode >= 200 && statusCode < 300
 
-  const hasFormSubmissionHandler: boolean =
-    functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
+  const hasFormSubmissionHandler = functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
 
   const ct = parseContentType(req.headers['content-type'] ?? '').type
   if (
@@ -881,14 +946,13 @@ const onRequest = async (
   maybeNotifyActivity()
 
   proxy.web(req, res, options)
+  return undefined
 }
 
 export const getProxyUrl = function (settings: Pick<ServerSettings, 'https' | 'port'>) {
   const scheme = settings.https ? 'https' : 'http'
   return `${scheme}://localhost:${settings.port}`
 }
-
-type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy>>
 
 export const startProxy = async function ({
   accountId,
@@ -915,18 +979,35 @@ export const startProxy = async function ({
   watchIgnore,
   deployEnvironment,
 }: {
+  accountId: string | undefined
+  aiGatewayContext?: AIGatewayContext | null
+  api?: NetlifyOptions['api'] | undefined
+  blobsContext?: BlobsContextWithEdgeAccess | undefined
   command: BaseCommand
   config: NormalizedCachedConfigConfig
-  settings: ServerSettings
+  configPath?: string | undefined
+  debug: boolean
   disableEdgeFunctions: boolean
+  env: EnvironmentVariables
+  functionsRegistry?: FunctionsRegistry | undefined
+  geoCountry?: string | undefined
+  geolocationMode: GeolocationMode
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
-  aiGatewayContext?: AIGatewayContext | null
-  siteInfo?: SiteInfo
+  inspectSettings: InspectSettings
+  offline: boolean
+  projectDir: string
+  repositoryRoot?: string | undefined
+  settings: ServerSettings
+  siteInfo: SiteInfo
+  state: LocalState
   watchIgnore: string[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
-} & Record<string, $TSFixMe>) {
+}) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
-  const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
+  // FIXME: typed as optional, but is `null` rather than `undefined` when there is no functions port
+  const functionsServer = (settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null) as
+    | string
+    | undefined
 
   let edgeFunctionsProxy: EdgeFunctionsProxy | undefined
   if (disableEdgeFunctions) {
@@ -1058,6 +1139,7 @@ export const startProxy = async function ({
       const reqUrl = reqToURL(req, req.url)
       const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
       const destURL = stripOrigin(dest)
+      // @ts-expect-error FIXME: `pathRewrite` is an http-proxy-middleware option that http-proxy ignores, so the path isn't rewritten
       proxy.ws(req, socket, head, { target: dest.origin, changeOrigin: true, pathRewrite: () => destURL })
       return
     }
