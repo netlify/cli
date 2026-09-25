@@ -193,8 +193,6 @@ const createGitHubRepo = async (
     const errorData = (await response.json().catch(() => ({}))) as { error?: string }
     throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
   }
-
-  return (await response.json()) as SiteInfo
 }
 
 const PUSH_TERMINAL_STATES = ['complete', 'failed']
