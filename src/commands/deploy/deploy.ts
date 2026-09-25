@@ -89,7 +89,7 @@ interface DeployConfig {
 type DeploySite = NetlifySite & { root: string }
 
 // FIXME(@netlify/api): `SiteInfo['build_settings']` is missing `functions_dir`
-type DeploySiteData = { build_settings?: SiteInfo['build_settings'] & { functions_dir?: string } } | undefined
+type DeploySiteData = { build_settings?: SiteInfo['build_settings'] & { functions_dir?: string } }
 
 // FIXME(@netlify/api): the `createSiteDeploy` types omit the source zip fields and make `id` optional
 type CreatedDeploy = Omit<Awaited<ReturnType<NetlifyAPI['createSiteDeploy']>>, 'id'> & {
@@ -146,7 +146,7 @@ const getDeployFolder = async ({
   config: DeployConfig
   options: DeployOptionValues
   site: DeploySite
-  siteData: DeploySiteData
+  siteData?: DeploySiteData
 }): Promise<string> => {
   let deployFolder: string | undefined
   // if the `--dir .` flag is provided we should resolve it to the working directory.
@@ -156,7 +156,7 @@ const getDeployFolder = async ({
     deployFolder = command.workspacePackage
       ? resolve(command.jsWorkspaceRoot || site.root, options.dir)
       : resolve(command.workingDir, options.dir)
-  } else if (config?.build?.publish) {
+  } else if (config.build.publish) {
     deployFolder = resolve(site.root, config.build.publish)
   } else if (siteData?.build_settings?.dir) {
     deployFolder = resolve(site.root, siteData.build_settings.dir)
@@ -230,7 +230,7 @@ const getFunctionsFolder = ({
   config: DeployConfig
   options: DeployOptionValues
   site: DeploySite
-  siteData: DeploySiteData
+  siteData?: DeploySiteData
   /** The process working directory where the build command is executed  */
   workingDir: string
 }): string | undefined => {
@@ -717,7 +717,7 @@ const runDeploy = async ({
       workingDir: command.workingDir,
       manifestPath: manifestPath ?? undefined,
       packagePath,
-      serverEnabled: Boolean(siteData?.feature_flags?.netlify_build_server_standalone),
+      serverEnabled: Boolean(siteData.feature_flags?.netlify_build_server_standalone),
       serverManifestPath: serverManifestPath ?? undefined,
       skipFunctionsCache,
       siteRoot: site.root,
@@ -1217,7 +1217,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
   }
 
   const checkForFunctions = async () => {
-    const functionsFolder = getFunctionsFolder({ config, options, site, siteData: {}, workingDir })
+    const functionsFolder = getFunctionsFolder({ config, options, site, workingDir })
     const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
     const frameworksFunctionsDir = command.netlify.frameworksAPIPaths.functions.path
 
@@ -1257,10 +1257,9 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
 
   const deployFolder = await getDeployFolder({
     command,
-    config: command.netlify.config,
+    config,
     options,
     site,
-    siteData: {},
   })
   await validateDeployFolder(deployFolder)
 
