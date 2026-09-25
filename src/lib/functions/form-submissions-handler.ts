@@ -165,7 +165,7 @@ export const createFormSubmissionHandler = function ({
         data: {
           ...fields,
           ...files,
-          ip: req.connection.remoteAddress,
+          ip: req.socket.remoteAddress,
           user_agent: req.headers['user-agent'],
           referrer: req.headers.referer,
         },

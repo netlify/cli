@@ -131,7 +131,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
     }
 
-    let remoteAddress = request.header('x-forwarded-for') || request.connection.remoteAddress || ''
+    let remoteAddress = request.header('x-forwarded-for') || request.socket.remoteAddress || ''
     remoteAddress =
       remoteAddress
         .split(remoteAddress.includes('.') ? ':' : ',')
