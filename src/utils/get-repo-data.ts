@@ -18,6 +18,10 @@ export interface RepoData {
   httpsUrl: string
 }
 
+interface GitConfig {
+  remote?: Record<string, { url: string }>
+}
+
 const getRepoData = async ({
   remoteName,
   workingDir,
@@ -26,7 +30,7 @@ const getRepoData = async ({
   workingDir: string
 }): Promise<RepoData | { error: string }> => {
   try {
-    const [gitConfig, gitDirectory] = await Promise.all([
+    const [gitConfig, gitDirectory]: [GitConfig | undefined, string | undefined] = await Promise.all([
       util.promisify(gitconfiglocal)(workingDir),
       findUp('.git', { cwd: workingDir, type: 'directory' }),
     ])
@@ -42,8 +46,8 @@ const getRepoData = async ({
     }
 
     if (!remoteName) {
-      const remotes = Object.keys(gitConfig.remote)
-      remoteName = remotes.find((remote) => remote === 'origin') || remotes[0]
+      const remoteNames = Object.keys(gitConfig.remote)
+      remoteName = remoteNames.find((name) => name === 'origin') || remoteNames[0]
     }
 
     if (

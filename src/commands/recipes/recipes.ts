@@ -4,7 +4,7 @@ import type { OptionValues } from 'commander'
 import { closest } from 'fastest-levenshtein'
 import { confirm } from '@inquirer/prompts'
 
-import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.js'
+import { NETLIFYDEVERR, chalk, log, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 
 import { getRecipe, listRecipes } from './common.js'
@@ -14,18 +14,27 @@ const SUGGESTION_TIMEOUT = 1e4
 export interface RunRecipeOptions {
   args: string[]
   command?: BaseCommand
-  config: unknown
-  recipeName: string
+  config: NormalizedCachedConfigConfig
   repositoryRoot: string
 }
 
-export const runRecipe = async ({ args, command, config, recipeName, repositoryRoot }: RunRecipeOptions) => {
+export const runRecipe = async ({
+  args,
+  command,
+  config,
+  recipeName,
+  repositoryRoot,
+}: RunRecipeOptions & { recipeName: string }) => {
   const recipe = await getRecipe(recipeName)
 
   return recipe.run({ args, command, config, repositoryRoot })
 }
 
-export const recipesCommand = async (recipeName: string, options: OptionValues, command: BaseCommand): Promise<any> => {
+export const recipesCommand = async (
+  recipeName: string,
+  options: OptionValues,
+  command: BaseCommand,
+): Promise<unknown> => {
   const { config, repositoryRoot } = command.netlify
   const sanitizedRecipeName = basename(recipeName || '').toLowerCase()
 
@@ -40,8 +49,7 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
   } catch (error) {
     if (
       // The ESM loader throws this instead of MODULE_NOT_FOUND
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error.code !== 'ERR_MODULE_NOT_FOUND'
+      (error as NodeJS.ErrnoException).code !== 'ERR_MODULE_NOT_FOUND'
     ) {
       throw error
     }
@@ -64,5 +72,6 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
     if (applySuggestion) {
       return recipesCommand(suggestion, options, command)
     }
+    return undefined
   }
 }

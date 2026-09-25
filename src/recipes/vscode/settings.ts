@@ -3,10 +3,22 @@ import { dirname, posix, relative } from 'path'
 
 import * as JSONC from 'comment-json'
 
+export type VSCodeSettings = Record<string, unknown>
+
 const toUnixPath = (path: string): string => path.replace(/\\/g, '/')
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'existingSettings' implicitly has an 'an... Remove this comment to see the full error message
-export const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot }) => {
+export const applySettings = (
+  existingSettings: VSCodeSettings,
+  {
+    denoBinary,
+    edgeFunctionsPath,
+    repositoryRoot,
+  }: {
+    denoBinary: { global: boolean; path: string }
+    edgeFunctionsPath: string
+    repositoryRoot: string
+  },
+): VSCodeSettings => {
   // TODO(serhalp): I'm not convinced we want to convert to Unix paths on Windows? Does this even work? Was this a
   // workaround for something, perhaps https://github.com/denoland/vscode_deno/pull/745?
   const relativeEdgeFunctionsPath = toUnixPath(posix.normalize(relative(repositoryRoot, edgeFunctionsPath)))
@@ -19,8 +31,8 @@ export const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath,
 
   // If the Edge Functions path isn't already in `deno.enabledPaths`, let's add
   // it.
-  if (!settings['deno.enablePaths'].includes(relativeEdgeFunctionsPath)) {
-    settings['deno.enablePaths'].push(relativeEdgeFunctionsPath)
+  if (!(settings['deno.enablePaths'] as unknown[]).includes(relativeEdgeFunctionsPath)) {
+    ;(settings['deno.enablePaths'] as unknown[]).push(relativeEdgeFunctionsPath)
   }
 
   // If the Deno CLI binary isn't globally installed, we need to set the path
@@ -34,8 +46,7 @@ export const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath,
   return settings
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'settingsPath' implicitly has an 'any' t... Remove this comment to see the full error message
-export const getSettings = async (settingsPath) => {
+export const getSettings = async (settingsPath: string): Promise<{ fileExists: boolean; settings: VSCodeSettings }> => {
   try {
     const stats = await stat(settingsPath)
 
@@ -47,13 +58,11 @@ export const getSettings = async (settingsPath) => {
 
     return {
       fileExists: true,
-      settings: JSONC.parse(file),
+      settings: JSONC.parse(file) as VSCodeSettings,
     }
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error.code !== 'ENOENT') {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      throw new Error(`Could not open VS Code settings file: ${error.message}`)
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw new Error(`Could not open VS Code settings file: ${(error as NodeJS.ErrnoException).message}`)
     }
 
     return {
@@ -63,8 +72,7 @@ export const getSettings = async (settingsPath) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
-export const writeSettings = async ({ settings, settingsPath }) => {
+export const writeSettings = async ({ settings, settingsPath }: { settings: VSCodeSettings; settingsPath: string }) => {
   const serializedSettings = JSONC.stringify(settings, null, 2)
 
   await mkdir(dirname(settingsPath), { recursive: true })
