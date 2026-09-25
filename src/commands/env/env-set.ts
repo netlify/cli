@@ -56,8 +56,8 @@ const setInEnvelope = async ({
 
   // fetch envelope env vars
   const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
-  const contexts = context || ['all']
-  let scopes: readonly WritableEnvelopeScope[] = scope || ALL_ENVELOPE_SCOPES
+  const contexts = context ?? ['all']
+  let scopes: WritableEnvelopeScope[] = scope ?? [...ALL_ENVELOPE_SCOPES]
 
   if (secret) {
     // post_processing (aka post-processing) scope is not allowed with secrets

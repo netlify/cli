@@ -27,7 +27,7 @@ const unsetInEnvelope = async ({
   const siteId = siteInfo.id
   // fetch envelope env vars
   const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
-  const contexts = context || ['all']
+  const contexts = context ?? ['all']
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
 
