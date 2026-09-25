@@ -20,7 +20,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 5
+      "count": 4
     },
     "@typescript-eslint/no-unnecessary-type-parameters": {
       "count": 1
@@ -35,7 +35,7 @@
       "count": 17
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 4
+      "count": 3
     }
   },
   "src/commands/build/index.ts": {
