@@ -110,6 +110,7 @@ For detailed configuration options, see the Netlify documentation.`,
       false,
     )
     .option('--created-via <source>', 'Specify the source of the deploy (e.g., "cli", "drop")')
+    .option('--show-uploaded', 'Show list of files uploaded to the CDN during this deploy')
     .addExamples([
       'netlify deploy',
       'netlify deploy --site my-first-project',
@@ -125,6 +126,7 @@ For detailed configuration options, see the Netlify documentation.`,
       'netlify deploy --env "NODE_ENV=production" --secret-env "DATABASE_PASSWORD=$DB_PASSWORD"',
       'netlify deploy --site-name my-new-site --team my-team # Create site and deploy',
       'netlify deploy --allow-anonymous --dir ./public --no-build # Deploy without auth',
+      'netlify deploy --show-uploaded # Show which files were uploaded to the CDN',
     ])
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/site-deploys/overview/'
