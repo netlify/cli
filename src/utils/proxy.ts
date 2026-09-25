@@ -1223,9 +1223,8 @@ export const startProxy = async function ({
     if (match && !match.force404 && isExternal(match)) {
       const reqUrl = reqToURL(req, req.url)
       const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
-      const destURL = stripOrigin(dest)
-      // @ts-expect-error FIXME: `pathRewrite` is an http-proxy-middleware option that http-proxy ignores, so the path isn't rewritten
-      proxy.ws(req, socket, head, { target: dest.origin, changeOrigin: true, pathRewrite: () => destURL })
+      req.url = stripOrigin(dest)
+      proxy.ws(req, socket, head, { target: dest.origin, changeOrigin: true })
       return
     }
     proxy.ws(req, socket, head, {})
