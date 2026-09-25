@@ -294,10 +294,7 @@ const getDeployFilesFilter = ({ deployFolder, site }: { deployFolder: string; si
   // when site.root !== deployFolder the behaviour matches our buildbot
   const skipNodeModules = site.root === deployFolder
 
-  return (filename: string | null | undefined) => {
-    if (filename == null) {
-      return false
-    }
+  return (filename: string) => {
     if (filename === deployFolder) {
       return true
     }
