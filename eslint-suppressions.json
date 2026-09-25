@@ -318,7 +318,7 @@
       "count": 2
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 4
+      "count": 3
     }
   },
   "src/lib/edge-functions/registry.ts": {
