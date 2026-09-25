@@ -698,7 +698,7 @@
   },
   "src/utils/proxy.ts": {
     "@typescript-eslint/no-deprecated": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/no-empty-function": {
       "count": 1
@@ -707,7 +707,7 @@
       "count": 7
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 14
+      "count": 9
     },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
@@ -728,7 +728,7 @@
       "count": 2
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 14
+      "count": 13
     }
   },
   "src/utils/read-repo-url.ts": {

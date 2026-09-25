@@ -111,7 +111,7 @@ interface ProxyRequest extends Request {
   proxyOptions?: ProxyOptions
   alternativePaths?: string[]
   __expectHeader?: string | undefined
-  [shouldGenerateETag]?: (response: { statusCode: number }) => unknown
+  [shouldGenerateETag]?: (response: { statusCode: number }) => boolean
 }
 
 interface ProxyHandlers {
@@ -332,8 +332,6 @@ const serveRedirect = async function ({
 }) {
   if (!match) return proxy.web(req, res, options)
 
-  // FIXME: `options` is always set by callers, so neither fallback applies
-  options = options || req.proxyOptions || {}
   options.match = null
 
   if (match.force404) {
@@ -349,7 +347,7 @@ const serveRedirect = async function ({
   }
 
   if (match.signingSecret) {
-    const signingSecretVar = env[match.signingSecret]
+    const signingSecretVar = match.signingSecret in env ? env[match.signingSecret] : undefined
 
     if (signingSecretVar) {
       req.headers['x-nf-sign'] = signRedirect({
@@ -778,11 +776,8 @@ const initializeProxy = async function ({
 
       // `req[shouldGenerateETag]` may contain a function that determines
       // whether the response should have an ETag header.
-      if (
-        typeof req[shouldGenerateETag] === 'function' &&
-        // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
-        req[shouldGenerateETag]({ statusCode: responseStatus }) === true
-      ) {
+      // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
+      if (req[shouldGenerateETag]?.({ statusCode: responseStatus }) === true) {
         const etag = generateETag(responseBody, { weak: true })
 
         if (req.headers['if-none-match'] === etag) {
@@ -844,7 +839,7 @@ const initializeProxy = async function ({
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
-      req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
+      req.headers['x-forwarded-for'] = req.socket.remoteAddress || ''
       proxy.web(req, res, options)
       return undefined
     },
@@ -1012,7 +1007,8 @@ const onRequest = async (
   // us to know that is by looking at the status code
   req[shouldGenerateETag] = ({ statusCode }) => statusCode >= 200 && statusCode < 300
 
-  const hasFormSubmissionHandler = functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
+  const hasFormSubmissionHandler =
+    functionsRegistry !== undefined && Boolean(getFormHandler({ functionsRegistry, logWarning: false }))
 
   const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
   if (
@@ -1088,10 +1084,7 @@ export const startProxy = async function ({
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
-  // FIXME: typed as optional, but is `null` rather than `undefined` when there is no functions port
-  const functionsServer = (settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null) as
-    | string
-    | undefined
+  const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort.toString()}` : undefined
 
   let edgeFunctionsProxy: EdgeFunctionsProxy | undefined
   if (disableEdgeFunctions) {
@@ -1132,7 +1125,7 @@ export const startProxy = async function ({
   })
 
   const serverEntryEnabled =
-    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' || Boolean(siteInfo?.feature_flags?.netlify_build_server_entry)
+    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' || Boolean(siteInfo.feature_flags?.netlify_build_server_entry)
 
   let serverHandler: ServerHandler | undefined
 
@@ -1140,12 +1133,12 @@ export const startProxy = async function ({
     const serverFileWatcher = new FileWatcher()
 
     serverHandler = new ServerHandler({
-      accountID: siteInfo?.account_id,
+      accountID: siteInfo.account_id,
       fileWatcher: serverFileWatcher,
       geolocation: mockLocation,
       logger: { log, warn, error: logError },
       projectRoot: projectDir,
-      siteID: siteInfo?.id,
+      siteID: siteInfo.id,
     })
 
     const handlerToStop = serverHandler
