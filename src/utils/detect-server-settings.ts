@@ -259,8 +259,7 @@ const detectServerSettings = async (
 ): Promise<ServerSettings> => {
   validateProperty(devConfig, 'framework', 'string')
 
-  // FIXME: an empty `framework` matches none of the branches below and leaves this `{}`
-  let settings = {} as BaseServerSettings
+  let settings: BaseServerSettings
 
   if (flags.dir || devConfig.framework === '#static') {
     // serving files statically without a framework server
@@ -286,7 +285,7 @@ const detectServerSettings = async (
     validateFrameworkConfig({ devConfig })
     // when the users wants to configure `command` and `targetPort`
     settings = handleCustomFramework({ devConfig, workingDir: command.workingDir })
-  } else if (devConfig.framework) {
+  } else {
     validateFrameworkConfig({ devConfig })
     // this is when the user explicitly configures a framework, e.g. `framework = "gatsby"`
     settings = await handleForcedFramework({
