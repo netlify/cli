@@ -286,7 +286,7 @@ const detectServerSettings = async (
     validateFrameworkConfig({ devConfig })
     // when the users wants to configure `command` and `targetPort`
     settings = handleCustomFramework({ devConfig, workingDir: command.workingDir })
-  } else if (devConfig.framework) {
+  } else {
     validateFrameworkConfig({ devConfig })
     // this is when the user explicitly configures a framework, e.g. `framework = "gatsby"`
     settings = await handleForcedFramework({
