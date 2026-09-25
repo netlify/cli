@@ -44,9 +44,3 @@ export interface AgentRunnerSession {
     message?: string
   }[]
 }
-
-export interface APIError {
-  status: number
-  message: string
-  error?: string
-}

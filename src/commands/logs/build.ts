@@ -1,3 +1,4 @@
+import type { NetlifyAPI } from '@netlify/api'
 import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
@@ -5,7 +6,15 @@ import { log, chalk } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
-export function getName({ deploy, userId }: { deploy: any; userId: string }) {
+type Deploy = Awaited<ReturnType<NetlifyAPI['listSiteDeploys']>>[number]
+
+interface BuildLogMessage {
+  message: string
+  section?: string
+  type?: string
+}
+
+export function getName({ deploy, userId }: { deploy: Deploy; userId: string | undefined }) {
   let normalisedName = ''
   const isUserDeploy = deploy.user_id === userId
 
@@ -29,7 +38,8 @@ export function getName({ deploy, userId }: { deploy: any; userId: string }) {
     normalisedName += chalk.yellow('*')
   }
 
-  return `(${deploy.id.slice(0, 7)}) ${normalisedName}`
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME(@netlify/api): deploy `id` is typed as optional
+  return `(${deploy.id!.slice(0, 7)}) ${normalisedName}`
 }
 
 export const logsBuild = async (_options: OptionValues, command: BaseCommand) => {
@@ -37,7 +47,7 @@ export const logsBuild = async (_options: OptionValues, command: BaseCommand) =>
   const client = command.netlify.api
   const { site } = command.netlify
   const { id: siteId } = site
-  const userId = command.netlify.globalConfig.get('userId')
+  const userId = command.netlify.globalConfig.get('userId') as string | undefined
 
   if (!siteId) {
     log('You must link a project before attempting to view deploy logs')
@@ -53,17 +63,17 @@ export const logsBuild = async (_options: OptionValues, command: BaseCommand) =>
 
   let [deploy] = deploys
   if (deploys.length > 1) {
-    const { result } = await inquirer.prompt({
+    const { result } = await inquirer.prompt<{ result: string }>({
       name: 'result',
       type: 'list',
       message: `Select a deploy\n\n${chalk.yellow('*')} indicates a deploy created by you`,
-      choices: deploys.map((dep: any) => ({
+      choices: deploys.map((dep) => ({
         name: getName({ deploy: dep, userId }),
         value: dep.id,
       })),
     })
 
-    deploy = deploys.find((dep: any) => dep.id === result) || deploy
+    deploy = deploys.find((dep) => dep.id === result) || deploy
   }
 
   const { id } = deploy
@@ -75,7 +85,7 @@ export const logsBuild = async (_options: OptionValues, command: BaseCommand) =>
   })
 
   ws.on('message', (data: string) => {
-    const { message, section, type } = JSON.parse(data)
+    const { message, section, type } = JSON.parse(data) as BuildLogMessage
     log(message)
 
     if (type === 'report' && section === 'building') {

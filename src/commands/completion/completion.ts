@@ -56,7 +56,7 @@ export const completionGenerate = async (_options: OptionValues, command: BaseCo
   ) {
     log(`To enable Tabtab autocompletion with zsh, the following line may need to be added to your ~/.zshrc:`)
     log(chalk.bold.cyan(`\n${AUTOLOAD_COMPINIT}\n`))
-    const { compinitAdded } = await inquirer.prompt([
+    const { compinitAdded } = await inquirer.prompt<{ compinitAdded: boolean }>([
       {
         type: 'confirm',
         name: 'compinitAdded',
