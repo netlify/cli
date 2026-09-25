@@ -56,6 +56,9 @@ export type EnvelopeItem = Omit<ApiEnvVar, 'key' | 'scopes' | 'values'> & {
 // explicitly normalizing and dropping undocumented support for user-provided `post_processing`.
 export type SupportedScope = EnvelopeEnvVarScope | UserProvidedScope | 'any'
 
+const toEnvelopeScope = (scope: EnvelopeEnvVarScope | UserProvidedScope): EnvelopeEnvVarScope =>
+  scope === 'post-processing' ? 'post_processing' : scope
+
 type ContextOrBranch = string
 
 /**
@@ -205,7 +208,7 @@ export const formatEnvelopeData = ({
     // filter by context
     .filter(({ values }) => Boolean(getValueForContext(values, context)))
     // filter by scope
-    .filter(({ scopes }) => (scope === 'any' ? true : (scopes as readonly string[]).includes(scope)))
+    .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(toEnvelopeScope(scope))))
     // sort alphabetically, case insensitive
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     // format the data
