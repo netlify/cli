@@ -175,9 +175,6 @@
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
-    },
-    "no-empty": {
-      "count": 1
     }
   },
   "src/commands/functions/functions-serve.ts": {
