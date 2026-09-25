@@ -916,15 +916,6 @@ export default class BaseCommand extends Command {
   getDefaultContext(): 'production' | 'dev' {
     return this.name() === 'serve' ? 'production' : 'dev'
   }
-
-  /**
-   * Retrieve feature flags for this site
-   */
-  getFeatureFlag<T extends null | boolean | string>(flagName: string): T {
-    // @ts-expect-error(serhalp) -- FIXME(serhalp): This probably isn't what we intend.
-    // We should return `false` feature flags as `false` and not `null`. Carefully fix.
-    return this.netlify.siteInfo.feature_flags?.[flagName] || null
-  }
 }
 
 export const getBaseOptionValues = (options: OptionValues): BaseOptionValues =>

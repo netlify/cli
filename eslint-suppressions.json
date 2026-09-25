@@ -25,9 +25,6 @@
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 5
     },
-    "@typescript-eslint/no-unnecessary-type-parameters": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
     },
@@ -44,7 +41,7 @@
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 17
+      "count": 16
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 5
