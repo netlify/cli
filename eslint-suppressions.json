@@ -200,22 +200,22 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 8
+      "count": 7
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 35
+      "count": 36
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 13
+      "count": 16
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 24
+      "count": 27
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 5
+      "count": 3
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
@@ -226,22 +226,22 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 4
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 20
+      "count": 21
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 8
+      "count": 10
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 20
+      "count": 22
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
+      "count": 2
     }
   },
   "src/commands/functions/functions-create.ts": {

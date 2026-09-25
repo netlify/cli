@@ -88,7 +88,10 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
     return false
   }
 
-  const contextType = SUPPORTED_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
-  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
+  const contexts = context ?? ['all']
+  const contextType = contexts.every((ctx: string) => SUPPORTED_CONTEXTS.some((supported) => supported === ctx))
+    ? 'context'
+    : 'branch'
+  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(contexts.join(','))} ${contextType}`)
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
 }
