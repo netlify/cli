@@ -335,20 +335,17 @@ export const getHumanReadableScopes = (scopes?: EnvelopeEnvVarScope[]): string =
  * @param env The site's env as it exists in Mongo
  * @returns The array of Envelope env vars
  */
-export const translateFromMongoToEnvelope = (env: Record<string, string> = {}) => {
-  const envVars = Object.entries(env).map(([key, value]) => ({
+export const translateFromMongoToEnvelope = (env: Record<string, string> = {}): EnvelopeItem[] =>
+  Object.entries(env).map(([key, value]) => ({
     key,
-    scopes: ALL_ENVELOPE_SCOPES,
+    scopes: [...ALL_ENVELOPE_SCOPES],
     values: [
       {
-        context: 'all' as const,
+        context: 'all',
         value,
       },
     ],
   }))
-
-  return envVars
-}
 
 /**
  * Translates an Envelope env into a Mongo env
