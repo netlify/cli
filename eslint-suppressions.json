@@ -585,9 +585,6 @@
     }
   },
   "src/utils/dev.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
-    },
     "@typescript-eslint/non-nullable-type-assertion-style": {
       "count": 1
     },
@@ -595,7 +592,7 @@
       "count": 2
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 2
+      "count": 1
     }
   },
   "src/utils/dot-env.ts": {
