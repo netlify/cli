@@ -353,11 +353,6 @@
       "count": 1
     }
   },
-  "src/lib/exec-fetcher.ts": {
-    "@typescript-eslint/prefer-regexp-exec": {
-      "count": 1
-    }
-  },
   "src/lib/extensions.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
