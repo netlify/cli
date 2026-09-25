@@ -460,7 +460,8 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
     return
   }
 
-  const siteInfo = command.netlify.siteInfo as { admin_url?: string } | undefined
+  // FIXME(@netlify/api): `SiteInfo` marks `admin_url` as required, but it's absent for unlinked projects
+  const adminUrl: string | undefined = command.netlify.siteInfo.admin_url
   renderPretty({
     enabled,
     packageInstalled,
@@ -472,6 +473,6 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
     hasUrlOverride: Boolean(envUrl),
     migrationsDirectory,
     projectRoot: buildDir,
-    adminUrl: siteInfo?.admin_url,
+    adminUrl,
   })
 }
