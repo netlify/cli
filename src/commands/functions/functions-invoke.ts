@@ -32,21 +32,20 @@ const eventTriggeredFunctions = new Set([...events, ...events.map((name) => `${n
 
 const DEFAULT_PORT = 8888
 
-// https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
-const tryParseJSON = function (jsonString: string): object | false {
+const isObject = (value: unknown): value is object => typeof value === 'object' && value !== null
+
+const tryParseJSON = function (jsonString: string): object | undefined {
   try {
     const parsedValue: unknown = JSON.parse(jsonString)
 
-    // Handle non-exception-throwing cases:
-    // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
-    // but... JSON.parse(null) returns null, and typeof null === "object",
-    // so we must check for that, too. Thankfully, null is falsey, so this suffices:
-    if (parsedValue && typeof parsedValue === 'object') {
+    // Neither JSON.parse(false) or JSON.parse(1234) throw errors, so only accept objects
+    if (isObject(parsedValue)) {
       return parsedValue
     }
-  } catch {}
-
-  return false
+  } catch {
+    // Not a JSON string
+  }
+  return undefined
 }
 
 const formatQstring = function (querystring: string | undefined) {
@@ -56,30 +55,25 @@ const formatQstring = function (querystring: string | undefined) {
   return ''
 }
 
-const processPayloadFromFlag = function (
-  payloadString: string | undefined,
-  workingDir: string,
-): object | false | undefined {
-  if (payloadString) {
-    // case 1: jsonstring
-    let payload = tryParseJSON(payloadString)
-    if (payload) return payload
-    // case 2: jsonpath
-    const payloadpath = path.join(workingDir, payloadString)
-    const pathexists = fs.existsSync(payloadpath)
-    if (pathexists) {
-      try {
-        // there is code execution potential here
+const processPayloadFromFlag = function (payloadString: string | undefined, workingDir: string): object | undefined {
+  if (!payloadString) {
+    return
+  }
 
-        // FIXME: a required JSON file isn't necessarily an object
-        payload = require(payloadpath) as object
-        return payload
-      } catch (error_) {
-        console.error(error_)
-      }
+  // case 1: jsonstring
+  const parsedPayload = tryParseJSON(payloadString)
+  if (parsedPayload) return parsedPayload
+
+  // case 2: jsonpath
+  const payloadpath = path.join(workingDir, payloadString)
+  if (fs.existsSync(payloadpath)) {
+    try {
+      // there is code execution potential here
+      const payload: unknown = require(payloadpath)
+      if (isObject(payload)) return payload
+    } catch (error_) {
+      console.error(error_)
     }
-    // case 3: invalid string, invalid path
-    return false
   }
   return undefined
 }
