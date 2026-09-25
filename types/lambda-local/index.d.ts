@@ -22,6 +22,8 @@ declare module 'lambda-local' {
     level?: unknown
     multiValueHeaders?: Record<string, string[]> | undefined
     isBase64Encoded?: boolean
+    // Set on responses of on-demand builders, i.e. handlers wrapped with `builder()` from `@netlify/functions`
+    metadata?: { builder_function?: boolean } | undefined
     statusCode?: number | undefined
   }
 
