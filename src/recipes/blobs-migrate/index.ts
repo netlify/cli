@@ -59,7 +59,7 @@ export const run = async ({ args, command }: RunRecipeOptions & { command: BaseC
   const { confirmMigration } = await inquirer.prompt<{ confirmMigration: boolean }>({
     type: 'confirm',
     name: 'confirmMigration',
-    message: `You're about to migrate the store '${storeName}' with ${blobs.length} blobs. Do you want to proceed?`,
+    message: `You're about to migrate the store '${storeName}' with ${blobs.length.toString()} blobs. Do you want to proceed?`,
     default: true,
   })
 

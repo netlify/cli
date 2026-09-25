@@ -195,14 +195,8 @@
     }
   },
   "src/commands/link/link.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 3
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
     }
   },
   "src/commands/logs/build.ts": {
@@ -445,9 +439,6 @@
     }
   },
   "src/recipes/ai-context/context.ts": {
-    "@typescript-eslint/prefer-regexp-exec": {
-      "count": 2
-    },
     "no-empty": {
       "count": 1
     }
@@ -457,11 +448,6 @@
       "count": 3
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
-  "src/recipes/blobs-migrate/index.ts": {
-    "@typescript-eslint/restrict-template-expressions": {
       "count": 1
     }
   },
