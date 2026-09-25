@@ -237,11 +237,6 @@ interface GetEnvelopeEnvOptions {
   siteInfo: SiteInfo
 }
 
-interface GetEnvelopeEnv {
-  (options: GetEnvelopeEnvOptions & { raw: true }): Promise<Record<string, string>>
-  (options: GetEnvelopeEnvOptions & { raw?: false | undefined }): Promise<EnvironmentVariables>
-}
-
 /**
  * Collects env vars from multiple sources and arranges them in the correct order of precedence
  * @param opts.api The api singleton object
@@ -253,7 +248,11 @@ interface GetEnvelopeEnv {
  * @param opts.siteInfo The site object
  * @returns An object of environment variables keys and their metadata
  */
-export const getEnvelopeEnv = (async ({
+export async function getEnvelopeEnv(options: GetEnvelopeEnvOptions & { raw: true }): Promise<Record<string, string>>
+export async function getEnvelopeEnv(
+  options: GetEnvelopeEnvOptions & { raw?: false | undefined },
+): Promise<EnvironmentVariables>
+export async function getEnvelopeEnv({
   api,
   context = 'dev',
   env,
@@ -261,7 +260,7 @@ export const getEnvelopeEnv = (async ({
   raw = false,
   scope = 'any',
   siteInfo,
-}: GetEnvelopeEnvOptions & { raw?: boolean | undefined }): Promise<Record<string, string> | EnvironmentVariables> => {
+}: GetEnvelopeEnvOptions & { raw?: boolean | undefined }): Promise<Record<string, string> | EnvironmentVariables> {
   const { account_slug: accountId, id: siteId } = siteInfo
 
   const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
@@ -300,7 +299,7 @@ export const getEnvelopeEnv = (async ({
     ...(includeConfigEnvVars ? configFileEnv : {}),
     ...internalEnv,
   }
-}) as GetEnvelopeEnv
+}
 
 /**
  * Returns a human-readable, comma-separated list of scopes
