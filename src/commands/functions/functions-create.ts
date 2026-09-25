@@ -653,6 +653,15 @@ const createFunctionAddon = async function ({
   }
 }
 
+const injectProjectEnvVariables = async (command: BaseCommand) => {
+  const env = await getDotEnvVariables({
+    devConfig: { ...command.netlify.config.dev },
+    env: command.netlify.cachedConfig.env,
+    site: command.netlify.site,
+  })
+  injectEnvVariables(env)
+}
+
 const handleOnComplete = async ({
   command,
   onComplete,
@@ -660,15 +669,8 @@ const handleOnComplete = async ({
   command: BaseCommand
   onComplete: FunctionTemplateMetadata['onComplete']
 }) => {
-  const { config } = command.netlify
-
   if (onComplete) {
-    const env = await getDotEnvVariables({
-      devConfig: { ...config.dev },
-      env: command.netlify.cachedConfig.env,
-      site: command.netlify.site,
-    })
-    injectEnvVariables(env)
+    await injectProjectEnvVariables(command)
     await onComplete.call(command)
   }
 }
@@ -684,8 +686,6 @@ const handleAddonDidInstall = async ({
   command: BaseCommand
   fnPath: string
 }) => {
-  const { config } = command.netlify
-
   if (!addonCreated || !addonDidInstall) {
     return
   }
@@ -703,12 +703,7 @@ const handleAddonDidInstall = async ({
     return
   }
 
-  // FIXME: these are `getDotEnvVariables` options, not the resolved environment variables
-  await injectEnvVariables({
-    devConfig: { ...config.dev },
-    env: command.netlify.cachedConfig.env,
-    site: command.netlify.site,
-  } as unknown as Parameters<typeof injectEnvVariables>[0])
+  await injectProjectEnvVariables(command)
   addonDidInstall(fnPath)
 }
 
