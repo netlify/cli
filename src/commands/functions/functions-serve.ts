@@ -21,9 +21,10 @@ import type BaseCommand from '../base-command.js'
 
 const DEFAULT_PORT = 9999
 
-// FIXME: `debug` and `offline` are `undefined` when their flags are omitted, but are passed on where booleans are expected
 interface FunctionsServeOptions extends OptionValues {
+  debug?: boolean
   functions?: string
+  offline?: boolean
   port?: number
 }
 
@@ -37,14 +38,17 @@ export const functionsServe = async (options: FunctionsServeOptions, command: Ba
 
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
 
+  const offline = Boolean(options.offline)
+  const debug = Boolean(options.debug)
+
   const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
-    offline: options.offline,
+    offline,
     api,
     site,
     siteInfo,
   })
 
-  if (!options.offline && !capabilities.aiGatewayDisabled) {
+  if (!offline && !capabilities.aiGatewayDisabled) {
     const resolvedAccountId = accountId ?? command.netlify.accounts[0]?.id
     await setupAIGateway({
       api,
@@ -54,7 +58,7 @@ export const functionsServe = async (options: FunctionsServeOptions, command: Ba
       accountID: resolvedAccountId,
       siteHasDeploy: !!siteInfo.published_deploy,
     })
-  } else if (!options.offline && capabilities.aiGatewayDisabled) {
+  } else if (!offline && capabilities.aiGatewayDisabled) {
     log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
 
@@ -67,7 +71,7 @@ export const functionsServe = async (options: FunctionsServeOptions, command: Ba
   })
 
   const blobsContext = await getBlobsContextWithEdgeAccess({
-    debug: options.debug,
+    debug,
     projectRoot: command.workingDir,
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
@@ -79,7 +83,7 @@ export const functionsServe = async (options: FunctionsServeOptions, command: Ba
     aiGatewayContext,
     blobsContext,
     config,
-    debug: options.debug,
+    debug,
     command,
     settings: { functions: functionsDir, functionsPort },
     site,
@@ -91,7 +95,7 @@ export const functionsServe = async (options: FunctionsServeOptions, command: Ba
     // FIXME: `functions:serve` has no `--geo` or `--country` flags, so these are always `undefined`
     geolocationMode: options.geo,
     geoCountry: options.country,
-    offline: options.offline,
+    offline,
     state,
     accountId,
     deployEnvironment: [],
