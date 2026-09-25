@@ -188,7 +188,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 6
+      "count": 4
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1

@@ -88,9 +88,8 @@ export const functionsServe = async (options: FunctionsServeOptions, command: Ba
     capabilities,
     timeouts,
     generatedFunctions: [],
-    // FIXME: `functions:serve` has no `--geo` or `--country` flags, so these are always `undefined`
-    geolocationMode: options.geo,
-    geoCountry: options.country,
+    // `functions:serve` has no `--geo` or `--country` flags
+    geolocationMode: 'update',
     offline: options.offline,
     state,
     accountId,
