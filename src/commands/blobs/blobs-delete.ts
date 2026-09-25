@@ -21,8 +21,7 @@ export const blobsDelete = async (storeName: string, key: string, options: Optio
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
     region: options.region,
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: `siteInfo.id` is typed as always set
-    siteID: siteInfo.id ?? '',
+    siteID: siteInfo.id,
     token: api.accessToken ?? '',
   })
 
