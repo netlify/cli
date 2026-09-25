@@ -1,7 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { logAndThrowError } from '../command-helpers.js'
-import type { SiteInfo, EnvironmentVariableSource } from '../../utils/types.js'
+import type { SiteInfo, EnvironmentVariables, EnvironmentVariableSource } from '../../utils/types.js'
 
 /**
  * Supported values for the user-provided env `context` option.
@@ -9,6 +9,11 @@ import type { SiteInfo, EnvironmentVariableSource } from '../../utils/types.js'
  * Note that a user may also specify a branch name with the special `branch:my-branch-name` format.
  */
 export const SUPPORTED_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev', 'dev-server'] as const
+export type SupportedContext = (typeof SUPPORTED_CONTEXTS)[number]
+
+export const isSupportedContext = (contextOrBranch: string): contextOrBranch is SupportedContext =>
+  SUPPORTED_CONTEXTS.some((context) => context === contextOrBranch)
+
 /**
  * Additional aliases for the user-provided env `context` option.
  */
@@ -23,38 +28,24 @@ const SUPPORTED_CONTEXT_ALIASES = {
  */
 export const ALL_ENVELOPE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing'] as const
 
-// TODO(serhalp) Netlify API is incorrect - the returned scope is `post_processing`, not `post-processing`
-type EnvelopeEnvVarScope =
-  | Exclude<NonNullable<Awaited<ReturnType<NetlifyAPI['getEnvVars']>>[number]['scopes']>[number], 'post-processing'>
-  | 'post_processing'
-type EnvelopeEnvVar = Awaited<ReturnType<NetlifyAPI['getEnvVars']>>[number] & {
-  scopes: EnvelopeEnvVarScope[]
-}
+/**
+ * Values accepted by the user-provided `--scope` option of the `env:*` commands
+ */
+export type UserProvidedScope = 'builds' | 'functions' | 'post-processing' | 'runtime'
 
-type EnvelopeEnvVarContext = NonNullable<
-  | NonNullable<EnvelopeEnvVar['values']>[number]['context']
-  // TODO(ndhoule): Netlify API is incorrect - Update OpenAPI types with this context type   ..
-  | 'dev-server'
->
+type ApiEnvVar = Awaited<ReturnType<NetlifyAPI['getEnvVars']>>[number]
 
-export type EnvelopeEnvVarValue = {
-  /**
-   * The deploy context of the this env var value
-   */
-  context?: EnvelopeEnvVarContext
-  /**
-   * For parameterized contexts (i.e. only `branch`), context parameter (i.e. the branch name)
-   */
-  context_parameter?: string | undefined
-  /**
-   * The value of the environment variable for this context. Note that this appears to be an empty string
-   * when the env var is not set for this context.
-   */
-  value?: string | undefined
-}
+export type EnvelopeEnvVarScope = (typeof ALL_ENVELOPE_SCOPES)[number]
 
-export type EnvelopeItem = {
-  // FIXME(serhalp) Netlify API types claim this is optional. Investigate and fix here or there.
+/**
+ * Scopes accepted when writing env vars: Envelope accepts both spellings of the post-processing scope
+ */
+export type WritableEnvelopeScope = EnvelopeEnvVarScope | UserProvidedScope
+
+export type EnvelopeEnvVarValue = NonNullable<ApiEnvVar['values']>[number]
+
+// FIXME(@netlify/api): the API types claim `key`/`values` are optional and `scopes` holds `post-processing`, not `post_processing`
+export type EnvelopeItem = Omit<ApiEnvVar, 'key' | 'scopes' | 'values'> & {
   key: string
   scopes: EnvelopeEnvVarScope[]
   values: EnvelopeEnvVarValue[]
@@ -63,7 +54,7 @@ export type EnvelopeItem = {
 // AFAICT, Envelope uses only `post_processing` on returned env vars; the CLI documents and expects
 // only `post-processing` as a valid user-provided scope; the code handles both everywhere. Consider
 // explicitly normalizing and dropping undocumented support for user-provided `post_processing`.
-type SupportedScope = EnvelopeEnvVarScope | 'post_processing' | 'any'
+export type SupportedScope = EnvelopeEnvVarScope | UserProvidedScope | 'any'
 
 type ContextOrBranch = string
 
@@ -108,8 +99,7 @@ export const getValueForContext = (
    */
   contextOrBranch: ContextOrBranch,
 ): EnvelopeEnvVarValue | undefined => {
-  const isSupportedContext = (SUPPORTED_CONTEXTS as readonly string[]).includes(contextOrBranch)
-  if (!isSupportedContext) {
+  if (!isSupportedContext(contextOrBranch)) {
     // FIXME(ndhoule): If it's not a supported context, we just assume this is a branch deploy. This
     // means that if you ever add a deploy context but forget to add it to SUPPORTED_CONTEXTS, we'll
     // just load the wrong environment variables. (This bug is not theoretical: it's why I'm writing
@@ -134,7 +124,7 @@ export const getValueForContext = (
  * @param source - The source of the environment variable
  * @returns The dictionary of env vars that match the given source
  */
-export const filterEnvBySource = (env: object, source: EnvironmentVariableSource): typeof env =>
+export const filterEnvBySource = (env: EnvironmentVariables, source: EnvironmentVariableSource): EnvironmentVariables =>
   Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
 const fetchEnvelopeItems = async function ({
@@ -155,18 +145,26 @@ const fetchEnvelopeItems = async function ({
     // if a single key is passed, fetch that single env var
     if (key) {
       const envelopeItem = await api.getEnvVar({ accountId, key, siteId })
-      // See FIXME(serhalp) above
+      // See FIXME(@netlify/api) on `EnvelopeItem`
       return [envelopeItem as EnvelopeItem]
     }
     // otherwise, fetch the entire list of env vars
     const envelopeItems = await api.getEnvVars({ accountId, siteId })
-    // See FIXME(serhalp) above
+    // See FIXME(@netlify/api) on `EnvelopeItem`
     return envelopeItems as EnvelopeItem[]
   } catch {
     // Collaborators aren't allowed to read shared env vars,
     // so return an empty array silently in that case
     return []
   }
+}
+
+export interface EnvelopeEnvironmentVariable {
+  context: EnvelopeEnvVarValue['context']
+  branch: string | undefined
+  scopes: EnvelopeEnvVarScope[]
+  sources: EnvironmentVariableSource[]
+  value: string
 }
 
 /**
@@ -201,26 +199,17 @@ export const formatEnvelopeData = ({
   context?: ContextOrBranch
   envelopeItems?: EnvelopeItem[]
   scope?: SupportedScope
-  source: string
-}): Record<
-  string,
-  {
-    context: ContextOrBranch
-    branch: string | undefined
-    scopes: string[]
-    sources: string[]
-    value: string
-  }
-> =>
+  source: EnvironmentVariableSource
+}): Record<string, EnvelopeEnvironmentVariable> =>
   envelopeItems
     // filter by context
     .filter(({ values }) => Boolean(getValueForContext(values, context)))
     // filter by scope
-    .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(scope)))
+    .filter(({ scopes }) => (scope === 'any' ? true : (scopes as readonly string[]).includes(scope)))
     // sort alphabetically, case insensitive
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     // format the data
-    .reduce((acc, cur) => {
+    .reduce<Record<string, EnvelopeEnvironmentVariable>>((acc, cur) => {
       const val = getValueForContext(cur.values, context)
       if (val === undefined) {
         throw new TypeError(`failed to locate environment variable value for ${context} context`)
@@ -233,10 +222,25 @@ export const formatEnvelopeData = ({
           branch,
           scopes: cur.scopes,
           sources: [source],
-          value,
+          // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style -- FIXME: Envelope may omit the value, in which case this is `undefined`
+          value: value as string,
         },
       }
     }, {})
+
+interface GetEnvelopeEnvOptions {
+  api: NetlifyAPI
+  context?: ContextOrBranch | undefined
+  env: EnvironmentVariables
+  key?: string | undefined
+  scope?: SupportedScope | undefined
+  siteInfo: SiteInfo
+}
+
+interface GetEnvelopeEnv {
+  (options: GetEnvelopeEnvOptions & { raw: true }): Promise<Record<string, string>>
+  (options: GetEnvelopeEnvOptions & { raw?: false | undefined }): Promise<EnvironmentVariables>
+}
 
 /**
  * Collects env vars from multiple sources and arranges them in the correct order of precedence
@@ -249,7 +253,7 @@ export const formatEnvelopeData = ({
  * @param opts.siteInfo The site object
  * @returns An object of environment variables keys and their metadata
  */
-export const getEnvelopeEnv = async ({
+export const getEnvelopeEnv = (async ({
   api,
   context = 'dev',
   env,
@@ -257,15 +261,7 @@ export const getEnvelopeEnv = async ({
   raw = false,
   scope = 'any',
   siteInfo,
-}: {
-  api: NetlifyAPI
-  context?: ContextOrBranch | undefined
-  env: object
-  key?: string | undefined
-  raw?: boolean | undefined
-  scope?: SupportedScope | undefined
-  siteInfo: SiteInfo
-}) => {
+}: GetEnvelopeEnvOptions & { raw?: boolean | undefined }): Promise<Record<string, string> | EnvironmentVariables> => {
   const { account_slug: accountId, id: siteId } = siteInfo
 
   const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
@@ -278,7 +274,7 @@ export const getEnvelopeEnv = async ({
 
   if (raw) {
     const entries = Object.entries({ ...accountEnv, ...siteEnv })
-    return entries.reduce(
+    return entries.reduce<Record<string, string>>(
       (obj, [envVarKey, metadata]) => ({
         ...obj,
         [envVarKey]: metadata.value,
@@ -304,7 +300,7 @@ export const getEnvelopeEnv = async ({
     ...(includeConfigEnvVars ? configFileEnv : {}),
     ...internalEnv,
   }
-}
+}) as GetEnvelopeEnv
 
 /**
  * Returns a human-readable, comma-separated list of scopes
@@ -360,19 +356,14 @@ export const translateFromMongoToEnvelope = (env: Record<string, string> = {}) =
  * @param context The deploy context or branch of the environment variable
  * @returns The env object as compatible with Mongo
  */
-export const translateFromEnvelopeToMongo = (
-  envVars: {
-    key: string
-    scopes: string[]
-    values: { context: string; value: string; context_parameter?: string | undefined }[]
-  }[] = [],
-  context = 'dev',
-) =>
+export const translateFromEnvelopeToMongo = (envVars: EnvelopeItem[] = [], context = 'dev'): Record<string, string> =>
   envVars
     .sort((a, b) => (a.key.toLowerCase() < b.key.toLowerCase() ? -1 : 1))
-    .reduce((acc, cur) => {
-      const envVar = cur.values.find((val) => [context, 'all'].includes((val.context_parameter ?? '') || val.context))
-      if (envVar && envVar.value) {
+    .reduce<Record<string, string>>((acc, cur) => {
+      const envVar = cur.values.find((val) =>
+        ([context, 'all'] as (string | undefined)[]).includes((val.context_parameter ?? '') || val.context),
+      )
+      if (envVar?.value) {
         return {
           ...acc,
           [cur.key]: envVar.value,
