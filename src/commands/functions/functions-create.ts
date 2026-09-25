@@ -75,7 +75,6 @@ interface TemplateChoice {
   name: string
   value: FunctionTemplate
   short: string
-  score?: number
 }
 
 interface TemplatePackageJson {
@@ -136,23 +135,8 @@ const getNameFromArgs = async function (
   return name
 }
 
-// FIXME: template choices have no `description`, so every searched string ends with "undefined"
-const filterRegistry = function (registry: (TemplateChoice & { description?: undefined })[], input: string) {
-  const temp = registry.map((value) => value.name + value.description)
-  const filteredTemplates = fuzzy.filter(input, temp)
-  const filteredTemplateNames = new Set(
-    filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
-  )
-  return registry
-    .filter((t) => filteredTemplateNames.has(t.name + t.description))
-    .map((t) => {
-      // add the score
-      // @ts-expect-error FIXME: `find` can return `undefined`, which would make this destructuring throw
-      const { score } = filteredTemplates.find((filteredTemplate) => filteredTemplate.string === t.name + t.description)
-      t.score = score
-      return t
-    })
-}
+const filterRegistry = (registry: TemplateChoice[], input: string): TemplateChoice[] =>
+  fuzzy.filter(input, registry, { extract: (choice) => choice.name }).map(({ original }) => original)
 
 const formatRegistryArrayForInquirer = async function (
   lang: string,
@@ -162,7 +146,7 @@ const formatRegistryArrayForInquirer = async function (
 
   const imports = await Promise.all(
     folders
-      .filter((folder) => Boolean(folder?.isDirectory()))
+      .filter((folder) => folder.isDirectory())
       .map(async ({ name }) => {
         try {
           const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
@@ -177,30 +161,13 @@ const formatRegistryArrayForInquirer = async function (
   )
   const registry = imports
     .filter((template): template is FunctionTemplateMetadata => template?.functionType === funcType)
-    .sort((templateA, templateB) => {
-      const priorityDiff = (templateA.priority || DEFAULT_PRIORITY) - (templateB.priority || DEFAULT_PRIORITY)
-
-      if (priorityDiff !== 0) {
-        return priorityDiff
-      }
-
-      // This branch is needed because `Array.prototype.sort` was not stable
-      // until Node 11, so the original sorting order from `fs.readdirSync`
-      // was not respected. We can simplify this once we drop support for
-      // Node 10.
-      // @ts-expect-error FIXME: subtracting two objects always yields `NaN`
-      return templateA - templateB
-    })
-    .map((t): TemplateChoice => {
-      const template = t as FunctionTemplate
-      template.lang = lang
-      return {
-        // confusing but this is the format inquirer wants
-        name: `[${template.name}] ${template.description}`,
-        value: template,
-        short: `${lang}-${template.name}`,
-      }
-    })
+    .sort((templateA, templateB) => (templateA.priority ?? DEFAULT_PRIORITY) - (templateB.priority ?? DEFAULT_PRIORITY))
+    .map((template) => ({
+      // confusing but this is the format inquirer wants
+      name: `[${template.name}] ${template.description}`,
+      value: { ...template, lang },
+      short: `${lang}-${template.name}`,
+    }))
   return registry
 }
 
@@ -213,11 +180,16 @@ const pickTemplate = async function (
 ): Promise<FunctionTemplate | 'url' | 'report'> {
   const specialCommands = [
     new inquirer.Separator(),
-    {
-      name: `Clone template from GitHub URL`,
-      value: 'url',
-      short: 'gh-url',
-    },
+    // Edge Functions can't be cloned from a URL
+    ...(funcType === 'edge'
+      ? []
+      : [
+          {
+            name: `Clone template from GitHub URL`,
+            value: 'url',
+            short: 'gh-url',
+          },
+        ]),
     {
       name: `Report issue with, or suggest a new template`,
       value: 'report',
@@ -232,7 +204,7 @@ const pickTemplate = async function (
     const langs =
       funcType === 'edge'
         ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
-        : languages.filter(Boolean)
+        : languages
 
     const { language: languageFromPrompt } = await inquirer.prompt<{ language: string }>({
       choices: langs,
@@ -253,7 +225,7 @@ const pickTemplate = async function (
   }
 
   if (templateFromFlag) {
-    const match = templatesForLanguage.find((entry) => entry.value?.name === templateFromFlag)
+    const match = templatesForLanguage.find((entry) => entry.value.name === templateFromFlag)
     if (!match) {
       return logAndThrowError(
         `Template "${templateFromFlag}" not found for language "${language}". Run \`netlify functions:create\` without --template to browse available templates.`,
@@ -267,21 +239,12 @@ const pickTemplate = async function (
     message: 'Pick a template',
     type: 'autocomplete',
     source(_answersSoFar: unknown, input: string | undefined) {
-      // if Edge Functions template, don't show url option
-      // @ts-expect-error FIXME: separators have no `value`
-      const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
-      const parsedSpecialCommands = funcType === 'edge' ? edgeCommands : specialCommands
-
-      if (!input || input === '') {
+      if (!input) {
         // show separators
-        return [...templatesForLanguage, ...parsedSpecialCommands]
+        return [...templatesForLanguage, ...specialCommands]
       }
       // only show filtered results sorted by score
-      const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
-        // @ts-expect-error FIXME: special commands have no `score`, so this comparator can return `NaN`
-        (answerA, answerB) => answerB.score - answerA.score,
-      )
-      return answers
+      return [...filterRegistry(templatesForLanguage, input), ...specialCommands]
     },
   })
   return chosenTemplate
