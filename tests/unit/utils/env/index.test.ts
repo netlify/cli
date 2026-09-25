@@ -12,6 +12,7 @@ import {
   type EnvelopeEnvVarValue,
   type EnvelopeItem,
 } from '../../../../src/utils/env/index.js'
+import type { EnvironmentVariables } from '../../../../src/utils/types.js'
 
 test('should return a matching value from a given context', () => {
   const values: EnvelopeEnvVarValue[] = shuffle([
@@ -101,7 +102,7 @@ test('should return a matching value with the `branch` context given a branch an
 })
 
 test('should filter an env from a given source', () => {
-  const env = {
+  const env: EnvironmentVariables = {
     FOO: {
       value: 'sup',
       sources: ['ui'],
