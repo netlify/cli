@@ -5,7 +5,7 @@ import { env } from 'process'
 
 import type { GeneratedFunction } from '@netlify/build'
 import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
-import { type MemoizeCache, watchDebounced } from '@netlify/dev-utils'
+import { watchDebounced } from '@netlify/dev-utils'
 
 import { extractZip } from '../../utils/zip.js'
 
@@ -25,10 +25,9 @@ import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../log.js'
 import { getPathInProject } from '../settings.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
-import type { ServerSettings } from '../../utils/types.js'
 
-import NetlifyFunction from './netlify-function.js'
-import runtimes, { type BaseBuildResult } from './runtimes/index.js'
+import NetlifyFunction, { type FunctionsSettings } from './netlify-function.js'
+import runtimes, { type BaseBuildResult, type BuildCache } from './runtimes/index.js'
 
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
@@ -74,7 +73,7 @@ export class FunctionsRegistry {
    */
   private aiGatewayContext?: AIGatewayContext | null
 
-  private buildCommandCache?: MemoizeCache<Record<string, unknown>>
+  private buildCommandCache?: BuildCache
   private capabilities: {
     backgroundFunctions?: boolean
   }
@@ -86,8 +85,7 @@ export class FunctionsRegistry {
   private logLambdaCompat: boolean
   private manifest?: Manifest
   private projectRoot: string
-  // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
-  private settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
+  private settings: FunctionsSettings
   private timeouts: { backgroundFunctions: number; syncFunctions: number }
   private readonly deployEnvironment: { key: string; value: string; isSecret: boolean }[]
 
@@ -121,8 +119,7 @@ export class FunctionsRegistry {
     logLambdaCompat: boolean
     manifest?: Manifest
     projectRoot: string
-    // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
-    settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
+    settings: FunctionsSettings
     timeouts: { backgroundFunctions: number; syncFunctions: number }
     deployEnvironment: { key: string; value: string; isSecret: boolean }[]
   }) {
@@ -315,6 +312,7 @@ export class FunctionsRegistry {
         return { func, route }
       }
     }
+    return undefined
   }
 
   /**
@@ -505,7 +503,8 @@ export class FunctionsRegistry {
           buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
         },
         configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
-        // @ts-expect-error -- TODO(serhalp): Function config types do not match. Investigate and fix.
+        // @ts-expect-error -- ZISI expects camelCase function config, not @netlify/config's snake_case. This is harmless
+        // today because listing only reads keys named the same in both (e.g. `schedule`), but should be normalized.
         config: this.config.functions,
       },
     )
@@ -518,6 +517,7 @@ export class FunctionsRegistry {
           (func) =>
             isInternalFunction(func, this.frameworksAPIPaths.functions.path) &&
             this.functions.has(func.name) &&
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME: `has` doesn't narrow `get`
             !isInternalFunction(this.functions.get(func.name)!, this.frameworksAPIPaths.functions.path),
         )
         .map((func) => func.name),
@@ -568,8 +568,6 @@ export class FunctionsRegistry {
           name,
           displayName,
           projectRoot: this.projectRoot,
-          // @ts-expect-error -- `runtime` is one supported runtime implementation, but
-          // NetlifyFunction's generic currently models only the JS build-result variant.
           runtime,
           timeoutBackground: this.timeouts.backgroundFunctions,
           timeoutSynchronous: this.timeouts.syncFunctions,
