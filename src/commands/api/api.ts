@@ -17,7 +17,7 @@ const isCallable = (value: unknown): value is ApiMethod => typeof value === 'fun
 const apiMethodSpecs = methods as { operationId: string; parameters: { path?: Record<string, unknown> } }[]
 
 interface ApiOptions extends OptionValues {
-  data?: unknown
+  data?: string
   list?: boolean
 }
 
@@ -50,25 +50,19 @@ export const apiCommand = async (apiMethodName: string | undefined, options: Api
     )
   }
 
-  let payload: unknown
+  let payload: unknown = {}
   if (options.data) {
-    if (typeof options.data === 'string') {
-      try {
-        payload = JSON.parse(options.data)
-      } catch {
-        const received = options.data.length > 80 ? `${options.data.slice(0, 80)}…` : options.data
-        return logAndThrowError(
-          `Invalid JSON provided to the ${chalk.cyanBright('--data')} flag.
+    try {
+      payload = JSON.parse(options.data)
+    } catch {
+      const received = options.data.length > 80 ? `${options.data.slice(0, 80)}…` : options.data
+      return logAndThrowError(
+        `Invalid JSON provided to the ${chalk.cyanBright('--data')} flag.
 Received: ${received}
 The --data flag expects a JSON object of API parameters, e.g. --data '{"site_id":"123456"}'.
 Note: key=value pairs are not accepted; use JSON syntax instead.`,
-        )
-      }
-    } else {
-      payload = options.data
+      )
     }
-  } else {
-    payload = {}
   }
   try {
     const apiResponse = await apiMethod.call(api, payload)
