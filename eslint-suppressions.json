@@ -139,7 +139,7 @@
   },
   "src/commands/functions/functions-create.ts": {
     "@typescript-eslint/await-thenable": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 1
@@ -148,7 +148,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 4
+      "count": 3
     },
     "@typescript-eslint/no-unnecessary-type-conversion": {
       "count": 1
@@ -157,7 +157,7 @@
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
+      "count": 3
     },
     "@typescript-eslint/prefer-optional-chain": {
       "count": 1

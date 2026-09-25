@@ -324,7 +324,7 @@ const ensureEdgeFuncDirExists = function (command: BaseCommand) {
     )
   }
 
-  const functionsDir = config.build?.edge_functions ?? join(command.workingDir, 'netlify/edge-functions')
+  const functionsDir = config.build.edge_functions ?? join(command.workingDir, 'netlify/edge-functions')
   const relFunctionsDir = relative(command.workingDir, functionsDir)
 
   if (!fs.existsSync(functionsDir)) {
@@ -867,15 +867,13 @@ export const functionsCreate = async (
       )
     }
     functionType = resolved.functionType
-    if (!options.language) {
-      options.language = resolved.language
-    }
+    options.language ??= resolved.language
   } else {
     functionType = await selectTypeOfFunc()
   }
 
   const functionsDir =
-    functionType === 'edge' ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
+    functionType === 'edge' ? ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
 
   /* either download from URL or scaffold from template */
   if (options.url) {
