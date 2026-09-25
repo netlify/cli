@@ -205,14 +205,6 @@
       "count": 1
     }
   },
-  "src/commands/logs/build.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
-    }
-  },
   "src/commands/logs/index.ts": {
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
