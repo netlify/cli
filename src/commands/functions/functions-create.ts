@@ -1,7 +1,6 @@
 import cp from 'child_process'
 import fs from 'fs'
-import { mkdir, readdir, unlink } from 'fs/promises'
-import { createRequire } from 'module'
+import { mkdir, readdir, readFile, unlink } from 'fs/promises'
 import path, { dirname, join, relative } from 'path'
 import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
@@ -28,8 +27,6 @@ import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import type BaseCommand from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
 import type { FunctionsCreateOptionValues } from './option_values.js'
-
-const require = createRequire(import.meta.url)
 
 const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../../functions-templates')
 
@@ -81,6 +78,9 @@ interface RepoContentsEntry {
   // FIXME: GitHub returns `null` for directories
   download_url: string
 }
+
+const readTemplatePackageJson = async (packageJsonPath: string): Promise<TemplatePackageJson> =>
+  JSON.parse(await readFile(packageJsonPath, 'utf8')) as TemplatePackageJson
 
 const isValidFunctionName = (name: unknown): name is string => typeof name === 'string' && /^[\w.-]+$/i.test(name)
 
@@ -458,9 +458,8 @@ const installDeps = async ({
   functionPath: string
   functionsDir: string
 }) => {
-  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(
-    functionPackageJson,
-  ) as TemplatePackageJson
+  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } =
+    await readTemplatePackageJson(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
 
@@ -473,9 +472,8 @@ const installDeps = async ({
     return
   }
 
-  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(
-    sitePackageJson,
-  ) as TemplatePackageJson
+  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } =
+    await readTemplatePackageJson(sitePackageJson)
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
   const npmInstallPath = path.dirname(sitePackageJson)
