@@ -106,7 +106,7 @@ export const deploySite = async (
   const dbMigrationsDistPath = await getDbMigrationsDistPathIfExists(workingDir)
   const [
     { files: staticFiles, filesShaMap: staticShaMap },
-    { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules },
+    { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules, server, serverShaMap },
     configFile,
     { edgeFunctions, edgeFnShaMap },
   ] = await Promise.all([
@@ -188,6 +188,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
       files,
       functions,
       edge_functions: edgeFunctions,
+      server,
       function_schedules: functionSchedules,
       functions_config: fnConfig,
       async: Object.keys(files).length > syncFileLimit,
@@ -208,7 +209,12 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   if (deployParams.body.async) deploy = await waitForDiff(api, deploy.id, siteId, deployTimeout)
 
-  const { required: requiredFiles, required_functions: requiredFns, required_edge_functions: requiredEdgeFns } = deploy
+  const {
+    required: requiredFiles,
+    required_functions: requiredFns,
+    required_edge_functions: requiredEdgeFns,
+    required_server: requiredServer,
+  } = deploy
 
   statusCb({
     type: 'create-deploy',
@@ -221,7 +227,8 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
   const filesUploadList = getUploadList(requiredFiles, filesShaMap)
   const functionsUploadList = getUploadList(requiredFns, fnShaMap)
   const edgeFunctionsUploadList = getUploadList(requiredEdgeFns, edgeFnShaMap)
-  const uploadList = [...filesUploadList, ...functionsUploadList, ...edgeFunctionsUploadList]
+  const serverUploadList = getUploadList(requiredServer, serverShaMap)
+  const uploadList = [...filesUploadList, ...functionsUploadList, ...edgeFunctionsUploadList, ...serverUploadList]
 
   await uploadFiles(api, deployId, uploadList, { concurrentUpload, statusCb, maxRetry })
 
