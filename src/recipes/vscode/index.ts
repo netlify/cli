@@ -4,20 +4,27 @@ import { DenoBridge } from '@netlify/edge-bundler'
 import execa from 'execa'
 import inquirer from 'inquirer'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
+import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
+import {
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  chalk,
+  logAndThrowError,
+  log,
+  type NormalizedCachedConfigConfig,
+} from '../../utils/command-helpers.js'
 
 import { applySettings, getSettings, writeSettings } from './settings.js'
 
 export const description = 'Create VS Code settings for an optimal experience with Netlify projects'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'fileExists' implicitly has an 'an... Remove this comment to see the full error message
-const getPrompt = ({ fileExists, path }) => {
+const getPrompt = ({ fileExists, path }: { fileExists: boolean; path: string }) => {
   const formattedPath = chalk.underline(path)
   const message = fileExists
     ? `There is a VS Code settings file at ${formattedPath}. Can we update it?`
     : `A new VS Code settings file will be created at ${formattedPath}`
 
-  return inquirer.prompt({
+  return inquirer.prompt<{ confirm: boolean }>({
     type: 'confirm',
     name: 'confirm',
     message,
@@ -25,37 +32,29 @@ const getPrompt = ({ fileExists, path }) => {
   })
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-const getEdgeFunctionsPath = ({ config, repositoryRoot }) =>
-  config.build.edge_functions || join(repositoryRoot, 'netlify', 'edge-functions')
+const getEdgeFunctionsPath = ({
+  config,
+  repositoryRoot,
+}: {
+  config: NormalizedCachedConfigConfig
+  repositoryRoot: string
+}) => config.build.edge_functions || join(repositoryRoot, 'netlify', 'edge-functions')
 
-/**
- * @param {string} repositoryRoot
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'repositoryRoot' implicitly has an 'any'... Remove this comment to see the full error message
-const getSettingsPath = (repositoryRoot) => join(repositoryRoot, '.vscode', 'settings.json')
+const getSettingsPath = (repositoryRoot: string) => join(repositoryRoot, '.vscode', 'settings.json')
 
-/**
- * @param {string} repositoryRoot
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'repositoryRoot' implicitly has an 'any'... Remove this comment to see the full error message
-const hasDenoVSCodeExt = async (repositoryRoot) => {
+const hasDenoVSCodeExt = async (repositoryRoot: string) => {
   const { stdout: extensions } = await execa('code', ['--list-extensions'], { stderr: 'inherit', cwd: repositoryRoot })
   return extensions.split('\n').includes('denoland.vscode-deno')
 }
 
-/**
- * @param {string} repositoryRoot
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'repositoryRoot' implicitly has an 'any'... Remove this comment to see the full error message
-const getDenoVSCodeExt = async (repositoryRoot) => {
+const getDenoVSCodeExt = async (repositoryRoot: string) => {
   await execa('code', ['--install-extension', 'denoland.vscode-deno'], { stdio: 'inherit', cwd: repositoryRoot })
 }
 
 const getDenoExtPrompt = () => {
   const message = 'The Deno VS Code extension is recommended. Would you like to install it now?'
 
-  return inquirer.prompt({
+  return inquirer.prompt<{ confirm: boolean }>({
     type: 'confirm',
     name: 'confirm',
     message,
@@ -63,14 +62,7 @@ const getDenoExtPrompt = () => {
   })
 }
 
-/**
- * @param {object} params
- * @param {*} params.config
- * @param {string} params.repositoryRoot
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const run = async ({ config, repositoryRoot }) => {
+export const run = async ({ config, repositoryRoot }: RunRecipeOptions) => {
   const deno = new DenoBridge({
     onBeforeDownload: () => {
       log(`${NETLIFYDEVWARN} Setting up the Edge Functions environment. This may take a couple of minutes.`)

@@ -42,7 +42,7 @@ const presets = cliContextConsumers.map((consumer) => ({
 presets.push({ name: 'Custom location', value: rulesForDefaultConsumer.key })
 
 const promptForContextConsumerSelection = async (): Promise<ConsumerConfig> => {
-  const { consumerKey } = await inquirer.prompt([
+  const { consumerKey } = await inquirer.prompt<{ consumerKey: string }>([
     {
       name: 'consumerKey',
       message: 'Where should we put the context files?',
@@ -56,7 +56,7 @@ const promptForContextConsumerSelection = async (): Promise<ConsumerConfig> => {
     return contextConsumer
   }
 
-  const { customPath } = await inquirer.prompt([
+  const { customPath } = await inquirer.prompt<{ customPath: string }>([
     {
       type: 'input',
       name: 'customPath',

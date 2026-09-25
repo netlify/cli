@@ -1,7 +1,7 @@
-import type { OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
 import type BaseCommand from '../base-command.js'
+import type { InitOptionValues } from './init.js'
 
 export const createInitCommand = (program: BaseCommand) =>
   program
@@ -17,7 +17,7 @@ export const createInitCommand = (program: BaseCommand) =>
 For more information about getting started with Netlify CLI, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: InitOptionValues, command: BaseCommand) => {
       const { init } = await import('./init.js')
       await init(options, command)
     })

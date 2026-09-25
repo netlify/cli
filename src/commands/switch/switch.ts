@@ -1,17 +1,25 @@
-import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { chalk, log } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { BaseOptionValues } from '../base-command.js'
 import { login } from '../login/login.js'
 
 const LOGIN_NEW = 'I would like to login to a new account'
 
-export const switchCommand = async (options: OptionValues, command: BaseCommand) => {
-  const users = (command.netlify.globalConfig.get('users') || {}) as Record<
-    string,
-    { id: string; name?: string; email: string }
-  >
+export type SwitchOptionValues = BaseOptionValues & {
+  email?: string | undefined
+}
+
+interface StoredUser {
+  id: string
+  name?: string
+  email: string
+}
+
+export const switchCommand = async (options: SwitchOptionValues, command: BaseCommand) => {
+  // FIXME(@netlify/dev-utils): `GlobalConfigStore` values are untyped
+  const users = (command.netlify.globalConfig.get('users') || {}) as Record<string, StoredUser>
   const availableUsersChoices = Object.values(users).reduce<Record<string, string>>(
     (prev, current) =>
       Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }),
@@ -30,7 +38,7 @@ export const switchCommand = async (options: OptionValues, command: BaseCommand)
     log('')
   }
 
-  const { accountSwitchChoice } = await inquirer.prompt([
+  const { accountSwitchChoice } = await inquirer.prompt<{ accountSwitchChoice: string }>([
     {
       type: 'list',
       name: 'accountSwitchChoice',
