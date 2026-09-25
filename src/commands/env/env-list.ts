@@ -26,16 +26,11 @@ const getTable = ({
   const table = new AsciiTable(`Environment variables`)
   table.setHeading(...(scopesColumn ? ['Key', 'Value', 'Scope'] : ['Key', 'Value']))
   table.addRowMatrix(
-    Object.entries(environment).map(([key, variable]) =>
-      [
-        // Key
-        key,
-        // Value
-        hideValues ? MASK : variable.value || ' ',
-        // Scope
-        scopesColumn && getHumanReadableScopes(variable.scopes),
-      ].filter(Boolean),
-    ),
+    Object.entries(environment).map(([key, variable]) => [
+      key,
+      hideValues ? MASK : variable.value || ' ',
+      ...(scopesColumn ? [getHumanReadableScopes(variable.scopes)] : []),
+    ]),
   )
   return table.toString()
 }
