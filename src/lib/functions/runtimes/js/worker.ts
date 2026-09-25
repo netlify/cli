@@ -27,7 +27,7 @@ for (const key in environment) {
   process.env[key] = environment[key]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- the user function module is untyped
 const lambdaFunc = await import(entryFilePath)
 
 const lambdaEvent = await lambdaLocal.execute({

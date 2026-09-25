@@ -64,7 +64,7 @@ export const invokeFunction = async ({
   if (runtimeAPIVersion == null || runtimeAPIVersion !== 2) {
     return await invokeFunctionDirectly({
       context,
-      environment: environment as Record<string, string>,
+      environment,
       event,
       func,
       timeout,

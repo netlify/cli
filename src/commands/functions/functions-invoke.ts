@@ -6,11 +6,20 @@ import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
-import { type APIError, NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
-import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
+import { NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
+import { BACKGROUND, CLOCKWORK_USERAGENT, type LocalFunction, getFunctions } from '../../utils/functions/index.js'
 import type BaseCommand from '../base-command.js'
 
 const require = createRequire(import.meta.url)
+
+interface FunctionsInvokeOptions extends OptionValues {
+  name?: string
+  functions?: string
+  querystring?: string
+  payload?: string
+  identity?: boolean
+  port?: number
+}
 
 // https://docs.netlify.com/functions/trigger-on-events/
 const events = [
@@ -33,10 +42,9 @@ const eventTriggeredFunctions = new Set([...events, ...events.map((name) => `${n
 const DEFAULT_PORT = 8888
 
 // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
-// @ts-expect-error TS(7006) FIXME: Parameter 'jsonString' implicitly has an 'any' typ... Remove this comment to see the full error message
-const tryParseJSON = function (jsonString) {
+const tryParseJSON = function (jsonString: string): object | false {
   try {
-    const parsedValue = JSON.parse(jsonString)
+    const parsedValue: unknown = JSON.parse(jsonString)
 
     // Handle non-exception-throwing cases:
     // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
@@ -50,21 +58,17 @@ const tryParseJSON = function (jsonString) {
   return false
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'querystring' implicitly has an 'any' ty... Remove this comment to see the full error message
-const formatQstring = function (querystring) {
+const formatQstring = function (querystring: string | undefined) {
   if (querystring) {
     return `?${querystring}`
   }
   return ''
 }
 
-/**
- * process payloads from flag
- * @param {string} payloadString
- * @param {string} workingDir
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'payloadString' implicitly has an 'any' ... Remove this comment to see the full error message
-const processPayloadFromFlag = function (payloadString, workingDir) {
+const processPayloadFromFlag = function (
+  payloadString: string | undefined,
+  workingDir: string,
+): object | false | undefined {
   if (payloadString) {
     // case 1: jsonstring
     let payload = tryParseJSON(payloadString)
@@ -76,7 +80,8 @@ const processPayloadFromFlag = function (payloadString, workingDir) {
       try {
         // there is code execution potential here
 
-        payload = require(payloadpath)
+        // FIXME: a required JSON file isn't necessarily an object
+        payload = require(payloadpath) as object
         return payload
       } catch (error_) {
         console.error(error_)
@@ -85,20 +90,19 @@ const processPayloadFromFlag = function (payloadString, workingDir) {
     // case 3: invalid string, invalid path
     return false
   }
+  return undefined
 }
 
 /**
  * prompt for a name if name not supplied
  *  also used in functions:create
- * @param {*} functions
- * @param {import('commander').OptionValues} options
- * @param {string} [argumentName] The name that might be provided as argument (optional argument)
- * @returns {Promise<string>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functions' implicitly has an 'any' type... Remove this comment to see the full error message
-const getNameFromArgs = async function (functions, options, argumentName) {
+const getNameFromArgs = async function (
+  functions: LocalFunction[],
+  options: FunctionsInvokeOptions,
+  argumentName: string | undefined,
+): Promise<string> {
   const functionToTrigger = getFunctionToTrigger(options, argumentName)
-  // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
   const functionNames = functions.map(({ name }) => name)
 
   if (functionToTrigger) {
@@ -113,7 +117,7 @@ const getNameFromArgs = async function (functions, options, argumentName) {
     )
   }
 
-  const { trigger } = await inquirer.prompt([
+  const { trigger } = await inquirer.prompt<{ trigger: string }>([
     {
       type: 'list',
       message: 'Pick a function to trigger',
@@ -126,12 +130,8 @@ const getNameFromArgs = async function (functions, options, argumentName) {
 
 /**
  * get the function name out of the argument or options
- * @param {import('commander').OptionValues} options
- * @param {string} [argumentName] The name that might be provided as argument (optional argument)
- * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const getFunctionToTrigger = function (options, argumentName) {
+const getFunctionToTrigger = function (options: FunctionsInvokeOptions, argumentName: string | undefined) {
   if (options.name) {
     if (argumentName) {
       console.error('function name specified in both flag and arg format, pick one')
@@ -144,7 +144,11 @@ const getFunctionToTrigger = function (options, argumentName) {
   return argumentName
 }
 
-export const functionsInvoke = async (nameArgument: string, options: OptionValues, command: BaseCommand) => {
+export const functionsInvoke = async (
+  nameArgument: string | undefined,
+  options: FunctionsInvokeOptions,
+  command: BaseCommand,
+) => {
   const { config, relConfigFilePath } = command.netlify
 
   const functionsDir = options.functions || config.dev?.functions || config.functionsDirectory
@@ -160,8 +164,8 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
   const functionObj = functions.find((func) => func.name === functionToTrigger)
 
-  let headers = {}
-  let body = {}
+  let headers: Record<string, string> = {}
+  let body: Record<string, unknown> = {}
 
   // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   if (functionObj.schedule) {
@@ -174,9 +178,7 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
     const [name, event] = functionToTrigger.split('-')
     if (name === 'identity') {
       // https://docs.netlify.com/functions/functions-and-identity/#trigger-functions-on-identity-events
-      // @ts-expect-error TS(2339) FIXME: Property 'event' does not exist on type '{}'.
       body.event = event
-      // @ts-expect-error TS(2339) FIXME: Property 'user' does not exist on type '{}'.
       body.user = {
         id: '1111a1a1-a11a-1111-aa11-aaa11111a11a',
         aud: '',
@@ -194,11 +196,9 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
     } else {
       // non identity functions seem to have a different shape
       // https://docs.netlify.com/functions/trigger-on-events/#payload
-      // @ts-expect-error TS(2339) FIXME: Property 'payload' does not exist on type '{}'.
       body.payload = {
         TODO: 'mock up payload data better',
       }
-      // @ts-expect-error TS(2339) FIXME: Property 'site' does not exist on type '{}'.
       body.site = {
         TODO: 'mock up site data better',
       }
@@ -234,6 +234,6 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
     const data = await response.text()
     console.log(data)
   } catch (error_) {
-    return logAndThrowError(`Ran into an error invoking your function: ${(error_ as APIError).message}`)
+    return logAndThrowError(`Ran into an error invoking your function: ${(error_ as Error).message}`)
   }
 }

@@ -4,6 +4,7 @@ import type { IncomingHttpHeaders } from 'http'
 import path from 'path'
 
 import type { GeneratedFunction } from '@netlify/build'
+import type { Manifest } from '@netlify/zip-it-and-ship-it'
 import { shouldBase64Encode } from '@netlify/dev-utils'
 import express, { type Request, type RequestHandler } from 'express'
 import expressLogging from 'express-logging'
@@ -25,15 +26,14 @@ import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
-import type { LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
+import type { LocalState, SiteInfo } from '../../utils/types.js'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
+import type { FunctionsSettings } from './netlify-function.js'
 import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
-
-type FunctionsSettings = Pick<ServerSettings, 'functions' | 'functionsPort'>
 
 const buildClientContext = function (headers: IncomingHttpHeaders) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
@@ -74,6 +74,7 @@ const buildClientContext = function (headers: IncomingHttpHeaders) {
   } catch {
     // Ignore errors - bearer token is not a JWT, probably not intended for us
   }
+  return undefined
 }
 
 const hasBody = (req: Request) =>
@@ -125,7 +126,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
     }
 
     const isBase64Encoded = shouldBase64Encode(request.header('content-type') ?? '')
-    let body
+    let body: string | undefined
     if (hasBody(request)) {
       body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
     }
@@ -245,7 +246,6 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       const { error, result } = await func.invoke(event, clientContext)
 
       // check for existence of metadata if this is a builder function
-      // @ts-expect-error(serhalp) -- Investigate. There doesn't appear to be such a thing as `metadata`?
       if (/^\/.netlify\/(builders)/.test(request.path) && !result?.metadata?.builder_function) {
         response.status(400).send({
           message:
@@ -265,7 +265,7 @@ interface GetFunctionsServerOptions {
   siteUrl: string
   siteInfo?: SiteInfo
   accountId?: string | undefined
-  geoCountry: string
+  geoCountry?: string | undefined
   offline: boolean
   state: LocalState
   config: NormalizedCachedConfigConfig
@@ -310,8 +310,7 @@ export const startFunctionsServer = async (
     debug: boolean
     generatedFunctions: GeneratedFunction[]
     loadDistFunctions?: boolean
-    // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
-    settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
+    settings: FunctionsSettings
     site: NetlifySite
     siteInfo: SiteInfo
     timeouts: { backgroundFunctions: number; syncFunctions: number }
@@ -338,7 +337,7 @@ export const startFunctionsServer = async (
     packagePath: command.workspacePackage,
   })
   const functionsDirectories: string[] = []
-  let manifest
+  let manifest: Manifest | undefined
 
   // If the `loadDistFunctions` parameter is sent, the functions server will
   // use the built functions created by zip-it-and-ship-it rather than building
@@ -355,7 +354,7 @@ export const startFunctionsServer = async (
         const manifestPath = path.join(distPath, 'manifest.json')
         const data = await fs.readFile(manifestPath, 'utf8')
 
-        manifest = JSON.parse(data)
+        manifest = JSON.parse(data) as Manifest
       } catch {
         // no-op
       }

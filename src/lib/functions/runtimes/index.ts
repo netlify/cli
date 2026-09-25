@@ -1,4 +1,4 @@
-import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
+import type { ExtendedRoute, FunctionResult, Route } from '@netlify/zip-it-and-ship-it'
 import type { MemoizeCache } from '@netlify/dev-utils'
 
 import type NetlifyFunction from '../netlify-function.js'
@@ -35,21 +35,23 @@ export type GetBuildFunctionOpts<BuildResult extends BaseBuildResult> = {
   functionsDirectory?: string
   projectRoot: string
 }
-export type BuildFunction<
-  BuildResult extends BaseBuildResult,
-  CacheEntry extends Record<string, unknown> = Record<string, unknown>,
-> = ({ cache }: { cache?: MemoizeCache<CacheEntry> }) => Promise<BuildResult>
-export type GetBuildFunction<
-  BuildResult extends BaseBuildResult,
-  CacheEntry extends Record<string, unknown> = Record<string, unknown>,
-> = (params: GetBuildFunctionOpts<BuildResult>) => Promise<BuildFunction<BuildResult, CacheEntry>>
+// Shared by all functions in a registry. Only the JS runtime's ZISI builder uses it for now.
+export type BuildCache = MemoizeCache<FunctionResult>
+export type BuildFunction<BuildResult extends BaseBuildResult> = ({
+  cache,
+}: {
+  cache?: BuildCache
+}) => Promise<BuildResult>
+export type GetBuildFunction<BuildResult extends BaseBuildResult> = (
+  params: GetBuildFunctionOpts<BuildResult>,
+) => Promise<BuildFunction<BuildResult>>
 
 // TODO(serhalp): It's inconsistent that this uses a union but `BuildResult` uses generics. Consider refactoring.
 // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 export type InvokeFunctionResult = JsInvokeFunctionResult | GoInvokeFunctionResult | RustInvokeFunctionResult
 export type InvokeFunction<BuildResult extends BaseBuildResult> = (params: {
   context: Record<string, unknown>
-  environment: Record<string, unknown>
+  environment: Record<string, string>
   event: Record<string, unknown>
   func: NetlifyFunction<BuildResult>
   timeout: number
@@ -59,10 +61,12 @@ export type OnRegisterFunction<BuildResult extends BaseBuildResult> = (
   func: NetlifyFunction<BuildResult>,
 ) => NetlifyFunction<BuildResult> | null
 
+// Methods (rather than function properties) make `BuildResult` bivariant here, so that any runtime is assignable to
+// `Runtime<BaseBuildResult>`. This is sound as long as a runtime is only handed functions it built itself.
 export interface Runtime<BuildResult extends BaseBuildResult> {
-  getBuildFunction: GetBuildFunction<BuildResult>
-  invokeFunction: InvokeFunction<BuildResult>
-  onRegister?: OnRegisterFunction<BuildResult>
+  getBuildFunction(...args: Parameters<GetBuildFunction<BuildResult>>): ReturnType<GetBuildFunction<BuildResult>>
+  invokeFunction(...args: Parameters<InvokeFunction<BuildResult>>): ReturnType<InvokeFunction<BuildResult>>
+  onRegister?(...args: Parameters<OnRegisterFunction<BuildResult>>): ReturnType<OnRegisterFunction<BuildResult>>
   name: string
 }
 
