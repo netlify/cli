@@ -145,22 +145,13 @@
       "count": 1
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unnecessary-type-conversion": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
+      "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
+      "count": 2
     },
     "@typescript-eslint/prefer-optional-chain": {
       "count": 1
-    },
-    "@typescript-eslint/restrict-plus-operands": {
-      "count": 3
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 4
