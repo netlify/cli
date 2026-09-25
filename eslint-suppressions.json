@@ -704,7 +704,7 @@
       "count": 1
     },
     "@typescript-eslint/no-misused-promises": {
-      "count": 7
+      "count": 6
     },
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 14

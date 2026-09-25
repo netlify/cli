@@ -115,7 +115,7 @@ interface ProxyRequest extends Request {
 }
 
 interface ProxyHandlers {
-  web: (req: ProxyRequest, res: ServerResponse, options: ProxyOptions) => unknown
+  web: (req: ProxyRequest, res: ServerResponse, options: ProxyOptions) => void
   ws: (req: http.IncomingMessage, socket: Duplex, head: Buffer, options: ProxyOptions) => void
 }
 
@@ -330,7 +330,10 @@ const serveRedirect = async function ({
   res: ServerResponse
   siteInfo: SiteInfo
 }) {
-  if (!match) return proxy.web(req, res, options)
+  if (!match) {
+    proxy.web(req, res, options)
+    return
+  }
 
   // FIXME: `options` is always set by callers, so neither fallback applies
   options = options || req.proxyOptions || {}
@@ -367,7 +370,8 @@ const serveRedirect = async function ({
   }
 
   if (isFunction(options.functionsPort, req.url)) {
-    return proxy.web(req, res, { target: options.functionsServer })
+    proxy.web(req, res, { target: options.functionsServer })
+    return
   }
 
   const urlForAddons = getAddonUrl(options.addonsUrls, req)
@@ -436,7 +440,8 @@ const serveRedirect = async function ({
     req.url = encodeURI(decodeURI(pathname)) + reqUrl.search
     // if there is an existing static file and it is not a forced redirect, return the file
     if (!match.force) {
-      return proxy.web(req, res, { ...options, staticFile })
+      proxy.web(req, res, { ...options, staticFile })
+      return
     }
   }
 
@@ -490,7 +495,8 @@ const serveRedirect = async function ({
       !isInternal(destURL) &&
       (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
     ) {
-      return proxy.web(req, res, { target: options.functionsServer })
+      proxy.web(req, res, { target: options.functionsServer })
+      return
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
@@ -521,7 +527,8 @@ const serveRedirect = async function ({
       req.headers['x-netlify-original-search'] = url.search
 
       // @ts-expect-error FIXME: sends the whole route object instead of its pattern in the function route header
-      return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
+      proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
+      return
     }
     if (isImageRequest(req)) {
       return imageProxy(req, res)
@@ -532,10 +539,11 @@ const serveRedirect = async function ({
       return
     }
 
-    return proxy.web(req, res, { ...options, status: statusValue })
+    proxy.web(req, res, { ...options, status: statusValue })
+    return
   }
 
-  return proxy.web(req, res, options)
+  proxy.web(req, res, options)
 }
 
 const reqToURL = function (req: Request, pathname: string | undefined) {
@@ -699,7 +707,7 @@ const initializeProxy = async function ({
       // rule (without `force`) that should kick in. This is how we mimic the
       // file shadowing behavior from the CDN.
       if (options && options.match) {
-        return serveRedirect({
+        void serveRedirect({
           // We don't want to match functions at this point because any redirects
           // to functions will have already been processed, so we don't supply a
           // functions registry to `serveRedirect`.
@@ -713,12 +721,13 @@ const initializeProxy = async function ({
           siteInfo,
           env,
         })
+        return
       }
     }
 
     if (options.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
       req.url = proxyRes.headers.location
-      return serveRedirect({
+      void serveRedirect({
         // We don't want to match functions at this point because any redirects
         // to functions will have already been processed, so we don't supply a
         // functions registry to `serveRedirect`.
@@ -732,6 +741,7 @@ const initializeProxy = async function ({
         siteInfo,
         env,
       })
+      return
     }
 
     const responseData: Buffer[] = []
@@ -810,7 +820,8 @@ const initializeProxy = async function ({
         res.setHeader('content-length', contentLength)
         res.statusCode = 500
         res.write(errorResponse)
-        return res.end()
+        res.end()
+        return
       }
 
       let proxyResHeaders = proxyRes.headers
@@ -832,9 +843,7 @@ const initializeProxy = async function ({
       }
 
       res.end()
-      return undefined
     })
-    return undefined
   })
 
   const handlers: ProxyHandlers = {
@@ -846,7 +855,6 @@ const initializeProxy = async function ({
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       proxy.web(req, res, options)
-      return undefined
     },
     ws: (req, socket, head, options) => {
       proxy.ws(req, socket, head, options)
@@ -897,7 +905,8 @@ const onRequest = async (
   const edgeFunctionsProxyURL = await edgeFunctionsProxy?.(req)
 
   if (edgeFunctionsProxyURL !== undefined) {
-    return proxy.web(req, res, { target: edgeFunctionsProxyURL })
+    proxy.web(req, res, { target: edgeFunctionsProxyURL })
+    return
   }
 
   const functionMatch =
@@ -919,7 +928,8 @@ const onRequest = async (
       headers[NFFunctionRoute] = functionMatch.route.pattern
     }
 
-    return proxy.web(req, res, { headers, target: functionsServer })
+    proxy.web(req, res, { headers, target: functionsServer })
+    return
   }
 
   const addonUrl = getAddonUrl(addonsUrls, req)
@@ -1022,13 +1032,13 @@ const onRequest = async (
     !isInternal(req.url) &&
     (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
   ) {
-    return proxy.web(req, res, { target: functionsServer })
+    proxy.web(req, res, { target: functionsServer })
+    return
   }
 
   maybeNotifyActivity()
 
   proxy.web(req, res, options)
-  return undefined
 }
 
 export const getProxyUrl = function (settings: Pick<ServerSettings, 'https' | 'port'>) {
