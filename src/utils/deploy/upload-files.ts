@@ -23,11 +23,19 @@ type UploadDeployServerParams = WithRetryCount<Parameters<UploadApi['uploadDeplo
 interface UploadFileBase {
   filepath: string
   normalizedPath: string
-  body?: fs.ReadStream
+  body?: undefined
 }
 
 export interface StaticUploadFile extends UploadFileBase {
   assetType: 'file'
+}
+
+// A generated file (e.g. `netlify.toml`) whose contents are held in memory rather than on disk
+export interface InlineUploadFile {
+  assetType: 'file'
+  body: string
+  filepath?: undefined
+  normalizedPath: string
 }
 
 export interface FunctionUploadFile extends UploadFileBase {
@@ -47,7 +55,12 @@ export interface ServerUploadFile extends UploadFileBase {
   hash: string
 }
 
-export type UploadFile = StaticUploadFile | FunctionUploadFile | EdgeFunctionUploadFile | ServerUploadFile
+export type UploadFile =
+  | StaticUploadFile
+  | InlineUploadFile
+  | FunctionUploadFile
+  | EdgeFunctionUploadFile
+  | ServerUploadFile
 
 class MissingAssetTypeError extends Error {
   constructor(readonly fileObj: unknown) {
@@ -77,7 +90,8 @@ const uploadFiles = async (
   const uploadFile = async (fileObj: UploadFile, index: number) => {
     const { body, filepath, normalizedPath } = fileObj
 
-    const readStreamCtor = () => body ?? fs.createReadStream(filepath)
+    // FIXME(@netlify/api): octet-stream `body` is typed as `ReadStream` only, but an inline string body works too
+    const readStreamCtor = () => (body ?? fs.createReadStream(filepath)) as fs.ReadStream
 
     statusCb({
       type: 'upload',
@@ -211,14 +225,14 @@ const retryUpload = <T>(uploadFn: (retryCount: number) => Promise<T>, maxRetry: 
       // user the delay before next reconnection attempt.
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- FIXME: the listener's promise is discarded
     fibonacciBackoff.on('ready', tryUpload)
 
     fibonacciBackoff.on('fail', () => {
       reject(lastError)
     })
 
-    tryUpload()
+    void tryUpload()
   })
 
 export default uploadFiles

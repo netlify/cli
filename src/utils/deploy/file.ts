@@ -2,8 +2,9 @@ import type walker from 'folder-walker'
 
 export type OriginalFile = walker.Entry
 
-export type File = walker.Entry & {
-  hash: string
-  assetType: string
+export type HashedFile = OriginalFile & { hash: string }
+
+export type File = HashedFile & {
+  assetType: 'file'
   normalizedPath: string
 }

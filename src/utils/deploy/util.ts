@@ -1,8 +1,19 @@
 import { sep } from 'path'
 
+import type { NetlifyAPI } from '@netlify/api'
 import pWaitFor from 'p-wait-for'
 
 import { DEPLOY_POLL } from './constants.js'
+
+export type Deploy = Awaited<ReturnType<NetlifyAPI['getSiteDeploy']>>
+
+// FIXME(@netlify/api): every `deploy` field is optional, even those always set once a deploy is ready
+export type ReadyDeploy = Deploy &
+  Required<Pick<Deploy, 'id' | 'site_id' | 'name' | 'admin_url' | 'url' | 'ssl_url' | 'deploy_url' | 'deploy_ssl_url'>>
+
+interface DeployStateError extends Error {
+  deploy?: Deploy
+}
 
 // normalize windows paths to unix paths
 export const normalizePath = (relname: string): string => {
@@ -13,10 +24,14 @@ export const normalizePath = (relname: string): string => {
 }
 
 // poll an async deployId until its done diffing
-// @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-export const waitForDiff = async (api, deployId, siteId, timeout) => {
+export const waitForDiff = async (
+  api: Pick<NetlifyAPI, 'getSiteDeploy'>,
+  deployId: string,
+  siteId: string,
+  timeout: number,
+): Promise<Deploy> => {
   // capture ready deploy during poll
-  let deploy
+  let deploy!: Deploy
 
   const loadDeploy = async () => {
     const siteDeploy = await api.getSiteDeploy({ siteId, deployId })
@@ -24,8 +39,7 @@ export const waitForDiff = async (api, deployId, siteId, timeout) => {
     switch (siteDeploy.state) {
       // https://github.com/netlify/bitballoon/blob/master/app/models/deploy.rb#L21-L33
       case 'error': {
-        const deployError = new Error(siteDeploy.error_message || `Deploy ${deployId} had an error`)
-        // @ts-expect-error TS(2339) FIXME: Property 'deploy' does not exist on type 'Error'.
+        const deployError: DeployStateError = new Error(siteDeploy.error_message || `Deploy ${deployId} had an error`)
         deployError.deploy = siteDeploy
         throw deployError
       }
@@ -55,18 +69,21 @@ export const waitForDiff = async (api, deployId, siteId, timeout) => {
 }
 
 // Poll a deployId until its ready
-// @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-export const waitForDeploy = async (api, deployId, siteId, timeout) => {
+export const waitForDeploy = async (
+  api: Pick<NetlifyAPI, 'getSiteDeploy'>,
+  deployId: string,
+  siteId: string,
+  timeout: number,
+): Promise<ReadyDeploy> => {
   // capture ready deploy during poll
-  let deploy
+  let deploy!: Deploy
 
   const loadDeploy = async () => {
     const siteDeploy = await api.getSiteDeploy({ siteId, deployId })
     switch (siteDeploy.state) {
       // https://github.com/netlify/bitballoon/blob/master/app/models/deploy.rb#L21-L33
       case 'error': {
-        const deployError = new Error(siteDeploy.error_message || `Deploy ${deployId} had an error`)
-        // @ts-expect-error TS(2339) FIXME: Property 'deploy' does not exist on type 'Error'.
+        const deployError: DeployStateError = new Error(siteDeploy.error_message || `Deploy ${deployId} had an error`)
         deployError.deploy = siteDeploy
         throw deployError
       }
@@ -92,13 +109,11 @@ export const waitForDeploy = async (api, deployId, siteId, timeout) => {
     },
   })
 
-  return deploy
+  return deploy as ReadyDeploy
 }
 
 // Transform the fileShaMap and fnShaMap into a generic shaMap that file-uploader.js can use
-// @ts-expect-error TS(7006) FIXME: Parameter 'required' implicitly has an 'any' type.
-export const getUploadList = (required, shaMap) => {
+export const getUploadList = <T>(required: string[] | undefined, shaMap: Record<string, T[]> | undefined): T[] => {
   if (!required || !shaMap) return []
-  // @ts-expect-error TS(7006) FIXME: Parameter 'sha' implicitly has an 'any' type.
   return required.flatMap((sha) => shaMap[sha])
 }
