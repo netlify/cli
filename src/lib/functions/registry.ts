@@ -27,7 +27,7 @@ import { getPathInProject } from '../settings.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 
 import NetlifyFunction, { type FunctionsSettings } from './netlify-function.js'
-import runtimes, { type BaseBuildResult, type BuildCache } from './runtimes/index.js'
+import runtimes, { type BaseBuildResult, type BuildCache, isSupportedRuntime } from './runtimes/index.js'
 
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
@@ -549,11 +549,11 @@ export class FunctionsRegistry {
 
         // If there is no matching runtime, it means this function is not yet
         // supported in Netlify Dev.
-        if (!(runtimeName in runtimes)) {
+        if (!isSupportedRuntime(runtimeName)) {
           return
         }
 
-        const runtime = runtimes[runtimeName as keyof typeof runtimes]
+        const runtime = runtimes[runtimeName]
 
         // If this function has already been registered, we skip it.
         if (this.functions.has(name)) {
