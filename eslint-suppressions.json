@@ -120,7 +120,7 @@
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
+      "count": 2
     }
   },
   "src/commands/env/env-unset.ts": {
@@ -131,7 +131,7 @@
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
+      "count": 2
     }
   },
   "src/commands/functions/functions-create.ts": {
