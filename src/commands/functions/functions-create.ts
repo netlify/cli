@@ -478,7 +478,7 @@ const getNpmInstallPackages = (
   neededPackages: Record<string, string> = {},
 ) =>
   Object.entries(neededPackages)
-    .filter(([name]) => existingPackages[name] === undefined)
+    .filter(([name]) => !(name in existingPackages))
     .map(([name, version]) => `${name}@${version}`)
 
 /**
