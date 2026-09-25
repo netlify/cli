@@ -186,8 +186,7 @@ export default async function detectZisiBuilder({
 }) {
   const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 
-  // @ts-expect-error FIXME: `readPackageUp` takes an options object, so it ignores this path and searches from the cwd
-  const packageJson = await readPackageUp(func.mainFile)
+  const packageJson = await readPackageUp({ cwd: path.dirname(func.mainFile) })
   const hasTypeModule = packageJson?.packageJson.type === 'module'
 
   const featureFlags: FeatureFlags = {}
