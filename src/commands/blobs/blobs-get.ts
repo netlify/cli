@@ -19,6 +19,7 @@ export const blobsGet = async (storeName: string, key: string, options: Options,
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
     region: options.region,
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: `siteInfo` and its `id` are typed as always set
     siteID: siteInfo?.id ?? '',
     token: api.accessToken ?? '',
   })
@@ -31,6 +32,7 @@ export const blobsGet = async (storeName: string, key: string, options: Options,
     return logAndThrowError(`Could not retrieve blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME(@netlify/blobs): `Store.get` overloads omit `null` for missing keys
   if (blob === null) {
     return logAndThrowError(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`)
   }

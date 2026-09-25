@@ -6,6 +6,12 @@ import { logAndThrowError, exit, getToken } from '../../utils/command-helpers.js
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
 
+export interface BuildOptions extends OptionValues {
+  context: string
+  dry: boolean
+  offline?: boolean
+}
+
 export const checkOptions = ({ cachedConfig: { siteInfo }, token }: RunBuildOptions) => {
   if (!siteInfo.id) {
     return logAndThrowError(
@@ -18,7 +24,7 @@ export const checkOptions = ({ cachedConfig: { siteInfo }, token }: RunBuildOpti
   }
 }
 
-export const build = async (options: OptionValues, command: BaseCommand) => {
+export const build = async (options: BuildOptions, command: BaseCommand) => {
   const { cachedConfig, siteInfo } = command.netlify
   command.setAnalyticsPayload({ dry: options.dry })
   // Retrieve Netlify Build options

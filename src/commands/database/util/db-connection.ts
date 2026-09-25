@@ -66,9 +66,9 @@ export function detectExistingLocalConnectionString(buildDir: string): string | 
 // addresses (IPv4/IPv6) and every attempt fails — the outer message is empty
 // without this.
 export const describeError = (err: unknown): string => {
-  if (err && typeof err === 'object' && 'errors' in err && Array.isArray((err as AggregateError).errors)) {
-    const inner = (err as AggregateError).errors
-      .map((e) => (e instanceof Error ? e.message : String(e)))
+  if (err && typeof err === 'object' && 'errors' in err && Array.isArray(err.errors)) {
+    const inner = err.errors
+      .map((e: unknown) => (e instanceof Error ? e.message : String(e)))
       .filter((msg) => msg.length > 0)
     if (inner.length > 0) return inner.join('; ')
   }
@@ -83,8 +83,8 @@ function isConnectionUnreachableError(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false
   const code = (err as NodeJS.ErrnoException).code
   if (code === 'ECONNREFUSED' || code === 'ENOTFOUND' || code === 'EHOSTUNREACH') return true
-  if ('errors' in err && Array.isArray((err as AggregateError).errors)) {
-    return (err as AggregateError).errors.some(isConnectionUnreachableError)
+  if ('errors' in err && Array.isArray(err.errors)) {
+    return err.errors.some(isConnectionUnreachableError)
   }
   return false
 }

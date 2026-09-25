@@ -45,7 +45,7 @@ export const validatePrompt = (input: string): boolean | string => {
 }
 
 export const validateAgent = (agent: string): boolean | string => {
-  const validAgents = AVAILABLE_AGENTS.map((a) => a.value) as string[]
+  const validAgents: readonly string[] = AVAILABLE_AGENTS.map((a) => a.value)
   if (!validAgents.includes(agent)) {
     return `Invalid agent. Available agents: ${validAgents.join(', ')}`
   }

@@ -26,12 +26,21 @@ export const getSiteNameInput = async (name: string | undefined): Promise<{ name
   return { name }
 }
 
-export const sitesCreate = async (options: OptionValues, command: BaseCommand) => {
+interface SitesCreateOptions extends OptionValues {
+  name?: string
+  accountSlug?: string
+  withCi?: boolean
+  manual?: boolean
+  disableLinking?: boolean
+  json?: boolean
+}
+
+export const sitesCreate = async (options: SitesCreateOptions, command: BaseCommand) => {
   const { accounts, api } = command.netlify
 
   await command.authenticate()
 
-  let accountSlug = options.accountSlug as string | undefined
+  let accountSlug = options.accountSlug
   if (!accountSlug) {
     if (!isInteractive()) {
       const team = resolveTeamForNonInteractive(
@@ -52,6 +61,10 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     }
   }
 
+  const createSiteInTeam = (body: { name?: string }) =>
+    // FIXME(@netlify/api): site responses have all-optional fields, unlike `SiteInfo`
+    api.createSiteInTeam({ accountSlug, body }) as Promise<SiteInfo>
+
   let site!: SiteInfo
 
   const MAX_NAME_RETRIES = 2
@@ -64,10 +77,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     }
 
     try {
-      site = (await api.createSiteInTeam({
-        accountSlug: accountSlug,
-        body,
-      })) as unknown as SiteInfo
+      site = await createSiteInTeam(body)
     } catch (error_) {
       if ((error_ as APIError).status === 422) {
         warn(`${attemptName}.netlify.app already exists. Please try a different slug.`)
@@ -98,10 +108,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
         }
 
         try {
-          site = (await api.createSiteInTeam({
-            accountSlug: accountSlug,
-            body,
-          })) as unknown as SiteInfo
+          site = await createSiteInTeam(body)
           return
         } catch (error_) {
           if ((error_ as APIError).status === 422) {
@@ -127,10 +134,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   if (!isInteractive() && !options.name) {
     try {
-      site = (await api.createSiteInTeam({
-        accountSlug: accountSlug,
-        body: {},
-      })) as unknown as SiteInfo
+      site = await createSiteInTeam({})
     } catch (error_) {
       return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }
@@ -154,7 +158,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     }),
   )
 
-  track('sites_created', {
+  void track('sites_created', {
     siteId: site.id,
     adminUrl: site.admin_url,
     siteUrl,
@@ -168,7 +172,8 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       return logAndThrowError('Failed to get repo data')
     }
 
-    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME: `configureRepo` requires `manual`, but the flag is unset unless passed
+    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual! })
   }
 
   if (options.json) {

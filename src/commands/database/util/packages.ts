@@ -1,8 +1,10 @@
+import type { Project } from '@netlify/build-info'
+
 import { log } from '../../../utils/command-helpers.js'
 import type BaseCommand from '../../base-command.js'
 import { spawnAsync } from './spawn-async.js'
 
-export type PkgManagerName = 'npm' | 'yarn' | 'pnpm' | 'bun'
+export type PkgManagerName = `${NonNullable<Project['packageManager']>['name']}`
 
 export interface PmInfo {
   name: PkgManagerName
@@ -19,7 +21,7 @@ export interface PackageEntry {
 export const getPackageManager = (command: BaseCommand): PmInfo => {
   const detected = command.project.packageManager
   return {
-    name: (detected?.name as PkgManagerName | undefined) ?? 'npm',
+    name: detected?.name ?? 'npm',
     remoteRunArgs: detected?.remotePackageCommand ?? ['npx'],
   }
 }

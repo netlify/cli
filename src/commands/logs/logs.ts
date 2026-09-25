@@ -40,12 +40,13 @@ const DEPLOY_STREAM_IDLE_CLOSE_MS = 3_000
 
 const parseSources = (rawSources: string[]): Source[] => {
   const sources: Source[] = []
-  for (const s of rawSources) {
-    if (!VALID_SOURCES.includes(s as Source)) {
-      throw new Error(`Invalid --source value "${s}". Valid values are: ${VALID_SOURCES.join(', ')}`)
+  for (const rawSource of rawSources) {
+    const source = VALID_SOURCES.find((validSource) => validSource === rawSource)
+    if (!source) {
+      throw new Error(`Invalid --source value "${rawSource}". Valid values are: ${VALID_SOURCES.join(', ')}`)
     }
-    if (!sources.includes(s as Source)) {
-      sources.push(s as Source)
+    if (!sources.includes(source)) {
+      sources.push(source)
     }
   }
   return sources
