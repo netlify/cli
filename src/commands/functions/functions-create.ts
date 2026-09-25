@@ -773,8 +773,7 @@ const registerEFInToml = async (funcName: string, options: NetlifyOptions) => {
   ])
 
   // Make sure path begins with a '/'
-  // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with -- FIXME: `startsWith` differs for non-string values
-  if (funcPath[0] !== '/') {
+  if (!funcPath.startsWith('/')) {
     funcPath = `/${funcPath}`
   }
 
