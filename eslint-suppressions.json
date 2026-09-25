@@ -1083,16 +1083,16 @@
       "count": 7
     },
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 32
+      "count": 34
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 61
+      "count": 57
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 28
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 96
+      "count": 89
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 13

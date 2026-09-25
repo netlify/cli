@@ -38,7 +38,7 @@ import {
 } from '../lib/edge-functions/proxy.js'
 import { fileExistsAsync, isFileAsync } from '../lib/fs.js'
 import { getFormHandler } from '../lib/functions/form-submissions-handler.js'
-import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
+import { DEFAULT_FUNCTION_URL_EXPRESSION, type FunctionsRegistry } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 
 import {
@@ -139,6 +139,13 @@ function isInternal(url?: string): boolean {
 function isFunction(functionsPort: boolean | number | undefined, url: string) {
   return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
+
+type FunctionMatch = NonNullable<Awaited<ReturnType<FunctionsRegistry['getFunctionForURLPath']>>>
+
+const getFunctionHeaders = ({ func, route }: FunctionMatch): Record<string, string> => ({
+  ...(func && { [NFFunctionName]: func.name }),
+  ...(route && { [NFFunctionRoute]: route.pattern }),
+})
 
 const getStatic = async function (pathname: string, publicFolder: string) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
@@ -385,17 +392,11 @@ const serveRedirect = async function ({
     }
 
     if (matchingFunction) {
-      const functionHeaders = matchingFunction.func
-        ? {
-            [NFFunctionName]: matchingFunction.func?.name,
-            [NFFunctionRoute]: matchingFunction.route,
-          }
-        : {}
       const url = reqToURL(req, originalURL)
       req.headers['x-netlify-original-pathname'] = url.pathname
       req.headers['x-netlify-original-search'] = url.search
 
-      return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
+      return proxy.web(req, res, { headers: getFunctionHeaders(matchingFunction), target: options.functionsServer })
     }
     if (isImageRequest(req)) {
       return imageProxy(req, res)
@@ -766,17 +767,7 @@ const onRequest = async (
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
-    const headers: Record<string, string> = {}
-
-    if (functionMatch.func) {
-      headers[NFFunctionName] = functionMatch.func.name
-    }
-
-    if (functionMatch.route) {
-      headers[NFFunctionRoute] = functionMatch.route.pattern
-    }
-
-    return proxy.web(req, res, { headers, target: functionsServer })
+    return proxy.web(req, res, { headers: getFunctionHeaders(functionMatch), target: functionsServer })
   }
 
   if (serverHandler) {
