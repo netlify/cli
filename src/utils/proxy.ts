@@ -392,7 +392,7 @@ const serveRedirect = async function ({
     if (token) {
       let jwtValue: JwtPayload = {}
       try {
-        jwtValue = jwtDecode<JwtPayload | null>(token) || {}
+        jwtValue = jwtDecode<JwtPayload | null>(token) ?? {}
       } catch (error) {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', error.message)

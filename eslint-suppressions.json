@@ -592,7 +592,7 @@
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 2
@@ -722,7 +722,7 @@
       "count": 3
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 12
+      "count": 11
     },
     "@typescript-eslint/prefer-optional-chain": {
       "count": 2
