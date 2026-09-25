@@ -17,19 +17,12 @@ const hashFile = async (filePath: string, algorithm: string) => {
 }
 
 // a parallel transform stream segment ctor that hashes fileObj's created by folder-walker
-// TODO: use promises instead of callbacks
 export const hasherCtor = ({ concurrentHash, hashAlgorithm }: { concurrentHash?: number; hashAlgorithm: string }) => {
   if (!concurrentHash) throw new Error('Missing required opts')
-  return transform(concurrentHash, { objectMode: true }, async (fileObj: { filepath: string }, cb) => {
-    try {
-      const hash = await hashFile(fileObj.filepath, hashAlgorithm)
-      // insert hash and asset type to file obj
+  return transform(concurrentHash, { objectMode: true }, (fileObj: { filepath: string }, cb) => {
+    void hashFile(fileObj.filepath, hashAlgorithm).then((hash) => {
       cb(null, { ...fileObj, hash })
-      return
-    } catch (error) {
-      cb(error as Error)
-      return
-    }
+    }, cb)
   })
 }
 
