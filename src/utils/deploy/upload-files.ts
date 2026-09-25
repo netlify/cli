@@ -225,8 +225,9 @@ const retryUpload = <T>(uploadFn: (retryCount: number) => Promise<T>, maxRetry: 
       // user the delay before next reconnection attempt.
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- FIXME: the listener's promise is discarded
-    fibonacciBackoff.on('ready', tryUpload)
+    fibonacciBackoff.on('ready', (retryIndex) => {
+      void tryUpload(retryIndex)
+    })
 
     fibonacciBackoff.on('fail', () => {
       reject(lastError)
