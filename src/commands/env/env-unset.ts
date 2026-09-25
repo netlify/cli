@@ -75,9 +75,7 @@ const unsetInEnvelope = async ({
     throw error_.json ? error_.json.msg : error_
   }
 
-  delete env[key]
-
-  return env
+  return Object.fromEntries(Object.entries(env).filter(([envKey]) => envKey !== key))
 }
 
 export const envUnset = async (key: string, options: EnvUnsetOptionValues, command: BaseCommand) => {
