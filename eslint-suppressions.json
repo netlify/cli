@@ -13,14 +13,8 @@
     }
   },
   "src/commands/base-command.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    },
     "@typescript-eslint/no-floating-promises": {
       "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
-      "count": 2
     },
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 5
@@ -28,26 +22,20 @@
     "@typescript-eslint/no-unnecessary-type-parameters": {
       "count": 1
     },
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 4
+      "count": 1
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 17
+      "count": 16
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 5
+      "count": 4
     }
   },
   "src/commands/build/index.ts": {

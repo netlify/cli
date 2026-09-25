@@ -363,19 +363,19 @@ export default class BaseCommand extends Command {
 
     const getCommands = (command: BaseCommand) => {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
-      return (
-        parentCommand?.commands
-          .filter((cmd) => {
-            if ((cmd as any)._hidden) return false
-            // the root command
-            if (this.name() === 'netlify') {
-              // don't include subcommands on the main page
-              return !cmd.name().includes(':')
-            }
-            return cmd.name().startsWith(`${command.name()}:`)
-          })
-          .sort((a, b) => a.name().localeCompare(b.name())) || []
-      )
+      if (!parentCommand) return []
+      const visibleCommands = new Set(help.visibleCommands(parentCommand))
+      return parentCommand.commands
+        .filter((cmd) => {
+          if (!visibleCommands.has(cmd)) return false
+          // the root command
+          if (this.name() === 'netlify') {
+            // don't include subcommands on the main page
+            return !cmd.name().includes(':')
+          }
+          return cmd.name().startsWith(`${command.name()}:`)
+        })
+        .sort((a, b) => a.name().localeCompare(b.name()))
     }
 
     help.longestSubcommandTermLength = (command: BaseCommand): number =>
@@ -383,7 +383,7 @@ export default class BaseCommand extends Command {
 
     /** override the longestOptionTermLength to react on hide options flag */
     help.longestOptionTermLength = (command: BaseCommand, helper: Help): number =>
-      (command.noBaseOptions === false &&
+      (!command.noBaseOptions &&
         helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
       0
 
@@ -428,7 +428,7 @@ export default class BaseCommand extends Command {
         output = [...output, chalk.bold('ARGUMENTS'), formatHelpList(argumentList), '']
       }
 
-      if (command.#noBaseOptions === false) {
+      if (!command.#noBaseOptions) {
         // Options
         const optionList = helper
           .visibleOptions(command)
@@ -445,11 +445,11 @@ export default class BaseCommand extends Command {
       }
 
       // Aliases
-
-      // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
-      if (command._aliases.length !== 0) {
-        // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
-        const aliases = command._aliases.map((alias) => formatItem(`${parentCommand.name()} ${alias}`, null, true))
+      const commandAliases = command.aliases()
+      if (commandAliases.length !== 0) {
+        const aliases = commandAliases.map((alias) =>
+          formatItem(`${parentCommand?.name() ?? ''} ${alias}`, undefined, true),
+        )
         output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
       }
 
