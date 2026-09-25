@@ -321,7 +321,7 @@ const serveRedirect = async function ({
   siteInfo,
 }: {
   env: EnvironmentVariables
-  functionsRegistry?: FunctionsRegistry | null | undefined
+  functionsRegistry?: FunctionsRegistry | undefined
   imageProxy: ImageProxy
   match: Match | null
   options: RoutingProxyOptions
@@ -494,10 +494,9 @@ const serveRedirect = async function ({
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
-    const matchingFunction =
-      functionsRegistry &&
-      // @ts-expect-error FIXME: `req.method` may be undefined and the static file callback returns a boolean, not a promise
-      (await functionsRegistry.getFunctionForURLPath(destURL, req.method, () => Boolean(destStaticFile)))
+    const matchingFunction = await functionsRegistry?.getFunctionForURLPath(destURL, req.method ?? '', () =>
+      Promise.resolve(Boolean(destStaticFile)),
+    )
     let statusValue
     if (
       match.force ||
@@ -703,7 +702,7 @@ const initializeProxy = async function ({
           // We don't want to match functions at this point because any redirects
           // to functions will have already been processed, so we don't supply a
           // functions registry to `serveRedirect`.
-          functionsRegistry: null,
+          functionsRegistry: undefined,
           req,
           res,
           proxy: handlers,
@@ -722,7 +721,7 @@ const initializeProxy = async function ({
         // We don't want to match functions at this point because any redirects
         // to functions will have already been processed, so we don't supply a
         // functions registry to `serveRedirect`.
-        functionsRegistry: null,
+        functionsRegistry: undefined,
         req,
         res,
         proxy: handlers,
@@ -900,12 +899,9 @@ const onRequest = async (
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
-  const functionMatch =
-    functionsRegistry &&
-    // @ts-expect-error FIXME: `req.url` and `req.method` may be undefined and the static file callback resolves to a path, not a boolean
-    (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () =>
-      getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist ?? ''),
-    ))
+  const functionMatch = await functionsRegistry?.getFunctionForURLPath(req.url ?? '', req.method ?? '', async () =>
+    Boolean(await getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist)),
+  )
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
