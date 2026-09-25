@@ -1,7 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { SUPPORTED_CONTEXTS, translateFromEnvelopeToMongo, type EnvelopeItem } from '../../utils/env/index.js'
+import { SUPPORTED_CONTEXTS, getEnvelopeItems, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
@@ -26,7 +26,7 @@ const unsetInEnvelope = async ({
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars
-  const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
+  const envelopeVariables = await getEnvelopeItems({ api, accountId, siteId })
   const contexts = context || ['all']
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')

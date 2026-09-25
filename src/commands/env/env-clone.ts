@@ -1,7 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logAndThrowError } from '../../utils/command-helpers.js'
-import type { EnvelopeItem } from '../../utils/env/index.js'
+import { getEnvelopeItems } from '../../utils/env/index.js'
 import { promptEnvCloneOverwrite } from '../../utils/prompts/env-clone-prompt.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
@@ -32,8 +32,8 @@ const cloneEnvVars = async ({
   siteTo: SiteInfo
 }): Promise<boolean> => {
   const [envelopeFrom, envelopeTo] = await Promise.all([
-    api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id }) as Promise<EnvelopeItem[]>,
-    api.getEnvVars({ accountId: siteTo.account_slug, siteId: siteTo.id }) as Promise<EnvelopeItem[]>,
+    getEnvelopeItems({ api, accountId: siteFrom.account_slug, siteId: siteFrom.id }),
+    getEnvelopeItems({ api, accountId: siteTo.account_slug, siteId: siteTo.id }),
   ])
 
   const keysFrom = envelopeFrom.map(({ key }) => key)

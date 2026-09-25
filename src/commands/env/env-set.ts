@@ -4,10 +4,10 @@ import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpe
 import {
   SUPPORTED_CONTEXTS,
   ALL_ENVELOPE_SCOPES,
+  getEnvelopeItems,
   isSupportedContext,
   translateFromEnvelopeToMongo,
   type EnvelopeEnvVarValue,
-  type EnvelopeItem,
   type UserProvidedScope,
   type WritableEnvelopeScope,
 } from '../../utils/env/index.js'
@@ -55,7 +55,7 @@ const setInEnvelope = async ({
   }
 
   // fetch envelope env vars
-  const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
+  const envelopeVariables = await getEnvelopeItems({ api, accountId, siteId })
   const contexts = context || ['all']
   let scopes: readonly WritableEnvelopeScope[] = scope || ALL_ENVELOPE_SCOPES
 

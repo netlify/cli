@@ -5,7 +5,7 @@ import AsciiTable from 'ascii-table'
 import dotenv from 'dotenv'
 
 import { exit, log, logJson } from '../../utils/command-helpers.js'
-import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope, type EnvelopeItem } from '../../utils/env/index.js'
+import { getEnvelopeItems, translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 import type { EnvImportOptionValues } from './option_values.js'
@@ -29,7 +29,7 @@ const importDotEnv = async ({
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   const dotEnvKeys = Object.keys(importedEnv)
-  const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
+  const envelopeVariables = await getEnvelopeItems({ api, accountId, siteId })
   const envelopeKeys = envelopeVariables.map(({ key }) => key)
 
   // if user intends to replace all existing env vars

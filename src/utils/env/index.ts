@@ -44,11 +44,26 @@ export type WritableEnvelopeScope = EnvelopeEnvVarScope | UserProvidedScope
 
 export type EnvelopeEnvVarValue = NonNullable<ApiEnvVar['values']>[number]
 
-// FIXME(@netlify/api): the API types claim `key`/`values` are optional and `scopes` holds `post-processing`, not `post_processing`
 export type EnvelopeItem = Omit<ApiEnvVar, 'key' | 'scopes' | 'values'> & {
   key: string
   scopes: EnvelopeEnvVarScope[]
   values: EnvelopeEnvVarValue[]
+}
+
+// FIXME(@netlify/api): `envVar` claims `key`/`values` are optional and `scopes` holds `post-processing`, not `post_processing`
+const toEnvelopeItem = (envVar: ApiEnvVar): EnvelopeItem => envVar as EnvelopeItem
+
+export const getEnvelopeItems = async ({
+  accountId,
+  api,
+  siteId,
+}: {
+  accountId: string
+  api: NetlifyAPI
+  siteId?: string | undefined
+}): Promise<EnvelopeItem[]> => {
+  const envVars = await api.getEnvVars({ accountId, siteId })
+  return envVars.map(toEnvelopeItem)
 }
 
 // AFAICT, Envelope uses only `post_processing` on returned env vars; the CLI documents and expects
@@ -145,13 +160,10 @@ const fetchEnvelopeItems = async function ({
     // if a single key is passed, fetch that single env var
     if (key) {
       const envelopeItem = await api.getEnvVar({ accountId, key, siteId })
-      // See FIXME(@netlify/api) on `EnvelopeItem`
-      return [envelopeItem as EnvelopeItem]
+      return [toEnvelopeItem(envelopeItem)]
     }
     // otherwise, fetch the entire list of env vars
-    const envelopeItems = await api.getEnvVars({ accountId, siteId })
-    // See FIXME(@netlify/api) on `EnvelopeItem`
-    return envelopeItems as EnvelopeItem[]
+    return await getEnvelopeItems({ accountId, api, siteId })
   } catch {
     // Collaborators aren't allowed to read shared env vars,
     // so return an empty array silently in that case
