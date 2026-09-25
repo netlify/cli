@@ -71,6 +71,9 @@ export const deploySite = async (
     // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     manifestPath,
     maxRetry = DEFAULT_MAX_RETRY,
+    packagePath,
+    serverEnabled,
+    serverManifestPath,
     // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     siteRoot,
     // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
@@ -88,6 +91,9 @@ export const deploySite = async (
     draft?: boolean
     environment?: DeployEnvironmentVariable[]
     maxRetry?: number
+    packagePath?: string
+    serverEnabled?: boolean
+    serverManifestPath?: string
     statusCb?: (status: DeployEvent) => void
     syncFileLimit?: number
     tmpDir?: string
@@ -126,6 +132,9 @@ export const deploySite = async (
       hashAlgorithm,
       statusCb,
       manifestPath,
+      packagePath,
+      serverEnabled,
+      serverManifestPath,
       skipFunctionsCache,
       rootDir: siteRoot,
     }),

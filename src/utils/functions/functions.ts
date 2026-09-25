@@ -37,6 +37,13 @@ export const getFunctionsManifestPath = async ({ base, packagePath = '' }: { bas
   return isFile ? path : null
 }
 
+export const getServerManifestPath = async ({ base, packagePath = '' }: { base: string; packagePath?: string }) => {
+  const path = resolve(base, packagePath, getPathInProject(['server', 'manifest.json']))
+  const isFile = await isFileAsync(path)
+
+  return isFile ? path : null
+}
+
 export const getFunctionsDistPath = async ({
   base,
   packagePath = '',
