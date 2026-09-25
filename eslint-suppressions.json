@@ -646,14 +646,6 @@
       "count": 2
     }
   },
-  "src/utils/headers.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 1
-    }
-  },
   "src/utils/init/config-github.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
