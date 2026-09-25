@@ -8,17 +8,17 @@ import {
   findServerEntry,
   zipFunctions,
   zipServer,
+  type Config as FunctionsConfig,
   type FunctionResult,
   type TrafficRules,
 } from '@netlify/zip-it-and-ship-it'
 
 import type BaseCommand from '../../commands/base-command.js'
-import type { $TSFixMe } from '../../commands/types.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.js'
 
 import { hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
 import type { StatusCallback } from './status-cb.js'
-import type { ServerUploadFile } from './upload-files.js'
+import type { FunctionUploadFile, ServerUploadFile } from './upload-files.js'
 
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
@@ -27,6 +27,8 @@ interface ServerBundle {
   path: string
   region?: string
 }
+
+type HashedFunctionFile = FunctionUploadFile & { hash: string; relname: string }
 
 const getFunctionZips = async ({
   command,
@@ -40,13 +42,13 @@ const getFunctionZips = async ({
 }: {
   command: BaseCommand
   directories: string[]
-  functionsConfig?: $TSFixMe
-  manifestPath: $TSFixMe
-  rootDir: $TSFixMe
+  functionsConfig?: FunctionsConfig | undefined
+  manifestPath?: string | undefined
+  rootDir?: string | undefined
   skipFunctionsCache?: boolean | undefined
-  statusCb: $TSFixMe
-  tmpDir: $TSFixMe
-}): Promise<(FunctionResult & { buildData?: unknown })[]> => {
+  statusCb: StatusCallback
+  tmpDir: string
+}): Promise<FunctionResult[]> => {
   statusCb({
     type: 'functions-manifest',
     msg: 'Looking for a functions cache...',
@@ -56,7 +58,7 @@ const getFunctionZips = async ({
   if (manifestPath) {
     try {
       const { functions, timestamp } = JSON.parse(await readFile(manifestPath, 'utf-8')) as {
-        functions: (FunctionResult & { buildData?: unknown })[]
+        functions: FunctionResult[]
         timestamp: number
       }
       const manifestAge = Date.now() - timestamp
@@ -161,6 +163,19 @@ const trafficRulesConfig = (trafficRules?: TrafficRules) => {
   }
 }
 
+interface FunctionConfigPayload {
+  display_name: FunctionResult['displayName']
+  excluded_routes: FunctionResult['excludedRoutes']
+  generator: FunctionResult['generator']
+  memory: FunctionResult['memory']
+  region: FunctionResult['region']
+  routes: FunctionResult['routes']
+  build_data: FunctionResult['buildData']
+  priority: FunctionResult['priority']
+  traffic_rules: ReturnType<typeof trafficRulesConfig>
+  vcpu: FunctionResult['vcpu']
+}
+
 const hashFns = async (
   command: BaseCommand,
   directories: string[],
@@ -178,7 +193,7 @@ const hashFns = async (
     tmpDir,
   }: {
     concurrentHash?: number
-    functionsConfig?: $TSFixMe
+    functionsConfig?: FunctionsConfig | undefined
     hashAlgorithm?: string | undefined
     manifestPath?: string | undefined
     packagePath?: string | undefined
@@ -186,16 +201,16 @@ const hashFns = async (
     serverEnabled?: boolean | undefined
     serverManifestPath?: string | undefined
     skipFunctionsCache?: boolean | undefined
-    statusCb: $TSFixMe
-    tmpDir: $TSFixMe
+    statusCb: StatusCallback
+    tmpDir?: string | undefined
   },
 ): Promise<{
   functionSchedules?: { name: string; cron: string }[] | undefined
   functions: Record<string, string>
-  functionsWithNativeModules: $TSFixMe[]
-  shaMap?: Record<string, $TSFixMe> | undefined
-  fnShaMap?: Record<string, $TSFixMe[]> | undefined
-  fnConfig?: Record<string, $TSFixMe> | undefined
+  functionsWithNativeModules: FunctionResult[]
+  shaMap?: Record<string, never> | undefined
+  fnShaMap?: Record<string, HashedFunctionFile[]> | undefined
+  fnConfig?: Record<string, FunctionConfigPayload> | undefined
   server?: { sha: string; region?: string } | undefined
   serverShaMap?: Record<string, ServerUploadFile[]> | undefined
 }> => {
@@ -281,7 +296,7 @@ const hashFns = async (
         func.vcpu,
       ),
     )
-    .reduce(
+    .reduce<Record<string, FunctionConfigPayload>>(
       (funcs, curr) => ({
         ...funcs,
         [curr.name]: {
@@ -301,7 +316,7 @@ const hashFns = async (
     )
   const functionSchedules = functionZips
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
-    .filter((schedule) => schedule !== '' && schedule !== undefined)
+    .filter((schedule): schedule is { name: string; cron: string } => schedule !== '' && schedule !== undefined)
   const functionsWithNativeModules = functionZips.filter(
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )
@@ -312,9 +327,9 @@ const hashFns = async (
 
   // Written to by manifestCollector
   // normalizedPath: hash (wanted by deploy API)
-  const functions = {}
+  const functions: Record<string, string> = {}
   // hash: [fileObj, fileObj, fileObj]
-  const fnShaMap = {}
+  const fnShaMap: Record<string, HashedFunctionFile[]> = {}
   const manifestCollector = manifestCollectorCtor(functions, fnShaMap, { statusCb })
 
   await pipeline([functionStream, hasher, manifestCollector])
@@ -334,7 +349,7 @@ const hashServer = async (
     hashAlgorithm,
     statusCb,
     tmpDir,
-  }: { concurrentHash?: number; hashAlgorithm?: string; statusCb: StatusCallback; tmpDir: string },
+  }: { concurrentHash?: number; hashAlgorithm: string; statusCb: StatusCallback; tmpDir: string },
 ): Promise<{ server?: { sha: string; region?: string }; serverShaMap?: Record<string, ServerUploadFile[]> }> => {
   if (!serverBundle) {
     return {}
@@ -352,7 +367,7 @@ const hashServer = async (
   }
 
   const servers: Record<string, string> = {}
-  const serverShaMap: Record<string, ServerUploadFile[]> = {}
+  const serverShaMap: Record<string, (ServerUploadFile & { relname: string })[]> = {}
 
   await pipeline([
     Readable.from([fileObj]),

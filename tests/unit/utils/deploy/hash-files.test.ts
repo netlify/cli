@@ -31,7 +31,6 @@ test('Hashes files in a folder', async (t) => {
 
       const fileObjArray = filesShaMap[sha]
       fileObjArray.forEach((fileObj) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(fileObj.normalizedPath).toBe(filePath)
       })
     })

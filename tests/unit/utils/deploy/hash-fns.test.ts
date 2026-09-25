@@ -41,7 +41,6 @@ test('Hashes files in a folder', async (t) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME
       const functionsObjArray = fnShaMap![sha]
       functionsObjArray.forEach((fileObj) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- FIXME
         expect(fileObj.normalizedPath).toBe(functionPath)
       })
     })
@@ -67,7 +66,7 @@ test('Populates build_data.bootstrapVersion for v2 functions on direct-zip path'
 
     expect(fnConfig).toBeDefined()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- covered by expectation above
-    const helloConfig = fnConfig!.hello as { build_data?: { bootstrapVersion?: string; runtimeAPIVersion?: number } }
+    const helloConfig = fnConfig!.hello
     expect(helloConfig).toBeDefined()
     expect(helloConfig.build_data).toBeDefined()
     expect(helloConfig.build_data?.runtimeAPIVersion).toBe(2)
