@@ -12,10 +12,10 @@ import { AUTOCOMPLETION_FILE, type AutocompletionData } from './constants.js'
  */
 const generateAutocompletion = (program: Command) => {
   try {
-    const autocomplete = program.commands.reduce<AutocompletionData>(
-      (prev, cmd) => ({
-        ...prev,
-        [cmd.name()]: {
+    const autocomplete: AutocompletionData = Object.fromEntries(
+      program.commands.map((cmd) => [
+        cmd.name(),
+        {
           name: cmd.name(),
           description: cmd.description().split('\n')[0],
           options: cmd.options
@@ -23,8 +23,7 @@ const generateAutocompletion = (program: Command) => {
             .sort(sortOptions)
             .map((opt) => ({ name: `--${opt.name()}`, description: opt.description })),
         },
-      }),
-      {},
+      ]),
     )
 
     if (!fs.existsSync(dirname(AUTOCOMPLETION_FILE))) {
