@@ -49,8 +49,6 @@ const MOON_SPINNER = {
 
 type FunctionType = 'edge' | 'serverless'
 
-type FunctionsCreateOptionValuesWithURL = FunctionsCreateOptionValues & { url: string }
-
 /** The default export of a template's `.netlify-function-template.mjs` file */
 interface FunctionTemplateMetadata {
   name: string
@@ -78,9 +76,16 @@ interface TemplatePackageJson {
 
 interface RepoContentsEntry {
   name: string
-  // FIXME: GitHub returns `null` for directories
-  download_url: string
+  download_url: string | null
 }
+
+const isRepoContentsEntry = (value: unknown): value is RepoContentsEntry =>
+  typeof value === 'object' &&
+  value !== null &&
+  'name' in value &&
+  typeof value.name === 'string' &&
+  'download_url' in value &&
+  (typeof value.download_url === 'string' || value.download_url === null)
 
 const isValidFunctionName = (name: unknown): name is string => typeof name === 'string' && /^[\w.-]+$/i.test(name)
 
@@ -374,15 +379,19 @@ const ensureFunctionDirExists = async function (command: BaseCommand): Promise<s
  */
 const downloadFromURL = async function (
   command: BaseCommand,
-  options: FunctionsCreateOptionValuesWithURL,
+  url: string,
+  options: FunctionsCreateOptionValues,
   argumentName: string | undefined,
   functionsDir: string,
 ) {
-  const [functionName] = options.url.split('/').slice(-1)
+  const [functionName] = url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
   const fnFolder = getSafeFunctionPath(functionsDir, nameToUse)
 
-  const folderContents = (await readRepoURL(options.url)) as RepoContentsEntry[]
+  const folderContents = await readRepoURL(url)
+  if (!Array.isArray(folderContents) || !folderContents.every(isRepoContentsEntry)) {
+    throw new Error(`Could not list the contents of ${url}`)
+  }
 
   if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
     log(
@@ -398,6 +407,9 @@ const downloadFromURL = async function (
   }
   await Promise.all(
     folderContents.map(async ({ download_url: downloadUrl, name }) => {
+      if (downloadUrl === null) {
+        throw new Error(`Error while retrieving ${name}: directories are not supported`)
+      }
       try {
         const res = await fetch(downloadUrl)
         const fileName = path.basename(name)
@@ -519,11 +531,11 @@ const scaffoldFromTemplate = async function (
       message: 'URL to clone: ',
       validate: (val) => Boolean(validateRepoURL(val)),
     })
-    options.url = chosenUrl.trim()
+    const url = chosenUrl.trim()
     try {
-      await downloadFromURL(command, options as FunctionsCreateOptionValuesWithURL, argumentName, functionsDir)
+      await downloadFromURL(command, url, options, argumentName, functionsDir)
     } catch {
-      return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
+      return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${url}`)
     }
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
@@ -723,7 +735,7 @@ export const functionsCreate = async (
 
   /* either download from URL or scaffold from template */
   if (options.url) {
-    await downloadFromURL(command, options as FunctionsCreateOptionValuesWithURL, name, functionsDir)
+    await downloadFromURL(command, options.url, options, name, functionsDir)
   } else {
     await scaffoldFromTemplate(command, options, name, functionsDir, functionType)
   }
