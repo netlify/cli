@@ -401,12 +401,7 @@ const prepareProductionDeploy = async ({
   options: DeployOptionValues
   command: BaseCommand
 }) => {
-  if (
-    typeof siteData.published_deploy === 'object' &&
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain -- FIXME: a non-object `published_deploy` must not count as locked
-    siteData.published_deploy !== null &&
-    siteData.published_deploy.locked
-  ) {
+  if (siteData.published_deploy?.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
 
     const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [], command)
