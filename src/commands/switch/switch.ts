@@ -17,46 +17,38 @@ interface StoredUser {
   email: string
 }
 
+const formatUser = ({ email, name }: StoredUser) => (name ? `${name} (${email})` : email)
+
 export const switchCommand = async (options: SwitchOptionValues, command: BaseCommand) => {
   // FIXME(@netlify/dev-utils): `GlobalConfigStore` values are untyped
-  const users = (command.netlify.globalConfig.get('users') || {}) as Record<string, StoredUser>
-  const availableUsersChoices = Object.values(users).reduce<Record<string, string>>(
-    (prev, current) =>
-      Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }),
-    {},
-  )
+  const users = Object.values((command.netlify.globalConfig.get('users') || {}) as Record<string, StoredUser>)
 
   if (options.email) {
-    const matchedUser = Object.values(users).find((user) => user.email === options.email)
+    const matchedUser = users.find((user) => user.email === options.email)
     if (matchedUser) {
       command.netlify.globalConfig.set('userId', matchedUser.id)
       log('')
-      log(`You're now using ${chalk.bold(availableUsersChoices[matchedUser.id])}.`)
+      log(`You're now using ${chalk.bold(formatUser(matchedUser))}.`)
       return
     }
     log(`No account found matching ${chalk.bold(options.email)}, showing all available accounts.`)
     log('')
   }
 
-  const { accountSwitchChoice } = await inquirer.prompt<{ accountSwitchChoice: string }>([
+  const { accountSwitchChoice } = await inquirer.prompt<{ accountSwitchChoice: StoredUser | typeof LOGIN_NEW }>([
     {
       type: 'list',
       name: 'accountSwitchChoice',
       message: 'Please select the account you want to use:',
-      choices: [...Object.entries(availableUsersChoices).map(([, val]) => val), LOGIN_NEW],
+      choices: [...users.map((user) => ({ name: formatUser(user), value: user })), LOGIN_NEW],
     },
   ])
 
   if (accountSwitchChoice === LOGIN_NEW) {
     await login({ new: true }, command)
   } else {
-    const selectedAccount = Object.entries(availableUsersChoices).find(
-      ([, availableUsersChoice]) => availableUsersChoice === accountSwitchChoice,
-    )
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    command.netlify.globalConfig.set('userId', selectedAccount[0])
+    command.netlify.globalConfig.set('userId', accountSwitchChoice.id)
     log('')
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    log(`You're now using ${chalk.bold(selectedAccount[1])}.`)
+    log(`You're now using ${chalk.bold(formatUser(accountSwitchChoice))}.`)
   }
 }

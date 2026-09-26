@@ -757,13 +757,8 @@ export default class BaseCommand extends Command {
     // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
     // deploy by name along with by id
     let siteData = siteInfo
-    if (!siteData.url && flags.site) {
-      // FIXME: `netlify open --site` is a boolean flag, so this can be `true`
-      const result = await getSiteByName(api, flags.site as string)
-      if (result == null) {
-        return logAndThrowError(`Project with name "${flags.site}" not found`)
-      }
-      siteData = result
+    if (!siteData.url && typeof flags.site === 'string' && flags.site) {
+      siteData = await getSiteByName(api, flags.site)
     }
 
     if (siteData.id) {

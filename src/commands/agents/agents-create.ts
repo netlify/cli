@@ -5,7 +5,7 @@ import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpe
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
-import { validatePrompt, validateAgent, formatStatus, getAgentName } from './utils.js'
+import { validatePrompt, validateAgent, formatStatus, getAgentName, getResponseErrorMessage } from './utils.js'
 import { AVAILABLE_AGENTS } from './constants.js'
 
 interface AgentCreateOptions extends OptionValues {
@@ -124,8 +124,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     )
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+      throw new Error(await getResponseErrorMessage(response))
     }
 
     const agentRunner = (await response.json()) as AgentRunner

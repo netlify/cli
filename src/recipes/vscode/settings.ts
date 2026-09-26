@@ -7,6 +7,11 @@ export type VSCodeSettings = Record<string, unknown>
 
 const toUnixPath = (path: string): string => path.replace(/\\/g, '/')
 
+const isSettingsObject = (value: JSONC.CommentJSONValue): value is JSONC.CommentObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const getEnablePaths = (value: unknown): unknown[] => (Array.isArray(value) ? value : [])
+
 export const applySettings = (
   existingSettings: VSCodeSettings,
   {
@@ -22,18 +27,19 @@ export const applySettings = (
   // TODO(serhalp): I'm not convinced we want to convert to Unix paths on Windows? Does this even work? Was this a
   // workaround for something, perhaps https://github.com/denoland/vscode_deno/pull/745?
   const relativeEdgeFunctionsPath = toUnixPath(posix.normalize(relative(repositoryRoot, edgeFunctionsPath)))
+
+  // Mutated in place to preserve comments attached to an existing array
+  const enablePaths = getEnablePaths(existingSettings['deno.enablePaths'])
+  if (!enablePaths.includes(relativeEdgeFunctionsPath)) {
+    enablePaths.push(relativeEdgeFunctionsPath)
+  }
+
   const settings = JSONC.assign(existingSettings, {
     'deno.enable': true,
-    'deno.enablePaths': existingSettings['deno.enablePaths'] || [],
+    'deno.enablePaths': enablePaths,
     'deno.unstable': true,
     'deno.importMap': '.netlify/edge-functions-import-map.json',
   })
-
-  // If the Edge Functions path isn't already in `deno.enabledPaths`, let's add
-  // it.
-  if (!(settings['deno.enablePaths'] as unknown[]).includes(relativeEdgeFunctionsPath)) {
-    ;(settings['deno.enablePaths'] as unknown[]).push(relativeEdgeFunctionsPath)
-  }
 
   // If the Deno CLI binary isn't globally installed, we need to set the path
   // to it in the settings file or the extension won't know where to find it.
@@ -55,10 +61,15 @@ export const getSettings = async (settingsPath: string): Promise<{ fileExists: b
     }
 
     const file = await readFile(settingsPath, 'utf8')
+    const settings = JSONC.parse(file)
+
+    if (!isSettingsObject(settings)) {
+      throw new Error(`${settingsPath} does not contain a JSON object.`)
+    }
 
     return {
       fileExists: true,
-      settings: JSONC.parse(file) as VSCodeSettings,
+      settings,
     }
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {

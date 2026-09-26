@@ -23,7 +23,7 @@
       "count": 2
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 5
+      "count": 4
     },
     "@typescript-eslint/no-unnecessary-type-parameters": {
       "count": 1
@@ -47,7 +47,7 @@
       "count": 17
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 5
+      "count": 4
     }
   },
   "src/commands/build/index.ts": {
@@ -199,15 +199,7 @@
       "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 3
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
-    }
-  },
-  "src/commands/logs/build.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
+      "count": 2
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
@@ -466,14 +458,6 @@
     }
   },
   "src/recipes/vscode/index.ts": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    },
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
-  "src/recipes/vscode/settings.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     }

@@ -4,7 +4,7 @@ import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpe
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
-import { formatStatus } from './utils.js'
+import { formatStatus, getResponseErrorMessage } from './utils.js'
 
 interface AgentStopOptions extends OptionValues {
   json?: boolean
@@ -35,8 +35,7 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
     )
 
     if (!statusResponse.ok) {
-      const errorData = (await statusResponse.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${statusResponse.status.toString()}: ${statusResponse.statusText}`)
+      throw new Error(await getResponseErrorMessage(statusResponse))
     }
 
     const agentRunner = (await statusResponse.json()) as AgentRunner
@@ -75,8 +74,7 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
     stopSpinner({ spinner: stopSpinnerInstance })
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+      throw new Error(await getResponseErrorMessage(response))
     }
 
     // Success case, 202 with empty body

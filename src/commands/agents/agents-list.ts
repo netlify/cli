@@ -5,7 +5,7 @@ import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpe
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
-import { formatDuration, formatStatus, truncateText, getAgentName } from './utils.js'
+import { formatDuration, formatStatus, truncateText, getAgentName, getResponseErrorMessage } from './utils.js'
 
 interface AgentListOptions extends OptionValues {
   status?: string
@@ -41,8 +41,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     )
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+      throw new Error(await getResponseErrorMessage(response))
     }
 
     const agentRunners = (await response.json()) as AgentRunner[] | null | undefined

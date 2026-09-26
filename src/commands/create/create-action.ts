@@ -24,7 +24,7 @@ import { track } from '../../utils/telemetry/index.js'
 import { extractZip } from '../../utils/zip.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from '../agents/types.js'
-import { validatePrompt, validateAgent, formatStatus } from '../agents/utils.js'
+import { validatePrompt, validateAgent, formatStatus, getResponseErrorMessage } from '../agents/utils.js'
 import type { SiteInfo } from '../../utils/types.js'
 
 const execFile = promisify(execFileCb)
@@ -204,11 +204,8 @@ const createGitHubRepo = async (
   )
 
   if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-    throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+    throw new Error(await getResponseErrorMessage(response))
   }
-
-  return (await response.json()) as SiteInfo
 }
 
 const PUSH_TERMINAL_STATES = ['complete', 'failed']
@@ -382,8 +379,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     })
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+      throw new Error(await getResponseErrorMessage(response))
     }
 
     agentRunner = (await response.json()) as AgentRunner
