@@ -1,8 +1,7 @@
-import type { OptionValues } from 'commander'
-
 import { chalk, exit, getToken, log, logAndThrowError } from '../../utils/command-helpers.js'
 import type { TokenLocation } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
+import type { LoginOptionValues } from './option_values.js'
 
 const msg = function (location: TokenLocation) {
   switch (location) {
@@ -17,14 +16,7 @@ const msg = function (location: TokenLocation) {
   }
 }
 
-interface LoginOptions extends OptionValues {
-  new?: boolean
-  request?: string
-  check?: string
-  json?: boolean
-}
-
-export const login = async (options: LoginOptions, command: BaseCommand) => {
+export const login = async (options: LoginOptionValues, command: BaseCommand) => {
   if (options.request && options.check) {
     return logAndThrowError('`--request` and `--check` are mutually exclusive')
   }

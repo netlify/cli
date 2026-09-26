@@ -2,23 +2,17 @@ import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
 import { getStore, type GetStoreOptions } from '@netlify/blobs'
-import type { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, isNodeError, log } from '../../utils/command-helpers.js'
 import { promptBlobSetOverwrite } from '../../utils/prompts/blob-set-prompt.js'
 import type BaseCommand from '../base-command.js'
-
-interface Options extends OptionValues {
-  input?: string
-  force?: string | boolean
-  region?: GetStoreOptions['region']
-}
+import type { BlobsSetOptionValues } from './option_values.js'
 
 export const blobsSet = async (
   storeName: string,
   key: string,
   valueParts: string[],
-  options: Options,
+  options: BlobsSetOptionValues,
   command: BaseCommand,
 ) => {
   const { api, siteInfo } = command.netlify
@@ -26,7 +20,7 @@ export const blobsSet = async (
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
-    region: options.region,
+    region: options.region as GetStoreOptions['region'],
     siteID: siteInfo.id,
     token: api.accessToken ?? '',
   })

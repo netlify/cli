@@ -1,23 +1,16 @@
 import { getStore, type GetStoreOptions } from '@netlify/blobs'
 import AsciiTable from 'ascii-table'
-import type { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { BlobsListOptionValues } from './option_values.js'
 
-interface Options extends OptionValues {
-  directories?: boolean
-  json?: boolean
-  prefix?: string
-  region?: GetStoreOptions['region']
-}
-
-export const blobsList = async (storeName: string, options: Options, command: BaseCommand) => {
+export const blobsList = async (storeName: string, options: BlobsListOptionValues, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
-    region: options.region,
+    region: options.region as GetStoreOptions['region'],
     siteID: siteInfo.id,
     token: api.accessToken ?? '',
   })

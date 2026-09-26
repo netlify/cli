@@ -1,7 +1,7 @@
 import terminalLink from 'terminal-link'
 
 import type BaseCommand from '../base-command.js'
-import type { InitOptionValues } from './init.js'
+import type { InitOptionValues } from './option_values.js'
 
 export const createInitCommand = (program: BaseCommand) =>
   program

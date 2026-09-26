@@ -6,7 +6,7 @@ import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
-import type { BaseOptionValues } from '../base-command.js'
+import type { InitOptionValues } from './option_values.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
@@ -208,15 +208,6 @@ const logExistingRepoSetupAndExit = ({
 
 type InitExitMessageCustomizer = (code: InitExitCode, defaultMessage: string) => string | undefined
 
-export type InitOptionValues = BaseOptionValues & {
-  disableLinking?: boolean | undefined
-  force?: boolean | undefined
-  gitRemoteName?: string | undefined
-  manual?: boolean | undefined
-  resetContext?: boolean | undefined
-  skipAgentSetup?: boolean | undefined
-}
-
 type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
@@ -279,7 +270,8 @@ export const init = async (
       command,
       error: repoData.error,
       state,
-      disableLinking: options.disableLinking ?? false,
+      // @ts-expect-error FIXME: `init` has no `--disable-linking` option
+      disableLinking: options.disableLinking ?? false, // eslint-disable-line @typescript-eslint/no-unsafe-assignment -- FIXME: see above
       customizeExitMessage,
     })
   }

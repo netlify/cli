@@ -1,6 +1,5 @@
-import type { OptionValues } from 'commander'
-
 import type BaseCommand from '../base-command.js'
+import type { CreateOptionValues } from './option_values.js'
 import { validateSiteName } from '../../utils/validation.js'
 
 export const createCreateCommand = (program: BaseCommand) => {
@@ -27,7 +26,7 @@ export const createCreateCommand = (program: BaseCommand) => {
       'netlify create "an e-commerce store" --git github',
       'netlify create "an e-commerce store" --no-wait',
     ])
-    .action(async (prompt: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (prompt: string, options: CreateOptionValues, command: BaseCommand) => {
       const { createAction } = await import('./create-action.js')
       await createAction(prompt, options, command)
     })

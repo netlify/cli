@@ -1,10 +1,15 @@
-import type { OptionValues } from 'commander'
-
 import { chalk } from '../../utils/command-helpers.js'
 import requiresSiteInfoWithProject from '../../utils/hooks/requires-site-info-with-project.js'
 import type BaseCommand from '../base-command.js'
+import type {
+  AgentsCreateOptionValues,
+  AgentsListOptionValues,
+  AgentsOptionValues,
+  AgentsShowOptionValues,
+  AgentsStopOptionValues,
+} from './option_values.js'
 
-const agents = (_options: OptionValues, command: BaseCommand) => {
+const agents = (_options: AgentsOptionValues, command: BaseCommand) => {
   command.help()
 }
 
@@ -28,7 +33,7 @@ export const createAgentsCommand = (program: BaseCommand) => {
       'netlify agents:create -p "Update README" -a codex -b feature-branch',
       'netlify agents:create "Add tests" --project my-site-name',
     ])
-    .action(async (prompt: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (prompt: string, options: AgentsCreateOptionValues, command: BaseCommand) => {
       const { agentsCreate } = await import('./agents-create.js')
       await agentsCreate(prompt, options, command)
     })
@@ -41,7 +46,7 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
     .addExamples(['netlify agents:list', 'netlify agents:list --status running', 'netlify agents:list --json'])
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: AgentsListOptionValues, command: BaseCommand) => {
       const { agentsList } = await import('./agents-list.js')
       await agentsList(options, command)
     })
@@ -57,7 +62,7 @@ export const createAgentsCommand = (program: BaseCommand) => {
       'netlify agents:show 60c7c3b3e7b4a0001f5e4b3a',
       'netlify agents:show 60c7c3b3e7b4a0001f5e4b3a --json',
     ])
-    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (id: string, options: AgentsShowOptionValues, command: BaseCommand) => {
       const { agentsShow } = await import('./agents-show.js')
       await agentsShow(id, options, command)
     })
@@ -70,7 +75,7 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .option('--project <project>', 'project ID or name (if not in a linked directory)')
     .hook('preAction', requiresSiteInfoWithProject)
     .addExamples(['netlify agents:stop 60c7c3b3e7b4a0001f5e4b3a'])
-    .action(async (id: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (id: string, options: AgentsStopOptionValues, command: BaseCommand) => {
       const { agentsStop } = await import('./agents-stop.js')
       await agentsStop(id, options, command)
     })

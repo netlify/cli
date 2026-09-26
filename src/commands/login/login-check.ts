@@ -1,15 +1,16 @@
 import { NetlifyAPI } from '@netlify/api'
-import type { OptionValues } from 'commander'
 
 import { log, logAndThrowError, logJson } from '../../utils/command-helpers.js'
 import { storeToken } from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
+import type { LoginOptionValues } from './option_values.js'
 
 export const loginCheck = async (
-  options: OptionValues,
+  options: LoginOptionValues,
   apiOpts: NetlifyOptions['apiOpts'],
   globalConfig: NetlifyOptions['globalConfig'],
 ) => {
+  // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style -- FIXME: only called once `login` has checked that `--check` is set
   const ticketId = options.check as string
 
   const api = new NetlifyAPI('', apiOpts)

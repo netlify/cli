@@ -1,16 +1,11 @@
-import type { OptionValues } from 'commander'
-
 import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
+import type { AgentsShowOptionValues } from './option_values.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
 import { formatDate, formatDuration, formatStatus, getAgentName } from './utils.js'
 
-interface AgentShowOptions extends OptionValues {
-  json?: boolean
-}
-
-export const agentsShow = async (id: string, options: AgentShowOptions, command: BaseCommand) => {
+export const agentsShow = async (id: string, options: AgentsShowOptionValues, command: BaseCommand) => {
   const { api, site, siteInfo, apiOpts } = command.netlify
 
   await command.authenticate()

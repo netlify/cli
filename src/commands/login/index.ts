@@ -1,7 +1,7 @@
-import type { OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
 import type BaseCommand from '../base-command.js'
+import type { LoginOptionValues } from './option_values.js'
 
 export const createLoginCommand = (program: BaseCommand) =>
   program
@@ -20,7 +20,7 @@ Opens a web browser to acquire an OAuth token.`,
 For more information about Netlify authentication, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: LoginOptionValues, command: BaseCommand) => {
       const { login } = await import('./login.js')
       await login(options, command)
     })
