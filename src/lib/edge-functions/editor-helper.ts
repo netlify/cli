@@ -3,27 +3,17 @@ import { env, stdin, stdout } from 'process'
 import inquirer from 'inquirer'
 
 import { runRecipe } from '../../commands/recipes/recipes.js'
-import type {
-  NormalizedCachedConfigConfig,
-  chalk as helpersChalk,
-  log as helpersLog,
-} from '../../utils/command-helpers.js'
+import { NETLIFYDEVLOG, type NormalizedCachedConfigConfig, chalk, log } from '../../utils/command-helpers.js'
 import type { LocalState } from '../../utils/types.js'
 
 const STATE_PROMPT_PROPERTY = 'promptVSCodeSettings'
 
 export const promptEditorHelper = async ({
-  NETLIFYDEVLOG,
-  chalk,
   config,
-  log,
   repositoryRoot,
   state,
 }: {
-  NETLIFYDEVLOG: string
-  chalk: typeof helpersChalk
   config: NormalizedCachedConfigConfig
-  log: typeof helpersLog
   repositoryRoot: string
   state: LocalState
 }) => {
