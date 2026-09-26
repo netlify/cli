@@ -83,7 +83,7 @@ const uploadFiles = async (
   if (!concurrentUpload || !maxRetry) throw new Error('Missing required option concurrentUpload')
   statusCb({
     type: 'upload',
-    msg: `Uploading ${uploadList.length} files`,
+    msg: `Uploading ${uploadList.length.toString()} files`,
     phase: 'start',
   })
 
@@ -95,7 +95,7 @@ const uploadFiles = async (
 
     statusCb({
       type: 'upload',
-      msg: `(${index}/${uploadList.length}) Uploading ${normalizedPath}...`,
+      msg: `(${index.toString()}/${uploadList.length.toString()}) Uploading ${normalizedPath}...`,
       phase: 'progress',
     })
 
@@ -170,7 +170,7 @@ const uploadFiles = async (
   const results = await pMap(uploadList, uploadFile, { concurrency: concurrentUpload })
   statusCb({
     type: 'upload',
-    msg: `Finished uploading ${uploadList.length} assets`,
+    msg: `Finished uploading ${uploadList.length.toString()} assets`,
     phase: 'stop',
   })
   return results

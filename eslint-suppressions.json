@@ -202,14 +202,6 @@
       "count": 1
     }
   },
-  "src/commands/logs/build.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
-    }
-  },
   "src/commands/logs/index.ts": {
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
@@ -520,7 +512,7 @@
       "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 6
+      "count": 3
     }
   },
   "src/utils/deploy/deploy-source.ts": {
@@ -549,9 +541,6 @@
   "src/utils/deploy/upload-files.ts": {
     "@typescript-eslint/prefer-promise-reject-errors": {
       "count": 3
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 4
     }
   },
   "src/utils/deploy/upload-source-zip.ts": {
@@ -579,9 +568,6 @@
     }
   },
   "src/utils/dev.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
-    },
     "@typescript-eslint/non-nullable-type-assertion-style": {
       "count": 1
     },
@@ -589,7 +575,7 @@
       "count": 2
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 2
+      "count": 1
     }
   },
   "src/utils/dot-env.ts": {

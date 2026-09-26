@@ -190,9 +190,8 @@ function isInternal(url?: string): boolean {
   return url?.startsWith('/.netlify/') ?? false
 }
 
-function isFunction(functionsPort: boolean | number | undefined, url: string | undefined) {
-  // @ts-expect-error FIXME: throws when `url` is undefined
-  return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
+function isFunction(functionsPort: boolean | number | undefined, url: string | undefined): boolean {
+  return Boolean(functionsPort) && url !== undefined && DEFAULT_FUNCTION_URL_EXPRESSION.test(url)
 }
 
 function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessage) {
@@ -540,8 +539,7 @@ const serveRedirect = async function ({
 
 const reqToURL = function (req: Request, pathname: string | undefined) {
   return new URL(
-    // @ts-expect-error FIXME: an undefined `pathname` resolves to `/undefined`
-    pathname,
+    pathname ?? '',
     `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
       req.headers.host || req.hostname
     }`,
@@ -735,8 +733,7 @@ const initializeProxy = async function ({
     }
 
     const responseData: Buffer[] = []
-    // @ts-expect-error FIXME: an undefined `req.url` resolves to `/undefined`
-    const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
+    const requestURL = new URL(req.url ?? '', `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
     const configInjections = config.dev?.processing?.html?.injections ?? []
@@ -839,8 +836,7 @@ const initializeProxy = async function ({
 
   const handlers: ProxyHandlers = {
     web: (req, res, options) => {
-      // @ts-expect-error FIXME: an undefined `req.url` resolves to `/undefined`
-      const requestURL = new URL(req.url, 'http://127.0.0.1')
+      const requestURL = new URL(req.url ?? '', 'http://127.0.0.1')
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress

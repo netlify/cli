@@ -3,7 +3,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentsShowOptionValues } from './option_values.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
-import { formatDate, formatDuration, formatStatus, getAgentName } from './utils.js'
+import { formatDate, formatDuration, formatStatus, getAgentName, getResponseErrorMessage } from './utils.js'
 
 export const agentsShow = async (id: string, options: AgentsShowOptionValues, command: BaseCommand) => {
   const { api, site, siteInfo, apiOpts } = command.netlify
@@ -29,8 +29,7 @@ export const agentsShow = async (id: string, options: AgentsShowOptionValues, co
     )
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+      throw new Error(await getResponseErrorMessage(response))
     }
 
     const agentRunner = (await response.json()) as AgentRunner

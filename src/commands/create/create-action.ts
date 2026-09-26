@@ -23,7 +23,7 @@ import { track } from '../../utils/telemetry/index.js'
 import { extractZip } from '../../utils/zip.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from '../agents/types.js'
-import { validatePrompt, validateAgent, formatStatus } from '../agents/utils.js'
+import { validatePrompt, validateAgent, formatStatus, getResponseErrorMessage } from '../agents/utils.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type { CreateOptionValues } from './option_values.js'
 
@@ -190,8 +190,7 @@ const createGitHubRepo = async (
   )
 
   if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-    throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+    throw new Error(await getResponseErrorMessage(response))
   }
 
   return (await response.json()) as SiteInfo
@@ -369,8 +368,7 @@ export const createAction = async (promptArg: string, options: Partial<CreateOpt
     })
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+      throw new Error(await getResponseErrorMessage(response))
     }
 
     agentRunner = (await response.json()) as AgentRunner
