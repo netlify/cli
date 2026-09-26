@@ -79,7 +79,7 @@ export const run = async ({ config, repositoryRoot }: RunRecipeOptions) => {
     if (!(await hasDenoVSCodeExt(repositoryRoot))) {
       const denoExtConfirm = await getDenoExtPrompt()
       if (denoExtConfirm) {
-        getDenoVSCodeExt(repositoryRoot)
+        await getDenoVSCodeExt(repositoryRoot)
       }
     }
   } catch {
