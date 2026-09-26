@@ -1,11 +1,18 @@
-import type { OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
 import { chalk } from '../../utils/command-helpers.js'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
 import type BaseCommand from '../base-command.js'
+import type {
+  FunctionsBuildOptionValues,
+  FunctionsCreateOptionValues,
+  FunctionsInvokeOptionValues,
+  FunctionsListOptionValues,
+  FunctionsOptionValues,
+  FunctionsServeOptionValues,
+} from './option_values.js'
 
-const functions = (_options: OptionValues, command: BaseCommand) => {
+const functions = (_options: FunctionsOptionValues, command: BaseCommand) => {
   command.help()
 }
 
@@ -16,7 +23,7 @@ export const createFunctionsCommand = (program: BaseCommand) => {
     .description('Build functions locally')
     .option('-f, --functions <directory>', 'Specify a functions directory to build to')
     .option('-s, --src <directory>', 'Specify the source directory for the functions')
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: FunctionsBuildOptionValues, command: BaseCommand) => {
       const { functionsBuild } = await import('./functions-build.js')
       await functionsBuild(options, command)
     })
@@ -37,7 +44,7 @@ export const createFunctionsCommand = (program: BaseCommand) => {
       'netlify functions:create --name hello-world',
       'netlify functions:create --language typescript --template hello-world',
     ])
-    .action(async (name: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (name: string, options: FunctionsCreateOptionValues, command: BaseCommand) => {
       const { functionsCreate } = await import('./functions-create.js')
       await functionsCreate(name, options, command)
     })
@@ -74,7 +81,7 @@ export const createFunctionsCommand = (program: BaseCommand) => {
       'netlify functions:invoke myfunction --querystring "foo=1',
       'netlify functions:invoke myfunction --payload "./pathTo.json"',
     ])
-    .action(async (name: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (name: string, options: FunctionsInvokeOptionValues, command: BaseCommand) => {
       const { functionsInvoke } = await import('./functions-invoke.js')
       await functionsInvoke(name, options, command)
     })
@@ -91,7 +98,7 @@ NOT the same as listing the functions that have been deployed. For that info you
     .option('-f, --functions <dir>', 'Specify a functions directory to list')
     .option('--json', 'Output function data as JSON')
     .hook('preAction', requiresSiteInfo)
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: FunctionsListOptionValues, command: BaseCommand) => {
       const { functionsList } = await import('./functions-list.js')
       await functionsList(options, command)
     })
@@ -104,7 +111,7 @@ NOT the same as listing the functions that have been deployed. For that info you
     .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
     .option('-o, --offline', 'Disables any features that require network access')
     .addHelpText('after', 'Helpful for debugging functions.')
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: FunctionsServeOptionValues, command: BaseCommand) => {
       const { functionsServe } = await import('./functions-serve.js')
       await functionsServe(options, command)
     })

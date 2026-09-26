@@ -119,7 +119,7 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
 
 interface GetSiteInformationOptions {
   api: NetlifyAPI
-  offline: boolean
+  offline: boolean | undefined
   site: { id?: string }
   siteInfo: SiteInfo
 }

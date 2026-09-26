@@ -1,10 +1,11 @@
-import { Option, type OptionValues } from 'commander'
+import { Option } from 'commander'
 import terminalLink from 'terminal-link'
 
 import { BANG, chalk } from '../../utils/command-helpers.js'
 import { normalizeContext } from '../../utils/env/index.js'
 import { getGeoCountryArgParser } from '../../utils/validation.js'
 import type BaseCommand from '../base-command.js'
+import type { DevOptionValues } from './option_values.js'
 
 const validateShortFlagArgs = (args: string) => {
   if (args.startsWith('=')) {
@@ -114,7 +115,7 @@ export const createDevCommand = (program: BaseCommand) => {
 For more information about Netlify local development, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: DevOptionValues, command: BaseCommand) => {
       const { dev } = await import('./dev.js')
       await dev(options, command)
     })

@@ -8,6 +8,8 @@ interface SiteOptionValues {
   siteId?: string
 }
 
+export type EnvOptionValues = BaseOptionValues
+
 export type EnvGetOptionValues = BaseOptionValues &
   SiteOptionValues & {
     context: string
@@ -32,6 +34,7 @@ export type EnvListOptionValues = BaseOptionValues &
 export type EnvSetOptionValues = BaseOptionValues &
   SiteOptionValues & {
     context?: string[]
+    // Declared at runtime via `CI_FORCED_COMMANDS` in src/commands/main.ts
     force?: boolean
     json?: boolean
     scope?: UserProvidedScope[]
@@ -41,11 +44,13 @@ export type EnvSetOptionValues = BaseOptionValues &
 export type EnvUnsetOptionValues = BaseOptionValues &
   SiteOptionValues & {
     context?: string[]
+    // Declared at runtime via `CI_FORCED_COMMANDS` in src/commands/main.ts
     force?: boolean
     json?: boolean
   }
 
 export type EnvCloneOptionValues = BaseOptionValues & {
+  // Declared at runtime via `CI_FORCED_COMMANDS` in src/commands/main.ts
   force?: boolean
   from?: string
   to: string

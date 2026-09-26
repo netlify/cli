@@ -884,7 +884,7 @@ const printResults = ({
 }: {
   deployToProduction: boolean
   uploadSourceZip: boolean
-  json: boolean
+  json: boolean | undefined
   results: Awaited<ReturnType<typeof prepAndRunDeploy>>
   runBuildCommand: boolean
 }): void => {
@@ -1060,6 +1060,7 @@ const prepAndRunDeploy = async ({
     functionsFolder: functionsFolderStat && functionsFolder,
     options,
     packagePath: command.workspacePackage,
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- FIXME: `??` would be equivalent, as `--json` is never `false`
     silent: options.json || Boolean(options.silent),
     site,
     siteData,
@@ -1518,6 +1519,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     json: options.json,
     results,
     deployToProduction,
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion -- FIXME: `--upload-source-zip` defaults to `false`, so this is already a boolean
     uploadSourceZip: !!options.uploadSourceZip,
   })
 

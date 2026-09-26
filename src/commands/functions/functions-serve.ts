@@ -1,7 +1,5 @@
 import { join } from 'path'
 
-import type { OptionValues } from 'commander'
-
 import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 
 import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
@@ -18,16 +16,11 @@ import {
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
 import type BaseCommand from '../base-command.js'
+import type { FunctionsServeOptionValues } from './option_values.js'
 
 const DEFAULT_PORT = 9999
 
-// FIXME: `debug` and `offline` are `undefined` when their flags are omitted, but are passed on where booleans are expected
-interface FunctionsServeOptions extends OptionValues {
-  functions?: string
-  port?: number
-}
-
-export const functionsServe = async (options: FunctionsServeOptions, command: BaseCommand) => {
+export const functionsServe = async (options: FunctionsServeOptionValues, command: BaseCommand) => {
   const { api, config, site, siteInfo, state } = command.netlify
 
   const functionsDir = getFunctionsDir({ options, config }, join('netlify', 'functions'))
@@ -88,8 +81,9 @@ export const functionsServe = async (options: FunctionsServeOptions, command: Ba
     capabilities,
     timeouts,
     generatedFunctions: [],
-    // FIXME: `functions:serve` has no `--geo` or `--country` flags, so these are always `undefined`
+    // @ts-expect-error FIXME: `functions:serve` has no `--geo` option, so this is always `undefined`
     geolocationMode: options.geo,
+    // @ts-expect-error FIXME: `functions:serve` has no `--country` option
     geoCountry: options.country,
     offline: options.offline,
     state,
