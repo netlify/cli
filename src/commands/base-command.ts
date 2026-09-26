@@ -706,10 +706,14 @@ export default class BaseCommand extends Command {
         process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }
 
+    if (flags.httpProxy === true) {
+      return logAndThrowError('`--http-proxy` requires a proxy server address')
+    }
+    if (flags.httpProxyCertificateFilename === true) {
+      return logAndThrowError('`--http-proxy-certificate-filename` requires a file path')
+    }
     const agent = await getAgent({
-      // @ts-expect-error FIXME: a bare `--http-proxy` is `true`, which is then parsed as the URL "true"
       httpProxy: flags.httpProxy,
-      // @ts-expect-error FIXME: a bare `--http-proxy-certificate-filename` is `true`, which is then read as the file "true"
       certificateFile: flags.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }
