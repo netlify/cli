@@ -106,9 +106,9 @@ export const initializeProxy = async ({
   command: BaseCommand
   config: NormalizedCachedConfigConfig
   configPath?: string | undefined
-  debug: boolean
+  debug: boolean | undefined
   env: EnvironmentVariables
-  offline: boolean
+  offline: boolean | undefined
   geoCountry?: string | undefined
   geolocationMode: GeolocationMode
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
@@ -229,7 +229,7 @@ const prepareServer = async ({
   command: BaseCommand
   config: NormalizedCachedConfigConfig
   configPath?: string | undefined
-  debug: boolean
+  debug: boolean | undefined
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>

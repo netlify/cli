@@ -306,15 +306,12 @@ export const dev = async (options: DevOptionValues, command: BaseCommand) => {
     blobsContext,
     command,
     config: mutatedConfig,
-    // @ts-expect-error FIXME: `options.debug` is `undefined` when `--debug` is omitted, but `startProxyServer` expects a boolean
     debug: options.debug,
-    // @ts-expect-error FIXME: `options.internalDisableEdgeFunctions` is `undefined` when the flag is omitted, but `startProxyServer` expects a boolean
     disableEdgeFunctions: options.internalDisableEdgeFunctions,
     projectDir: command.workingDir,
     env,
     getUpdatedConfig,
     inspectSettings,
-    // @ts-expect-error FIXME: `options.offline` is `undefined` when `--offline` is omitted, but `startProxyServer` expects a boolean
     offline: options.offline,
     settings,
     site,
