@@ -1,7 +1,6 @@
-import type { OptionValues } from 'commander'
-
 import type BaseCommand from '../base-command.js'
 import { normalizeContext } from '../../utils/env/index.js'
+import type { DevExecOptionValues } from './option_values.js'
 
 export const createDevExecCommand = (program: BaseCommand) =>
   program
@@ -22,7 +21,7 @@ export const createDevExecCommand = (program: BaseCommand) =>
       'netlify dev:exec --context deploy-preview npm run bootstrap # Run with env var values from deploy-preview context',
       'netlify dev:exec --context branch:feat/make-it-pop npm run bootstrap # Run with env var values from the feat/make-it-pop branch context or branch-deploy context',
     ])
-    .action(async (cmd: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (cmd: string, options: DevExecOptionValues, command: BaseCommand) => {
       const { devExec } = await import('./dev-exec.js')
       await devExec(cmd, options, command)
     })

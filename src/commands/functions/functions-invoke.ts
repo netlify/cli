@@ -3,23 +3,14 @@ import { createRequire } from 'module'
 import path from 'path'
 
 import { select } from '@inquirer/prompts'
-import type { OptionValues } from 'commander'
 import fetch from 'node-fetch'
 
 import { NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, type LocalFunction, getFunctions } from '../../utils/functions/index.js'
 import type BaseCommand from '../base-command.js'
+import type { FunctionsInvokeOptionValues } from './option_values.js'
 
 const require = createRequire(import.meta.url)
-
-interface FunctionsInvokeOptions extends OptionValues {
-  name?: string
-  functions?: string
-  querystring?: string
-  payload?: string
-  identity?: boolean
-  port?: number
-}
 
 // https://docs.netlify.com/functions/trigger-on-events/
 const events = [
@@ -99,7 +90,7 @@ const processPayloadFromFlag = function (
  */
 const getNameFromArgs = async function (
   functions: LocalFunction[],
-  options: FunctionsInvokeOptions,
+  options: FunctionsInvokeOptionValues,
   argumentName: string | undefined,
 ): Promise<string> {
   const functionToTrigger = getFunctionToTrigger(options, argumentName)
@@ -126,7 +117,7 @@ const getNameFromArgs = async function (
 /**
  * get the function name out of the argument or options
  */
-const getFunctionToTrigger = function (options: FunctionsInvokeOptions, argumentName: string | undefined) {
+const getFunctionToTrigger = function (options: FunctionsInvokeOptionValues, argumentName: string | undefined) {
   if (options.name) {
     if (argumentName) {
       console.error('function name specified in both flag and arg format, pick one')
@@ -141,7 +132,7 @@ const getFunctionToTrigger = function (options: FunctionsInvokeOptions, argument
 
 export const functionsInvoke = async (
   nameArgument: string | undefined,
-  options: FunctionsInvokeOptions,
+  options: FunctionsInvokeOptionValues,
   command: BaseCommand,
 ) => {
   const { config, relConfigFilePath } = command.netlify

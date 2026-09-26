@@ -266,7 +266,7 @@ interface GetFunctionsServerOptions {
   siteInfo?: SiteInfo
   accountId?: string | undefined
   geoCountry?: string | undefined
-  offline: boolean
+  offline: boolean | undefined
   state: LocalState
   config: NormalizedCachedConfigConfig
   geolocationMode: 'cache' | 'update' | 'mock'
@@ -307,7 +307,7 @@ export const startFunctionsServer = async (
     capabilities: {
       backgroundFunctions?: boolean
     }
-    debug: boolean
+    debug: boolean | undefined
     generatedFunctions: GeneratedFunction[]
     loadDistFunctions?: boolean
     settings: FunctionsSettings
@@ -419,7 +419,7 @@ const startWebServer = async ({
   server,
   settings,
 }: {
-  debug: boolean
+  debug: boolean | undefined
   server: ReturnType<Awaited<typeof getFunctionsServer>>
   settings: FunctionsSettings
 }) => {

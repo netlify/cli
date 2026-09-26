@@ -1,17 +1,12 @@
 import AsciiTable from 'ascii-table'
-import type { OptionValues } from 'commander'
 
 import { exit, log, logJson } from '../../utils/command-helpers.js'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.js'
 import type BaseCommand from '../base-command.js'
+import type { FunctionsListOptionValues } from './option_values.js'
 
 interface DeployedFunction {
   n?: string
-}
-
-interface FunctionsListOptions extends OptionValues {
-  functions?: string
-  json?: boolean
 }
 
 const normalizeFunction = function (
@@ -28,7 +23,7 @@ const normalizeFunction = function (
   return { name, url, isDeployed }
 }
 
-export const functionsList = async (options: FunctionsListOptions, command: BaseCommand) => {
+export const functionsList = async (options: FunctionsListOptionValues, command: BaseCommand) => {
   const { config, relConfigFilePath, siteInfo } = command.netlify
 
   // @ts-expect-error FIXME(@netlify/api): `available_functions` is missing from the deploy type

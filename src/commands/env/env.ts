@@ -1,4 +1,4 @@
-import { type OptionValues, Option } from 'commander'
+import { Option } from 'commander'
 import terminalLink from 'terminal-link'
 
 import { normalizeContext } from '../../utils/env/index.js'
@@ -8,11 +8,12 @@ import type {
   EnvGetOptionValues,
   EnvImportOptionValues,
   EnvListOptionValues,
+  EnvOptionValues,
   EnvSetOptionValues,
   EnvUnsetOptionValues,
 } from './option_values.js'
 
-const env = (_options: OptionValues, command: BaseCommand) => {
+const env = (_options: EnvOptionValues, command: BaseCommand) => {
   command.help()
 }
 
