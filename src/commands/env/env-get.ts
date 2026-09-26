@@ -17,8 +17,7 @@ export const envGet = async (name: string, options: EnvGetOptionValues, command:
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
   const env = await getEnvelopeEnv({ api, context, env: cachedConfig.env, key: name, scope, siteInfo })
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: `env` has no entry for an unset `name`
-  const { value } = env[name] || {}
+  const value = Object.hasOwn(env, name) ? env[name].value : undefined
 
   // Return json response for piping commands
   if (options.json) {
