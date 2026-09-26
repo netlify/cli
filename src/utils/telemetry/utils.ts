@@ -6,9 +6,7 @@ import getCLIPackageJson from '../get-cli-package-json.js'
 
 export const { version: cliVersion } = await getCLIPackageJson()
 
-export const isTelemetryDisabled = function (config: GlobalConfigStore): unknown {
-  return config.get('telemetryDisabled')
-}
+export const isTelemetryDisabled = (config: GlobalConfigStore): boolean => Boolean(config.get('telemetryDisabled'))
 
 const isEnabledFlag = (value: string | undefined) => value !== undefined && !['', '0', 'false'].includes(value)
 

@@ -27,7 +27,7 @@ const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spin
     // if build.error
     // @TODO implement build error messages into this
 
-    if (!currentBuilds || currentBuilds.length === 0) {
+    if (currentBuilds.length === 0) {
       stopSpinner({ spinner })
       return true
     }

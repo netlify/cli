@@ -140,7 +140,7 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
         }
       }
 
-      if (!matchingSites || matchingSites.length === 0) {
+      if (matchingSites.length === 0) {
         return logAndThrowError(`No project names found containing '${searchTerm}'.
 
 To search for projects:
@@ -154,7 +154,7 @@ To create a new project:
       }
 
       if (matchingSites.length > 1) {
-        log(`Found ${matchingSites.length} matching projects!`)
+        log(`Found ${matchingSites.length.toString()} matching projects!`)
         const selectedSite = await select<SiteInfo | undefined>({
           message: 'Which project do you want to link?',
           choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
@@ -181,7 +181,7 @@ To create a new project:
         return logAndThrowError(error_)
       }
 
-      if (!sites || sites.length === 0) {
+      if (sites.length === 0) {
         return logAndThrowError(
           `You don't have any projects yet. Run ${chalk.cyanBright(
             `${netlifyCommand()} sites:create`,

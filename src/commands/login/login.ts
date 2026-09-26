@@ -29,7 +29,7 @@ export const login = async (options: LoginOptionValues, command: BaseCommand) =>
 
   if (options.check) {
     const { loginCheck } = await import('./login-check.js')
-    await loginCheck(options, command.netlify.apiOpts, command.netlify.globalConfig)
+    await loginCheck(options.check, command.netlify.apiOpts, command.netlify.globalConfig)
     return
   }
 

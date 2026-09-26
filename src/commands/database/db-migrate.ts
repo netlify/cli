@@ -11,7 +11,7 @@ import type { DbMigrationsApplyOptionValues } from './option_values.js'
 
 export const migrate = async (options: DbMigrationsApplyOptionValues, command: BaseCommand) => {
   const { to: name, json } = options
-  const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
+  const buildDir = command.netlify.site.root
   if (!buildDir) {
     throw new Error('Could not determine the project root directory.')
   }
