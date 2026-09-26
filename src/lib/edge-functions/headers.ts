@@ -25,10 +25,7 @@ export const headers = {
  * that the bootstrap layer can understand.
  */
 export const getFeatureFlagsHeader = (featureFlags: string[]): string => {
-  const featureFlagsObject = featureFlags.reduce<Record<string, boolean>>(
-    (acc, flagName) => ({ ...acc, [flagName]: true }),
-    {},
-  )
+  const featureFlagsObject = Object.fromEntries(featureFlags.map((flagName) => [flagName, true]))
 
   return Buffer.from(JSON.stringify(featureFlagsObject)).toString('base64')
 }

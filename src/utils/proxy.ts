@@ -107,11 +107,11 @@ interface ProxyRequest extends Request {
   proxyOptions?: ProxyOptions
   alternativePaths?: string[]
   __expectHeader?: string | undefined
-  [shouldGenerateETag]?: (response: { statusCode: number }) => unknown
+  [shouldGenerateETag]?: (response: { statusCode: number }) => boolean
 }
 
 interface ProxyHandlers {
-  web: (req: ProxyRequest, res: ServerResponse, options: ProxyOptions) => unknown
+  web: (req: ProxyRequest, res: ServerResponse, options: ProxyOptions) => void
   ws: (req: http.IncomingMessage, socket: Duplex, head: Buffer, options: ProxyOptions) => void
 }
 
@@ -271,8 +271,7 @@ const alternativePathsFor = function (url: string): string[] {
   }
 
   const paths = []
-  // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with -- FIXME: `endsWith` differs for non-string values
-  if (url[url.length - 1] === '/') {
+  if (url.endsWith('/')) {
     const end = url.length - 1
     if (url !== '/') {
       paths.push(`${url.slice(0, end)}.html`, `${url.slice(0, end)}.htm`)
@@ -304,7 +303,7 @@ const serveRedirect = async function ({
   siteInfo,
 }: {
   env: EnvironmentVariables
-  functionsRegistry?: FunctionsRegistry | null | undefined
+  functionsRegistry?: FunctionsRegistry | undefined
   imageProxy: ImageProxy
   match: MatchResult | null
   options: RoutingProxyOptions
@@ -313,10 +312,11 @@ const serveRedirect = async function ({
   res: ServerResponse
   siteInfo: SiteInfo
 }) {
-  if (!match) return proxy.web(req, res, options)
+  if (!match) {
+    proxy.web(req, res, options)
+    return
+  }
 
-  // FIXME: `options` is always set by callers, so neither fallback applies
-  options = options || req.proxyOptions || {}
   options.match = null
 
   if (match.type === 'forcedNotFound') {
@@ -351,7 +351,8 @@ const serveRedirect = async function ({
   }
 
   if (isFunction(options.functionsPort, req.url)) {
-    return proxy.web(req, res, { target: options.functionsServer })
+    proxy.web(req, res, { target: options.functionsServer })
+    return
   }
 
   const originalURL = req.url
@@ -371,7 +372,8 @@ const serveRedirect = async function ({
     req.url = encodeURI(decodeURI(pathname)) + reqUrl.search
     // if there is an existing static file and it is not a forced redirect, return the file
     if (!match.force) {
-      return proxy.web(req, res, { ...options, staticFile })
+      proxy.web(req, res, { ...options, staticFile })
+      return
     }
   }
 
@@ -425,14 +427,14 @@ const serveRedirect = async function ({
       !isInternal(destURL) &&
       (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
     ) {
-      return proxy.web(req, res, { target: options.functionsServer })
+      proxy.web(req, res, { target: options.functionsServer })
+      return
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
-    const matchingFunction =
-      functionsRegistry &&
-      // @ts-expect-error FIXME: `req.method` may be undefined and the static file callback returns a boolean, not a promise
-      (await functionsRegistry.getFunctionForURLPath(destURL, req.method, () => Boolean(destStaticFile)))
+    const matchingFunction = await functionsRegistry?.getFunctionForURLPath(destURL, req.method ?? '', () =>
+      Promise.resolve(Boolean(destStaticFile)),
+    )
     let statusValue
     if (
       match.force ||
@@ -456,15 +458,17 @@ const serveRedirect = async function ({
       req.headers['x-netlify-original-search'] = url.search
 
       // @ts-expect-error FIXME: sends the whole route object instead of its pattern in the function route header
-      return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
+      proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
+      return
     }
     if (isImageRequest(req)) {
       return imageProxy(req, res)
     }
-    return proxy.web(req, res, { ...options, status: statusValue })
+    proxy.web(req, res, { ...options, status: statusValue })
+    return
   }
 
-  return proxy.web(req, res, options)
+  proxy.web(req, res, options)
 }
 
 const reqToURL = function (req: Request, pathname: string | undefined) {
@@ -498,10 +502,12 @@ const initializeProxy = async function ({
   projectDir: string
   siteInfo: SiteInfo
 }): Promise<ProxyHandlers> {
+  // Kept as a reference so that the host can be switched later on; http-proxy shallow-copies its options per request.
+  // The fallbacks are what Node and http-proxy default to anyway.
+  const target = { host: host ?? 'localhost', port: port ?? 80 }
   const proxy = httpProxy.createProxyServer<ProxyRequest>({
     selfHandleResponse: true,
-    // @ts-expect-error FIXME: `host` and `port` may be undefined
-    target: { host, port },
+    target,
   })
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
@@ -515,15 +521,6 @@ const initializeProxy = async function ({
       existingHeadersFiles.map((headerFile) => path.relative(projectDir, headerFile)),
     )
     headers = await parseHeaders({ headersFiles, configPath, config })
-  })
-
-  // @ts-expect-error FIXME(@types/http-proxy): the undocumented `before()` hook is missing from the types
-  proxy.before('web', 'stream', (req: ProxyRequest) => {
-    // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
-    if (req.headers.expect) {
-      req.__expectHeader = req.headers.expect
-      delete req.headers.expect
-    }
   })
 
   proxy.on('error', (err, req, res, proxyUrl) => {
@@ -592,23 +589,24 @@ const initializeProxy = async function ({
       res.setHeader(NFRequestID, requestID)
     }
 
-    // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style -- FIXME: always set by `handlers.web`
-    const options = req.proxyOptions as ProxyOptions
+    const options = req.proxyOptions
+    // Always set on responses; Node only types it as optional because `IncomingMessage` also models requests
+    const proxyStatusCode = proxyRes.statusCode ?? 500
 
-    if (options.isChangingTarget) {
+    if (options?.isChangingTarget) {
       // got a response after switching the ipVer for host (and its not an error since we will be in on('error') handler) - let's remember this host now
+      if (options.targetHostname) {
+        target.host = options.targetHostname
+      }
 
-      // @ts-expect-error FIXME(@types/http-proxy): the internal `options` property is missing from the types
-      proxy.options.target.host = options.targetHostname
-
-      options.changeSettings?.({
+      options.changeSettings({
         frameworkHost: options.targetHostname,
         detectFrameworkHost: false,
       })
       console.log(`${NETLIFYDEVLOG} Switched host to ${options.targetHostname}`)
     }
 
-    if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
+    if (proxyStatusCode === 404 || proxyStatusCode === 403) {
       // If a request for `/path` has failed, we'll a few variations like
       // `/path/index.html` to mimic the CDN behavior.
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
@@ -617,7 +615,7 @@ const initializeProxy = async function ({
         // clearing them first, retries leak listeners and the closures retain per-attempt proxyReq objects.
         req.removeAllListeners('aborted')
         req.removeAllListeners('error')
-        proxy.web(req, res, req.proxyOptions)
+        proxy.web(req, res, options)
         return
       }
 
@@ -625,11 +623,11 @@ const initializeProxy = async function ({
       // rule (without `force`) that should kick in. This is how we mimic the
       // file shadowing behavior from the CDN.
       if (options?.match) {
-        return serveRedirect({
+        void serveRedirect({
           // We don't want to match functions at this point because any redirects
           // to functions will have already been processed, so we don't supply a
           // functions registry to `serveRedirect`.
-          functionsRegistry: null,
+          functionsRegistry: undefined,
           req,
           res,
           proxy: handlers,
@@ -639,16 +637,17 @@ const initializeProxy = async function ({
           siteInfo,
           env,
         })
+        return
       }
     }
 
-    if (options.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
+    if (options?.staticFile && isRedirect({ status: proxyStatusCode }) && proxyRes.headers.location) {
       req.url = proxyRes.headers.location
-      return serveRedirect({
+      void serveRedirect({
         // We don't want to match functions at this point because any redirects
         // to functions will have already been processed, so we don't supply a
         // functions registry to `serveRedirect`.
-        functionsRegistry: null,
+        functionsRegistry: undefined,
         req,
         res,
         proxy: handlers,
@@ -658,6 +657,7 @@ const initializeProxy = async function ({
         siteInfo,
         env,
       })
+      return
     }
 
     const responseData: Buffer[] = []
@@ -679,8 +679,7 @@ const initializeProxy = async function ({
       Object.entries(headersRules).forEach(([key, val]) => {
         res.setHeader(key, val)
       })
-      // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
-      res.writeHead(options.status || proxyRes.statusCode, proxyRes.headers)
+      res.writeHead(options?.status || proxyStatusCode, proxyRes.headers)
 
       proxyRes.on('data', function onData(data: Buffer) {
         res.write(data)
@@ -700,15 +699,11 @@ const initializeProxy = async function ({
     proxyRes.on('end', async function onEnd() {
       let responseBody: Buffer = Buffer.concat(responseData)
 
-      let responseStatus = options.status || proxyRes.statusCode
+      let responseStatus = options?.status || proxyStatusCode
 
       // `req[shouldGenerateETag]` may contain a function that determines
       // whether the response should have an ETag header.
-      if (
-        typeof req[shouldGenerateETag] === 'function' &&
-        // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
-        req[shouldGenerateETag]({ statusCode: responseStatus }) === true
-      ) {
+      if (req[shouldGenerateETag]?.({ statusCode: responseStatus }) === true) {
         const etag = generateETag(responseBody, { weak: true })
 
         if (req.headers['if-none-match'] === etag) {
@@ -736,7 +731,8 @@ const initializeProxy = async function ({
         res.setHeader('content-length', contentLength)
         res.statusCode = 500
         res.write(errorResponse)
-        return res.end()
+        res.end()
+        return
       }
 
       let proxyResHeaders = proxyRes.headers
@@ -750,7 +746,6 @@ const initializeProxy = async function ({
         delete proxyResHeaders['transfer-encoding']
       }
 
-      // @ts-expect-error FIXME: `proxyRes.statusCode` is always set on responses, but typed as optional
       res.writeHead(responseStatus, proxyResHeaders)
 
       if (responseStatus !== 304) {
@@ -758,9 +753,7 @@ const initializeProxy = async function ({
       }
 
       res.end()
-      return undefined
     })
-    return undefined
   })
 
   const handlers: ProxyHandlers = {
@@ -770,9 +763,13 @@ const initializeProxy = async function ({
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
-      req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
+      req.headers['x-forwarded-for'] = req.socket.remoteAddress || ''
+      // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
+      if (req.headers.expect) {
+        req.__expectHeader = req.headers.expect
+        delete req.headers.expect
+      }
       proxy.web(req, res, options)
-      return undefined
     },
     ws: (req, socket, head, options) => {
       proxy.ws(req, socket, head, options)
@@ -821,15 +818,13 @@ const onRequest = async (
   const edgeFunctionsProxyURL = await edgeFunctionsProxy?.(req)
 
   if (edgeFunctionsProxyURL !== undefined) {
-    return proxy.web(req, res, { target: edgeFunctionsProxyURL })
+    proxy.web(req, res, { target: edgeFunctionsProxyURL })
+    return
   }
 
-  const functionMatch =
-    functionsRegistry &&
-    // @ts-expect-error FIXME: `req.url` and `req.method` may be undefined and the static file callback resolves to a path, not a boolean
-    (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () =>
-      getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist ?? ''),
-    ))
+  const functionMatch = await functionsRegistry?.getFunctionForURLPath(req.url ?? '', req.method ?? '', async () =>
+    Boolean(await getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist)),
+  )
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
@@ -843,7 +838,8 @@ const onRequest = async (
       headers[NFFunctionRoute] = functionMatch.route.pattern
     }
 
-    return proxy.web(req, res, { headers, target: functionsServer })
+    proxy.web(req, res, { headers, target: functionsServer })
+    return
   }
 
   if (serverHandler) {
@@ -929,7 +925,8 @@ const onRequest = async (
   // us to know that is by looking at the status code
   req[shouldGenerateETag] = ({ statusCode }) => statusCode >= 200 && statusCode < 300
 
-  const hasFormSubmissionHandler = functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
+  const hasFormSubmissionHandler =
+    functionsRegistry !== undefined && Boolean(getFormHandler({ functionsRegistry, logWarning: false }))
 
   const ct = parseContentType(req.headers['content-type'] ?? '').type
   if (
@@ -939,13 +936,13 @@ const onRequest = async (
     !isInternal(req.url) &&
     (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
   ) {
-    return proxy.web(req, res, { target: functionsServer })
+    proxy.web(req, res, { target: functionsServer })
+    return
   }
 
   maybeNotifyActivity()
 
   proxy.web(req, res, options)
-  return undefined
 }
 
 export const getProxyUrl = function (settings: Pick<ServerSettings, 'https' | 'port'>) {
@@ -1003,10 +1000,7 @@ export const startProxy = async function ({
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
-  // FIXME: typed as optional, but is `null` rather than `undefined` when there is no functions port
-  const functionsServer = (settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null) as
-    | string
-    | undefined
+  const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort.toString()}` : undefined
 
   let edgeFunctionsProxy: EdgeFunctionsProxy | undefined
   if (disableEdgeFunctions) {
@@ -1047,7 +1041,7 @@ export const startProxy = async function ({
   })
 
   const serverEntryEnabled =
-    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' || Boolean(siteInfo?.feature_flags?.netlify_build_server_entry)
+    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' || Boolean(siteInfo.feature_flags?.netlify_build_server_entry)
 
   let serverHandler: ServerHandler | undefined
 
@@ -1055,12 +1049,12 @@ export const startProxy = async function ({
     const serverFileWatcher = new FileWatcher()
 
     serverHandler = new ServerHandler({
-      accountID: siteInfo?.account_id,
+      accountID: siteInfo.account_id,
       fileWatcher: serverFileWatcher,
       geolocation: mockLocation,
       logger: { log, warn, error: logError },
       projectRoot: projectDir,
-      siteID: siteInfo?.id,
+      siteID: siteInfo.id,
     })
 
     const handlerToStop = serverHandler

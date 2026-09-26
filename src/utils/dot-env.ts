@@ -10,12 +10,9 @@ import { warn } from './command-helpers.js'
 interface DotEnvFile {
   file: string
   env: dotenv.DotenvParseOutput
-  warning?: undefined
 }
 
 interface DotEnvFileWarning {
-  file?: undefined
-  env?: undefined
   warning: string
 }
 
@@ -28,12 +25,13 @@ export const loadDotEnvFiles = async function ({
 }): Promise<DotEnvFile[]> {
   const response = await tryLoadDotEnvFiles({ projectDir, dotenvFiles: envFiles })
 
-  const filesWithWarning = response.filter((el) => el.warning)
-  filesWithWarning.forEach((el) => {
-    warn(el.warning)
+  return response.filter((result): result is DotEnvFile => {
+    if ('warning' in result) {
+      warn(result.warning)
+      return false
+    }
+    return true
   })
-
-  return response.filter((el): el is DotEnvFile => Boolean(el.file && el.env))
 }
 
 // in the user configuration, the order is highest to lowest
