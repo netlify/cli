@@ -196,9 +196,7 @@ export const serve = async (options: ServeOptionValues, command: BaseCommand) =>
     command,
     config: mergedConfig,
     configPath: configPathOverride,
-    // @ts-expect-error FIXME: `options.debug` is `undefined` when `--debug` is omitted, but `startProxyServer` expects a boolean
     debug: options.debug,
-    // @ts-expect-error FIXME: `options.internalDisableEdgeFunctions` is `undefined` when the flag is omitted, but `startProxyServer` expects a boolean
     disableEdgeFunctions: options.internalDisableEdgeFunctions,
     env,
     functionsRegistry,
@@ -206,7 +204,6 @@ export const serve = async (options: ServeOptionValues, command: BaseCommand) =>
     geoCountry: options.country,
     getUpdatedConfig,
     inspectSettings,
-    // @ts-expect-error FIXME: `options.offline` is `undefined` when `--offline` is omitted, but `startProxyServer` expects a boolean
     offline: options.offline,
     projectDir: command.workingDir,
     settings,

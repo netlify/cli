@@ -18,7 +18,7 @@
     "noUncheckedIndexedAccess": false,
     // TODO: ~145 errors across ~55 files in src; many stem from @netlify/config and @netlify/api types
     "exactOptionalPropertyTypes": false,
-    // TODO: ~190 errors across ~55 files in src; mechanical (`obj.key` -> `obj['key']` for index-signature access)
+    // TODO: ~130 errors across ~50 files in src; mechanical (`obj.key` -> `obj['key']` for index-signature access)
     "noPropertyAccessFromIndexSignature": false,
     // TODO: only `bin/` and `scripts/` are JS; they import `dist/`, so they can only be checked after a build
     "checkJs": false
