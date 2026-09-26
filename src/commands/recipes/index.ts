@@ -17,7 +17,7 @@ export const createRecipesCommand = (program: BaseCommand) => {
     .description(`Create and modify files in a project using pre-defined recipes`)
     .option('-n, --name <name>', 'recipe name to use')
     .addExamples(['netlify recipes my-recipe', 'netlify recipes --name my-recipe'])
-    .action(async (recipeName: string, options: RecipesOptionValues, command: BaseCommand) => {
+    .action(async (recipeName: string | undefined, options: RecipesOptionValues, command: BaseCommand) => {
       const { recipesCommand } = await import('./recipes.js')
       await recipesCommand(recipeName, options, command)
     })
