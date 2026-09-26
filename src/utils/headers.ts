@@ -7,8 +7,7 @@ import { NETLIFYDEVERR, type NormalizedCachedConfigConfig, log } from './command
  */
 export const headersForPath = function (headers: Header[], path: string): Record<string, string> {
   const matchingHeaders = headers.filter(({ forRegExp }) => forRegExp.test(path)).map(getHeaderValues)
-  const headersRules = Object.assign({}, ...matchingHeaders)
-  return headersRules
+  return Object.fromEntries(matchingHeaders.flatMap((values) => Object.entries(values)))
 }
 
 const getHeaderValues = function ({ values }: Header) {

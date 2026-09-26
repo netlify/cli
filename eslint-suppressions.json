@@ -284,7 +284,7 @@
       "count": 2
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 4
+      "count": 3
     }
   },
   "src/lib/edge-functions/registry.ts": {
@@ -550,7 +550,7 @@
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
@@ -601,14 +601,6 @@
       "count": 2
     }
   },
-  "src/utils/headers.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 1
-    }
-  },
   "src/utils/init/config-github.ts": {
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 2
@@ -645,31 +637,31 @@
   },
   "src/utils/proxy.ts": {
     "@typescript-eslint/no-deprecated": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/no-empty-function": {
       "count": 1
     },
     "@typescript-eslint/no-misused-promises": {
-      "count": 7
+      "count": 6
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 16
+      "count": 8
     },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 4
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 4
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 3
+      "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 8
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 14
+      "count": 13
     }
   },
   "src/utils/read-repo-url.ts": {

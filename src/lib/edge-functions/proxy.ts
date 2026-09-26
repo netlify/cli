@@ -186,20 +186,22 @@ export const initializeProxy = async ({
       return
     }
 
-    req[headersSymbol] = {
+    const edgeFunctionsHeaders: Record<string, string> = {
       [headers.FeatureFlags]: getFeatureFlagsHeader(runtimeFeatureFlags),
       [headers.ForwardedProtocol]: `${protocol}:`,
       [headers.Functions]: functionNames.join(','),
       [headers.InvocationMetadata]: getInvocationMetadataHeader(invocationMetadata),
       [headers.IP]: LOCAL_HOST,
       [headers.Passthrough]: 'passthrough',
-      [headers.PassthroughHost]: `localhost:${passthroughPort}`,
+      [headers.PassthroughHost]: `localhost:${passthroughPort.toString()}`,
       [headers.PassthroughProtocol]: 'http:',
     }
 
     if (debug) {
-      req[headersSymbol][headers.DebugLogging] = '1'
+      edgeFunctionsHeaders[headers.DebugLogging] = '1'
     }
+
+    req[headersSymbol] = edgeFunctionsHeaders
 
     return `http://${LOCAL_HOST}:${isolatePort}`
   }
