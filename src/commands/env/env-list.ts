@@ -47,7 +47,7 @@ export const envList = async (options: EnvListOptionValues, command: BaseCommand
 
   if (!siteId) {
     log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return
   }
 
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
@@ -67,7 +67,7 @@ export const envList = async (options: EnvListOptionValues, command: BaseCommand
       Object.entries(environment).map(([key, variable]) => [key, variable.value]),
     )
     logJson(envDictionary)
-    return false
+    return
   }
 
   if (options.plain) {
@@ -75,7 +75,7 @@ export const envList = async (options: EnvListOptionValues, command: BaseCommand
       .map(([key, variable]) => `${key}=${variable.value}`)
       .join('\n')
     log(plaintext)
-    return false
+    return
   }
 
   const forSite = `for project ${chalk.green(siteInfo.name)}`
@@ -84,7 +84,7 @@ export const envList = async (options: EnvListOptionValues, command: BaseCommand
   const withScope = scope === 'any' ? '' : `and ${chalk.yellow(options.scope)} scope`
   if (Object.keys(environment).length === 0) {
     log(`No environment variables set ${forSite} ${withContext} ${withScope}`)
-    return false
+    return
   }
 
   // List environment in a table
@@ -93,7 +93,7 @@ export const envList = async (options: EnvListOptionValues, command: BaseCommand
 
   if (isCI) {
     log(getTable({ environment, hideValues: false, scopesColumn: true }))
-    return false
+    return
   }
 
   logUpdate(getTable({ environment, hideValues: true, scopesColumn: true }))
@@ -112,5 +112,4 @@ export const envList = async (options: EnvListOptionValues, command: BaseCommand
     logUpdate(getTable({ environment, hideValues: false, scopesColumn: true }))
     log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
   }
-  return undefined
 }
