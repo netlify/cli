@@ -13,15 +13,29 @@ import type NetlifyFunction from './netlify-function.js'
 import type { FunctionsRegistry } from './registry.js'
 import type { BaseBuildResult } from './runtimes/index.js'
 
-interface UploadedFile {
+type FormFieldValue = string | string[]
+
+interface FormFile {
   filename: string
   size: number
   type: string | undefined
   url: string
 }
 
-type FormFields = Record<string, string | string[]>
-type FormFiles = Record<string, UploadedFile | UploadedFile[]>
+const mapValues = <T, U>(record: Record<string, T>, mapper: (value: T) => U): Record<string, U> =>
+  Object.fromEntries(Object.entries(record).map(([key, value]) => [key, mapper(value)]))
+
+const unwrapSingleValues = <T>(record: Record<string, T[] | undefined>): Record<string, T | T[]> =>
+  Object.fromEntries(
+    Object.entries(record).flatMap(([key, values]) =>
+      values === undefined ? [] : [[key, values.length > 1 ? values : values[0]]],
+    ),
+  )
+
+const findField = (fields: Record<string, FormFieldValue>, aliases: string[]): FormFieldValue | undefined => {
+  const fieldName = Object.keys(fields).find((name) => aliases.includes(name.toLowerCase()))
+  return fieldName === undefined ? undefined : fields[fieldName]
+}
 
 export const getFormHandler = function ({
   functionsRegistry,
@@ -91,52 +105,41 @@ export const createFormSubmissionHandler = function ({
 
     // A missing header parses to an empty type and takes the unsupported-type branch below.
     const ct = parseContentType(req.headers['content-type'] ?? '')
-    let fields: FormFields = {}
-    let files: FormFiles = {}
+    const { charset }: { charset?: string } = ct.parameters
+    let fields: Record<string, FormFieldValue> = {}
+    let files: Record<string, FormFile | FormFile[]> = {}
     if (ct.type.endsWith('/x-www-form-urlencoded')) {
       const bodyData = await getRawBody(fakeRequest, {
         length: req.headers['content-length'],
         limit: '10mb',
-        encoding: ct.parameters.charset,
+        encoding: charset || true,
       })
 
-      fields = Object.fromEntries(new URLSearchParams(bodyData.toString()))
+      fields = Object.fromEntries(new URLSearchParams(bodyData))
     } else if (ct.type === 'multipart/form-data') {
       try {
-        ;[fields, files] = await new Promise<[FormFields, FormFiles]>((resolve, reject) => {
-          const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
-          form.parse(
-            // @ts-expect-error FIXME(@types/multiparty): `parse` only reads `headers` and the body stream, but demands an `IncomingMessage`
-            fakeRequest,
-            (err: Error | null, rawFields: Record<string, string[]>, rawFiles: Record<string, multiparty.File[]>) => {
-              if (err) {
-                reject(err)
-                return
-              }
-              const uploadedFiles: Record<string, UploadedFile[]> = Object.entries(rawFiles).reduce(
-                (prev, [name, values]) => ({
-                  ...prev,
-                  [name]: values.map((value) => ({
+        ;[fields, files] = await new Promise<[typeof fields, typeof files]>((resolve, reject) => {
+          const form = new multiparty.Form({ encoding: charset || 'utf8' })
+          // @ts-expect-error FIXME(@types/multiparty): `parse` only reads `headers` and the body stream, but demands an `IncomingMessage`
+          form.parse(fakeRequest, (err, parsedFields, parsedFiles) => {
+            if (err) {
+              reject(err)
+              return
+            }
+            resolve([
+              unwrapSingleValues(parsedFields),
+              unwrapSingleValues(
+                mapValues(parsedFiles, (values) =>
+                  values?.map((value) => ({
                     filename: value.originalFilename,
                     size: value.size,
                     type: value.headers?.['content-type'],
                     url: value.path,
                   })),
-                }),
-                {},
-              )
-              resolve([
-                Object.entries(rawFields).reduce(
-                  (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-                  {},
                 ),
-                Object.entries(uploadedFiles).reduce(
-                  (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-                  {},
-                ),
-              ])
-            },
-          )
+              ),
+            ])
+          })
         })
       } catch (error) {
         warn(String(error))
@@ -148,38 +151,31 @@ export const createFormSubmissionHandler = function ({
       next()
       return
     }
-    // FIXME: with no matching field, this reads the field literally named "undefined"
-    const fieldMatching = (names: string[]) =>
-      fields[String(Object.keys(fields).find((name) => names.includes(name.toLowerCase())))]
-    const fileUrls = Object.entries(files).reduce(
-      // @ts-expect-error FIXME: a field with several files holds an array, so its `url` is `undefined`
-      (prev, [name, { url }]) => ({ ...prev, [name]: url }),
-      {},
-    )
+    const fileURLs = mapValues(files, (file) => (Array.isArray(file) ? undefined : file.url))
     const data = JSON.stringify({
       payload: {
-        company: fieldMatching(['company', 'business', 'employer']),
-        last_name: fieldMatching(['lastname', 'surname', 'byname']),
-        first_name: fieldMatching(['firstname', 'givenname', 'forename']),
-        name: fieldMatching(['name', 'fullname']),
-        email: fieldMatching(['email', 'mail', 'from', 'twitter', 'sender']),
-        title: fieldMatching(['title', 'subject']),
+        company: findField(fields, ['company', 'business', 'employer']),
+        last_name: findField(fields, ['lastname', 'surname', 'byname']),
+        first_name: findField(fields, ['firstname', 'givenname', 'forename']),
+        name: findField(fields, ['name', 'fullname']),
+        email: findField(fields, ['email', 'mail', 'from', 'twitter', 'sender']),
+        title: findField(fields, ['title', 'subject']),
         data: {
           ...fields,
           ...files,
-          ip: req.connection.remoteAddress,
+          ip: req.socket.remoteAddress,
           user_agent: req.headers['user-agent'],
           referrer: req.headers.referer,
         },
         created_at: new Date().toISOString(),
-        human_fields: Object.entries({
-          ...fields,
-          ...fileUrls,
-        }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
-        ordered_human_fields: Object.entries({
-          ...fields,
-          ...fileUrls,
-        }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
+        human_fields: Object.fromEntries(
+          Object.entries({ ...fields, ...fileURLs }).map(([key, val]) => [capitalize(key), val]),
+        ),
+        ordered_human_fields: Object.entries({ ...fields, ...fileURLs }).map(([key, val]) => ({
+          title: capitalize(key),
+          name: key,
+          value: val,
+        })),
         site_url: siteUrl,
       },
     })

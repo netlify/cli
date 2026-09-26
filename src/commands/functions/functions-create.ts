@@ -82,6 +82,11 @@ interface RepoContentsEntry {
   download_url: string
 }
 
+const importTemplateMetadata = async (templatePath: string): Promise<FunctionTemplateMetadata | undefined> => {
+  const templateModule = (await import(pathToFileURL(templatePath).href)) as { default?: FunctionTemplateMetadata }
+  return templateModule.default
+}
+
 const isValidFunctionName = (name: unknown): name is string => typeof name === 'string' && /^[\w.-]+$/i.test(name)
 
 const validateFunctionName: (name: unknown) => asserts name is string = (name) => {
@@ -152,9 +157,7 @@ const formatRegistryArrayForInquirer = async function (
       .filter((folder) => Boolean(folder?.isDirectory()))
       .map(async ({ name }) => {
         try {
-          const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
-          const template = (await import(pathToFileURL(templatePath).href)) as { default?: FunctionTemplateMetadata }
-          return template.default
+          return await importTemplateMetadata(path.join(templatesDir, lang, name, '.netlify-function-template.mjs'))
         } catch {
           // noop if import fails we don't break the whole inquirer
           return undefined
@@ -290,7 +293,7 @@ const ensureEdgeFuncDirExists = function (command: BaseCommand) {
     )
   }
 
-  const functionsDir = config.build?.edge_functions ?? join(command.workingDir, 'netlify/edge-functions')
+  const functionsDir = config.build.edge_functions ?? join(command.workingDir, 'netlify/edge-functions')
   const relFunctionsDir = relative(command.workingDir, functionsDir)
 
   if (!fs.existsSync(functionsDir)) {
@@ -418,9 +421,7 @@ const downloadFromURL = async function (
   // read, execute, and delete function template file if exists
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.mjs')
   if (await fileExistsAsync(fnTemplateFile)) {
-    const {
-      default: { onComplete },
-    } = (await import(pathToFileURL(fnTemplateFile).href)) as { default: FunctionTemplateMetadata }
+    const { onComplete } = (await importTemplateMetadata(fnTemplateFile)) ?? {}
 
     await handleOnComplete({ command, onComplete })
     // delete
@@ -439,7 +440,7 @@ const getNpmInstallPackages = (
   neededPackages: Record<string, string> = {},
 ) =>
   Object.entries(neededPackages)
-    .filter(([name]) => existingPackages[name] === undefined)
+    .filter(([name]) => !(name in existingPackages))
     .map(([name, version]) => `${name}@${version}`)
 
 /**
@@ -667,9 +668,7 @@ const resolveTemplateMetadata = async (
   templateName: string,
   languageHint?: string,
 ): Promise<{ functionType: FunctionType; language: string } | null> => {
-  const langs = languageHint
-    ? [languageHint]
-    : (languages.map((lang) => lang.value as string | undefined).filter(Boolean) as string[])
+  const langs = languageHint ? [languageHint] : languages.map((lang) => lang.value)
   for (const lang of langs) {
     let folders
     try {
@@ -680,12 +679,10 @@ const resolveTemplateMetadata = async (
     for (const folder of folders) {
       if (!folder.isDirectory()) continue
       try {
-        const templatePath = path.join(templatesDir, lang, folder.name, '.netlify-function-template.mjs')
-        const mod = (await import(pathToFileURL(templatePath).href)) as {
-          default?: { name?: string; functionType?: FunctionType }
-        }
-        const template = mod.default
-        if (template?.name === templateName && template.functionType) {
+        const template = await importTemplateMetadata(
+          path.join(templatesDir, lang, folder.name, '.netlify-function-template.mjs'),
+        )
+        if (template?.name === templateName) {
           return { functionType: template.functionType, language: lang }
         }
       } catch {
@@ -711,15 +708,13 @@ export const functionsCreate = async (
       )
     }
     functionType = resolved.functionType
-    if (!options.language) {
-      options.language = resolved.language
-    }
+    options.language ??= resolved.language
   } else {
     functionType = await selectTypeOfFunc()
   }
 
   const functionsDir =
-    functionType === 'edge' ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
+    functionType === 'edge' ? ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
 
   /* either download from URL or scaffold from template */
   if (options.url) {

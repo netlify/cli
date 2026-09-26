@@ -137,9 +137,10 @@ type FunctionMetadata = NonNullable<Awaited<ReturnType<typeof getFunctionMetadat
 const clearFunctionsCache = (functionsPath: string) => {
   Object.keys(require.cache)
     .filter((key) => key.startsWith(functionsPath))
-    // @ts-expect-error FIXME(decache): types only declare `export default` for a CommonJS `module.exports =` function
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- the call is untyped because of the error above
-    .forEach((key) => decache(key))
+    .forEach((key) => {
+      // decache is CJS but its types declare an ESM default export, which it also sets as `module.exports.default`
+      decache.default(key)
+    })
 }
 
 const getTargetDirectory = async ({
