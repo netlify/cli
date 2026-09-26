@@ -74,6 +74,9 @@ export const CI_FORCED_COMMANDS = {
   'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
 }
 
+export const isCIForcedCommand = (commandName: string): commandName is keyof typeof CI_FORCED_COMMANDS =>
+  Object.hasOwn(CI_FORCED_COMMANDS, commandName)
+
 const SYSTEM_INFO_TIMEOUT = 5_000
 
 let isHandlingUncaughtException = false
@@ -330,8 +333,8 @@ Exit codes: 0 ok, 1 error, 2 usage, 4 needs-input
 
   program.commands.forEach((cmd) => {
     const cmdName = cmd.name()
-    if (cmdName in CI_FORCED_COMMANDS) {
-      const { description, options } = CI_FORCED_COMMANDS[cmdName as keyof typeof CI_FORCED_COMMANDS]
+    if (isCIForcedCommand(cmdName)) {
+      const { description, options } = CI_FORCED_COMMANDS[cmdName]
       cmd.option(options, description)
     }
   })

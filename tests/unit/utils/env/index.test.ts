@@ -192,6 +192,7 @@ test('should normalize a branch name or context', () => {
   expect(normalizeContext('qa')).toBe('qa')
   expect(normalizeContext('staging')).toBe('staging')
   expect(normalizeContext('branch-deploy')).toBe('branch-deploy')
+  expect(normalizeContext('constructor')).toBe('constructor')
 })
 
 test('should translate from Mongo format to Envelope format when undefined', () => {
