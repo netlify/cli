@@ -6,11 +6,7 @@ import type BaseCommand from '../base-command.js'
 import { localAppliedMigrations, remoteAppliedMigrations } from './util/applied-migrations.js'
 import { connectToDatabase } from './util/db-connection.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
-
-export interface MigrationsResetOptions {
-  branch?: string
-  json?: boolean
-}
+import type { DbMigrationsResetOptionValues } from './option_values.js'
 
 const SQL_EXTENSION = '.sql'
 
@@ -22,7 +18,7 @@ interface LocalMigration {
   path: string
 }
 
-export const migrationsReset = async (options: MigrationsResetOptions, command: BaseCommand) => {
+export const migrationsReset = async (options: DbMigrationsResetOptionValues, command: BaseCommand) => {
   const branch = options.branch ?? process.env.NETLIFY_DB_BRANCH
   const json = options.json ?? false
 

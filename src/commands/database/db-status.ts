@@ -15,12 +15,7 @@ import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import { hasDependency } from './util/package-json.js'
 import { relativeToProject } from './util/paths.js'
 import { fileExistsAsync } from '../../lib/fs.js'
-
-export interface DatabaseStatusOptions {
-  branch?: string
-  showCredentials?: boolean
-  json?: boolean
-}
+import type { DbStatusOptionValues } from './option_values.js'
 
 interface MigrationEntry {
   version: number
@@ -369,7 +364,7 @@ const renderPretty = (params: RenderParams) => {
   }
 }
 
-export const statusDb = async (options: DatabaseStatusOptions, command: BaseCommand) => {
+export const statusDb = async (options: DbStatusOptionValues, command: BaseCommand) => {
   const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
   if (!buildDir) {
     throw new Error('Could not determine the project root directory.')
@@ -466,7 +461,7 @@ export const statusDb = async (options: DatabaseStatusOptions, command: BaseComm
     packageInstalled,
     branchLabel,
     connectionString,
-    showCredentials: options.showCredentials ?? false,
+    showCredentials: options.showCredentials,
     status,
     isLocal,
     hasUrlOverride: Boolean(envUrl),

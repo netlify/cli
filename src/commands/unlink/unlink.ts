@@ -1,11 +1,10 @@
-import type { OptionValues } from 'commander'
-
 import { exit, log } from '../../utils/command-helpers.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
 import { chalk, netlifyCommand } from '../../utils/command-helpers.js'
+import type { UnlinkOptionValues } from './option_values.js'
 
-export const unlink = async (_options: OptionValues, command: BaseCommand) => {
+export const unlink = async (_options: UnlinkOptionValues, command: BaseCommand) => {
   const { site, siteInfo, state } = command.netlify
   const siteId = site.id
 

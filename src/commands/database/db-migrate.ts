@@ -7,13 +7,9 @@ import { log, logJson } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 import { connectToDatabase } from './util/db-connection.js'
 import { DEFAULT_MIGRATIONS_PATH } from './util/migrations-path.js'
+import type { DbMigrationsApplyOptionValues } from './option_values.js'
 
-export interface MigrateOptions {
-  to?: string
-  json?: boolean
-}
-
-export const migrate = async (options: MigrateOptions, command: BaseCommand) => {
+export const migrate = async (options: DbMigrationsApplyOptionValues, command: BaseCommand) => {
   const { to: name, json } = options
   const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
   if (!buildDir) {

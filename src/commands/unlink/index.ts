@@ -1,7 +1,7 @@
-import type { OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
 import type BaseCommand from '../base-command.js'
+import type { UnlinkOptionValues } from './option_values.js'
 
 export const createUnlinkCommand = (program: BaseCommand) =>
   program
@@ -13,7 +13,7 @@ export const createUnlinkCommand = (program: BaseCommand) =>
 For more information about linking projects, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: UnlinkOptionValues, command: BaseCommand) => {
       const { unlink } = await import('./unlink.js')
       await unlink(options, command)
     })

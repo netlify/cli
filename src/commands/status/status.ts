@@ -1,5 +1,4 @@
 import clean from 'clean-deep'
-import type { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
 import {
@@ -14,6 +13,7 @@ import {
 } from '../../utils/command-helpers.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import type BaseCommand from '../base-command.js'
+import type { StatusOptionValues } from './option_values.js'
 
 // TODO: centralize these in a shared error-code dictionary alongside the exit codes.
 export const STATUS_ERROR_CODES = {
@@ -21,11 +21,7 @@ export const STATUS_ERROR_CODES = {
   NOT_LINKED: 'NOT_LINKED',
 } as const
 
-interface StatusOptions extends OptionValues {
-  json?: boolean
-}
-
-export const status = async (options: StatusOptions, command: BaseCommand) => {
+export const status = async (options: StatusOptionValues, command: BaseCommand) => {
   const { accounts, api, globalConfig, site, siteInfo } = command.netlify
   const currentUserId = globalConfig.get('userId') as string | undefined
   const [accessToken] = await getToken()

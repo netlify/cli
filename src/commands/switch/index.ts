@@ -1,5 +1,5 @@
 import type BaseCommand from '../base-command.js'
-import type { SwitchOptionValues } from './switch.js'
+import type { SwitchOptionValues } from './option_values.js'
 
 export const createSwitchCommand = (program: BaseCommand) =>
   program

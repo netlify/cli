@@ -1,11 +1,16 @@
 import { Option } from 'commander'
 
 import type BaseCommand from '../base-command.js'
-import type { MigrationNewOptions } from './db-migration-new.js'
-import type { MigrationPullOptions } from './db-migration-pull.js'
-import type { MigrationsResetOptions } from './db-migrations-reset.js'
-import type { ResetOptions } from './db-reset.js'
-import type { DatabaseStatusOptions } from './db-status.js'
+import type {
+  DbConnectOptionValues,
+  DbInitOptionValues,
+  DbMigrationsApplyOptionValues,
+  DbMigrationsNewOptionValues,
+  DbMigrationsPullOptionValues,
+  DbMigrationsResetOptionValues,
+  DbResetOptionValues,
+  DbStatusOptionValues,
+} from './option_values.js'
 
 export const createDatabaseCommand = (program: BaseCommand) => {
   const dbCommand = program
@@ -30,7 +35,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       false,
     )
     .option('--json', 'Output result as JSON')
-    .action(async (options: DatabaseStatusOptions, command: BaseCommand) => {
+    .action(async (options: DbStatusOptionValues, command: BaseCommand) => {
       const { statusDb } = await import('./db-status.js')
       await statusDb(options, command)
     })
@@ -45,7 +50,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .command('init')
     .description('Interactive setup: install the package, scaffold a starter migration, and verify the database')
     .option('-y, --yes', 'Non-interactive mode. Accepts the defaults for every prompt.', false)
-    .action(async (options: { yes?: boolean }, command: BaseCommand) => {
+    .action(async (options: DbInitOptionValues, command: BaseCommand) => {
       const { initDatabase } = await import('./db-init.js')
       await initDatabase(options, command)
     })
@@ -59,7 +64,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       '--json',
       'Output query results as JSON. When used without --query, prints the connection details as JSON instead.',
     )
-    .action(async (options: { query?: string; json?: boolean }, command: BaseCommand) => {
+    .action(async (options: DbConnectOptionValues, command: BaseCommand) => {
       const { connect } = await import('./db-connect.js')
       await connect(options, command)
     })
@@ -75,7 +80,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .description('Reset the local development database, removing all data and tables')
     .option('--force', 'Skip the confirmation prompt shown when the local database has to be deleted', false)
     .option('--json', 'Output result as JSON')
-    .action(async (options: ResetOptions, command: BaseCommand) => {
+    .action(async (options: DbResetOptionValues, command: BaseCommand) => {
       const { reset } = await import('./db-reset.js')
       await reset(options, command)
     })
@@ -88,7 +93,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .description('Apply database migrations to the local development database')
     .option('--to <name>', 'Target migration name or prefix to apply up to (applies all if omitted)')
     .option('--json', 'Output result as JSON')
-    .action(async (options: { to?: string; json?: boolean }, command: BaseCommand) => {
+    .action(async (options: DbMigrationsApplyOptionValues, command: BaseCommand) => {
       const { migrate } = await import('./db-migrate.js')
       await migrate(options, command)
     })
@@ -104,7 +109,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       ]),
     )
     .option('--json', 'Output result as JSON')
-    .action(async (options: MigrationNewOptions, command: BaseCommand) => {
+    .action(async (options: DbMigrationsNewOptionValues, command: BaseCommand) => {
       const { migrationNew } = await import('./db-migration-new.js')
       await migrationNew(options, command)
     })
@@ -122,7 +127,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     )
     .option('--force', 'Skip confirmation prompt', false)
     .option('--json', 'Output result as JSON')
-    .action(async (options: MigrationPullOptions, command: BaseCommand) => {
+    .action(async (options: DbMigrationsPullOptionValues, command: BaseCommand) => {
       const { migrationPull } = await import('./db-migration-pull.js')
       await migrationPull(options, command)
     })
@@ -138,7 +143,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .description('Delete local migration files that have not been applied yet')
     .option('-b, --branch <branch>', 'Target a remote preview branch instead of the local development database')
     .option('--json', 'Output result as JSON')
-    .action(async (options: MigrationsResetOptions, command: BaseCommand) => {
+    .action(async (options: DbMigrationsResetOptionValues, command: BaseCommand) => {
       const { migrationsReset } = await import('./db-migrations-reset.js')
       await migrationsReset(options, command)
     })
