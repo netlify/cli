@@ -2,6 +2,7 @@ import type { NetlifyConfig } from '@netlify/build'
 import { type Config as ZisiConfig, type ListedFunction, listFunctions } from '@netlify/zip-it-and-ship-it'
 
 import { fileExistsAsync } from '../../lib/fs.js'
+import { getFunctionConfigSchedule } from '../../lib/functions/config.js'
 
 const getUrlPath = (functionName: string) => `/.netlify/functions/${functionName}`
 
@@ -18,8 +19,7 @@ export type LocalFunction = ReturnType<typeof addFunctionProps>
 
 const extractSchedule = (functionsConfig: NetlifyConfig['functions']): ZisiConfig =>
   Object.fromEntries(
-    // @ts-expect-error FIXME(@netlify/build): `schedule` is missing from the functions config type
-    Object.entries(functionsConfig).map(([name, { schedule }]) => [name, { schedule }]),
+    Object.entries(functionsConfig).map(([name, value]) => [name, { schedule: getFunctionConfigSchedule(value) }]),
   )
 
 export const getFunctions = async (

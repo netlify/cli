@@ -1,5 +1,6 @@
 import { createServer } from 'net'
 import process from 'process'
+import type { Stream } from 'stream'
 import { isMainThread, workerData, parentPort } from 'worker_threads'
 
 import { isStream } from 'is-stream'
@@ -30,24 +31,8 @@ for (const key in environment) {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- the user function module is untyped
 const lambdaFunc = await import(entryFilePath)
 
-const lambdaEvent = await lambdaLocal.execute({
-  clientContext,
-  event,
-  lambdaFunc,
-  region: 'dev',
-  timeoutMs,
-  verboseLevel: 3,
-})
-let streamPort: number | null = null
-
-// When the result body is a StreamResponse
-// we open up a http server that proxies back to the main thread.
-// TODO(serhalp): Improve `LambdaEvent` type. It sure would be nice to keep it simple as it
-// is now, but technically this is an arbitrary type from the user function return...
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-if (lambdaEvent != null && isStream(lambdaEvent.body)) {
-  const { body } = lambdaEvent
-  delete lambdaEvent.body
+// Serves a streamed response body on a local port, so the main thread can proxy it
+const proxyStreamBody = async (body: Stream): Promise<number> =>
   await new Promise((resolve, reject) => {
     const server = createServer((socket) => {
       body.pipe(socket).on('end', () => server.close())
@@ -60,10 +45,29 @@ if (lambdaEvent != null && isStream(lambdaEvent.body)) {
       if (address == null || typeof address !== 'object') {
         throw new Error('Expected server.address() to return an object')
       }
-      streamPort = address.port
-      resolve(undefined)
+      resolve(address.port)
     })
   })
+
+const lambdaEvent = await lambdaLocal.execute({
+  clientContext,
+  event,
+  lambdaFunc,
+  region: 'dev',
+  timeoutMs,
+  verboseLevel: 3,
+})
+
+// When the result body is a StreamResponse
+// we open up a http server that proxies back to the main thread.
+// TODO(serhalp): Improve `LambdaEvent` type. It sure would be nice to keep it simple as it
+// is now, but technically this is an arbitrary type from the user function return...
+let streamPort: number | null = null
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+if (lambdaEvent != null && isStream(lambdaEvent.body)) {
+  const { body } = lambdaEvent
+  delete lambdaEvent.body
+  streamPort = await proxyStreamBody(body)
 }
 
 // See TODO above.
@@ -71,8 +75,6 @@ if (lambdaEvent != null && isStream(lambdaEvent.body)) {
 if (lambdaEvent == null) {
   parentPort?.postMessage(lambdaEvent)
 } else {
-  //  Looks like some sort of eslint bug...? It thinks `streamPort` can't be null here
-  //  eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const message: WorkerMessage = { ...lambdaEvent, ...(streamPort != null ? { streamPort } : {}) }
   parentPort?.postMessage(message)
 }

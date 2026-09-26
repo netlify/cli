@@ -9,6 +9,7 @@ import semver from 'semver'
 import { logAndThrowError, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
 import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
+import { getFunctionConfigSchedule } from './config.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import type { ServerSettings } from '../../utils/types.js'
 
@@ -138,9 +139,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     this.settings = settings
     this.srcPath = srcPath
 
-    const functionConfig = config.functions?.[name]
-    // @ts-expect-error FIXME(@netlify/build): `schedule` is missing from the functions config type
-    this.schedule = functionConfig?.schedule
+    this.schedule = getFunctionConfigSchedule(config.functions?.[name])
 
     this.srcFiles = new Set()
   }
@@ -199,12 +198,9 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   }
 
   async getNextRun() {
-    if (!(await this.isScheduled())) {
-      return null
-    }
+    await this.buildQueue
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return getNextRun(this.schedule!)
+    return this.schedule ? getNextRun(this.schedule) : null
   }
 
   // The `build` method transforms source files into invocable functions. Its
@@ -391,9 +387,9 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
 
   get url() {
     // `netlify dev` serves functions through its main server; `functions:serve` only has the functions server
-    const port = this.settings.port || this.settings.functionsPort
+    const port = this.settings.port ?? this.settings.functionsPort
     const protocol = this.settings.https ? 'https' : 'http'
-    const url = new URL(`/.netlify/functions/${this.name}`, `${protocol}://localhost:${port}`)
+    const url = new URL(`/.netlify/functions/${this.name}`, `${protocol}://localhost:${port.toString()}`)
 
     return url.href
   }
