@@ -36,7 +36,7 @@ import { temporaryDirectory } from '../temporary-file.js'
 export type { DeployEvent }
 
 // FIXME(@netlify/api): every `deploy` field is optional, even those always set once a deploy is diffed
-type DiffedDeploy = Deploy & Required<Pick<Deploy, 'id' | 'required'>>
+type DiffedDeploy = Deploy & Required<Pick<Deploy, 'id'>>
 
 const buildStatsString = (possibleParts: (string | false | undefined)[]) => {
   const parts = possibleParts.filter(Boolean)
@@ -193,39 +193,36 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
   const packageFrameworks = command.project.frameworks.get(command.workspacePackage ?? '')
   const primaryFramework = packageFrameworks?.[0]
 
-  const params = {
-    siteId,
-    deploy_id: deployId,
-    body: {
-      files,
-      functions,
-      edge_functions: edgeFunctions,
-      server,
-      function_schedules: functionSchedules,
-      functions_config: fnConfig,
-      async: Object.keys(files).length > syncFileLimit,
-      branch,
-      draft,
-      framework: primaryFramework?.id ?? 'unknown',
-      framework_version: primaryFramework?.detected.package?.version?.toString() ?? 'unknown',
-      build_version: getNetlifyBuildVersion(),
-    },
+  const async = Object.keys(files).length > syncFileLimit
+  const bodyToClean = {
+    files,
+    functions,
+    edge_functions: edgeFunctions,
+    server,
+    function_schedules: functionSchedules,
+    functions_config: fnConfig,
+    async,
+    branch,
+    draft,
+    framework: primaryFramework?.id ?? 'unknown',
+    framework_version: primaryFramework?.detected.package?.version?.toString() ?? 'unknown',
+    build_version: getNetlifyBuildVersion(),
   }
-  const cleanedParams: Partial<Omit<typeof params, 'body'>> & { body: Partial<typeof params.body> } =
+  const cleanedBody: Partial<typeof bodyToClean> =
     // @ts-expect-error FIXME(clean-deep): typings declare an ES `export default` but the package is CommonJS
-    cleanDeep(params)
+    cleanDeep(bodyToClean)
   // cleanDeep deeply strips keys with empty strings, but empty strings are valid environment
   // variable values--a user can use an empty string to e.g. unset a variable only for a deploy.
   // This would result in payloads with a missing `value` key, which the API would reject.
-  const deployParams = environment?.length
-    ? { ...cleanedParams, body: { ...cleanedParams.body, environment } }
-    : cleanedParams
-  let deploy = (await api.updateSiteDeploy(
+  const body = environment?.length ? { ...cleanedBody, environment } : cleanedBody
+  let deploy = (await api.updateSiteDeploy({
+    siteId,
+    deploy_id: deployId,
     // @ts-expect-error FIXME(@netlify/api): `functions_config` rejects zip-it-and-ship-it's `BuildData`, route `methods` and `traffic_rules` strings
-    deployParams,
-  )) as DiffedDeploy
+    body,
+  })) as DiffedDeploy
 
-  if (deployParams.body.async) deploy = (await waitForDiff(api, deploy.id, siteId, deployTimeout)) as DiffedDeploy
+  if (async) deploy = (await waitForDiff(api, deployId, siteId, deployTimeout)) as DiffedDeploy
 
   const {
     required: requiredFiles,
@@ -236,9 +233,9 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   statusCb({
     type: 'create-deploy',
-    msg: `CDN requesting ${requiredFiles.length} files${
-      Array.isArray(requiredFns) ? ` and ${requiredFns.length} functions` : ''
-    }${Array.isArray(requiredEdgeFns) ? ` and ${requiredEdgeFns.length} edge functions` : ''}`,
+    msg: `CDN requesting ${(requiredFiles?.length ?? 0).toString()} files${
+      Array.isArray(requiredFns) ? ` and ${requiredFns.length.toString()} functions` : ''
+    }${Array.isArray(requiredEdgeFns) ? ` and ${requiredEdgeFns.length.toString()} edge functions` : ''}`,
     phase: 'stop',
   })
 

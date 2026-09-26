@@ -1,6 +1,8 @@
 import type { NetlifyConfig } from '@netlify/build'
 import type { NodeBundlerName } from '@netlify/zip-it-and-ship-it'
 
+type FunctionConfigObject = NetlifyConfig['functions'][string]
+
 export interface NormalizedFunctionConfigObject {
   externalNodeModules?: undefined | string[]
   includedFiles?: undefined | string[]
@@ -29,22 +31,24 @@ export const normalizeFunctionsConfig = ({
   functionsConfig?: NetlifyConfig['functions']
   projectRoot: string
   siteEnv?: Record<string, undefined | string>
-}): NormalizedFunctionsConfig =>
-  Object.entries(functionsConfig).reduce(
-    (result, [pattern, value]): NormalizedFunctionsConfig => ({
-      ...result,
-      [pattern]: {
-        externalNodeModules: 'external_node_modules' in value ? value.external_node_modules : undefined,
-        includedFiles: value.included_files,
-        includedFilesBasePath: projectRoot,
-        ignoredNodeModules: 'ignored_node_modules' in value ? value.ignored_node_modules : undefined,
-        nodeBundler: value.node_bundler === 'esbuild' ? 'esbuild_zisi' : value.node_bundler,
-        nodeVersion: siteEnv.AWS_LAMBDA_JS_RUNTIME,
-        processDynamicNodeImports: true,
-        zipGo: true,
-        // XXX(serhalp): Unnecessary check -- fixed in stack PR (bumps to https://github.com/netlify/build/pull/6165)
-        schedule: 'schedule' in value ? (value.schedule as undefined | string) : undefined,
-      },
-    }),
-    { '*': {} } as NormalizedFunctionsConfig,
-  )
+}): NormalizedFunctionsConfig => {
+  const normalize = (value: FunctionConfigObject): NormalizedFunctionConfigObject => ({
+    externalNodeModules: 'external_node_modules' in value ? value.external_node_modules : undefined,
+    includedFiles: value.included_files,
+    includedFilesBasePath: projectRoot,
+    ignoredNodeModules: 'ignored_node_modules' in value ? value.ignored_node_modules : undefined,
+    nodeBundler: value.node_bundler === 'esbuild' ? 'esbuild_zisi' : value.node_bundler,
+    nodeVersion: siteEnv.AWS_LAMBDA_JS_RUNTIME,
+    processDynamicNodeImports: true,
+    zipGo: true,
+    // XXX(serhalp): Unnecessary check -- fixed in stack PR (bumps to https://github.com/netlify/build/pull/6165)
+    schedule: 'schedule' in value ? (value.schedule as undefined | string) : undefined,
+  })
+  const { '*': catchAll, ...patterns } = functionsConfig
+
+  return {
+    // The index signature hides that a config may not have a catch-all entry
+    '*': normalize(Object.hasOwn(functionsConfig, '*') ? catchAll : {}),
+    ...Object.fromEntries(Object.entries(patterns).map(([pattern, value]) => [pattern, normalize(value)])),
+  }
+}

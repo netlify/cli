@@ -25,6 +25,14 @@ interface LiveSession {
   state: string
 }
 
+const isLiveSession = (value: unknown): value is LiveSession =>
+  typeof value === 'object' &&
+  value !== null &&
+  'id' in value &&
+  typeof value.id === 'string' &&
+  'state' in value &&
+  typeof value.state === 'string'
+
 const createTunnel = async function ({
   netlifyApiToken,
   siteId,
@@ -57,7 +65,11 @@ const createTunnel = async function ({
     )
   }
 
-  return data as LiveSession
+  if (!isLiveSession(data)) {
+    throw new Error('Unexpected response when creating live session')
+  }
+
+  return data
 }
 
 const connectTunnel = function ({
@@ -159,7 +171,7 @@ export const startLiveTunnel = async ({
       )
     }
 
-    return (data as LiveSession).state === 'online'
+    return isLiveSession(data) && data.state === 'online'
   }
 
   connectTunnel({ session, netlifyApiToken, localPort })

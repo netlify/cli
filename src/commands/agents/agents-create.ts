@@ -5,7 +5,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentsCreateOptionValues } from './option_values.js'
 import type { AgentRunner } from './types.js'
-import { validatePrompt, validateAgent, formatStatus, getAgentName } from './utils.js'
+import { validatePrompt, validateAgent, formatStatus, getAgentName, getResponseErrorMessage } from './utils.js'
 import { AVAILABLE_AGENTS } from './constants.js'
 
 export const agentsCreate = async (promptArg: string, options: AgentsCreateOptionValues, command: BaseCommand) => {
@@ -117,8 +117,7 @@ export const agentsCreate = async (promptArg: string, options: AgentsCreateOptio
     )
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+      throw new Error(await getResponseErrorMessage(response))
     }
 
     const agentRunner = (await response.json()) as AgentRunner

@@ -225,16 +225,21 @@ export const formatErrorMessage = ({ error, message }: { error: unknown; message
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
 
-export type DeployKey = Awaited<ReturnType<NetlifyAPI['createDeployKey']>>
+export type DeployKey = Awaited<ReturnType<NetlifyAPI['createDeployKey']>> & { public_key: string }
 
 export const createDeployKey = async ({ api }: { api: NetlifyAPI }): Promise<DeployKey> => {
+  let deployKey
   try {
-    const deployKey = await api.createDeployKey()
-    return deployKey
+    deployKey = await api.createDeployKey()
   } catch (error) {
     const message = formatErrorMessage({ message: 'Failed creating deploy key', error })
     return logAndThrowError(message)
   }
+  const { public_key: publicKey } = deployKey
+  if (!publicKey) {
+    return logAndThrowError('Failed creating deploy key: no public key was returned')
+  }
+  return { ...deployKey, public_key: publicKey }
 }
 
 // TODO(serhalp): Export convenient named types from `netlify` package to avoid needing bizarre type patterns.
@@ -279,5 +284,9 @@ export const setupSite = async ({
     options: { repo, plugins: [...getUIPlugins(configPlugins), ...pluginsToInstall] },
   })
 
-  return updatedSite
+  const { deploy_hook: deployHook } = updatedSite
+  if (!deployHook) {
+    return logAndThrowError('Failed updating project with repo information: no deploy hook was returned')
+  }
+  return { ...updatedSite, deploy_hook: deployHook }
 }

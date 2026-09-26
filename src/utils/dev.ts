@@ -94,13 +94,12 @@ const getAddons = async ({ api, site }: { api: NetlifyAPI; site: { id?: string }
 
 type Addon = Awaited<ReturnType<NetlifyAPI['listServiceInstancesForSite']>>[number]
 
-const getAddonsInformation = ({ addons, siteInfo }: { addons: Addon[]; siteInfo: SiteInfo }) => {
-  const urls: Record<string, string> = Object.fromEntries(
-    addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]),
+const getAddonsUrls = ({ addons, siteInfo }: { addons: Addon[]; siteInfo: SiteInfo }): Record<string, string> =>
+  Object.fromEntries(
+    addons.flatMap((addon) =>
+      addon.service_slug ? [[addon.service_slug, `${siteInfo.ssl_url}${addon.service_path ?? ''}`]] : [],
+    ),
   )
-  const env = Object.assign({}, ...addons.map((addon) => addon.env))
-  return { urls, env }
-}
 
 const getSiteAccount = ({ accounts, siteInfo }: { accounts: Account[]; siteInfo: SiteInfo }): Account | undefined => {
   const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
@@ -148,7 +147,7 @@ export const getSiteInformation = async ({
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
 
-    const { urls: addonsUrls } = getAddonsInformation({ siteInfo, addons })
+    const addonsUrls = getAddonsUrls({ siteInfo, addons })
     const account = getSiteAccount({ siteInfo, accounts })
 
     return {

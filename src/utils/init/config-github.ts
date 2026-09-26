@@ -62,7 +62,7 @@ const addDeployKey = async ({
   try {
     await octokit.repos.createDeployKey({
       title: 'Netlify Deploy Key',
-      key: key.public_key ?? '',
+      key: key.public_key,
       owner: repoOwner,
       repo: repoName,
       read_only: true,
@@ -105,7 +105,7 @@ const getGitHubRepo = async ({
 }
 
 interface DeployHookOptions {
-  deployHook: string | undefined
+  deployHook: string
   octokit: Octokit
   repoName: string
   repoOwner: string
