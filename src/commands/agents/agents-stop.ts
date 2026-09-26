@@ -3,7 +3,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentsStopOptionValues } from './option_values.js'
 import type { AgentRunner } from './types.js'
-import { formatStatus } from './utils.js'
+import { formatStatus, getResponseErrorMessage } from './utils.js'
 
 export const agentsStop = async (id: string, options: AgentsStopOptionValues, command: BaseCommand) => {
   const { api, apiOpts } = command.netlify
@@ -30,8 +30,7 @@ export const agentsStop = async (id: string, options: AgentsStopOptionValues, co
     )
 
     if (!statusResponse.ok) {
-      const errorData = (await statusResponse.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${statusResponse.status.toString()}: ${statusResponse.statusText}`)
+      throw new Error(await getResponseErrorMessage(statusResponse))
     }
 
     const agentRunner = (await statusResponse.json()) as AgentRunner
@@ -70,8 +69,7 @@ export const agentsStop = async (id: string, options: AgentsStopOptionValues, co
     stopSpinner({ spinner: stopSpinnerInstance })
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-      throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+      throw new Error(await getResponseErrorMessage(response))
     }
 
     // Success case, 202 with empty body

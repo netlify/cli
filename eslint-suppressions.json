@@ -184,14 +184,6 @@
       "count": 1
     }
   },
-  "src/commands/logs/build.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
-    }
-  },
   "src/commands/logs/index.ts": {
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
@@ -516,9 +508,6 @@
   "src/utils/deploy/upload-files.ts": {
     "@typescript-eslint/prefer-promise-reject-errors": {
       "count": 3
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 2
     }
   },
   "src/utils/deploy/upload-source-zip.ts": {

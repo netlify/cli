@@ -101,7 +101,7 @@ const uploadFiles = async (
 
     statusCb({
       type: 'upload',
-      msg: `(${index}/${uploadList.length}) Uploading ${normalizedPath}...`,
+      msg: `(${index.toString()}/${uploadList.length.toString()}) Uploading ${normalizedPath}...`,
       phase: 'progress',
     })
 

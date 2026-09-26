@@ -11,8 +11,6 @@ import { createDeployKey, type DeployKey, getBuildSettings, saveNetlifyToml, set
  */
 const addDeployKey = async (deployKey: DeployKey) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
-  // FIXME(serhalp): Handle nullish `deployKey.public_key` by throwing user-facing error or fixing upstream type.
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   log(`\n${deployKey.public_key}\n\n`)
 
   const sshKeyAdded = await confirm({ message: 'Continue?', default: true })
@@ -30,10 +28,8 @@ const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string
   })
 }
 
-const addDeployHook = async (deployHook: string | undefined): Promise<boolean> => {
+const addDeployHook = async (deployHook: string): Promise<boolean> => {
   log('\nConfigure the following webhook for your repository:\n')
-  // FIXME(serhalp): Handle nullish `deployHook` by throwing user-facing error or fixing upstream type.
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   log(`\n${deployHook}\n\n`)
   return await confirm({ message: 'Continue?', default: true })
 }

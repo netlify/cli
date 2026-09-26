@@ -59,7 +59,7 @@ const addDeployKey = async ({
     await requestGitHub(token, 'POST', `/repos/${repoOwner}/${repoName}/keys`, {
       body: {
         title: 'Netlify Deploy Key',
-        key: key.public_key ?? '',
+        key: key.public_key,
         read_only: true,
       },
     })
@@ -97,7 +97,7 @@ const getGitHubRepo = async ({
 }
 
 interface DeployHookOptions {
-  deployHook: string | undefined
+  deployHook: string
   repoName: string
   repoOwner: string
   token: string
