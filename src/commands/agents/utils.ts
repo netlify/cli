@@ -29,8 +29,10 @@ export const formatDuration = (startTime: string, endTime?: string): string => {
   return `${seconds.toString()}s`
 }
 
+const isKnownStatus = (status: string): status is keyof typeof STATUS_COLORS => Object.hasOwn(STATUS_COLORS, status)
+
 export const formatStatus = (status: string): string => {
-  const colorFn = status in STATUS_COLORS ? STATUS_COLORS[status as keyof typeof STATUS_COLORS] : chalk.white
+  const colorFn = isKnownStatus(status) ? STATUS_COLORS[status] : chalk.white
   return colorFn(status.toUpperCase())
 }
 

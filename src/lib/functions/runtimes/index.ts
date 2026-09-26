@@ -76,4 +76,7 @@ const runtimes = {
   [rust.name]: rust,
 }
 
+export const isSupportedRuntime = (runtimeName: string): runtimeName is keyof typeof runtimes =>
+  Object.hasOwn(runtimes, runtimeName)
+
 export default runtimes

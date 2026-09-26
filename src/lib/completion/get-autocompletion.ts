@@ -27,8 +27,8 @@ const getAutocompletion = function (
 
   const [, command, ...args] = env.line.split(' ')
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (program[command]) {
+  // Guards against inherited keys like `constructor` being treated as commands
+  if (Object.hasOwn(program, command)) {
     const usedArgs = new Set(args)
     const unusedOptions = program[command].options.filter(({ name }) => !usedArgs.has(name))
 
