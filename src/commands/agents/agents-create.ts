@@ -1,21 +1,14 @@
-import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
+import type { AgentsCreateOptionValues } from './option_values.js'
 import type { AgentRunner } from './types.js'
 import { validatePrompt, validateAgent, formatStatus, getAgentName } from './utils.js'
 import { AVAILABLE_AGENTS } from './constants.js'
 
-interface AgentCreateOptions extends OptionValues {
-  prompt?: string
-  agent?: string
-  branch?: string
-  model?: string
-}
-
-export const agentsCreate = async (promptArg: string, options: AgentCreateOptions, command: BaseCommand) => {
+export const agentsCreate = async (promptArg: string, options: AgentsCreateOptionValues, command: BaseCommand) => {
   const { api, site, siteInfo, apiOpts } = command.netlify
 
   await command.authenticate()

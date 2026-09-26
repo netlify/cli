@@ -4,7 +4,6 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import inquirer from 'inquirer'
 
-import type { OptionValues } from 'commander'
 import { install, uninstall } from '@pnpm/tabtab'
 
 import { generateAutocompletion } from '../../lib/completion/index.js'
@@ -17,10 +16,11 @@ import {
   AUTOLOAD_COMPINIT,
 } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { CompletionInstallOptionValues, CompletionUninstallOptionValues } from './option_values.js'
 
 const completer = join(dirname(fileURLToPath(import.meta.url)), '../../lib/completion/script.js')
 
-export const completionGenerate = async (_options: OptionValues, command: BaseCommand) => {
+export const completionGenerate = async (_options: CompletionInstallOptionValues, command: BaseCommand) => {
   const { parent } = command
 
   if (!parent) {
@@ -86,7 +86,7 @@ export const completionGenerate = async (_options: OptionValues, command: BaseCo
   }
 }
 
-export const completionUninstall = async (_options: OptionValues, command: BaseCommand) => {
+export const completionUninstall = async (_options: CompletionUninstallOptionValues, command: BaseCommand) => {
   if (!command.parent) {
     return logAndThrowError(`There has been an error deleting the completion script.`)
   }

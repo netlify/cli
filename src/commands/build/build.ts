@@ -1,16 +1,9 @@
-import type { OptionValues } from 'commander'
-
 import { type RunBuildOptions, getRunBuildOptions, runBuild } from '../../lib/build.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import { logAndThrowError, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
-
-export interface BuildOptions extends OptionValues {
-  context: string
-  dry: boolean
-  offline?: boolean
-}
+import type { BuildOptionValues } from './option_values.js'
 
 export const checkOptions = ({ cachedConfig: { siteInfo }, token }: RunBuildOptions) => {
   if (!siteInfo.id) {
@@ -24,7 +17,7 @@ export const checkOptions = ({ cachedConfig: { siteInfo }, token }: RunBuildOpti
   }
 }
 
-export const build = async (options: BuildOptions, command: BaseCommand) => {
+export const build = async (options: BuildOptionValues, command: BaseCommand) => {
   const { cachedConfig, siteInfo } = command.netlify
   command.setAnalyticsPayload({ dry: options.dry })
   // Retrieve Netlify Build options

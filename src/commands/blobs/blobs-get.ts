@@ -2,23 +2,18 @@ import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
 import { getStore, type GetStoreOptions } from '@netlify/blobs'
-import type { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { BlobsGetOptionValues } from './option_values.js'
 
-interface Options extends OptionValues {
-  output?: string
-  region?: GetStoreOptions['region']
-}
-
-export const blobsGet = async (storeName: string, key: string, options: Options, command: BaseCommand) => {
+export const blobsGet = async (storeName: string, key: string, options: BlobsGetOptionValues, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
   const { output } = options
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
-    region: options.region,
+    region: options.region as GetStoreOptions['region'],
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: `siteInfo` and its `id` are typed as always set
     siteID: siteInfo?.id ?? '',
     token: api.accessToken ?? '',
