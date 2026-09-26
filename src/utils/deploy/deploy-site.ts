@@ -6,7 +6,7 @@ import type { Config as FunctionsConfig } from '@netlify/zip-it-and-ship-it'
 import cleanDeep from 'clean-deep'
 
 import type BaseCommand from '../../commands/base-command.js'
-import { warn } from '../command-helpers.js'
+import { nonNullable, warn } from '../command-helpers.js'
 
 import {
   DEFAULT_CONCURRENT_HASH,
@@ -46,7 +46,6 @@ const buildStatsString = (possibleParts: (string | false | undefined)[]) => {
 }
 
 export interface DeploySiteOptions {
-  assetType?: 'file' | undefined
   branch?: string
   concurrentHash?: number
   concurrentUpload?: number
@@ -79,7 +78,6 @@ export const deploySite = async (
   siteId: string,
   dir: string,
   {
-    assetType,
     branch,
     concurrentHash = DEFAULT_CONCURRENT_HASH,
     concurrentUpload = DEFAULT_CONCURRENT_UPLOAD,
@@ -123,9 +121,8 @@ export const deploySite = async (
     { edgeFunctions, edgeFnShaMap },
   ] = await Promise.all([
     hashFiles({
-      assetType,
       concurrentHash,
-      directories: [dir, edgeFunctionsDistPath, deployConfigPath, dbMigrationsDistPath].filter(Boolean) as string[],
+      directories: [dir, edgeFunctionsDistPath, deployConfigPath, dbMigrationsDistPath].filter(nonNullable),
       filter,
       hashAlgorithm,
       normalizer: deployFileNormalizer.bind(null, workingDir),

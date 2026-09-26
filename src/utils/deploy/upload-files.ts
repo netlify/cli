@@ -23,11 +23,11 @@ type UploadDeployServerParams = WithRetryCount<Parameters<UploadApi['uploadDeplo
 interface UploadFileBase {
   filepath: string
   normalizedPath: string
-  body?: undefined
 }
 
 export interface StaticUploadFile extends UploadFileBase {
   assetType: 'file'
+  body?: undefined
 }
 
 // A generated file (e.g. `netlify.toml`) whose contents are held in memory rather than on disk
@@ -88,10 +88,7 @@ const uploadFiles = async (
   })
 
   const uploadFile = async (fileObj: UploadFile, index: number) => {
-    const { body, filepath, normalizedPath } = fileObj
-
-    // FIXME(@netlify/api): octet-stream `body` is typed as `ReadStream` only, but an inline string body works too
-    const readStreamCtor = () => (body ?? fs.createReadStream(filepath)) as fs.ReadStream
+    const { normalizedPath } = fileObj
 
     statusCb({
       type: 'upload',
@@ -101,10 +98,24 @@ const uploadFiles = async (
 
     switch (fileObj.assetType) {
       case 'file': {
+        if (fileObj.body !== undefined) {
+          const { body } = fileObj
+          return await retryUpload(
+            () =>
+              api.uploadDeployFile({
+                // @ts-expect-error FIXME(@netlify/api): octet-stream `body` is typed as `ReadStream` only, but any fetch body works
+                body: () => body,
+                deployId,
+                path: encodeURI(normalizedPath),
+              }),
+            maxRetry,
+          )
+        }
+
         return await retryUpload(
           () =>
             api.uploadDeployFile({
-              body: readStreamCtor,
+              body: () => fs.createReadStream(fileObj.filepath),
               deployId,
               path: encodeURI(normalizedPath),
             }),
@@ -116,7 +127,7 @@ const uploadFiles = async (
 
         return await retryUpload((retryCount) => {
           const params: UploadDeployFunctionParams = {
-            body: readStreamCtor,
+            body: () => fs.createReadStream(fileObj.filepath),
             deployId,
             invocationMode,
             timeout,
@@ -134,7 +145,7 @@ const uploadFiles = async (
       case 'edge-function': {
         return await retryUpload((retryCount) => {
           const params: UploadDeployEdgeFunctionParams = {
-            body: readStreamCtor,
+            body: () => fs.createReadStream(fileObj.filepath),
             deployId,
             codeSha: normalizedPath,
           }
@@ -149,7 +160,7 @@ const uploadFiles = async (
       case 'server': {
         return await retryUpload((retryCount) => {
           const params: UploadDeployServerParams = {
-            body: readStreamCtor,
+            body: () => fs.createReadStream(fileObj.filepath),
             deployId,
             codeSha: fileObj.hash,
           }
@@ -225,8 +236,9 @@ const retryUpload = <T>(uploadFn: (retryCount: number) => Promise<T>, maxRetry: 
       // user the delay before next reconnection attempt.
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- FIXME: the listener's promise is discarded
-    fibonacciBackoff.on('ready', tryUpload)
+    fibonacciBackoff.on('ready', (retryIndex) => {
+      void tryUpload(retryIndex)
+    })
 
     fibonacciBackoff.on('fail', () => {
       reject(lastError)

@@ -121,42 +121,34 @@ export const waitForDropDeploy = async (
   siteId: string,
   deployId: string,
   timeout: number = DEFAULT_DEPLOY_TIMEOUT,
-): Promise<DropSiteDeploy> => {
-  let deploy: DropSiteDeploy | undefined
+): Promise<DropSiteDeploy> =>
+  await pWaitFor(
+    async () => {
+      const response = await fetch(`${apiBase}/sites/${siteId}/deploys/${deployId}`, {
+        headers: makeHeaders(userAgent),
+      })
 
-  const checkDeploy = async (): Promise<boolean> => {
-    const response = await fetch(`${apiBase}/sites/${siteId}/deploys/${deployId}`, {
-      headers: makeHeaders(userAgent),
-    })
+      if (!response.ok) {
+        return false
+      }
 
-    if (!response.ok) {
+      const data = (await response.json()) as DropSiteDeploy
+      if (data.state === 'ready') {
+        return pWaitFor.resolveWith(data)
+      }
+      if (data.state === 'error') {
+        throw new Error(data.error_message ?? `Deploy ${deployId} had an error`)
+      }
       return false
-    }
-
-    const data = (await response.json()) as DropSiteDeploy
-    if (data.state === 'ready') {
-      deploy = data
-      return true
-    }
-    if (data.state === 'error') {
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty error message falls back to the generic one
-      throw new Error(data.error_message || `Deploy ${deployId} had an error`)
-    }
-    return false
-  }
-
-  await pWaitFor(checkDeploy, {
-    interval: DEPLOY_POLL,
-    timeout: {
-      milliseconds: timeout,
-      message: 'Timeout while waiting for deploy',
     },
-  })
-
-  // deploy is guaranteed to be set when pWaitFor resolves
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return deploy!
-}
+    {
+      interval: DEPLOY_POLL,
+      timeout: {
+        milliseconds: timeout,
+        message: 'Timeout while waiting for deploy',
+      },
+    },
+  )
 
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
 export const claimDropSite = async (
@@ -218,24 +210,19 @@ export const uploadDropFiles = async (
       phase: 'progress',
     })
 
-    let lastError: DropApiError | undefined
     for (let attempt = 0; attempt <= maxRetry; attempt++) {
       try {
         const body = fs.createReadStream(fileObj.filepath)
         await uploadDropFile(apiOptions, deployId, fileObj.normalizedPath, body, token)
         return
       } catch (error) {
-        lastError = error as DropApiError
-        if (lastError.status === 400 || lastError.status === 422) {
+        const { status } = error as DropApiError
+        const isPermanentFailure = status === 400 || status === 422
+        if (isPermanentFailure || attempt === maxRetry) {
           throw error
         }
-        if (attempt < maxRetry) {
-          await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
-        }
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
       }
-    }
-    if (lastError) {
-      throw lastError
     }
   }
 
