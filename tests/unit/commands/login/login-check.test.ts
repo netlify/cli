@@ -45,7 +45,7 @@ describe('loginCheck', () => {
   test('outputs pending when ticket is not authorized', async () => {
     mocks.showTicket.mockResolvedValue({ authorized: false })
 
-    await loginCheck({ check: 'ticket-abc' }, apiOpts, globalConfig)
+    await loginCheck('ticket-abc', apiOpts, globalConfig)
 
     const output = stdoutOutput.join('')
     expect(output).toContain('Status: pending')
@@ -55,7 +55,7 @@ describe('loginCheck', () => {
     const error = Object.assign(new Error('Not Found'), { status: 404 })
     mocks.showTicket.mockRejectedValue(error)
 
-    await loginCheck({ check: 'ticket-bad' }, apiOpts, globalConfig)
+    await loginCheck('ticket-bad', apiOpts, globalConfig)
 
     const output = stdoutOutput.join('')
     expect(output).toContain('Status: denied')
@@ -65,7 +65,7 @@ describe('loginCheck', () => {
     const error = Object.assign(new Error('Unauthorized'), { status: 401 })
     mocks.showTicket.mockRejectedValue(error)
 
-    await loginCheck({ check: 'ticket-bad' }, apiOpts, globalConfig)
+    await loginCheck('ticket-bad', apiOpts, globalConfig)
 
     const output = stdoutOutput.join('')
     expect(output).toContain('Status: denied')
@@ -75,13 +75,13 @@ describe('loginCheck', () => {
     const error = Object.assign(new Error('Internal Server Error'), { status: 500 })
     mocks.showTicket.mockRejectedValue(error)
 
-    await expect(loginCheck({ check: 'ticket-bad' }, apiOpts, globalConfig)).rejects.toThrow('Internal Server Error')
+    await expect(loginCheck('ticket-bad', apiOpts, globalConfig)).rejects.toThrow('Internal Server Error')
   })
 
   test('rethrows errors without a status from showTicket', async () => {
     mocks.showTicket.mockRejectedValue(new Error('Network failure'))
 
-    await expect(loginCheck({ check: 'ticket-bad' }, apiOpts, globalConfig)).rejects.toThrow('Network failure')
+    await expect(loginCheck('ticket-bad', apiOpts, globalConfig)).rejects.toThrow('Network failure')
   })
 
   test('outputs authorized and stores token when ticket is authorized', async () => {
@@ -93,7 +93,7 @@ describe('loginCheck', () => {
       full_name: 'Test User',
     })
 
-    await loginCheck({ check: 'ticket-ok' }, apiOpts, globalConfig)
+    await loginCheck('ticket-ok', apiOpts, globalConfig)
 
     const output = stdoutOutput.join('')
     expect(output).toContain('Status: authorized')

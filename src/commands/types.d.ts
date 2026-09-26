@@ -7,7 +7,7 @@ import type { NormalizedCachedConfigConfig } from '../utils/command-helpers.js'
 import type { CachedConfig } from '../lib/build.js'
 
 export type NetlifySite = {
-  root?: string
+  root: string
   configPath?: string
   siteId?: string
   get id(): string | undefined

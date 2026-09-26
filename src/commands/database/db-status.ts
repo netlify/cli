@@ -365,7 +365,7 @@ const renderPretty = (params: RenderParams) => {
 }
 
 export const statusDb = async (options: DbStatusOptionValues, command: BaseCommand) => {
-  const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
+  const buildDir = command.netlify.site.root
   if (!buildDir) {
     throw new Error('Could not determine the project root directory.')
   }
@@ -455,7 +455,8 @@ export const statusDb = async (options: DbStatusOptionValues, command: BaseComma
     return
   }
 
-  const siteInfo = command.netlify.siteInfo as { admin_url?: string } | undefined
+  // FIXME(@netlify/api): `SiteInfo` marks `admin_url` as required, but it's absent for unlinked projects
+  const adminUrl: string | undefined = command.netlify.siteInfo.admin_url
   renderPretty({
     enabled,
     packageInstalled,
@@ -467,6 +468,6 @@ export const statusDb = async (options: DbStatusOptionValues, command: BaseComma
     hasUrlOverride: Boolean(envUrl),
     migrationsDirectory,
     projectRoot: buildDir,
-    adminUrl: siteInfo?.admin_url,
+    adminUrl,
   })
 }

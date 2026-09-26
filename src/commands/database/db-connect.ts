@@ -19,7 +19,7 @@ function redactConnectionString(connectionString: string): string {
 }
 
 export const connect = async (options: DbConnectOptionValues, command: BaseCommand): Promise<void> => {
-  const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
+  const buildDir = command.netlify.site.root
   if (!buildDir) {
     throw new Error('Could not determine the project root directory.')
   }

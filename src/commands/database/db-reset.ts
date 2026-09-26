@@ -47,7 +47,7 @@ const discardLocalDatabase = async (error: LocalDatabaseStartError, options: DbR
 
 export const reset = async (options: DbResetOptionValues, command: BaseCommand) => {
   const { json } = options
-  const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
+  const buildDir = command.netlify.site.root
   if (!buildDir) {
     throw new Error('Could not determine the project root directory.')
   }
