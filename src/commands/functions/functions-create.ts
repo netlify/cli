@@ -29,6 +29,7 @@ import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import type BaseCommand from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
 import type { FunctionsCreateOptionValues } from './option_values.js'
+import { getErrorMessage } from '../../utils/errors.js'
 
 const require = createRequire(import.meta.url)
 
@@ -435,7 +436,7 @@ const downloadFromURL = async function (
         const dest = fs.createWriteStream(path.join(fnFolder, finalName))
         res.body?.pipe(dest)
       } catch (error_) {
-        throw new Error(`Error while retrieving ${downloadUrl} ${error_}`)
+        throw new Error(`Error while retrieving ${downloadUrl} ${getErrorMessage(error_)}`)
       }
     }),
   )
@@ -649,7 +650,7 @@ const createFunctionAddon = async function ({
     log(`Add-on "${addonName}" created for ${siteData.name}`)
     return true
   } catch (error_) {
-    return logAndThrowError((error_ as Error).message)
+    return logAndThrowError(getErrorMessage(error_))
   }
 }
 
@@ -740,7 +741,7 @@ const installAddons = async function (command: BaseCommand, functionAddons: Temp
 
       await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
     } catch (error_) {
-      return logAndThrowError(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
+      return logAndThrowError(`${NETLIFYDEVERR} Error installing addon: ${getErrorMessage(error_)}`)
     }
   })
   return Promise.all(arr)

@@ -7,6 +7,7 @@ import { localAppliedMigrations, remoteAppliedMigrations } from './util/applied-
 import { connectToDatabase } from './util/db-connection.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import type { DbMigrationsResetOptionValues } from './option_values.js'
+import { isErrnoException } from '../../utils/errors.js'
 
 const SQL_EXTENSION = '.sql'
 
@@ -126,7 +127,7 @@ const readLocalMigrations = async (migrationsDirectory: string): Promise<LocalMi
   try {
     entries = await readdir(migrationsDirectory, { withFileTypes: true })
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+    if (isErrnoException(error) && error.code === 'ENOENT') {
       return []
     }
     throw error

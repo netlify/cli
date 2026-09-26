@@ -1,7 +1,12 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { SUPPORTED_CONTEXTS, translateFromEnvelopeToMongo, type EnvelopeItem } from '../../utils/env/index.js'
+import {
+  SUPPORTED_CONTEXTS,
+  toEnvelopeError,
+  translateFromEnvelopeToMongo,
+  type EnvelopeItem,
+} from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
@@ -71,8 +76,7 @@ const unsetInEnvelope = async ({
       await api.deleteEnvVar({ accountId, siteId, key })
     }
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error_.json ? error_.json.msg : error_
+    throw toEnvelopeError(error_)
   }
 
   delete env[key]

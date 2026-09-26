@@ -7,6 +7,7 @@ import execa, { type ExecaError } from 'execa'
 import fetch from 'node-fetch'
 
 import { log, warn } from '../command-helpers.js'
+import { getErrorMessage } from '../errors.js'
 import { temporaryDirectory } from '../temporary-file.js'
 import type { DeployEvent } from './status-cb.js'
 
@@ -126,7 +127,7 @@ export const uploadSourceZip = async ({
     try {
       zipPath = await createSourceZip({ sourceDir, filename, statusCb })
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error)
+      const errorMsg = getErrorMessage(error)
       statusCb({
         type: 'source-zip-upload',
         msg: `Failed to create source zip: ${errorMsg}`,
@@ -143,7 +144,7 @@ export const uploadSourceZip = async ({
       await uploadZipToS3(zipPath, uploadUrl, statusCb)
       sourceZipFileName = filename
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error)
+      const errorMsg = getErrorMessage(error)
       statusCb({
         type: 'source-zip-upload',
         msg: `Failed to upload source zip: ${errorMsg}`,

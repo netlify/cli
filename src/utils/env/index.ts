@@ -51,6 +51,19 @@ export type EnvelopeItem = Omit<ApiEnvVar, 'key' | 'scopes' | 'values'> & {
   values: EnvelopeEnvVarValue[]
 }
 
+/**
+ * Envelope explains rejected writes in the JSON body's `msg`; surface that instead of the bare HTTP error.
+ * `@netlify/api` doesn't export its `JSONHTTPError` class, so match it structurally.
+ */
+export const toEnvelopeError = (error: unknown): unknown =>
+  error instanceof Error &&
+  'json' in error &&
+  typeof error.json === 'object' &&
+  error.json !== null &&
+  'msg' in error.json
+    ? error.json.msg
+    : error
+
 // AFAICT, Envelope uses only `post_processing` on returned env vars; the CLI documents and expects
 // only `post-processing` as a valid user-provided scope; the code handles both everywhere. Consider
 // explicitly normalizing and dropping undocumented support for user-provided `post_processing`.

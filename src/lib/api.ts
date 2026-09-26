@@ -1,17 +1,14 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { warn } from '../utils/command-helpers.js'
+import { getErrorMessage } from '../utils/errors.js'
 import type { SiteInfo } from '../utils/types.js'
 
 export const cancelDeploy = async ({ api, deployId }: { api: NetlifyAPI; deployId: string }): Promise<void> => {
   try {
     await api.cancelSiteDeploy({ deploy_id: deployId })
   } catch (error) {
-    warn(
-      `Failed canceling deploy with id ${deployId}: ${
-        error instanceof Error ? error.message : (error?.toString() ?? '')
-      }`,
-    )
+    warn(`Failed canceling deploy with id ${deployId}: ${getErrorMessage(error)}`)
   }
 }
 

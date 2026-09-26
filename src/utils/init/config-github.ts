@@ -1,7 +1,8 @@
 import type { NetlifyAPI } from '@netlify/api'
 import { Octokit } from '@octokit/rest'
 
-import { chalk, logAndThrowError, log, type APIError } from '../command-helpers.js'
+import { chalk, logAndThrowError, log } from '../command-helpers.js'
+import { getErrorMessage, isAPIError } from '../errors.js'
 import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'
 import type { GlobalConfigStore } from '../types.js'
 import type { BaseCommand } from '../../commands/index.js'
@@ -71,7 +72,7 @@ const addDeployKey = async ({
     return key
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed adding GitHub deploy key', error })
-    if ((error as APIError).status === 404) {
+    if (isAPIError(error) && error.status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
     }
@@ -96,7 +97,7 @@ const getGitHubRepo = async ({
     return data
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed retrieving GitHub repository information', error })
-    if ((error as APIError).status === 404) {
+    if (isAPIError(error) && error.status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and accessible by ${owner}`
     }
@@ -143,9 +144,9 @@ const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }: Deplo
       })
     } catch (error) {
       // Ignore exists error if the list doesn't return all installed hooks
-      if (!(error as Error).message.includes('Hook already exists on this repository')) {
+      if (!getErrorMessage(error).includes('Hook already exists on this repository')) {
         let message = formatErrorMessage({ message: 'Failed creating repo hook', error })
-        if ((error as APIError).status === 404) {
+        if (isAPIError(error) && error.status === 404) {
           const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
           message = `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
         }

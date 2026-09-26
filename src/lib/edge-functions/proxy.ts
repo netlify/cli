@@ -14,6 +14,7 @@ import {
   chalk,
   logAndThrowError,
 } from '../../utils/command-helpers.js'
+import { getErrorMessage } from '../../utils/errors.js'
 import { type FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { type GeolocationMode, getGeoLocation } from '../geo-location.js'
@@ -290,6 +291,6 @@ const prepareServer = async ({
 
     return registry
   } catch (error) {
-    return logAndThrowError(error instanceof Error ? error.message : error?.toString())
+    return logAndThrowError(getErrorMessage(error))
   }
 }

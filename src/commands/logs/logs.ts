@@ -32,6 +32,7 @@ import {
   streamFunctions,
   validateFunctionCount,
 } from './sources/functions.js'
+import { getErrorMessage } from '../../utils/errors.js'
 
 type Source = 'functions' | 'edge-functions' | 'deploy'
 const VALID_SOURCES: Source[] = ['functions', 'edge-functions', 'deploy']
@@ -156,7 +157,7 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
     try {
       sources = parseSources(rawSources)
     } catch (error) {
-      return logAndThrowError((error as Error).message)
+      return logAndThrowError(getErrorMessage(error))
     }
   } else {
     sources = []
@@ -188,7 +189,7 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
       deployId = await resolveDeployIdFromUrl(options.url, client, siteId, siteInfo)
       deployTargeted = deployId !== undefined
     } catch (error) {
-      const message = (error as Error).message
+      const message = getErrorMessage(error)
       if (message.includes("doesn't seem to match") && siteInfo.name) {
         const parts = [
           netlifyCommand(),
@@ -217,7 +218,7 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
       }
       historicalRange = { from, to }
     } catch (error) {
-      return logAndThrowError((error as Error).message)
+      return logAndThrowError(getErrorMessage(error))
     }
   }
 
@@ -430,7 +431,7 @@ export const runFollowMode = async ({
         }
         streamFunctions(selected, siteId, accessToken, onEntry)
       } catch (error) {
-        return logAndThrowError((error as Error).message)
+        return logAndThrowError(getErrorMessage(error))
       }
     }
   }

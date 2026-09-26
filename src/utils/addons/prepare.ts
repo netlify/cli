@@ -1,6 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
-import { logAndThrowError, type APIError } from '../command-helpers.js'
+import { logAndThrowError } from '../command-helpers.js'
+import { getErrorMessage } from '../errors.js'
 
 type Addon = Awaited<ReturnType<NetlifyAPI['listServiceInstancesForSite']>>[number]
 
@@ -12,7 +13,7 @@ export const getSiteData = async ({ api, siteId }: { api: NetlifyAPI; siteId: st
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    return logAndThrowError(`Failed getting list of project data: ${(error_ as APIError).message}`)
+    return logAndThrowError(`Failed getting list of project data: ${getErrorMessage(error_)}`)
   }
   return siteData
 }
@@ -22,7 +23,7 @@ export const getAddons = async ({ api, siteId }: { api: NetlifyAPI; siteId: stri
   try {
     addons = await api.listServiceInstancesForSite({ siteId })
   } catch (error_) {
-    return logAndThrowError(`Failed getting list of addons: ${(error_ as APIError).message}`)
+    return logAndThrowError(`Failed getting list of addons: ${getErrorMessage(error_)}`)
   }
   return addons
 }

@@ -5,6 +5,7 @@ import type { ClientRequest } from 'http'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.js'
+import { getErrorMessage } from '../utils/errors.js'
 import { waitPort } from './wait-port.js'
 
 type ConnectOptions = Parameters<HttpsProxyAgent<string>['connect']>[1]
@@ -77,9 +78,7 @@ export const tryGetAgent = async ({
       AGENT_PORT_TIMEOUT,
     )
   } catch (error) {
-    // unknown error
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    return { error: `${httpProxy} is not available.`, message: error.message }
+    return { error: `${httpProxy} is not available.`, message: getErrorMessage(error) }
   }
 
   if (!port.open) {
@@ -94,8 +93,7 @@ export const tryGetAgent = async ({
     try {
       certificate = await readFile(certificateFile)
     } catch (error) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      response = { warning: `Could not read certificate file '${certificateFile}'.`, message: error.message }
+      response = { warning: `Could not read certificate file '${certificateFile}'.`, message: getErrorMessage(error) }
     }
   }
 

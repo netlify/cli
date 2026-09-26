@@ -13,6 +13,7 @@ import terminalLink from 'terminal-link'
 import { startSpinner } from '../lib/spinner.js'
 
 import { getDrivingAgent } from './agent-detection.js'
+import { isAPIError } from './errors.js'
 import getCLIPackageJson from './get-cli-package-json.js'
 import { reportError } from './telemetry/report-error.js'
 import type { TokenLocation } from './types.js'
@@ -108,8 +109,7 @@ export const pollForToken = async ({
     }
     return accessToken
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.name === 'TimeoutError') {
+    if (error_ instanceof Error && error_.name === 'TimeoutError') {
       return logAndThrowError(
         `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
           'Netlify',
@@ -118,7 +118,7 @@ export const pollForToken = async ({
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
     }
-    if ((error_ as { status?: number }).status === 404) {
+    if (isAPIError(error_) && error_.status === 404) {
       return logAndThrowError(
         `Authorization was denied or the login session expired. Run ${chalk.cyanBright('netlify login')} to try again.`,
       )
@@ -242,14 +242,7 @@ export const normalizeConfig = (config: CachedConfig['config']): NormalizedCache
 export const getTerminalLink = (text: string, url: string): string =>
   terminalLink(text, url, { fallback: () => `${text} (${url})` })
 
-export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => err instanceof Error
-
 export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined
-
-export interface APIError extends Error {
-  status: number
-  message: string
-}
 
 export const checkFileForLine = (filename: string, line: string) => {
   let filecontent = ''

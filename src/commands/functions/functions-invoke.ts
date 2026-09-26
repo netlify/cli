@@ -9,6 +9,7 @@ import { NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/comma
 import { BACKGROUND, CLOCKWORK_USERAGENT, type LocalFunction, getFunctions } from '../../utils/functions/index.js'
 import type BaseCommand from '../base-command.js'
 import type { FunctionsInvokeOptionValues } from './option_values.js'
+import { getErrorMessage } from '../../utils/errors.js'
 
 const require = createRequire(import.meta.url)
 
@@ -225,6 +226,6 @@ export const functionsInvoke = async (
     const data = await response.text()
     console.log(data)
   } catch (error_) {
-    return logAndThrowError(`Ran into an error invoking your function: ${(error_ as Error).message}`)
+    return logAndThrowError(`Ran into an error invoking your function: ${getErrorMessage(error_)}`)
   }
 }

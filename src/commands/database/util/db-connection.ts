@@ -7,6 +7,7 @@ import { LocalState } from '@netlify/dev-utils'
 
 import { warn } from '../../../utils/command-helpers.js'
 import { PgClientExecutor } from './pg-client-executor.js'
+import { isErrnoException } from '../../../utils/errors.js'
 
 export const getLocalDatabaseDirectory = (buildDir: string): string => join(buildDir, '.netlify', 'db')
 
@@ -80,10 +81,8 @@ export const describeError = (err: unknown): string => {
 // (IPv4 + IPv6) in an AggregateError whose outer message is empty, so we also
 // unwrap .errors when present.
 function isConnectionUnreachableError(err: unknown): boolean {
-  if (!err || typeof err !== 'object') return false
-  const code = (err as NodeJS.ErrnoException).code
-  if (code === 'ECONNREFUSED' || code === 'ENOTFOUND' || code === 'EHOSTUNREACH') return true
-  if ('errors' in err && Array.isArray(err.errors)) {
+  if (isErrnoException(err) && ['ECONNREFUSED', 'ENOTFOUND', 'EHOSTUNREACH'].includes(err.code ?? '')) return true
+  if (err instanceof AggregateError) {
     return err.errors.some(isConnectionUnreachableError)
   }
   return false

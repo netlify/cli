@@ -1,8 +1,9 @@
 import inquirer from 'inquirer'
 
-import { chalk, logAndThrowError, exit, log, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, log } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 import type { SitesDeleteOptionValues } from './option_values.js'
+import { formatAPIError, isAPIError } from '../../utils/errors.js'
 
 export const sitesDelete = async (siteId: string, options: SitesDeleteOptionValues, command: BaseCommand) => {
   command.setAnalyticsPayload({ force: options.force })
@@ -17,7 +18,7 @@ export const sitesDelete = async (siteId: string, options: SitesDeleteOptionValu
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    if ((error_ as APIError).status === 404) {
+    if (isAPIError(error_) && error_.status === 404) {
       return logAndThrowError(`No project with id ${siteId} found. Please verify the project ID & try again.`)
     } else {
       return logAndThrowError(error_)
@@ -73,10 +74,10 @@ export const sitesDelete = async (siteId: string, options: SitesDeleteOptionValu
   try {
     await api.deleteSite({ site_id: siteId })
   } catch (error_) {
-    if ((error_ as APIError).status === 404) {
+    if (isAPIError(error_) && error_.status === 404) {
       return logAndThrowError(`No project with id ${siteId} found. Please verify the project ID & try again.`)
     } else {
-      return logAndThrowError(`Delete Project error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+      return logAndThrowError(`Delete Project error: ${formatAPIError(error_)}`)
     }
   }
   log(`Project "${siteId}" successfully deleted!`)

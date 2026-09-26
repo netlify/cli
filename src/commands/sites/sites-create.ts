@@ -2,7 +2,7 @@ import inquirer from 'inquirer'
 import { pick } from '../../utils/object-utilities.js'
 import prettyjson from 'prettyjson'
 
-import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson, warn } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
@@ -13,6 +13,7 @@ import { MAX_SITE_NAME_LENGTH } from '../../utils/validation.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import type { SitesCreateOptionValues } from './option_values.js'
+import { formatAPIError, isAPIError } from '../../utils/errors.js'
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {
@@ -81,12 +82,12 @@ export const sitesCreate = async (options: SitesCreateOptionValues, command: Bas
     try {
       site = await createSiteInTeam(body)
     } catch (error_) {
-      if ((error_ as APIError).status === 422) {
+      if (isAPIError(error_) && error_.status === 422) {
         warn(`${attemptName}.netlify.app already exists. Please try a different slug.`)
         return tryCreateSiteInteractive(undefined)
       }
 
-      return logAndThrowError(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+      return logAndThrowError(`createSiteInTeam error: ${formatAPIError(error_)}`)
     }
   }
 
@@ -113,16 +114,14 @@ export const sitesCreate = async (options: SitesCreateOptionValues, command: Bas
           site = await createSiteInTeam(body)
           return
         } catch (error_) {
-          if ((error_ as APIError).status === 422) {
+          if (isAPIError(error_) && error_.status === 422) {
             if (attempt === MAX_NAME_RETRIES) {
               return logAndThrowError(`Project name "${nameToTry}" is already taken. Please try a different name.`)
             }
             continue
           }
 
-          return logAndThrowError(
-            `createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`,
-          )
+          return logAndThrowError(`createSiteInTeam error: ${formatAPIError(error_)}`)
         }
       }
     }
@@ -138,7 +137,7 @@ export const sitesCreate = async (options: SitesCreateOptionValues, command: Bas
     try {
       site = await createSiteInTeam({})
     } catch (error_) {
-      return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+      return logAndThrowError(`Failed to create site: ${formatAPIError(error_)}`)
     }
   } else if (isInteractive() && !options.name) {
     const { name: siteName } = await getSiteNameInput(options.name)

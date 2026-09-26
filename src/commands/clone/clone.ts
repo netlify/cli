@@ -4,7 +4,7 @@ import { LocalState } from '@netlify/dev-utils'
 import inquirer from 'inquirer'
 
 import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js'
-import { chalk, logAndThrowError, log, getToken, netlifyCommand, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, getToken, netlifyCommand } from '../../utils/command-helpers.js'
 import { runGit } from '../../utils/run-git.js'
 import execa from '../../utils/execa.js'
 import type BaseCommand from '../base-command.js'
@@ -13,6 +13,7 @@ import { link } from '../link/link.js'
 import type { CloneOptionValues } from './option_values.js'
 import { startSpinner } from '../../lib/spinner.js'
 import type { SiteInfo } from '../../utils/types.js'
+import { isAPIError } from '../../utils/errors.js'
 
 const NETLIFY_GIT_SERVICE_HOST = 'hgit.services-prod.nsvcs.net'
 
@@ -115,7 +116,7 @@ const lookupSiteByName = async (api: BaseCommand['netlify']['api'], siteName: st
     // FIXME(@netlify/api): site responses have all-optional fields, unlike `SiteInfo`
     return site ? (site as SiteInfo) : null
   } catch (error) {
-    if ((error as APIError).status === 404) {
+    if (isAPIError(error) && error.status === 404) {
       return null
     }
     throw error

@@ -36,7 +36,6 @@ import {
   log,
   logJson,
   warn,
-  type APIError,
 } from '../../utils/command-helpers.js'
 import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
@@ -53,13 +52,7 @@ import { isEmpty } from '../../utils/object-utilities.js'
 import openBrowser from '../../utils/open-browser.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { resolveTeamForNonInteractive } from '../../utils/team.js'
-import {
-  type DropApiError,
-  getDropToken,
-  createDropDeploy,
-  uploadDropFiles,
-  waitForDropDeploy,
-} from '../../utils/deploy/drop-api.js'
+import { getDropToken, createDropDeploy, uploadDropFiles, waitForDropDeploy } from '../../utils/deploy/drop-api.js'
 import { getUploadList } from '../../utils/deploy/util.js'
 import hashFiles from '../../utils/deploy/hash-files.js'
 import { deployFileNormalizer, getEdgeFunctionsDistPathIfExists } from '../../utils/deploy/process-files.js'
@@ -72,6 +65,7 @@ import type { DeployOptionValues } from './option_values.js'
 import boxen from 'boxen'
 import terminalLink from 'terminal-link'
 import { anyEdgeFunctionsDirectoryExists } from '../../lib/edge-functions/get-directories.js'
+import { type APIError, formatAPIError, getErrorMessage, isAPIError } from '../../utils/errors.js'
 
 /**
  * The parts of the resolved configuration a deploy reads and uploads. Satisfied both by the CLI's cached config and
@@ -124,12 +118,12 @@ const triggerDeploy = async ({
       )
     }
   } catch (error_) {
-    if ((error_ as APIError).status === 404) {
+    if (isAPIError(error_) && error_.status === 404) {
       return logAndThrowError(
         'Project not found. Please rerun "netlify link" and make sure that your project has CI configured.',
       )
     } else {
-      return logAndThrowError((error_ as APIError).message)
+      return logAndThrowError(getErrorMessage(error_))
     }
   }
 }
@@ -436,48 +430,34 @@ const prepareProductionDeploy = async ({
   }
 }
 
-const hasErrorMessage = (actual: unknown, expected: string): boolean => {
-  if (typeof actual === 'string') {
-    return actual.includes(expected)
-  }
-  return false
+interface HTTPError extends APIError {
+  json?: { message?: string }
 }
 
-interface DeployError extends Error {
-  json?: { message?: string }
-  status?: unknown
-}
-const reportDeployError = ({
-  error,
-  failAndExit,
-}: {
-  error: DeployError
-  failAndExit: (err: unknown) => never
-}): never => {
-  switch (true) {
-    case error.name === 'JSONHTTPError': {
-      const message = error.json?.message ?? ''
-      if (hasErrorMessage(message, 'Background Functions not allowed by team plan')) {
-        return failAndExit(`\n${BACKGROUND_FUNCTIONS_WARNING}`)
-      }
-      warn(`JSONHTTPError: ${message} ${error.status}`)
-      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
-      return failAndExit(error)
+const isHTTPError = (error: unknown, name: 'JSONHTTPError' | 'TextHTTPError'): error is HTTPError =>
+  isAPIError(error) && error.name === name
+
+const reportDeployError = ({ error, failAndExit }: { error: unknown; failAndExit: (err: unknown) => never }): never => {
+  if (isHTTPError(error, 'JSONHTTPError')) {
+    const message = error.json?.message ?? ''
+    if (message.includes('Background Functions not allowed by team plan')) {
+      return failAndExit(`\n${BACKGROUND_FUNCTIONS_WARNING}`)
     }
-    case error.name === 'TextHTTPError': {
-      warn(`TextHTTPError: ${error.status}`)
-      warn(`\n${error}\n`)
-      return failAndExit(error)
-    }
-    case hasErrorMessage(error.message, 'Invalid filename'): {
-      warn(error.message)
-      return failAndExit(error)
-    }
-    default: {
-      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
-      return failAndExit(error)
-    }
+    warn(`JSONHTTPError: ${message} ${error.status.toString()}`)
+    warn(`\n${JSON.stringify(error, null, '  ')}\n`)
+    return failAndExit(error)
   }
+  if (isHTTPError(error, 'TextHTTPError')) {
+    warn(`TextHTTPError: ${error.status.toString()}`)
+    warn(`\n${error.toString()}\n`)
+    return failAndExit(error)
+  }
+  if (error instanceof Error && error.message.includes('Invalid filename')) {
+    warn(error.message)
+    return failAndExit(error)
+  }
+  warn(`\n${JSON.stringify(error, null, '  ')}\n`)
+  return failAndExit(error)
 }
 
 const deployProgressCb = function () {
@@ -728,7 +708,7 @@ const runDeploy = async ({
       await cancelDeploy({ api, deployId })
     }
 
-    return reportDeployError({ error: error as DeployError, failAndExit: logAndThrowError })
+    return reportDeployError({ error, failAndExit: logAndThrowError })
   }
 
   const siteUrl = results.deploy.ssl_url || results.deploy.url
@@ -1110,7 +1090,7 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
     site.id = siteData.id
     return siteData
   } catch (error_) {
-    if ((error_ as APIError).status === 422 && siteName) {
+    if (isAPIError(error_) && error_.status === 422 && siteName) {
       const suffix = randomBytes(4).toString('hex')
       const suffixedName = `${siteName.trim()}-${suffix}`
       log(`Site name "${siteName}" is taken. Retrying with "${suffixedName}"...`)
@@ -1122,17 +1102,13 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
         site.id = siteData.id
         return siteData
       } catch (retryError) {
-        return logAndThrowError(
-          `Failed to create site "${suffixedName}": ${(retryError as APIError).status}: ${
-            (retryError as APIError).message
-          }`,
-        )
+        return logAndThrowError(`Failed to create site "${suffixedName}": ${formatAPIError(retryError)}`)
       }
     }
-    if ((error_ as APIError).status === 422) {
+    if (isAPIError(error_) && error_.status === 422) {
       return logAndThrowError('Unable to create site with a random name. Please try again or specify a different name.')
     }
-    return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+    return logAndThrowError(`Failed to create site: ${formatAPIError(error_)}`)
   }
 }
 
@@ -1298,8 +1274,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
     dropToken = await getDropToken(dropApiOptions)
     deployInfo = await createDropDeploy(dropApiOptions, files, dropToken, options.createdVia)
   } catch (error) {
-    const dropError = error as DropApiError
-    if (dropError.status === 429) {
+    if (isAPIError(error) && error.status === 429) {
       const loginCommand = isInteractive()
         ? chalk.cyanBright('netlify login')
         : chalk.cyanBright('netlify login --request <message>')
