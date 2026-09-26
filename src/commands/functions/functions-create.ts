@@ -1,7 +1,6 @@
 import cp from 'child_process'
 import fs from 'fs'
-import { mkdir, readdir, unlink } from 'fs/promises'
-import { createRequire } from 'module'
+import { mkdir, readdir, readFile, unlink } from 'fs/promises'
 import path, { dirname, join, relative } from 'path'
 import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
@@ -30,8 +29,6 @@ import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import type BaseCommand from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
 
-const require = createRequire(import.meta.url)
-
 const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../../functions-templates')
 
 /**
@@ -58,8 +55,6 @@ interface FunctionsCreateOptions extends OptionValues {
   offline?: boolean
 }
 
-type FunctionsCreateOptionsWithURL = FunctionsCreateOptions & { url: string }
-
 interface TemplateAddon {
   addonName: string
   addonDidInstall?: (fnPath: string) => void
@@ -83,7 +78,6 @@ interface TemplateChoice {
   name: string
   value: FunctionTemplate
   short: string
-  score?: number
 }
 
 interface TemplatePackageJson {
@@ -93,9 +87,19 @@ interface TemplatePackageJson {
 
 interface RepoContentsEntry {
   name: string
-  // FIXME: GitHub returns `null` for directories
-  download_url: string
+  download_url: string | null
 }
+
+const readTemplatePackageJson = async (packageJsonPath: string): Promise<TemplatePackageJson> =>
+  JSON.parse(await readFile(packageJsonPath, 'utf8')) as TemplatePackageJson
+
+const isRepoContentsEntry = (value: unknown): value is RepoContentsEntry =>
+  typeof value === 'object' &&
+  value !== null &&
+  'name' in value &&
+  typeof value.name === 'string' &&
+  'download_url' in value &&
+  (typeof value.download_url === 'string' || value.download_url === null)
 
 const isValidFunctionName = (name: unknown): name is string => typeof name === 'string' && /^[\w.-]+$/i.test(name)
 
@@ -144,23 +148,8 @@ const getNameFromArgs = async function (
   return name
 }
 
-// FIXME: template choices have no `description`, so every searched string ends with "undefined"
-const filterRegistry = function (registry: (TemplateChoice & { description?: undefined })[], input: string) {
-  const temp = registry.map((value) => value.name + value.description)
-  const filteredTemplates = fuzzy.filter(input, temp)
-  const filteredTemplateNames = new Set(
-    filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
-  )
-  return registry
-    .filter((t) => filteredTemplateNames.has(t.name + t.description))
-    .map((t) => {
-      // add the score
-      // @ts-expect-error FIXME: `find` can return `undefined`, which would make this destructuring throw
-      const { score } = filteredTemplates.find((filteredTemplate) => filteredTemplate.string === t.name + t.description)
-      t.score = score
-      return t
-    })
-}
+const filterRegistry = (registry: TemplateChoice[], input: string): TemplateChoice[] =>
+  fuzzy.filter(input, registry, { extract: (choice) => choice.name }).map(({ original }) => original)
 
 const formatRegistryArrayForInquirer = async function (
   lang: string,
@@ -170,7 +159,7 @@ const formatRegistryArrayForInquirer = async function (
 
   const imports = await Promise.all(
     folders
-      .filter((folder) => Boolean(folder?.isDirectory()))
+      .filter((folder) => folder.isDirectory())
       .map(async ({ name }) => {
         try {
           const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
@@ -185,30 +174,13 @@ const formatRegistryArrayForInquirer = async function (
   )
   const registry = imports
     .filter((template): template is FunctionTemplateMetadata => template?.functionType === funcType)
-    .sort((templateA, templateB) => {
-      const priorityDiff = (templateA.priority || DEFAULT_PRIORITY) - (templateB.priority || DEFAULT_PRIORITY)
-
-      if (priorityDiff !== 0) {
-        return priorityDiff
-      }
-
-      // This branch is needed because `Array.prototype.sort` was not stable
-      // until Node 11, so the original sorting order from `fs.readdirSync`
-      // was not respected. We can simplify this once we drop support for
-      // Node 10.
-      // @ts-expect-error FIXME: subtracting two objects always yields `NaN`
-      return templateA - templateB
-    })
-    .map((t): TemplateChoice => {
-      const template = t as FunctionTemplate
-      template.lang = lang
-      return {
-        // confusing but this is the format inquirer wants
-        name: `[${template.name}] ${template.description}`,
-        value: template,
-        short: `${lang}-${template.name}`,
-      }
-    })
+    .sort((templateA, templateB) => (templateA.priority ?? DEFAULT_PRIORITY) - (templateB.priority ?? DEFAULT_PRIORITY))
+    .map((template) => ({
+      // confusing but this is the format inquirer wants
+      name: `[${template.name}] ${template.description}`,
+      value: { ...template, lang },
+      short: `${lang}-${template.name}`,
+    }))
   return registry
 }
 
@@ -221,11 +193,16 @@ const pickTemplate = async function (
 ): Promise<FunctionTemplate | 'url' | 'report'> {
   const specialCommands = [
     new inquirer.Separator(),
-    {
-      name: `Clone template from GitHub URL`,
-      value: 'url',
-      short: 'gh-url',
-    },
+    // Edge Functions can't be cloned from a URL
+    ...(funcType === 'edge'
+      ? []
+      : [
+          {
+            name: `Clone template from GitHub URL`,
+            value: 'url',
+            short: 'gh-url',
+          },
+        ]),
     {
       name: `Report issue with, or suggest a new template`,
       value: 'report',
@@ -240,7 +217,7 @@ const pickTemplate = async function (
     const langs =
       funcType === 'edge'
         ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
-        : languages.filter(Boolean)
+        : languages
 
     const { language: languageFromPrompt } = await inquirer.prompt<{ language: string }>({
       choices: langs,
@@ -261,7 +238,7 @@ const pickTemplate = async function (
   }
 
   if (templateFromFlag) {
-    const match = templatesForLanguage.find((entry) => entry.value?.name === templateFromFlag)
+    const match = templatesForLanguage.find((entry) => entry.value.name === templateFromFlag)
     if (!match) {
       return logAndThrowError(
         `Template "${templateFromFlag}" not found for language "${language}". Run \`netlify functions:create\` without --template to browse available templates.`,
@@ -275,21 +252,12 @@ const pickTemplate = async function (
     message: 'Pick a template',
     type: 'autocomplete',
     source(_answersSoFar: unknown, input: string | undefined) {
-      // if Edge Functions template, don't show url option
-      // @ts-expect-error FIXME: separators have no `value`
-      const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
-      const parsedSpecialCommands = funcType === 'edge' ? edgeCommands : specialCommands
-
-      if (!input || input === '') {
+      if (!input) {
         // show separators
-        return [...templatesForLanguage, ...parsedSpecialCommands]
+        return [...templatesForLanguage, ...specialCommands]
       }
       // only show filtered results sorted by score
-      const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
-        // @ts-expect-error FIXME: special commands have no `score`, so this comparator can return `NaN`
-        (answerA, answerB) => answerB.score - answerA.score,
-      )
-      return answers
+      return [...filterRegistry(templatesForLanguage, input), ...specialCommands]
     },
   })
   return chosenTemplate
@@ -412,15 +380,19 @@ const ensureFunctionDirExists = async function (command: BaseCommand): Promise<s
  */
 const downloadFromURL = async function (
   command: BaseCommand,
-  options: FunctionsCreateOptionsWithURL,
+  url: string,
+  options: FunctionsCreateOptions,
   argumentName: string | undefined,
   functionsDir: string,
 ) {
-  const [functionName] = options.url.split('/').slice(-1)
+  const [functionName] = url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
   const fnFolder = getSafeFunctionPath(functionsDir, nameToUse)
 
-  const folderContents = (await readRepoURL(options.url)) as RepoContentsEntry[]
+  const folderContents = await readRepoURL(url)
+  if (!Array.isArray(folderContents) || !folderContents.every(isRepoContentsEntry)) {
+    throw new Error(`Could not list the contents of ${url}`)
+  }
 
   if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
     log(
@@ -436,6 +408,9 @@ const downloadFromURL = async function (
   }
   await Promise.all(
     folderContents.map(async ({ download_url: downloadUrl, name }) => {
+      if (downloadUrl === null) {
+        throw new Error(`Error while retrieving ${name}: directories are not supported`)
+      }
       try {
         const res = await fetch(downloadUrl)
         const fileName = path.basename(name)
@@ -497,9 +472,8 @@ const installDeps = async ({
   functionPath: string
   functionsDir: string
 }) => {
-  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(
-    functionPackageJson,
-  ) as TemplatePackageJson
+  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } =
+    await readTemplatePackageJson(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
 
@@ -512,9 +486,8 @@ const installDeps = async ({
     return
   }
 
-  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(
-    sitePackageJson,
-  ) as TemplatePackageJson
+  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } =
+    await readTemplatePackageJson(sitePackageJson)
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
   const npmInstallPath = path.dirname(sitePackageJson)
@@ -564,11 +537,11 @@ const scaffoldFromTemplate = async function (
         // this has some nuance i have ignored, eg crossenv and i18n concerns
       },
     ])
-    options.url = chosenUrl.trim()
+    const url = chosenUrl.trim()
     try {
-      await downloadFromURL(command, options as FunctionsCreateOptionsWithURL, argumentName, functionsDir)
+      await downloadFromURL(command, url, options, argumentName, functionsDir)
     } catch {
-      return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
+      return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${url}`)
     }
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
@@ -661,6 +634,15 @@ const createFunctionAddon = async function ({
   }
 }
 
+const injectProjectEnvVariables = async (command: BaseCommand) => {
+  const env = await getDotEnvVariables({
+    devConfig: { ...command.netlify.config.dev },
+    env: command.netlify.cachedConfig.env,
+    site: command.netlify.site,
+  })
+  injectEnvVariables(env)
+}
+
 const handleOnComplete = async ({
   command,
   onComplete,
@@ -668,15 +650,8 @@ const handleOnComplete = async ({
   command: BaseCommand
   onComplete: FunctionTemplateMetadata['onComplete']
 }) => {
-  const { config } = command.netlify
-
   if (onComplete) {
-    const env = await getDotEnvVariables({
-      devConfig: { ...config.dev },
-      env: command.netlify.cachedConfig.env,
-      site: command.netlify.site,
-    })
-    injectEnvVariables(env)
+    await injectProjectEnvVariables(command)
     await onComplete.call(command)
   }
 }
@@ -692,8 +667,6 @@ const handleAddonDidInstall = async ({
   command: BaseCommand
   fnPath: string
 }) => {
-  const { config } = command.netlify
-
   if (!addonCreated || !addonDidInstall) {
     return
   }
@@ -711,12 +684,7 @@ const handleAddonDidInstall = async ({
     return
   }
 
-  // FIXME: these are `getDotEnvVariables` options, not the resolved environment variables
-  await injectEnvVariables({
-    devConfig: { ...config.dev },
-    env: command.netlify.cachedConfig.env,
-    site: command.netlify.site,
-  } as unknown as Parameters<typeof injectEnvVariables>[0])
+  await injectProjectEnvVariables(command)
   addonDidInstall(fnPath)
 }
 
@@ -781,7 +749,7 @@ const registerEFInToml = async (funcName: string, options: NetlifyOptions) => {
   const functionRegister = `\n\n[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
 
   try {
-    fs.promises.appendFile(configFilePath, functionRegister)
+    await fs.promises.appendFile(configFilePath, functionRegister)
     log(
       `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`${relConfigFilePath}\` file.`,
     )
@@ -879,7 +847,7 @@ export const functionsCreate = async (
 
   /* either download from URL or scaffold from template */
   if (options.url) {
-    await downloadFromURL(command, options as FunctionsCreateOptionsWithURL, name, functionsDir)
+    await downloadFromURL(command, options.url, options, name, functionsDir)
   } else {
     await scaffoldFromTemplate(command, options, name, functionsDir, functionType)
   }

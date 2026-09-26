@@ -59,13 +59,19 @@ const getCrateName = async (cwd: string): Promise<string> => {
   }
 
   const parsedManifest: unknown = toml.parse(await readFile(manifestPath, 'utf-8'))
-  // TODO(serhalp): Also validate `.package.name`?
-  if (parsedManifest == null || typeof parsedManifest !== 'object' || !('package' in parsedManifest)) {
+  if (
+    typeof parsedManifest !== 'object' ||
+    parsedManifest === null ||
+    !('package' in parsedManifest) ||
+    typeof parsedManifest.package !== 'object' ||
+    parsedManifest.package === null ||
+    !('name' in parsedManifest.package) ||
+    typeof parsedManifest.package.name !== 'string'
+  ) {
     throw new Error('Cargo.toml is missing or invalid')
   }
-  const { package: CargoPackage } = parsedManifest as { package: { name: string } }
 
-  return CargoPackage.name
+  return parsedManifest.package.name
 }
 
 export const invokeFunction: InvokeFunction<RustBuildResult> = async ({ context, event, func, timeout }) => {

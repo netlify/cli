@@ -41,21 +41,20 @@ const eventTriggeredFunctions = new Set([...events, ...events.map((name) => `${n
 
 const DEFAULT_PORT = 8888
 
-// https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
-const tryParseJSON = function (jsonString: string): object | false {
+const isObject = (value: unknown): value is object => typeof value === 'object' && value !== null
+
+const tryParseJSON = function (jsonString: string): object | undefined {
   try {
     const parsedValue: unknown = JSON.parse(jsonString)
 
-    // Handle non-exception-throwing cases:
-    // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
-    // but... JSON.parse(null) returns null, and typeof null === "object",
-    // so we must check for that, too. Thankfully, null is falsey, so this suffices:
-    if (parsedValue && typeof parsedValue === 'object') {
+    // Neither JSON.parse(false) or JSON.parse(1234) throw errors, so only accept objects
+    if (isObject(parsedValue)) {
       return parsedValue
     }
-  } catch {}
-
-  return false
+  } catch {
+    // Not a JSON string
+  }
+  return undefined
 }
 
 const formatQstring = function (querystring: string | undefined) {
@@ -65,67 +64,27 @@ const formatQstring = function (querystring: string | undefined) {
   return ''
 }
 
-const processPayloadFromFlag = function (
-  payloadString: string | undefined,
-  workingDir: string,
-): object | false | undefined {
-  if (payloadString) {
-    // case 1: jsonstring
-    let payload = tryParseJSON(payloadString)
-    if (payload) return payload
-    // case 2: jsonpath
-    const payloadpath = path.join(workingDir, payloadString)
-    const pathexists = fs.existsSync(payloadpath)
-    if (pathexists) {
-      try {
-        // there is code execution potential here
+const processPayloadFromFlag = function (payloadString: string | undefined, workingDir: string): object | undefined {
+  if (!payloadString) {
+    return
+  }
 
-        // FIXME: a required JSON file isn't necessarily an object
-        payload = require(payloadpath) as object
-        return payload
-      } catch (error_) {
-        console.error(error_)
-      }
+  // case 1: jsonstring
+  const parsedPayload = tryParseJSON(payloadString)
+  if (parsedPayload) return parsedPayload
+
+  // case 2: jsonpath
+  const payloadpath = path.join(workingDir, payloadString)
+  if (fs.existsSync(payloadpath)) {
+    try {
+      // there is code execution potential here
+      const payload: unknown = require(payloadpath)
+      if (isObject(payload)) return payload
+    } catch (error_) {
+      console.error(error_)
     }
-    // case 3: invalid string, invalid path
-    return false
   }
   return undefined
-}
-
-/**
- * prompt for a name if name not supplied
- *  also used in functions:create
- */
-const getNameFromArgs = async function (
-  functions: LocalFunction[],
-  options: FunctionsInvokeOptions,
-  argumentName: string | undefined,
-): Promise<string> {
-  const functionToTrigger = getFunctionToTrigger(options, argumentName)
-  const functionNames = functions.map(({ name }) => name)
-
-  if (functionToTrigger) {
-    if (functionNames.includes(functionToTrigger)) {
-      return functionToTrigger
-    }
-
-    console.warn(
-      `Function name ${chalk.yellow(
-        functionToTrigger,
-      )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`,
-    )
-  }
-
-  const { trigger } = await inquirer.prompt<{ trigger: string }>([
-    {
-      type: 'list',
-      message: 'Pick a function to trigger',
-      name: 'trigger',
-      choices: functionNames,
-    },
-  ])
-  return trigger
 }
 
 /**
@@ -142,6 +101,40 @@ const getFunctionToTrigger = function (options: FunctionsInvokeOptions, argument
   }
 
   return argumentName
+}
+
+/**
+ * prompt for a function if a valid name was not supplied
+ */
+const pickFunction = async function (
+  functions: LocalFunction[],
+  options: FunctionsInvokeOptions,
+  argumentName: string | undefined,
+): Promise<LocalFunction> {
+  const functionToTrigger = getFunctionToTrigger(options, argumentName)
+
+  if (functionToTrigger) {
+    const matchingFunction = functions.find(({ name }) => name === functionToTrigger)
+    if (matchingFunction) {
+      return matchingFunction
+    }
+
+    console.warn(
+      `Function name ${chalk.yellow(
+        functionToTrigger,
+      )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`,
+    )
+  }
+
+  const { trigger } = await inquirer.prompt<{ trigger: LocalFunction }>([
+    {
+      type: 'list',
+      message: 'Pick a function to trigger',
+      name: 'trigger',
+      choices: functions.map((func) => ({ name: func.name, value: func })),
+    },
+  ])
+  return trigger
 }
 
 export const functionsInvoke = async (
@@ -161,21 +154,22 @@ export const functionsInvoke = async (
   const port = options.port || DEFAULT_PORT
 
   const functions = await getFunctions(functionsDir, config)
-  const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
-  const functionObj = functions.find((func) => func.name === functionToTrigger)
+  if (functions.length === 0) {
+    return logAndThrowError(`No functions found in ${functionsDir}`)
+  }
+  const functionToTrigger = await pickFunction(functions, options, nameArgument)
 
   let headers: Record<string, string> = {}
   let body: Record<string, unknown> = {}
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-  if (functionObj.schedule) {
+  if (functionToTrigger.schedule) {
     headers = {
       'user-agent': CLOCKWORK_USERAGENT,
     }
-  } else if (eventTriggeredFunctions.has(functionToTrigger)) {
+  } else if (eventTriggeredFunctions.has(functionToTrigger.name)) {
     /** handle event triggered fns  */
     // https://docs.netlify.com/functions/trigger-on-events/
-    const [name, event] = functionToTrigger.split('-')
+    const [name, event] = functionToTrigger.name.split('-')
     if (name === 'identity') {
       // https://docs.netlify.com/functions/functions-and-identity/#trigger-functions-on-identity-events
       body.event = event
@@ -224,7 +218,9 @@ export const functionsInvoke = async (
 
   try {
     const response = await fetch(
-      `http://localhost:${port}/.netlify/functions/${functionToTrigger}${formatQstring(options.querystring)}`,
+      `http://localhost:${port.toString()}/.netlify/functions/${functionToTrigger.name}${formatQstring(
+        options.querystring,
+      )}`,
       {
         method: 'post',
         headers,
