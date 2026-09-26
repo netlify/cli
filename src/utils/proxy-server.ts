@@ -21,8 +21,8 @@ interface InspectSettings {
 }
 
 export const generateInspectSettings = (
-  edgeInspect: boolean | string,
-  edgeInspectBrk: boolean | string,
+  edgeInspect: boolean | string | undefined,
+  edgeInspectBrk: boolean | string | undefined,
 ): InspectSettings => {
   const enabled = Boolean(edgeInspect) || Boolean(edgeInspectBrk)
   const pause = Boolean(edgeInspectBrk)
@@ -85,7 +85,7 @@ export const startProxyServer = async ({
   inspectSettings: InspectSettings
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   geolocationMode: GeolocationMode
-  geoCountry: string
+  geoCountry: string | undefined
   settings: ServerSettings
   offline: boolean
   site: NetlifySite

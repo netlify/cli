@@ -2,7 +2,6 @@ import process from 'process'
 
 import type { NetlifyAPI } from '@netlify/api'
 import { applyMutations } from '@netlify/config'
-import type { OptionValues } from 'commander'
 
 import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
@@ -35,6 +34,7 @@ import type BaseCommand from '../base-command.js'
 import { getBaseOptionValues } from '../base-command.js'
 import type { NetlifySite } from '../types.js'
 
+import type { DevOptionValues } from './option_values.js'
 import type { DevConfig } from './types.js'
 import { startNetlifyDev as startProgrammaticNetlifyDev } from './programmatic-netlify-dev.js'
 import { doesProjectRequireLinkedSite } from '../../lib/extensions.js'
@@ -47,7 +47,7 @@ const handleLiveTunnel = async ({
   state,
 }: {
   api: NetlifyAPI
-  options: OptionValues
+  options: DevOptionValues
   settings: ServerSettings
   site: NetlifySite
   state: LocalState
@@ -81,12 +81,13 @@ const handleLiveTunnel = async ({
   return undefined
 }
 
-export const dev = async (options: OptionValues, command: BaseCommand) => {
+export const dev = async (options: DevOptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = config.dev != null ? { ...config.dev } : undefined
   config.build = { ...config.build }
   const devConfig: DevConfig = {
     framework: '#auto',
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion -- FIXME: `--no-open` makes this a boolean already
     autoLaunch: Boolean(options.open),
     ...(cachedConfig.siteInfo.dev_server_settings && {
       command: cachedConfig.siteInfo.dev_server_settings.cmd,
@@ -305,12 +306,15 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     blobsContext,
     command,
     config: mutatedConfig,
+    // @ts-expect-error FIXME: `options.debug` is `undefined` when `--debug` is omitted, but `startProxyServer` expects a boolean
     debug: options.debug,
+    // @ts-expect-error FIXME: `options.internalDisableEdgeFunctions` is `undefined` when the flag is omitted, but `startProxyServer` expects a boolean
     disableEdgeFunctions: options.internalDisableEdgeFunctions,
     projectDir: command.workingDir,
     env,
     getUpdatedConfig,
     inspectSettings,
+    // @ts-expect-error FIXME: `options.offline` is `undefined` when `--offline` is omitted, but `startProxyServer` expects a boolean
     offline: options.offline,
     settings,
     site,

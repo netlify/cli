@@ -86,11 +86,8 @@
     }
   },
   "src/commands/dev/dev.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 2
-    },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 14
+      "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
@@ -188,7 +185,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 6
+      "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
@@ -241,9 +238,6 @@
   "src/commands/serve/serve.ts": {
     "@typescript-eslint/no-unsafe-argument": {
       "count": 3
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 12
     }
   },
   "src/commands/sites/sites-create.ts": {

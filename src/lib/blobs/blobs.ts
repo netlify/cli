@@ -46,7 +46,7 @@ const printLocalBlobsNotice = () => {
  * Starts a local Blobs server on a random port and generates a random token
  * for its authentication.
  */
-const initializeBlobsServer = async (projectRoot: string, debug: boolean) => {
+const initializeBlobsServer = async (projectRoot: string, debug: boolean | undefined) => {
   const token = crypto.randomUUID()
   const directory = path.resolve(projectRoot, getPathInProject(['blobs-serve']))
   const server = new BlobsServer({
@@ -64,7 +64,7 @@ const initializeBlobsServer = async (projectRoot: string, debug: boolean) => {
 }
 
 interface GetBlobsContextOptions {
-  debug: boolean
+  debug: boolean | undefined
   projectRoot: string
   siteID: string
 }
