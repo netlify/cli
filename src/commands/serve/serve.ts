@@ -27,7 +27,7 @@ import { getFrameworksAPIConfig } from '../../utils/frameworks-api.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import openBrowser from '../../utils/open-browser.js'
-import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
+import { startProxyServer } from '../../utils/proxy-server.js'
 import { runBuildTimeline } from '../../utils/run-build.js'
 import type { ServerSettings } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
@@ -120,9 +120,6 @@ export const serve = async (options: ServeOptionValues, command: BaseCommand) =>
     return exit(1)
   }
 
-  // @ts-expect-error FIXME: `serve` has no `--live` option
-  command.setAnalyticsPayload({ live: options.live })
-
   log(`${NETLIFYDEVLOG} Building project for production`)
   log(
     `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your project you must exit and run 'netlify serve' again`,
@@ -189,8 +186,6 @@ export const serve = async (options: ServeOptionValues, command: BaseCommand) =>
     return normalizedNewConfig
   }
 
-  // @ts-expect-error FIXME: `serve` has no `--edge-inspect` or `--edge-inspect-brk` options
-  const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
   const url = await startProxyServer({
     addonsUrls,
     blobsContext: runtimeBlobsContext,
@@ -204,7 +199,7 @@ export const serve = async (options: ServeOptionValues, command: BaseCommand) =>
     geolocationMode: options.geo,
     geoCountry: options.country,
     getUpdatedConfig,
-    inspectSettings,
+    inspectSettings: { enabled: false, pause: false },
     offline: options.offline,
     projectDir: command.workingDir,
     settings,
