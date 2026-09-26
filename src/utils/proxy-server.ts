@@ -79,15 +79,15 @@ export const startProxyServer = async ({
   config: NormalizedCachedConfigConfig
   // An override for the Netlify config path
   configPath?: string
-  debug: boolean
-  disableEdgeFunctions: boolean
+  debug: boolean | undefined
+  disableEdgeFunctions: boolean | undefined
   env: NetlifyOptions['cachedConfig']['env']
   inspectSettings: InspectSettings
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   geolocationMode: GeolocationMode
   geoCountry: string | undefined
   settings: ServerSettings
-  offline: boolean
+  offline: boolean | undefined
   site: NetlifySite
   siteInfo: SiteInfo
   projectDir: string
