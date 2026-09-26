@@ -4,8 +4,7 @@ import tomlify from 'tomlify-j0.4'
 
 import type { InlineUploadFile } from './upload-files.js'
 
-export const hashConfig = ({ config }: { config: object | undefined }): InlineUploadFile & { hash: string } => {
-  if (!config) throw new Error('Missing config option')
+export const hashConfig = ({ config }: { config: object }): InlineUploadFile & { hash: string } => {
   const configString = serializeToml(config)
 
   const hash = createHash('sha1').update(configString).digest('hex')

@@ -75,9 +75,6 @@
     "@typescript-eslint/no-empty-function": {
       "count": 7
     },
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 4
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 9
     },
@@ -541,11 +538,6 @@
       "count": 9
     }
   },
-  "src/utils/deploy/hasher-segments.ts": {
-    "@typescript-eslint/no-misused-promises": {
-      "count": 1
-    }
-  },
   "src/utils/deploy/upload-files.ts": {
     "@typescript-eslint/prefer-promise-reject-errors": {
       "count": 3
@@ -561,7 +553,7 @@
   },
   "src/utils/deploy/util.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 2
+      "count": 1
     }
   },
   "src/utils/detect-server-settings.ts": {
