@@ -19,7 +19,7 @@ export interface RepoData {
 }
 
 interface GitConfig {
-  remote?: Record<string, { url: string }>
+  remote?: Partial<Record<string, { url?: string }>>
 }
 
 const getRepoData = async ({
@@ -30,12 +30,13 @@ const getRepoData = async ({
   workingDir: string
 }): Promise<RepoData | { error: string }> => {
   try {
-    const [gitConfig, gitDirectory]: [GitConfig | undefined, string | undefined] = await Promise.all([
+    const [gitConfig, gitDirectory]: [GitConfig, string | undefined] = await Promise.all([
       util.promisify(gitconfiglocal)(workingDir),
       findUp('.git', { cwd: workingDir, type: 'directory' }),
     ])
+    const remotes = gitConfig.remote
 
-    if (!gitDirectory || !gitConfig || !gitConfig.remote || Object.keys(gitConfig.remote).length === 0) {
+    if (!gitDirectory || !remotes || Object.keys(remotes).length === 0) {
       throw new Error('No Git remote found')
     }
 
@@ -46,21 +47,18 @@ const getRepoData = async ({
     }
 
     if (!remoteName) {
-      const remoteNames = Object.keys(gitConfig.remote)
+      const remoteNames = Object.keys(remotes)
       remoteName = remoteNames.find((name) => name === 'origin') || remoteNames[0]
     }
 
-    if (
-      !Object.prototype.hasOwnProperty.call(gitConfig.remote, remoteName) ||
-      !gitConfig.remote[remoteName] ||
-      Object.keys(gitConfig.remote[remoteName]).length === 0
-    ) {
+    const remote = Object.hasOwn(remotes, remoteName) ? remotes[remoteName] : undefined
+    if (!remote || Object.keys(remote).length === 0) {
       throw new Error(
         `The specified remote "${remoteName}" is not defined in Git repo. Please use --git-remote-name flag to specify a remote.`,
       )
     }
 
-    const { url } = gitConfig.remote[remoteName]
+    const { url = '' } = remote
     const parsedUrl = parseGithubUrl(url)
     // TODO(serhalp): Validate more aggressively? We should probably require `owner`, `repo`, `host`?
     if (parsedUrl == null) {

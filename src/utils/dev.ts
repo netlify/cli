@@ -193,10 +193,9 @@ export const getDotEnvVariables = async ({
 }: {
   devConfig: Partial<DevConfig>
   env: EnvironmentVariables
-  site: { root?: string }
+  site: { root: string }
 }): Promise<EnvironmentVariables> => {
-  // FIXME: `NetlifySite.root` is typed optional but `BaseCommand` always sets it
-  const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root as string })
+  const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     const newSourceName = `${file} file` as const
 

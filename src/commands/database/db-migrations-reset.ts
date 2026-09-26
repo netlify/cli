@@ -31,7 +31,7 @@ export const migrationsReset = async (options: DbMigrationsResetOptionValues, co
 }
 
 const resetAgainstLocal = async (json: boolean, command: BaseCommand): Promise<void> => {
-  const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
+  const buildDir = command.netlify.site.root
   if (!buildDir) {
     throw new Error('Could not determine the project root directory.')
   }

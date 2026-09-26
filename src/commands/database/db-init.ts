@@ -316,7 +316,7 @@ const printNextSteps = (orm: QueryStyle, withStarter: boolean): void => {
 }
 
 export const initDatabase = async (options: DbInitOptionValues, command: BaseCommand) => {
-  const projectRoot = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
+  const projectRoot = command.netlify.site.root
   if (!projectRoot) {
     throw new Error('Could not determine the project root directory.')
   }

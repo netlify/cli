@@ -13,41 +13,26 @@
     }
   },
   "src/commands/base-command.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    },
     "@typescript-eslint/no-floating-promises": {
       "count": 1
     },
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
-      "count": 2
-    },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 5
-    },
-    "@typescript-eslint/no-unnecessary-type-parameters": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 4
+      "count": 1
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 17
+      "count": 15
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 5
+      "count": 4
     }
   },
   "src/commands/build/index.ts": {
@@ -192,14 +177,8 @@
     }
   },
   "src/commands/link/link.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 3
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
     }
   },
   "src/commands/logs/build.ts": {
@@ -274,9 +253,6 @@
     }
   },
   "src/commands/watch/watch.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     }
@@ -344,11 +320,6 @@
       "count": 1
     },
     "no-empty": {
-      "count": 1
-    }
-  },
-  "src/lib/exec-fetcher.ts": {
-    "@typescript-eslint/prefer-regexp-exec": {
       "count": 1
     }
   },
@@ -439,9 +410,6 @@
     }
   },
   "src/recipes/ai-context/context.ts": {
-    "@typescript-eslint/prefer-regexp-exec": {
-      "count": 2
-    },
     "no-empty": {
       "count": 1
     }
@@ -451,11 +419,6 @@
       "count": 3
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
-  "src/recipes/blobs-migrate/index.ts": {
-    "@typescript-eslint/restrict-template-expressions": {
       "count": 1
     }
   },
@@ -582,9 +545,6 @@
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 3
     },
-    "@typescript-eslint/non-nullable-type-assertion-style": {
-      "count": 1
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 2
     },
@@ -627,13 +587,7 @@
     }
   },
   "src/utils/get-repo-data.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 2
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    },
-    "@typescript-eslint/prefer-optional-chain": {
       "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
@@ -778,9 +732,6 @@
     }
   },
   "src/utils/telemetry/validation.ts": {
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 3
-    },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 2
     }

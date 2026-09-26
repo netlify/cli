@@ -3,21 +3,23 @@ import type { FieldDef, QueryResult } from 'pg'
 type StatementResult = QueryResult<Record<string, unknown>>
 
 const formatValue = (value: unknown): string => {
-  if (value === null || value === undefined) {
-    return ''
+  switch (typeof value) {
+    case 'undefined':
+      return ''
+    case 'string':
+      return value
+    case 'number':
+    case 'bigint':
+    case 'boolean':
+    case 'symbol':
+    case 'function':
+      return value.toString()
+    case 'object':
+      if (value === null) {
+        return ''
+      }
+      return value instanceof Date ? value.toISOString() : JSON.stringify(value)
   }
-  if (value instanceof Date) {
-    return value.toISOString()
-  }
-  if (typeof value === 'object') {
-    return JSON.stringify(value)
-  }
-  if (typeof value === 'string') {
-    return value
-  }
-  // TODO(serhalp): Narrow this to the numbers, bigints, and booleans that actually reach here.
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string
-  return String(value)
 }
 
 export const formatQueryResult = (
