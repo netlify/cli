@@ -44,11 +44,26 @@ export type WritableEnvelopeScope = EnvelopeEnvVarScope | UserProvidedScope
 
 export type EnvelopeEnvVarValue = NonNullable<ApiEnvVar['values']>[number]
 
-// FIXME(@netlify/api): the API types claim `key`/`values` are optional and `scopes` holds `post-processing`, not `post_processing`
 export type EnvelopeItem = Omit<ApiEnvVar, 'key' | 'scopes' | 'values'> & {
   key: string
   scopes: EnvelopeEnvVarScope[]
   values: EnvelopeEnvVarValue[]
+}
+
+// FIXME(@netlify/api): `envVar` claims `key`/`values` are optional and `scopes` holds `post-processing`, not `post_processing`
+const toEnvelopeItem = (envVar: ApiEnvVar): EnvelopeItem => envVar as EnvelopeItem
+
+export const getEnvelopeItems = async ({
+  accountId,
+  api,
+  siteId,
+}: {
+  accountId: string
+  api: NetlifyAPI
+  siteId?: string | undefined
+}): Promise<EnvelopeItem[]> => {
+  const envVars = await api.getEnvVars({ accountId, siteId })
+  return envVars.map(toEnvelopeItem)
 }
 
 // AFAICT, Envelope uses only `post_processing` on returned env vars; the CLI documents and expects
@@ -145,13 +160,10 @@ const fetchEnvelopeItems = async function ({
     // if a single key is passed, fetch that single env var
     if (key) {
       const envelopeItem = await api.getEnvVar({ accountId, key, siteId })
-      // See FIXME(@netlify/api) on `EnvelopeItem`
-      return [envelopeItem as EnvelopeItem]
+      return [toEnvelopeItem(envelopeItem)]
     }
     // otherwise, fetch the entire list of env vars
-    const envelopeItems = await api.getEnvVars({ accountId, siteId })
-    // See FIXME(@netlify/api) on `EnvelopeItem`
-    return envelopeItems as EnvelopeItem[]
+    return await getEnvelopeItems({ accountId, api, siteId })
   } catch {
     // Collaborators aren't allowed to read shared env vars,
     // so return an empty array silently in that case
@@ -273,13 +285,7 @@ export async function getEnvelopeEnv({
 
   if (raw) {
     const entries = Object.entries({ ...accountEnv, ...siteEnv })
-    return entries.reduce<Record<string, string>>(
-      (obj, [envVarKey, metadata]) => ({
-        ...obj,
-        [envVarKey]: metadata.value,
-      }),
-      {},
-    )
+    return Object.fromEntries(entries.map(([envVarKey, metadata]) => [envVarKey, metadata.value]))
   }
 
   const generalEnv = filterEnvBySource(env, 'general')
@@ -332,20 +338,17 @@ export const getHumanReadableScopes = (scopes?: EnvelopeEnvVarScope[]): string =
  * @param env The site's env as it exists in Mongo
  * @returns The array of Envelope env vars
  */
-export const translateFromMongoToEnvelope = (env: Record<string, string> = {}) => {
-  const envVars = Object.entries(env).map(([key, value]) => ({
+export const translateFromMongoToEnvelope = (env: Record<string, string> = {}): EnvelopeItem[] =>
+  Object.entries(env).map(([key, value]) => ({
     key,
-    scopes: ALL_ENVELOPE_SCOPES,
+    scopes: [...ALL_ENVELOPE_SCOPES],
     values: [
       {
-        context: 'all' as const,
+        context: 'all',
         value,
       },
     ],
   }))
-
-  return envVars
-}
 
 /**
  * Translates an Envelope env into a Mongo env
@@ -357,8 +360,9 @@ export const translateFromEnvelopeToMongo = (envVars: EnvelopeItem[] = [], conte
   envVars
     .sort((a, b) => (a.key.toLowerCase() < b.key.toLowerCase() ? -1 : 1))
     .reduce<Record<string, string>>((acc, cur) => {
-      const matchingContexts: (string | undefined)[] = [context, 'all']
-      const envVar = cur.values.find((val) => matchingContexts.includes((val.context_parameter ?? '') || val.context))
+      const envVar = cur.values.find((val) =>
+        [context, 'all'].some((ctx) => ctx === ((val.context_parameter ?? '') || val.context)),
+      )
       if (envVar?.value) {
         return {
           ...acc,
