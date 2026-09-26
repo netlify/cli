@@ -56,3 +56,17 @@ export const getAgentName = (agent: string): string => {
   const entry = AVAILABLE_AGENTS.find((a) => a.value === agent)
   return entry ? entry.name : agent
 }
+
+interface FailedResponse {
+  json(): Promise<unknown>
+  status: number
+  statusText: string
+}
+
+export const getResponseErrorMessage = async (response: FailedResponse): Promise<string> => {
+  const body = await response.json().catch(() => undefined)
+  if (typeof body === 'object' && body !== null && 'error' in body && typeof body.error === 'string') {
+    return body.error
+  }
+  return `HTTP ${response.status.toString()}: ${response.statusText}`
+}

@@ -23,6 +23,15 @@ interface GeolocationCache {
   timestamp: number
 }
 
+const isGeolocationCache = (value: unknown): value is GeolocationCache =>
+  typeof value === 'object' &&
+  value !== null &&
+  'timestamp' in value &&
+  typeof value.timestamp === 'number' &&
+  'data' in value &&
+  typeof value.data === 'object' &&
+  value.data !== null
+
 /**
  * Returns geolocation data from a remote API, the local cache, or a mock location, depending on the
  * specified mode.
@@ -38,7 +47,8 @@ export const getGeoLocation = async ({
   offline?: boolean | undefined
   state: State
 }): Promise<Geolocation> => {
-  const cacheObject = state.get(STATE_GEO_PROPERTY) as GeolocationCache | undefined
+  const cachedValue = state.get(STATE_GEO_PROPERTY)
+  const cacheObject = isGeolocationCache(cachedValue) ? cachedValue : undefined
 
   // If `--country` was used, we also set `--mode=mock`.
   if (geoCountry) {

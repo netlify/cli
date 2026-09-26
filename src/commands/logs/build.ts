@@ -28,7 +28,7 @@ export function getName({ deploy, userId }: { deploy: Deploy; userId: string | u
       // but no review id because they don't come from a PR.
       //
       const id = deploy.review_id
-      normalisedName = id ? `Deploy Preview #${id}` : 'Deploy Preview'
+      normalisedName = id ? `Deploy Preview #${id.toString()}` : 'Deploy Preview'
       break
     }
     default:
@@ -39,8 +39,7 @@ export function getName({ deploy, userId }: { deploy: Deploy; userId: string | u
     normalisedName += chalk.yellow('*')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME(@netlify/api): deploy `id` is typed as optional
-  return `(${deploy.id!.slice(0, 7)}) ${normalisedName}`
+  return `(${(deploy.id ?? '').slice(0, 7)}) ${normalisedName}`
 }
 
 export const logsBuild = async (_options: BaseOptionValues, command: BaseCommand) => {
@@ -72,7 +71,7 @@ export const logsBuild = async (_options: BaseOptionValues, command: BaseCommand
       })),
     })
 
-    deploy = deploys.find((dep) => dep.id === result) || deploy
+    deploy = deploys.find((dep) => dep.id === result) ?? deploy
   }
 
   const { id } = deploy
