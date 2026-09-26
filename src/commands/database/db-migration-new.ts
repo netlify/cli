@@ -8,14 +8,9 @@ import type BaseCommand from '../base-command.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import { utcTimestampPrefix } from './util/timestamp.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
+import type { DbMigrationsNewOptionValues } from './option_values.js'
 
 export type NumberingScheme = 'sequential' | 'timestamp'
-
-export interface MigrationNewOptions {
-  description?: string
-  scheme?: NumberingScheme
-  json?: boolean
-}
 
 export const generateSlug = (description: string): string => {
   return description
@@ -79,7 +74,7 @@ const getExistingMigrationNames = async (migrationsDirectory: string): Promise<s
   }
 }
 
-export const migrationNew = async (options: MigrationNewOptions, command: BaseCommand) => {
+export const migrationNew = async (options: DbMigrationsNewOptionValues, command: BaseCommand) => {
   const { json } = options
 
   const migrationsDirectory = resolveMigrationsDirectory(command)

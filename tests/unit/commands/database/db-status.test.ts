@@ -261,7 +261,7 @@ describe('statusDb', () => {
       process.env.NETLIFY_DB_URL = 'postgres://x/y'
       setupFetchRouter({ siteDatabase: null })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({ enabled: true })
     })
@@ -269,7 +269,7 @@ describe('statusDb', () => {
     test('reports enabled=true when getSiteDatabase returns a DB', async () => {
       setupFetchRouter({ siteDatabase: { connection_string: PROD_CONN } })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({ enabled: true })
     })
@@ -277,13 +277,13 @@ describe('statusDb', () => {
     test('reports enabled=false when neither env nor server has a DB', async () => {
       setupFetchRouter({ siteDatabase: null })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({ enabled: false })
     })
 
     test('skips server check if siteId or token is missing', async () => {
-      await statusDb({ json: true }, createMockCommand({ siteId: null }))
+      await statusDb({ showCredentials: false, json: true }, createMockCommand({ siteId: null }))
 
       const calls = mockFetch.mock.calls
       const anyDatabaseCall = calls.some((c) => {
@@ -299,7 +299,7 @@ describe('statusDb', () => {
     test('reports packageInstalled=true when listed in dependencies', async () => {
       mockPackageJson({ dependencies: { '@netlify/database': '^1.0.0' } })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({ packageInstalled: true })
     })
@@ -307,7 +307,7 @@ describe('statusDb', () => {
     test('reports packageInstalled=true when listed in devDependencies', async () => {
       mockPackageJson({ devDependencies: { '@netlify/database': '^1.0.0' } })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({ packageInstalled: true })
     })
@@ -315,7 +315,7 @@ describe('statusDb', () => {
     test('reports packageInstalled=false when not listed', async () => {
       mockPackageJson({ dependencies: { react: '^18.0.0' } })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({ packageInstalled: false })
     })
@@ -323,7 +323,7 @@ describe('statusDb', () => {
     test('reports packageInstalled=false when package.json is missing or unreadable', async () => {
       mockReadFile.mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }))
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({ packageInstalled: false })
     })
@@ -334,11 +334,13 @@ describe('statusDb', () => {
       const command = createMockCommand({ siteRoot: null })
       ;(command as { project: { root: string | undefined } }).project = { root: undefined }
 
-      await expect(statusDb({}, command)).rejects.toThrow('Could not determine the project root')
+      await expect(statusDb({ showCredentials: false }, command)).rejects.toThrow(
+        'Could not determine the project root',
+      )
     })
 
     test('connects to the local database when one is already running', async () => {
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(mockDetectExisting).toHaveBeenCalledWith('/project')
       expect(mockConnectToDatabase).toHaveBeenCalledWith('/project')
@@ -352,7 +354,7 @@ describe('statusDb', () => {
       mockLocalAppliedRows(['0001_a'])
       mockFS(migrationsTree(['0001_a', '0002_b']))
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       // We still spin up a DB to read migration state.
       expect(mockConnectToDatabase).toHaveBeenCalledTimes(1)
@@ -366,7 +368,7 @@ describe('statusDb', () => {
     test('suppresses the connection string in JSON output when no persistent local database is running', async () => {
       mockDetectExisting.mockReturnValue(null)
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         target: 'local',
@@ -379,7 +381,7 @@ describe('statusDb', () => {
       mockLocalAppliedRows(['0001_a'])
       mockFS(migrationsTree(['0001_a', '0002_b']))
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       const output = logMessages.join('\n')
       expect(output).toContain('The local database is not running')
@@ -393,7 +395,7 @@ describe('statusDb', () => {
     test('cleans up the database connection even when query throws', async () => {
       mockQuery.mockRejectedValue(Object.assign(new Error('boom'), { code: '08000' }))
 
-      await expect(statusDb({}, createMockCommand())).rejects.toThrow('boom')
+      await expect(statusDb({ showCredentials: false }, createMockCommand())).rejects.toThrow('boom')
 
       expect(mockCleanup).toHaveBeenCalledTimes(1)
     })
@@ -402,7 +404,7 @@ describe('statusDb', () => {
       mockLocalAppliedRows(['0001_a', '0002_b'])
       mockFS(migrationsTree(['0001_a', '0002_b', '0003_c']))
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         target: 'local',
@@ -415,7 +417,7 @@ describe('statusDb', () => {
     })
 
     test('returns redacted connection string by default', async () => {
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         database: { connectionString: 'postgres://***:***@localhost:5432/netlify' },
@@ -423,7 +425,7 @@ describe('statusDb', () => {
     })
 
     test('includes the resolved migrations directory in JSON output', async () => {
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         migrationsPath: '/project/netlify/database/migrations',
@@ -431,7 +433,10 @@ describe('statusDb', () => {
     })
 
     test('JSON migrationsPath honours netlify.toml db.migrations.path override', async () => {
-      await statusDb({ json: true }, createMockCommand({ migrationsPath: '/custom/migrations/dir' }))
+      await statusDb(
+        { showCredentials: false, json: true },
+        createMockCommand({ migrationsPath: '/custom/migrations/dir' }),
+      )
 
       expect(jsonMessages[0]).toMatchObject({
         migrationsPath: '/custom/migrations/dir',
@@ -450,7 +455,7 @@ describe('statusDb', () => {
       mockLocalAppliedRows(['0001_a'])
       mockFS(migrationsTree(['0001_a', '0002_b']))
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       const output = logMessages.join('\n')
       expect(output).toContain('Applied')
@@ -463,7 +468,7 @@ describe('statusDb', () => {
       mockLocalAppliedRows([])
       mockFS(migrationsTree(['0001_a']))
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain('netlify database migrations apply')
     })
@@ -472,7 +477,7 @@ describe('statusDb', () => {
       mockLocalAppliedRows(['0001_a'])
       mockFS(migrationsTree(['0001_a']))
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).not.toContain('netlify database migrations apply')
     })
@@ -482,7 +487,7 @@ describe('statusDb', () => {
       mockLocalAppliedRows([])
       mockFS(migrationsTree(['0001_a']))
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       const output = logMessages.join('\n')
       expect(output).not.toContain('netlify database migrations apply')
@@ -490,7 +495,7 @@ describe('statusDb', () => {
     })
 
     test('shows --show-credentials hint when connection has credentials', async () => {
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain('--show-credentials')
     })
@@ -498,7 +503,7 @@ describe('statusDb', () => {
     test('omits --show-credentials hint when the connection string has no credentials', async () => {
       setLocalDatabaseRunning(LOCAL_CONN_NO_CREDS)
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).not.toContain('--show-credentials')
     })
@@ -520,7 +525,7 @@ describe('statusDb', () => {
         },
       })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         pending: [{ version: 1, name: '0001_with_sql' }],
@@ -535,7 +540,7 @@ describe('statusDb', () => {
         },
       })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         pending: [
@@ -557,7 +562,7 @@ describe('statusDb', () => {
         },
       })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         pending: [
@@ -578,7 +583,7 @@ describe('statusDb', () => {
         },
       })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         pending: [
@@ -593,7 +598,7 @@ describe('statusDb', () => {
     test('renders a descriptive line under Enabled when true', async () => {
       process.env.NETLIFY_DB_URL = 'postgres://x/y'
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain('Netlify Database is enabled for this project')
     })
@@ -604,7 +609,7 @@ describe('statusDb', () => {
       ;(command as { netlify: { siteInfo: { admin_url?: string } } }).netlify.siteInfo.admin_url =
         'https://app.netlify.com/sites/my-site'
 
-      await statusDb({}, command)
+      await statusDb({ showCredentials: false }, command)
 
       expect(logMessages.join('\n')).toContain('Manage your database at https://app.netlify.com/sites/my-site')
     })
@@ -612,19 +617,19 @@ describe('statusDb', () => {
     test('renders an install hint under Enabled when disabled', async () => {
       setupFetchRouter({ siteDatabase: null })
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       const output = logMessages.join('\n')
       expect(output).toContain('Install the @netlify/database package and deploy your site')
     })
 
     test('renders an installed statement under Package when installed', async () => {
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
       expect(logMessages.join('\n')).toContain('The @netlify/database package is installed')
     })
 
     test('renders an API-reference link under Package when installed', async () => {
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain('For a full API reference, visit https://ntl.fyi/database')
     })
@@ -632,7 +637,7 @@ describe('statusDb', () => {
     test('renders an install hint under Package when not installed', async () => {
       mockPackageJson({ dependencies: {} })
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain('Install it with `npm install @netlify/database`')
     })
@@ -640,7 +645,7 @@ describe('statusDb', () => {
 
   describe('section subtitles', () => {
     test('renders a subtitle under the Netlify Database title', async () => {
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain(
         'Managed Postgres databases that seamlessly integrate with the Netlify workflow',
@@ -648,13 +653,13 @@ describe('statusDb', () => {
     })
 
     test('renders a subtitle under Migrations', async () => {
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain('Database migrations managed by Netlify')
     })
 
     test('renders a dedicated section for the migrations directory with a relative path', async () => {
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       const output = logMessages.join('\n')
       expect(output).toContain('Migrations directory')
@@ -662,7 +667,7 @@ describe('statusDb', () => {
     })
 
     test('falls back to the absolute path when the directory is outside the project root', async () => {
-      await statusDb({}, createMockCommand({ migrationsPath: '/custom/migrations/dir' }))
+      await statusDb({ showCredentials: false }, createMockCommand({ migrationsPath: '/custom/migrations/dir' }))
 
       expect(logMessages.join('\n')).toContain('/custom/migrations/dir')
     })
@@ -671,7 +676,7 @@ describe('statusDb', () => {
       mockLocalAppliedRows(['0001_a'])
       mockFS(migrationsTree(['0001_a']))
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       const output = logMessages.join('\n')
       const bulletIndex = output.indexOf('• 0001_a')
@@ -683,13 +688,13 @@ describe('statusDb', () => {
     })
 
     test('renders the immutability note even when there are no applied migrations', async () => {
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain('These migrations have been applied and cannot be edited or deleted')
     })
 
     test('renders a subtitle under Pending Migrations', async () => {
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain(
         "These migrations are defined locally but haven't been applied, and you can change them or delete them.",
@@ -697,7 +702,7 @@ describe('statusDb', () => {
     })
 
     test('renders a note under the migrations directory line', async () => {
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain(
         'Migration files in this directory are automatically applied when deploying to Netlify.',
@@ -711,7 +716,7 @@ describe('statusDb', () => {
       delete process.env.npm_config_user_agent
       delete process.env.npm_command
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
       const output = logMessages.join('\n')
 
       expect(output).toContain('netlify database connect')
@@ -722,7 +727,7 @@ describe('statusDb', () => {
     test('prefixes with `npx` when invoked through npx', async () => {
       process.env.npm_lifecycle_event = 'npx'
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
       const output = logMessages.join('\n')
 
       expect(output).toContain('npx netlify database connect')
@@ -733,7 +738,7 @@ describe('statusDb', () => {
       mockLocalAppliedRows([])
       mockFS(migrationsTree(['0001_a']))
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain('netlify database migrations apply')
     })
@@ -741,7 +746,7 @@ describe('statusDb', () => {
     test('uses the dynamic command in the not-running hint', async () => {
       mockDetectExisting.mockReturnValue(null)
 
-      await statusDb({}, createMockCommand())
+      await statusDb({ showCredentials: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain('netlify dev')
     })
@@ -755,7 +760,7 @@ describe('statusDb', () => {
         migrations: { 'feature-x': [] },
       })
 
-      await statusDb({ branch: 'feature-x', json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, branch: 'feature-x', json: true }, createMockCommand())
 
       const fetchedUrls = mockFetch.mock.calls.map((c) => {
         const u = c[0] as URL | string
@@ -770,7 +775,7 @@ describe('statusDb', () => {
     test('throws a helpful error when the branch endpoint 404s', async () => {
       setupFetchRouter({ siteDatabase: { connection_string: PROD_CONN } })
 
-      await expect(statusDb({ branch: 'feature-x' }, createMockCommand())).rejects.toThrow(
+      await expect(statusDb({ showCredentials: false, branch: 'feature-x' }, createMockCommand())).rejects.toThrow(
         'No database branch found for "feature-x"',
       )
     })
@@ -788,7 +793,7 @@ describe('statusDb', () => {
       })
       mockFS(migrationsTree(['0001_a', '0002_b', '0003_c']))
 
-      await statusDb({ branch: 'feature-x', json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, branch: 'feature-x', json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         applied: [{ version: 1, name: '0001_a' }],
@@ -806,7 +811,7 @@ describe('statusDb', () => {
         migrations: { 'feature-x': [] },
       })
 
-      await statusDb({ branch: 'feature-x', json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, branch: 'feature-x', json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({
         database: { connectionString: 'postgres://***:***@branch-host.neon.tech/db' },
@@ -821,7 +826,7 @@ describe('statusDb', () => {
       })
       mockFS(migrationsTree(['0001_a']))
 
-      await statusDb({ branch: 'feature-x' }, createMockCommand())
+      await statusDb({ showCredentials: false, branch: 'feature-x' }, createMockCommand())
 
       const output = logMessages.join('\n')
       expect(output).not.toContain('netlify database migrations apply')
@@ -836,7 +841,7 @@ describe('statusDb', () => {
         migrations: { 'feature-env': [] },
       })
 
-      await statusDb({ json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({ target: 'feature-env' })
       expect(mockConnectToDatabase).not.toHaveBeenCalled()
@@ -850,7 +855,7 @@ describe('statusDb', () => {
         migrations: { 'flag-branch': [] },
       })
 
-      await statusDb({ branch: 'flag-branch', json: true }, createMockCommand())
+      await statusDb({ showCredentials: false, branch: 'flag-branch', json: true }, createMockCommand())
 
       expect(jsonMessages[0]).toMatchObject({ target: 'flag-branch' })
     })

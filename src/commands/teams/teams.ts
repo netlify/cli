@@ -1,8 +1,7 @@
-import type { OptionValues } from 'commander'
-
 import type BaseCommand from '../base-command.js'
+import type { TeamsListOptionValues, TeamsOptionValues } from './option_values.js'
 
-const teams = (_options: OptionValues, command: BaseCommand) => {
+const teams = (_options: TeamsOptionValues, command: BaseCommand) => {
   command.help()
 }
 
@@ -12,7 +11,7 @@ export const createTeamsCommand = (program: BaseCommand) => {
     .description('List all teams you have access to')
     .option('--json', 'Output team data as JSON')
     .addExamples(['netlify teams:list', 'netlify teams:list --json'])
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: TeamsListOptionValues, command: BaseCommand) => {
       const { teamsList } = await import('./teams-list.js')
       await teamsList(options, command)
     })

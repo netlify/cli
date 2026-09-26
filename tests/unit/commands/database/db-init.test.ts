@@ -170,7 +170,7 @@ describe('initDatabase (integration)', () => {
   test('raw SQL + starter writes a timestamp-prefixed migration with a CREATE TABLE and seed data', async () => {
     answerPrompts({ queryStyle: 'raw', createSampleData: true })
 
-    await initDatabase({}, createCommand(projectRoot()))
+    await initDatabase({ yes: false }, createCommand(projectRoot()))
 
     const migrations = await readMigrations(projectRoot())
     const starter = migrations.find((name) => /^\d{14}_create_planets\.sql$/.test(name))
@@ -194,7 +194,7 @@ describe('initDatabase (integration)', () => {
   test('Drizzle + starter writes schema/config, runs drizzle-kit generate, and seeds after it', async () => {
     answerPrompts({ queryStyle: 'drizzle', createSampleData: true })
 
-    await initDatabase({}, createCommand(projectRoot()))
+    await initDatabase({ yes: false }, createCommand(projectRoot()))
 
     // Drizzle config points at the project's migrations dir.
     const config = await fs.readFile(join(projectRoot(), 'drizzle.config.ts'), 'utf-8')
@@ -237,7 +237,7 @@ describe('initDatabase (integration)', () => {
   test('Drizzle without starter scaffolds drizzle.config.ts only (no schema, no migration, no generate)', async () => {
     answerPrompts({ queryStyle: 'drizzle', createSampleData: false })
 
-    await initDatabase({}, createCommand(projectRoot()))
+    await initDatabase({ yes: false }, createCommand(projectRoot()))
 
     expect(await exists(join(projectRoot(), 'drizzle.config.ts'))).toBe(true)
     expect(await exists(join(projectRoot(), 'db', 'schema.ts'))).toBe(false)
@@ -255,7 +255,7 @@ describe('initDatabase (integration)', () => {
   test('raw without starter writes nothing extra; next steps point at `database migrations new`', async () => {
     answerPrompts({ queryStyle: 'raw', createSampleData: false })
 
-    await initDatabase({}, createCommand(projectRoot()))
+    await initDatabase({ yes: false }, createCommand(projectRoot()))
 
     expect(await exists(join(projectRoot(), 'drizzle.config.ts'))).toBe(false)
     expect(await exists(join(projectRoot(), 'db', 'schema.ts'))).toBe(false)
@@ -272,7 +272,7 @@ describe('initDatabase (integration)', () => {
     await fs.mkdir(migrationsDir, { recursive: true })
     await fs.writeFile(join(migrationsDir, '0001_existing.sql'), '-- pre-existing')
 
-    await initDatabase({}, createCommand(projectRoot()))
+    await initDatabase({ yes: false }, createCommand(projectRoot()))
 
     expect(await readMigrations(projectRoot())).toEqual(['0001_existing.sql'])
     expect(select).not.toHaveBeenCalled()
@@ -285,7 +285,7 @@ describe('initDatabase (integration)', () => {
   test('non-interactive (no TTY) runs the full Drizzle flow without prompting', async () => {
     mockIsInteractive.mockReturnValue(false)
 
-    await initDatabase({}, createCommand(projectRoot()))
+    await initDatabase({ yes: false }, createCommand(projectRoot()))
 
     expect(select).not.toHaveBeenCalled()
     expect(confirm).not.toHaveBeenCalled()
@@ -302,6 +302,6 @@ describe('initDatabase (integration)', () => {
       netlify: { site: { root: undefined }, config: {} },
     } as unknown as Parameters<typeof initDatabase>[1]
 
-    await expect(initDatabase({}, command)).rejects.toThrow('Could not determine the project root')
+    await expect(initDatabase({ yes: false }, command)).rejects.toThrow('Could not determine the project root')
   })
 })

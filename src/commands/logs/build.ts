@@ -1,11 +1,11 @@
 import type { NetlifyAPI } from '@netlify/api'
-import type { OptionValues } from 'commander'
 import { select } from '@inquirer/prompts'
 
 import { log, chalk } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import { SOCKETEER_URL } from '../../utils/socketeer.js'
 import type BaseCommand from '../base-command.js'
+import type { BaseOptionValues } from '../base-command.js'
 
 type Deploy = Awaited<ReturnType<NetlifyAPI['listSiteDeploys']>>[number]
 
@@ -43,7 +43,7 @@ export function getName({ deploy, userId }: { deploy: Deploy; userId: string | u
   return `(${deploy.id!.slice(0, 7)}) ${normalisedName}`
 }
 
-export const logsBuild = async (_options: OptionValues, command: BaseCommand) => {
+export const logsBuild = async (_options: BaseOptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   const { site } = command.netlify

@@ -1,4 +1,3 @@
-import type { OptionValues } from 'commander'
 import { input, select } from '@inquirer/prompts'
 import { pick } from '../../utils/object-utilities.js'
 import prettyjson from 'prettyjson'
@@ -13,6 +12,7 @@ import type { SiteInfo } from '../../utils/types.js'
 import { MAX_SITE_NAME_LENGTH } from '../../utils/validation.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
+import type { SitesCreateOptionValues } from './option_values.js'
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {
@@ -26,16 +26,7 @@ export const getSiteNameInput = async (name: string | undefined): Promise<{ name
   return { name }
 }
 
-interface SitesCreateOptions extends OptionValues {
-  name?: string
-  accountSlug?: string
-  withCi?: boolean
-  manual?: boolean
-  disableLinking?: boolean
-  json?: boolean
-}
-
-export const sitesCreate = async (options: SitesCreateOptions, command: BaseCommand) => {
+export const sitesCreate = async (options: SitesCreateOptionValues, command: BaseCommand) => {
   const { accounts, api } = command.netlify
 
   await command.authenticate()
