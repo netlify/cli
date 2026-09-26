@@ -1,7 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { SUPPORTED_CONTEXTS, translateFromEnvelopeToMongo, type EnvelopeItem } from '../../utils/env/index.js'
+import { SUPPORTED_CONTEXTS, getEnvelopeItems, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
@@ -26,8 +26,8 @@ const unsetInEnvelope = async ({
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars
-  const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
-  const contexts = context || ['all']
+  const envelopeVariables = await getEnvelopeItems({ api, accountId, siteId })
+  const contexts = context ?? ['all']
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
 
@@ -47,24 +47,21 @@ const unsetInEnvelope = async ({
     if (context) {
       // if context(s) are passed, delete the matching contexts / branches, and the `all` context
       const values = variable.values.filter((val) =>
-        ([...contexts, 'all'] as (string | undefined)[]).includes(val.context_parameter || val.context),
+        [...contexts, 'all'].some((ctx) => ctx === (val.context_parameter || val.context)),
       )
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: always truthy, `filter` returns an array
-      if (values) {
+      await Promise.all(
+        // @ts-expect-error FIXME(@netlify/api): `envVarValue.id` is typed optional but is always present on returned values
+        values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })),
+      )
+      // if this was the `all` context, we need to create 3 values in the other contexts
+      if (values.length === 1 && values[0].context === 'all') {
+        const newContexts = SUPPORTED_CONTEXTS.filter((ctx) => !context.includes(ctx))
+        const allValue = values[0].value
         await Promise.all(
-          // @ts-expect-error FIXME(@netlify/api): `envVarValue.id` is typed optional but is always present on returned values
-          values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })),
+          newContexts
+            .filter((ctx) => ctx !== 'all')
+            .map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
         )
-        // if this was the `all` context, we need to create 3 values in the other contexts
-        if (values.length === 1 && values[0].context === 'all') {
-          const newContexts = SUPPORTED_CONTEXTS.filter((ctx) => !context.includes(ctx))
-          const allValue = values[0].value
-          await Promise.all(
-            newContexts
-              .filter((ctx) => ctx !== 'all')
-              .map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
-          )
-        }
       }
     } else {
       // otherwise, if no context passed, delete the whole key
@@ -75,9 +72,7 @@ const unsetInEnvelope = async ({
     throw error_.json ? error_.json.msg : error_
   }
 
-  delete env[key]
-
-  return env
+  return Object.fromEntries(Object.entries(env).filter(([envKey]) => envKey !== key))
 }
 
 export const envUnset = async (key: string, options: EnvUnsetOptionValues, command: BaseCommand) => {
@@ -87,7 +82,7 @@ export const envUnset = async (key: string, options: EnvUnsetOptionValues, comma
 
   if (!siteId) {
     log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return
   }
 
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
@@ -97,11 +92,10 @@ export const envUnset = async (key: string, options: EnvUnsetOptionValues, comma
   // Return new environment variables of site if using json flag
   if (options.json) {
     logJson(finalEnv)
-    return false
+    return
   }
 
   const contextType = (SUPPORTED_CONTEXTS as readonly unknown[]).includes(context || 'all') ? 'context' : 'branch'
   log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
-  return undefined
 }

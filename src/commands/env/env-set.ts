@@ -4,10 +4,10 @@ import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpe
 import {
   SUPPORTED_CONTEXTS,
   ALL_ENVELOPE_SCOPES,
+  getEnvelopeItems,
   isSupportedContext,
   translateFromEnvelopeToMongo,
   type EnvelopeEnvVarValue,
-  type EnvelopeItem,
   type UserProvidedScope,
   type WritableEnvelopeScope,
 } from '../../utils/env/index.js'
@@ -55,9 +55,9 @@ const setInEnvelope = async ({
   }
 
   // fetch envelope env vars
-  const envelopeVariables = (await api.getEnvVars({ accountId, siteId })) as EnvelopeItem[]
-  const contexts = context || ['all']
-  let scopes: readonly WritableEnvelopeScope[] = scope || ALL_ENVELOPE_SCOPES
+  const envelopeVariables = await getEnvelopeItems({ api, accountId, siteId })
+  const contexts = context ?? ['all']
+  let scopes: WritableEnvelopeScope[] = scope ?? [...ALL_ENVELOPE_SCOPES]
 
   if (secret) {
     // post_processing (aka post-processing) scope is not allowed with secrets
@@ -135,21 +135,17 @@ export const envSet = async (key: string, value: string, options: EnvSetOptionVa
   const siteId = site.id
   if (!siteId) {
     log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return
   }
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
 
   // Get current environment variables set in the UI
   const finalEnv = await setInEnvelope({ api, siteInfo, force, key, value, context, scope, secret })
 
-  if (!finalEnv) {
-    return false
-  }
-
   // Return new environment variables of site if using json flag
   if (options.json) {
     logJson(finalEnv)
-    return false
+    return
   }
 
   const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
@@ -161,5 +157,4 @@ export const envSet = async (key: string, value: string, options: EnvSetOptionVa
     )}${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
   )
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
-  return undefined
 }

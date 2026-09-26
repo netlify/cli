@@ -113,25 +113,19 @@
     }
   },
   "src/commands/env/env-set.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
+      "count": 2
     }
   },
   "src/commands/env/env-unset.ts": {
-    "@typescript-eslint/no-dynamic-delete": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
+      "count": 3
     }
   },
   "src/commands/functions/functions-create.ts": {
