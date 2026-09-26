@@ -198,7 +198,7 @@ export const dev = async (options: DevOptionValues, command: BaseCommand) => {
     runBeforeProcessExit(() => programmaticNetlifyDev.stop())
   }
 
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
+  await promptEditorHelper({ config, repositoryRoot, state })
 
   let settings: ServerSettings
   try {

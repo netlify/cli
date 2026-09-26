@@ -6,7 +6,8 @@ interface ParsedRedirect {
   from: string
   query?: Record<string, string>
   signed?: string
-  conditions: { country?: string[]; language?: string[]; role?: string[]; [key: string]: unknown }
+  // Already normalized by `@netlify/redirect-parser` to `Role`, `Country` and `Language` keys
+  conditions: Record<string, unknown>
   [key: string]: unknown
 }
 
@@ -50,24 +51,12 @@ const getErrorMessage = function ({ message }: Error) {
 // `netlify-redirector` does not handle the same shape as the backend:
 //  - `from` is called `origin`
 //  - `query` is called `params`
-//  - `conditions.role|country|language` are capitalized
-const normalizeRedirect = function ({
-  conditions: { country, language, role, ...conditions },
-  from,
-  query,
-  signed,
-  ...redirect
-}: ParsedRedirect) {
+//  - `signed` is called `sign.jwt_secret`
+const normalizeRedirect = function ({ from, query, signed, ...redirect }: ParsedRedirect) {
   return {
     ...redirect,
     origin: from,
     params: query,
-    conditions: {
-      ...conditions,
-      ...(role && { Role: role }),
-      ...(country && { Country: country }),
-      ...(language && { Language: language }),
-    },
     ...(signed && {
       sign: {
         jwt_secret: signed,
