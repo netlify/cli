@@ -526,7 +526,7 @@
       "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 6
+      "count": 3
     }
   },
   "src/utils/deploy/deploy-source.ts": {
@@ -555,9 +555,6 @@
   "src/utils/deploy/upload-files.ts": {
     "@typescript-eslint/prefer-promise-reject-errors": {
       "count": 3
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 4
     }
   },
   "src/utils/deploy/upload-source-zip.ts": {

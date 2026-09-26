@@ -503,8 +503,7 @@ const deployProgressCb = function () {
         return
       case 'stop':
       default: {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME: a `stop` event is assumed to follow a `start` event of the same type
-        spinnersByType[event.type]!.success(event.msg)
+        spinnersByType[event.type]?.success(event.msg)
         delete spinnersByType[event.type]
       }
     }
@@ -1424,7 +1423,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   const deployToProduction =
     !options.draft && (options.prod || (options.prodIfUnlocked && !(siteData.published_deploy?.locked ?? false)))
 
-  let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
+  let results: Awaited<ReturnType<typeof prepAndRunDeploy>> | undefined
 
   if (options.build) {
     if (deployToProduction) {
@@ -1489,6 +1488,10 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
         deployId,
         skewProtectionToken,
       })
+
+      if (!results) {
+        return logAndThrowError('The build completed without running the deploy step')
+      }
 
       // Ensure source zip filename is included in results for JSON output
       if (sourceZipFileName) {
