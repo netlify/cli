@@ -31,12 +31,13 @@ export const runRecipe = async ({
 }
 
 export const recipesCommand = async (
-  recipeName: string,
+  recipeNameArgument: string | undefined,
   options: RecipesOptionValues,
   command: BaseCommand,
 ): Promise<unknown> => {
   const { config, repositoryRoot } = command.netlify
-  const sanitizedRecipeName = basename(recipeName || '').toLowerCase()
+  const recipeName = recipeNameArgument ?? options.name ?? ''
+  const sanitizedRecipeName = basename(recipeName).toLowerCase()
 
   if (sanitizedRecipeName.length === 0) {
     return command.help()
