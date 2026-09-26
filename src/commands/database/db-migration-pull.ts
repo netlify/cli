@@ -9,12 +9,7 @@ import type BaseCommand from '../base-command.js'
 import { readApiErrorMessage } from './util/api-errors.js'
 import { PRODUCTION_BRANCH } from './util/constants.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
-
-export interface MigrationPullOptions {
-  branch?: string | true
-  force?: boolean
-  json?: boolean
-}
+import type { DbMigrationsPullOptionValues } from './option_values.js'
 
 interface MigrationListItem {
   version: number
@@ -113,7 +108,7 @@ const fetchMigrationContent = async (ctx: ApiContext, name: string, branch: stri
   return data.content
 }
 
-export const migrationPull = async (options: MigrationPullOptions, command: BaseCommand) => {
+export const migrationPull = async (options: DbMigrationsPullOptionValues, command: BaseCommand) => {
   const { force, json } = options
 
   // Always resolve to an explicit branch. Leaving it undefined makes the detail

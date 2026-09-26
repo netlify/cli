@@ -1,6 +1,5 @@
-import type { OptionValues } from 'commander'
-
 import type BaseCommand from '../base-command.js'
+import type { RecipesOptionValues } from './option_values.js'
 
 export const createRecipesCommand = (program: BaseCommand) => {
   program
@@ -18,7 +17,7 @@ export const createRecipesCommand = (program: BaseCommand) => {
     .description(`Create and modify files in a project using pre-defined recipes`)
     .option('-n, --name <name>', 'recipe name to use')
     .addExamples(['netlify recipes my-recipe', 'netlify recipes --name my-recipe'])
-    .action(async (recipeName: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (recipeName: string, options: RecipesOptionValues, command: BaseCommand) => {
       const { recipesCommand } = await import('./recipes.js')
       await recipesCommand(recipeName, options, command)
     })

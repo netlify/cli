@@ -1,7 +1,6 @@
-import type { OptionValues } from 'commander'
-
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
 import type BaseCommand from '../base-command.js'
+import type { OpenAdminOptionValues, OpenOptionValues, OpenSiteOptionValues } from './option_values.js'
 
 export const createOpenCommand = (program: BaseCommand) => {
   program
@@ -9,7 +8,7 @@ export const createOpenCommand = (program: BaseCommand) => {
     .description('Opens current project admin UI in Netlify')
     .addExamples(['netlify open:admin'])
     .hook('preAction', requiresSiteInfo)
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: OpenAdminOptionValues, command: BaseCommand) => {
       const { openAdmin } = await import('./open-admin.js')
       await openAdmin(options, command)
     })
@@ -19,7 +18,7 @@ export const createOpenCommand = (program: BaseCommand) => {
     .description('Opens current project url in browser')
     .addExamples(['netlify open:site'])
     .hook('preAction', requiresSiteInfo)
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: OpenSiteOptionValues, command: BaseCommand) => {
       const { openSite } = await import('./open-site.js')
       await openSite(options, command)
     })
@@ -30,7 +29,7 @@ export const createOpenCommand = (program: BaseCommand) => {
     .option('--site', 'Open project')
     .option('--admin', 'Open Netlify project')
     .addExamples(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site'])
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: OpenOptionValues, command: BaseCommand) => {
       const { open } = await import('./open.js')
       await open(options, command)
     })
