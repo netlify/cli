@@ -31,7 +31,6 @@ export const startStaticServer = async ({ settings }: { settings: Pick<ServerSet
   })
   await server.listen({ port: settings.frameworkPort })
   const [address] = server.addresses()
-  // @ts-expect-error FIXME: `log()` types its format args as strings, but `util.format()` accepts any value
-  log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
+  log(`\n${NETLIFYDEVLOG} Static server listening to`, String(settings.frameworkPort))
   return { family: address.family }
 }
