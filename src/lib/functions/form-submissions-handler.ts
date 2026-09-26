@@ -6,6 +6,7 @@ import multiparty from 'multiparty'
 import getRawBody from 'raw-body'
 
 import { warn } from '../../utils/command-helpers.js'
+import { getErrorMessage } from '../../utils/errors.js'
 import { BACKGROUND } from '../../utils/functions/index.js'
 import { capitalize } from '../string.js'
 
@@ -128,8 +129,7 @@ export const createFormSubmissionHandler = function ({
           })
         })
       } catch (error) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-        warn(error)
+        warn(getErrorMessage(error))
         next()
         return
       }

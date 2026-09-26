@@ -6,6 +6,7 @@ import type BaseCommand from '../base-command.js'
 import type { AgentsListOptionValues } from './option_values.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
 import { formatDuration, formatStatus, truncateText, getAgentName } from './utils.js'
+import { getErrorMessage } from '../../utils/errors.js'
 
 export const agentsList = async (options: AgentsListOptionValues, command: BaseCommand) => {
   const { api, site, siteInfo, apiOpts } = command.netlify
@@ -148,10 +149,8 @@ export const agentsList = async (options: AgentsListOptionValues, command: BaseC
 
     return agentRunners
   } catch (error_) {
-    const error = error_ as Error
-
     stopSpinner({ spinner: listSpinner, error: true })
 
-    return logAndThrowError(`Failed to list agent tasks: ${error.message}`)
+    return logAndThrowError(`Failed to list agent tasks: ${getErrorMessage(error_)}`)
   }
 }

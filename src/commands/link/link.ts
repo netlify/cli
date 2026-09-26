@@ -6,7 +6,7 @@ import type { NetlifyAPI } from '@netlify/api'
 
 import { listSites } from '../../lib/api.js'
 import { startSpinner } from '../../lib/spinner.js'
-import { chalk, logAndThrowError, exit, log, netlifyCommand, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, log, netlifyCommand } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { matchesRepoUrl } from '../../utils/match-repo-url.js'
@@ -15,6 +15,7 @@ import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 import type { LinkOptionValues } from './option_values.js'
+import { isAPIError } from '../../utils/errors.js'
 
 const findSiteByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<SiteInfo> => {
   log()
@@ -147,7 +148,7 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
           options: { name: searchTerm, filter: 'all' },
         })
       } catch (error_) {
-        if ((error_ as APIError).status === 404) {
+        if (isAPIError(error_) && error_.status === 404) {
           return logAndThrowError(`'${searchTerm}' not found`)
         } else {
           return logAndThrowError(error_)
@@ -238,7 +239,7 @@ To create a new project:
       try {
         site = await api.getSite({ siteId })
       } catch (error_) {
-        if ((error_ as APIError).status === 404) {
+        if (isAPIError(error_) && error_.status === 404) {
           return logAndThrowError(`Project ID '${siteId}' not found`)
         } else {
           return logAndThrowError(error_)
@@ -310,7 +311,7 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
       // @ts-expect-error FIXME(@netlify/api): `getSite` response type doesn't match the hand-written `SiteInfo`
       newSiteData = await api.getSite({ site_id: options.id })
     } catch (error_) {
-      if ((error_ as APIError).status === 404) {
+      if (isAPIError(error_) && error_.status === 404) {
         return logAndThrowError(new Error(`Project id ${options.id} not found`))
       } else {
         return logAndThrowError(error_)
@@ -337,7 +338,7 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
         },
       })
     } catch (error_) {
-      if ((error_ as APIError).status === 404) {
+      if (isAPIError(error_) && error_.status === 404) {
         return logAndThrowError(new Error(`${options.name} not found`))
       } else {
         return logAndThrowError(error_)

@@ -8,9 +8,7 @@ import type { Spinner } from '../lib/spinner.js'
 
 import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
-
-const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
-  value instanceof Error && Object.hasOwn(value, 'code')
+import { isErrnoException } from './errors.js'
 
 type CommandResult = {
   exitCode?: number

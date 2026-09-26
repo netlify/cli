@@ -38,6 +38,7 @@ import {
 import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
+import { isNetlifyConfigUserError } from '../utils/errors.js'
 import { getSiteByName } from '../utils/get-site.js'
 import { buildAuthorizeUrl } from '../utils/login-url.js'
 import openBrowser from '../utils/open-browser.js'
@@ -879,8 +880,7 @@ export default class BaseCommand extends Command {
         featureFlags: this.featureFlags,
       })
     } catch (error_) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      const isUserError = error_.customErrorInfo !== undefined && error_.customErrorInfo.type === 'resolveConfig'
+      const isUserError = isNetlifyConfigUserError(error_)
 
       // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
       // To account for that, we try to retrieve the config again, this time without a token, to avoid making
@@ -897,9 +897,7 @@ export default class BaseCommand extends Command {
         return this.getConfig({ ...opts, offline: true })
       }
 
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      const message = isUserError ? error_.message : error_.stack
-      return logAndThrowError(message)
+      return logAndThrowError(isUserError ? error_.message : error_ instanceof Error ? error_.stack : undefined)
     }
   }
 

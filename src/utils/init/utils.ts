@@ -11,6 +11,7 @@ import { fileExistsAsync } from '../../lib/fs.js'
 import { normalizeBackslash } from '../../lib/path.js'
 import { detectBuildSettings } from '../build-info.js'
 import { chalk, logAndThrowError, log, type NormalizedCachedConfigConfig, warn } from '../command-helpers.js'
+import { getErrorMessage } from '../errors.js'
 import type { Plugin } from '../types.js'
 
 import { getRecommendPlugins, getUIPlugins } from './plugins.js'
@@ -214,14 +215,16 @@ export const saveNetlifyToml = async ({
         'utf-8',
       )
     } catch (error) {
-      warn(`Failed saving Netlify toml file: ${error instanceof Error ? error.message : error?.toString()}`)
+      warn(`Failed saving Netlify toml file: ${getErrorMessage(error)}`)
     }
   }
 }
 
 export const formatErrorMessage = ({ error, message }: { error: unknown; message: string }) => {
-  const apiError = error as { json?: unknown; message: string }
-  const errorMessage = apiError.json ? `${apiError.message} - ${JSON.stringify(apiError.json)}` : apiError.message
+  const errorMessage =
+    error instanceof Error && 'json' in error && error.json
+      ? `${error.message} - ${JSON.stringify(error.json)}`
+      : getErrorMessage(error)
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
 

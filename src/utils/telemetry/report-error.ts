@@ -2,10 +2,12 @@ import os from 'os'
 import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
+import { inspect } from 'util'
 
 import { getGlobalConfigStore } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 
+import { isNetlifyConfigUserError } from '../errors.js'
 import execa from '../execa.js'
 
 import { cliVersion } from './utils.js'
@@ -27,16 +29,11 @@ export const reportError = async function (error: unknown, config: ErrorReportCo
   if (isCI) {
     return
   }
-  // convert a NotifiableError to an error class
-  // FIXME: non-string, non-`Error` values are passed through as-is and may not have these properties
-  const err = (error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error) as Error
 
-  // `@netlify/config` tags intentional user-input errors (malformed netlify.toml,
-  // invalid redirects, etc.) with this shape. See @netlify/config/lib/error.js.
-  // These are not CLI bugs and don't belong in Bugsnag.
-  if (
-    (error as { customErrorInfo?: { type?: unknown } } | null | undefined)?.customErrorInfo?.type === 'resolveConfig'
-  ) {
+  const err = error instanceof Error ? error : new Error(typeof error === 'string' ? error : inspect(error))
+
+  // These are user errors, not CLI bugs, and don't belong in Bugsnag.
+  if (isNetlifyConfigUserError(error)) {
     return
   }
 

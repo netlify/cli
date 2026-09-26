@@ -30,6 +30,7 @@ import openBrowser from '../../utils/open-browser.js'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
 import { runBuildTimeline } from '../../utils/run-build.js'
 import type { ServerSettings } from '../../utils/types.js'
+import { getErrorMessage } from '../../utils/errors.js'
 import type BaseCommand from '../base-command.js'
 import type { DevConfig } from '../dev/types.js'
 import type { ServeOptionValues } from './option_values.js'
@@ -115,8 +116,7 @@ export const serve = async (options: ServeOptionValues, command: BaseCommand) =>
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    log(NETLIFYDEVERR, error_.message)
+    log(NETLIFYDEVERR, getErrorMessage(error_))
     return exit(1)
   }
 

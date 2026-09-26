@@ -14,7 +14,7 @@ import type { NetlifyAPI } from '@netlify/api'
 import { LocalState } from '@netlify/dev-utils'
 import { Octokit } from '@octokit/rest'
 
-import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson, warn } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getGitHubToken as promptForGitHubToken } from '../../utils/gh-auth.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
@@ -26,6 +26,7 @@ import type { AgentRunner } from '../agents/types.js'
 import { validatePrompt, validateAgent, formatStatus } from '../agents/utils.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type { CreateOptionValues } from './option_values.js'
+import { getErrorMessage, isAPIError } from '../../utils/errors.js'
 
 const execFile = promisify(execFileCb)
 
@@ -321,7 +322,7 @@ export const createAction = async (promptArg: string, options: Partial<CreateOpt
       log(`${chalk.green('✓')} Project created: ${chalk.cyan(site.name)}`)
       break
     } catch (error_) {
-      if ((error_ as APIError).status === 422 && siteName && retries < MAX_NAME_RETRIES) {
+      if (isAPIError(error_) && error_.status === 422 && siteName && retries < MAX_NAME_RETRIES) {
         retries++
         const suffix = Math.floor(Math.random() * 900 + 100).toString()
         nameAttempt = `${siteName}-${suffix}`
@@ -329,15 +330,15 @@ export const createAction = async (promptArg: string, options: Partial<CreateOpt
         continue
       }
       stopSpinner({ spinner: siteSpinner, error: true })
-      if ((error_ as APIError).status === 422) {
+      if (isAPIError(error_) && error_.status === 422) {
         const name = nameAttempt ?? siteName
         return logAndThrowError(
           name
             ? `Project name "${name}" is already taken. Please try a different name.`
-            : `Failed to create project: ${(error_ as Error).message}`,
+            : `Failed to create project: ${getErrorMessage(error_)}`,
         )
       }
-      return logAndThrowError(`Failed to create project: ${(error_ as Error).message}`)
+      return logAndThrowError(`Failed to create project: ${getErrorMessage(error_)}`)
     }
   }
 
@@ -377,7 +378,7 @@ export const createAction = async (promptArg: string, options: Partial<CreateOpt
     stopSpinner({ spinner: agentSpinner })
   } catch (error_) {
     stopSpinner({ spinner: agentSpinner, error: true })
-    return logAndThrowError(`Failed to start agent: ${(error_ as Error).message}`)
+    return logAndThrowError(`Failed to start agent: ${getErrorMessage(error_)}`)
   }
 
   const agentRunUrl = `https://app.netlify.com/projects/${site.name}/agent-runs/${agentRunner.id}`
@@ -453,7 +454,7 @@ export const createAction = async (promptArg: string, options: Partial<CreateOpt
     stopSpinner({ spinner: pollSpinner, error: true })
     log()
     log(`  View details: ${chalk.blue(agentRunUrl)}`)
-    return logAndThrowError(`Error polling agent status: ${(error_ as Error).message}`)
+    return logAndThrowError(`Error polling agent status: ${getErrorMessage(error_)}`)
   }
 
   stopSpinner({ spinner: pollSpinner })
@@ -510,7 +511,7 @@ export const createAction = async (promptArg: string, options: Partial<CreateOpt
         } catch (error_) {
           stopSpinner({ spinner: downloadSpinner, error: true })
           await rm(projectDir, { recursive: true, force: true }).catch(() => {})
-          warn(`Failed to download source: ${(error_ as Error).message}`)
+          warn(`Failed to download source: ${getErrorMessage(error_)}`)
         }
       }
     } else if (options.download !== false && !agentRunner.latest_session_deploy_id) {
@@ -550,10 +551,10 @@ export const createAction = async (promptArg: string, options: Partial<CreateOpt
             }
           } catch (error_) {
             stopSpinner({ spinner: repoSpinner, error: true })
-            warn(`Failed to create GitHub repo: ${(error_ as Error).message}`)
+            warn(`Failed to create GitHub repo: ${getErrorMessage(error_)}`)
           }
         } catch (error_) {
-          warn(`GitHub authentication failed: ${(error_ as Error).message}`)
+          warn(`GitHub authentication failed: ${getErrorMessage(error_)}`)
         }
       }
     }

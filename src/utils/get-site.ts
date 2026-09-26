@@ -1,7 +1,8 @@
 import type { NetlifyAPI } from '@netlify/api'
 
-import { type APIError, logAndThrowError } from './command-helpers.js'
+import { logAndThrowError } from './command-helpers.js'
 import type { SiteInfo } from './types.js'
+import { getErrorMessage, isAPIError } from './errors.js'
 
 export const getSiteByName = async (api: NetlifyAPI, siteName: string): Promise<SiteInfo> => {
   try {
@@ -15,8 +16,8 @@ export const getSiteByName = async (api: NetlifyAPI, siteName: string): Promise<
     // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
     return siteFoundByName as SiteInfo
   } catch (error_) {
-    if ((error_ as APIError).status === 401) {
-      return logAndThrowError(`${(error_ as APIError).message}: could not retrieve project`)
+    if (isAPIError(error_) && error_.status === 401) {
+      return logAndThrowError(`${getErrorMessage(error_)}: could not retrieve project`)
     } else {
       return logAndThrowError('Project not found. Please rerun "netlify link"')
     }

@@ -3,10 +3,11 @@ import { resolve } from 'path'
 
 import { getStore, type GetStoreOptions } from '@netlify/blobs'
 
-import { chalk, logAndThrowError, isNodeError, log } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
 import { promptBlobSetOverwrite } from '../../utils/prompts/blob-set-prompt.js'
 import type BaseCommand from '../base-command.js'
 import type { BlobsSetOptionValues } from './option_values.js'
+import { isErrnoException } from '../../utils/errors.js'
 
 export const blobsSet = async (
   storeName: string,
@@ -31,13 +32,13 @@ export const blobsSet = async (
     try {
       value = new Uint8Array(await fs.readFile(inputPath)).buffer
     } catch (error) {
-      if (isNodeError(error) && error.code === 'ENOENT') {
+      if (isErrnoException(error) && error.code === 'ENOENT') {
         return logAndThrowError(
           `Could not set blob ${chalk.yellow(key)} because the file ${chalk.underline(inputPath)} does not exist`,
         )
       }
 
-      if (isNodeError(error) && error.code === 'EISDIR') {
+      if (isErrnoException(error) && error.code === 'EISDIR') {
         return logAndThrowError(
           `Could not set blob ${chalk.yellow(key)} because the path ${chalk.underline(inputPath)} is a directory`,
         )

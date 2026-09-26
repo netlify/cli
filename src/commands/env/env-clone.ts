@@ -1,7 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logAndThrowError } from '../../utils/command-helpers.js'
-import type { EnvelopeItem } from '../../utils/env/index.js'
+import { toEnvelopeError, type EnvelopeItem } from '../../utils/env/index.js'
 import { promptEnvCloneOverwrite } from '../../utils/prompts/env-clone-prompt.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
@@ -58,8 +58,7 @@ const cloneEnvVars = async ({
     // @ts-expect-error FIXME(@netlify/api): `createEnvVars` body `scopes` rejects `post_processing`, which Envelope returns and accepts
     await api.createEnvVars({ accountId, siteId, body: envelopeFrom })
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error.json ? error.json.msg : error
+    throw toEnvelopeError(error)
   }
   return true
 }

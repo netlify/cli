@@ -28,6 +28,7 @@ import { PgClientExecutor } from './util/pg-client-executor.js'
 import { formatQueryResult } from './util/psql-formatter.js'
 import { spawnAsync } from './util/spawn-async.js'
 import type { DbInitOptionValues } from './option_values.js'
+import { isErrnoException } from '../../utils/errors.js'
 
 const NETLIFY_DATABASE_PACKAGE = '@netlify/database'
 const DRIZZLE_ORM_PACKAGE = 'drizzle-orm'
@@ -73,7 +74,7 @@ const readDirectoryEntries = async (dir: string): Promise<string[]> => {
   try {
     return await readdir(dir)
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []
+    if (isErrnoException(error) && error.code === 'ENOENT') return []
     throw error
   }
 }

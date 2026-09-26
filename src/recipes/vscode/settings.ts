@@ -3,6 +3,8 @@ import { dirname, posix, relative } from 'path'
 
 import * as JSONC from 'comment-json'
 
+import { getErrorMessage, isErrnoException } from '../../utils/errors.js'
+
 export type VSCodeSettings = Record<string, unknown>
 
 const toUnixPath = (path: string): string => path.replace(/\\/g, '/')
@@ -61,8 +63,8 @@ export const getSettings = async (settingsPath: string): Promise<{ fileExists: b
       settings: JSONC.parse(file) as VSCodeSettings,
     }
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      throw new Error(`Could not open VS Code settings file: ${(error as NodeJS.ErrnoException).message}`)
+    if (!isErrnoException(error) || error.code !== 'ENOENT') {
+      throw new Error(`Could not open VS Code settings file: ${getErrorMessage(error)}`)
     }
 
     return {

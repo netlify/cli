@@ -5,7 +5,13 @@ import AsciiTable from 'ascii-table'
 import dotenv from 'dotenv'
 
 import { exit, log, logJson } from '../../utils/command-helpers.js'
-import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope, type EnvelopeItem } from '../../utils/env/index.js'
+import {
+  toEnvelopeError,
+  translateFromEnvelopeToMongo,
+  translateFromMongoToEnvelope,
+  type EnvelopeItem,
+} from '../../utils/env/index.js'
+import { getErrorMessage } from '../../utils/errors.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 import type { EnvImportOptionValues } from './option_values.js'
@@ -46,8 +52,7 @@ const importDotEnv = async ({
     // @ts-expect-error FIXME(@netlify/api): `createEnvVars` body `scopes` rejects `post_processing`, which Envelope returns and accepts
     await api.createEnvVars({ accountId, siteId, body })
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error.json ? error.json.msg : error
+    throw toEnvelopeError(error)
   }
 
   // return final env to aid in --json output (for testing)
@@ -73,8 +78,7 @@ export const envImport = async (fileName: string, options: EnvImportOptionValues
     const envFileContents = await readFile(fileName, 'utf-8')
     importedEnv = dotenv.parse(envFileContents)
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    log(error.message)
+    log(getErrorMessage(error))
     exit(1)
   }
 

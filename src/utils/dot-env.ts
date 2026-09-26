@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import { isFileAsync } from '../lib/fs.js'
 
 import { warn } from './command-helpers.js'
+import { getErrorMessage } from './errors.js'
 
 interface DotEnvFile {
   file: string
@@ -56,8 +57,7 @@ export const tryLoadDotEnvFiles = async ({
         }
       } catch (error) {
         return {
-          // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-          warning: `Failed reading env variables from file: ${filepath}: ${error.message}`,
+          warning: `Failed reading env variables from file: ${filepath}: ${getErrorMessage(error)}`,
         }
       }
       const content = await readFile(filepath, 'utf-8')

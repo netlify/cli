@@ -7,6 +7,7 @@ import type { AgentsCreateOptionValues } from './option_values.js'
 import type { AgentRunner } from './types.js'
 import { validatePrompt, validateAgent, formatStatus, getAgentName } from './utils.js'
 import { AVAILABLE_AGENTS } from './constants.js'
+import { getErrorMessage } from '../../utils/errors.js'
 
 export const agentsCreate = async (promptArg: string, options: AgentsCreateOptionValues, command: BaseCommand) => {
   const { api, site, siteInfo, apiOpts } = command.netlify
@@ -158,10 +159,8 @@ export const agentsCreate = async (promptArg: string, options: AgentsCreateOptio
 
     return agentRunner
   } catch (error_) {
-    const error = error_ as Error
-
     stopSpinner({ spinner: createSpinner, error: true })
 
-    return logAndThrowError(`Failed to create agent task: ${error.message}`)
+    return logAndThrowError(`Failed to create agent task: ${getErrorMessage(error_)}`)
   }
 }

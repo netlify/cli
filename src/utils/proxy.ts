@@ -57,6 +57,7 @@ import {
 } from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
+import { getErrorMessage } from './errors.js'
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
@@ -394,8 +395,7 @@ const serveRedirect = async function ({
       try {
         jwtValue = jwtDecode<JwtPayload | null>(token) || {}
       } catch (error) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', error.message)
+        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', getErrorMessage(error))
         res.writeHead(400)
         res.end('Invalid JWT provided. Please see logs for more info.')
         return
