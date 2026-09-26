@@ -136,7 +136,7 @@
   },
   "src/commands/functions/functions-create.ts": {
     "@typescript-eslint/await-thenable": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 1
@@ -145,7 +145,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 4
+      "count": 2
     },
     "@typescript-eslint/no-unnecessary-type-conversion": {
       "count": 1
@@ -154,7 +154,7 @@
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 4
+      "count": 3
     },
     "@typescript-eslint/prefer-optional-chain": {
       "count": 1
@@ -171,7 +171,7 @@
   },
   "src/commands/functions/functions-invoke.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 3
+      "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
@@ -183,9 +183,6 @@
   "src/commands/functions/functions-serve.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
@@ -358,14 +355,8 @@
     }
   },
   "src/lib/functions/form-submissions-handler.ts": {
-    "@typescript-eslint/no-deprecated": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-type-conversion": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 9
+      "count": 1
     },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
@@ -379,15 +370,6 @@
   "src/lib/functions/netlify-function.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 8
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
     }
   },
   "src/lib/functions/registry.ts": {
@@ -402,22 +384,10 @@
     }
   },
   "src/lib/functions/server.ts": {
-    "@typescript-eslint/no-deprecated": {
-      "count": 1
-    },
     "@typescript-eslint/no-dynamic-delete": {
       "count": 2
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
@@ -618,11 +588,6 @@
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
-  "src/utils/functions/get-functions.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
       "count": 1
     }
   },

@@ -137,9 +137,10 @@ type FunctionMetadata = NonNullable<Awaited<ReturnType<typeof getFunctionMetadat
 const clearFunctionsCache = (functionsPath: string) => {
   Object.keys(require.cache)
     .filter((key) => key.startsWith(functionsPath))
-    // @ts-expect-error(serhalp) -- `decache` is typed but TS thinks it isn't callable. Investigate.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- What in the world is going on?
-    .forEach((key) => decache(key))
+    .forEach((key) => {
+      // decache is CJS but its types declare an ESM default export, which it also sets as `module.exports.default`
+      decache.default(key)
+    })
 }
 
 const getTargetDirectory = async ({
