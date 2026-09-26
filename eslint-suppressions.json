@@ -237,7 +237,7 @@
   },
   "src/commands/serve/serve.ts": {
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 3
+      "count": 1
     }
   },
   "src/commands/sites/sites-create.ts": {
