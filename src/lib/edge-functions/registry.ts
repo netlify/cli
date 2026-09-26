@@ -42,7 +42,7 @@ interface EdgeFunctionsRegistryOptions {
   command: BaseCommand
   config: NormalizedCachedConfigConfig
   configPath?: string | undefined
-  debug: boolean
+  debug: boolean | undefined
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
