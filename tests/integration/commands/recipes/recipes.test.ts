@@ -46,6 +46,32 @@ describe.concurrent('commands/recipes', () => {
     })
   })
 
+  test('Accepts the recipe name through the `--name` option', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      const childProcess = execa(cliPath, ['recipes', '--name', 'vscode'], {
+        cwd: builder.directory,
+      })
+      const settingsPath = path.resolve(builder.directory, '.vscode', 'settings.json')
+
+      handleQuestions(childProcess, [
+        {
+          question: `A new VS Code settings file will be created at ${settingsPath}`,
+          answer: CONFIRM,
+        },
+      ])
+
+      await childProcess
+
+      const settings = JSON.parse(
+        await fs.readFile(path.join(builder.directory, `.vscode/settings.json`), 'utf8'),
+      ) as unknown
+
+      t.expect(settings).toHaveProperty('deno.enable', true)
+    })
+  })
+
   test('Updates an existing VS Code settings file', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder
