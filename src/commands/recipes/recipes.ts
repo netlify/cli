@@ -1,6 +1,5 @@
 import { basename } from 'path'
 
-import { OptionValues } from 'commander'
 import { closest } from 'fastest-levenshtein'
 import { confirm } from '@inquirer/prompts'
 
@@ -8,6 +7,7 @@ import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 import { getRecipe, listRecipes } from './common.js'
+import type { RecipesOptionValues } from './option_values.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -25,9 +25,14 @@ export const runRecipe = async ({ args, command, config, recipeName, repositoryR
   return recipe.run({ args, command, config, repositoryRoot })
 }
 
-export const recipesCommand = async (recipeName: string, options: OptionValues, command: BaseCommand): Promise<any> => {
+export const recipesCommand = async (
+  recipeNameArgument: string | undefined,
+  options: RecipesOptionValues,
+  command: BaseCommand,
+): Promise<any> => {
   const { config, repositoryRoot } = command.netlify
-  const sanitizedRecipeName = basename(recipeName || '').toLowerCase()
+  const recipeName = recipeNameArgument ?? options.name ?? ''
+  const sanitizedRecipeName = basename(recipeName).toLowerCase()
 
   if (sanitizedRecipeName.length === 0) {
     return command.help()
