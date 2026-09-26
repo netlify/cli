@@ -17,10 +17,10 @@ export const isSupportedContext = (contextOrBranch: string): contextOrBranch is 
 /**
  * Additional aliases for the user-provided env `context` option.
  */
-const SUPPORTED_CONTEXT_ALIASES = {
-  dp: 'deploy-preview',
-  prod: 'production',
-}
+const SUPPORTED_CONTEXT_ALIASES = new Map<string, SupportedContext>([
+  ['dp', 'deploy-preview'],
+  ['prod', 'production'],
+])
 /**
  * Supported values for the user-provided env `scope` option.
  * These exactly match possible `scope` values returned by the Envelope API.
@@ -75,9 +75,7 @@ export const normalizeContext = (context: string): ContextOrBranch => {
   }
 
   context = context.toLowerCase()
-  if (context in SUPPORTED_CONTEXT_ALIASES) {
-    context = SUPPORTED_CONTEXT_ALIASES[context as keyof typeof SUPPORTED_CONTEXT_ALIASES]
-  }
+  context = SUPPORTED_CONTEXT_ALIASES.get(context) ?? context
   const forbiddenContexts = SUPPORTED_CONTEXTS.map((ctx) => `branch:${ctx}`)
   if (forbiddenContexts.includes(context)) {
     return logAndThrowError(`The context ${context} includes a reserved keyword and is not allowed`)
