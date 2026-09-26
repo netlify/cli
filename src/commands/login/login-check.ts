@@ -1,6 +1,7 @@
 import { NetlifyAPI } from '@netlify/api'
 
 import { log, logAndThrowError, logJson } from '../../utils/command-helpers.js'
+import { isAPIError } from '../../utils/errors.js'
 import { storeToken } from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
 import type { LoginOptionValues } from './option_values.js'
@@ -19,8 +20,7 @@ export const loginCheck = async (
   try {
     ticket = await api.showTicket({ ticketId })
   } catch (error) {
-    const status = (error as { status?: number }).status
-    if (status === 401 || status === 404) {
+    if (isAPIError(error) && (error.status === 401 || error.status === 404)) {
       logJson({ status: 'denied' })
       log('Status: denied')
       return

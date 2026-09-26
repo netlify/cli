@@ -26,10 +26,10 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
+      "count": 2
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 17
@@ -70,7 +70,7 @@
       "count": 9
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 9
+      "count": 5
     }
   },
   "src/commands/dev/dev.ts": {
@@ -85,26 +85,12 @@
     }
   },
   "src/commands/env/env-clone.ts": {
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 1
-    },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
-  "src/commands/env/env-import.ts": {
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
     }
   },
   "src/commands/env/env-set.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
@@ -113,9 +99,6 @@
   },
   "src/commands/env/env-unset.ts": {
     "@typescript-eslint/no-dynamic-delete": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
@@ -143,9 +126,6 @@
     },
     "@typescript-eslint/restrict-plus-operands": {
       "count": 3
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
     },
     "n/no-process-exit": {
       "count": 2
@@ -219,20 +199,17 @@
   },
   "src/commands/serve/serve.ts": {
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 3
+      "count": 2
     }
   },
   "src/commands/sites/sites-create.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 3
     }
   },
   "src/commands/sites/sites-delete.ts": {
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 2
+      "count": 1
     }
   },
   "src/commands/sites/sites-list.ts": {
@@ -315,9 +292,6 @@
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 2
     },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
-    },
     "no-empty": {
       "count": 1
     }
@@ -395,9 +369,6 @@
     }
   },
   "src/lib/http-agent.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 2
-    },
     "@typescript-eslint/no-unsafe-call": {
       "count": 1
     },
@@ -559,11 +530,6 @@
       "count": 1
     }
   },
-  "src/utils/dot-env.ts": {
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
-    }
-  },
   "src/utils/env/index.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
@@ -628,9 +594,6 @@
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 2
-    },
-    "@typescript-eslint/restrict-template-expressions": {
-      "count": 1
     }
   },
   "src/utils/login-url.ts": {

@@ -28,13 +28,11 @@ import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 
 import NetlifyFunction, { type FunctionsSettings } from './netlify-function.js'
 import runtimes, { type BaseBuildResult, type BuildCache } from './runtimes/index.js'
+import { isErrnoException } from '../../utils/errors.js'
 
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
 const ZIP_EXTENSION = '.zip'
-
-const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
-  value instanceof Error && Object.hasOwn(value, 'code')
 
 const isInternalFunction = (
   func: ListedFunction | NetlifyFunction<BaseBuildResult>,

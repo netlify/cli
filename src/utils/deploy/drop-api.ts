@@ -7,6 +7,7 @@ import pWaitFor from 'p-wait-for'
 
 import { DEPLOY_POLL, DEFAULT_DEPLOY_TIMEOUT, DEFAULT_CONCURRENT_UPLOAD, DEFAULT_MAX_RETRY } from './constants.js'
 import type { StatusCallback } from './status-cb.js'
+import { isAPIError } from '../errors.js'
 
 const APP_NETLIFY_REFERRER = 'https://app.netlify.com'
 
@@ -218,15 +219,15 @@ export const uploadDropFiles = async (
       phase: 'progress',
     })
 
-    let lastError: DropApiError | undefined
+    let lastError: unknown
     for (let attempt = 0; attempt <= maxRetry; attempt++) {
       try {
         const body = fs.createReadStream(fileObj.filepath)
         await uploadDropFile(apiOptions, deployId, fileObj.normalizedPath, body, token)
         return
       } catch (error) {
-        lastError = error as DropApiError
-        if (lastError.status === 400 || lastError.status === 422) {
+        lastError = error
+        if (isAPIError(error) && (error.status === 400 || error.status === 422)) {
           throw error
         }
         if (attempt < maxRetry) {
@@ -235,6 +236,7 @@ export const uploadDropFiles = async (
       }
     }
     if (lastError) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- rethrows the last caught upload error as is
       throw lastError
     }
   }

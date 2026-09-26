@@ -1,7 +1,8 @@
 import type { Command } from 'commander'
 
-import { logAndThrowError, warn, type APIError } from '../command-helpers.js'
+import { logAndThrowError, warn } from '../command-helpers.js'
 import type BaseCommand from '../../commands/base-command.js'
+import { getErrorMessage, isAPIError } from '../errors.js'
 import type { SiteInfo } from '../types.js'
 
 /**
@@ -28,8 +29,7 @@ const requiresSiteInfoWithProject = async (command: Command) => {
         baseCommand.netlify.siteInfo = siteData as SiteInfo
       }
     } catch (error_) {
-      const error = error_ as APIError
-      if (error.status === 404) {
+      if (isAPIError(error_) && error_.status === 404) {
         try {
           const sites = await api.listSites({
             filter: 'all',
@@ -47,12 +47,12 @@ const requiresSiteInfoWithProject = async (command: Command) => {
             )
           }
         } catch (listError) {
-          return logAndThrowError(`Failed to resolve project "${options.project}": ${(listError as Error).message}`)
+          return logAndThrowError(`Failed to resolve project "${options.project}": ${getErrorMessage(listError)}`)
         }
-      } else if (error.status === 401) {
+      } else if (isAPIError(error_) && error_.status === 401) {
         return logAndThrowError(`Not authorized to access project "${options.project}"`)
       } else {
-        return logAndThrowError(`Failed to resolve project "${options.project}": ${error.message}`)
+        return logAndThrowError(`Failed to resolve project "${options.project}": ${getErrorMessage(error_)}`)
       }
     }
   }
@@ -74,12 +74,12 @@ const requiresSiteInfoWithProject = async (command: Command) => {
     }
   } catch (error_) {
     // unauthorized
-    if ((error_ as APIError).status === 401) {
+    if (isAPIError(error_) && error_.status === 401) {
       warn(`Log in with a different account or re-link to a project you have permission for`)
       return logAndThrowError(`Not authorized to view the project (${siteId})`)
     }
     // missing
-    if ((error_ as APIError).status === 404) {
+    if (isAPIError(error_) && error_.status === 404) {
       return logAndThrowError(`The project can't be found`)
     }
 

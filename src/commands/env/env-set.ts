@@ -5,6 +5,7 @@ import {
   SUPPORTED_CONTEXTS,
   ALL_ENVELOPE_SCOPES,
   isSupportedContext,
+  toEnvelopeError,
   translateFromEnvelopeToMongo,
   type EnvelopeEnvVarValue,
   type EnvelopeItem,
@@ -119,8 +120,7 @@ const setInEnvelope = async ({
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
-    // @ts-expect-error FIXME: assumes the caught value is an `Error`
-    throw error_.json ? error_.json.msg : error_
+    throw toEnvelopeError(error_)
   }
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')

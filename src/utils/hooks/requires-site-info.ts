@@ -1,7 +1,8 @@
 import type { Command } from 'commander'
 
-import { logAndThrowError, warn, type APIError } from '../command-helpers.js'
+import { logAndThrowError, warn } from '../command-helpers.js'
 import type BaseCommand from '../../commands/base-command.js'
+import { isAPIError } from '../errors.js'
 
 /**
  * A preAction hook that errors out if siteInfo is an empty object
@@ -19,12 +20,12 @@ const requiresSiteInfo = async (command: Command) => {
     await api.getSite({ siteId })
   } catch (error_) {
     // unauthorized
-    if ((error_ as APIError).status === 401) {
+    if (isAPIError(error_) && error_.status === 401) {
       warn(`Log in with a different account or re-link to a project you have permission for`)
       return logAndThrowError(`Not authorized to view the currently linked project (${siteId})`)
     }
     // missing
-    if ((error_ as APIError).status === 404) {
+    if (isAPIError(error_) && error_.status === 404) {
       return logAndThrowError(`The project this folder is linked to can't be found`)
     }
 

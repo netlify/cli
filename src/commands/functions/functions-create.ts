@@ -28,6 +28,7 @@ import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import type BaseCommand from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
 import type { FunctionsCreateOptionValues } from './option_values.js'
+import { getErrorMessage } from '../../utils/errors.js'
 
 const require = createRequire(import.meta.url)
 
@@ -405,7 +406,7 @@ const downloadFromURL = async function (
         const dest = fs.createWriteStream(path.join(fnFolder, finalName))
         res.body?.pipe(dest)
       } catch (error_) {
-        throw new Error(`Error while retrieving ${downloadUrl} ${error_}`)
+        throw new Error(`Error while retrieving ${downloadUrl} ${getErrorMessage(error_)}`)
       }
     }),
   )

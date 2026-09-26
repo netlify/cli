@@ -24,6 +24,9 @@ export interface InvocationError {
 export type FunctionsSettings = Pick<ServerSettings, 'functions' | 'functionsPort'> &
   Partial<Pick<ServerSettings, 'port' | 'https'>>
 
+const isInvocationError = (value: unknown): value is InvocationError =>
+  typeof value === 'object' && value !== null && 'errorMessage' in value && typeof value.errorMessage === 'string'
+
 export type InvokeFunctionResultWithError = { error: Error | InvocationError; result: null }
 export type InvokeFunctionResultWithSuccess = { error: null; result: InvokeFunctionResult }
 export type InvokeResult = InvokeFunctionResultWithError | InvokeFunctionResultWithSuccess
@@ -324,7 +327,10 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
       })
       return { result, error: null }
     } catch (error) {
-      return { result: null, error: error as Error | InvocationError }
+      return {
+        result: null,
+        error: error instanceof Error || isInvocationError(error) ? error : new Error(String(error)),
+      }
     }
   }
 

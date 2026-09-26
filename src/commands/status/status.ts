@@ -1,19 +1,11 @@
 import clean from 'clean-deep'
 import prettyjson from 'prettyjson'
 
-import {
-  chalk,
-  logAndThrowError,
-  exit,
-  getToken,
-  log,
-  logJson,
-  warn,
-  type APIError,
-} from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, getToken, log, logJson, warn } from '../../utils/command-helpers.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import type BaseCommand from '../base-command.js'
 import type { StatusOptionValues } from './option_values.js'
+import { isAPIError } from '../../utils/errors.js'
 
 // TODO: centralize these in a shared error-code dictionary alongside the exit codes.
 export const STATUS_ERROR_CODES = {
@@ -61,7 +53,7 @@ export const status = async (options: StatusOptionValues, command: BaseCommand) 
   try {
     user = await api.getCurrentUser()
   } catch (error_) {
-    if ((error_ as APIError).status === 401) {
+    if (isAPIError(error_) && error_.status === 401) {
       if (options.json) {
         logJson({
           loggedIn: false,
