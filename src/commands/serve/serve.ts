@@ -1,7 +1,6 @@
 import process from 'process'
 
 import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
-import type { OptionValues } from 'commander'
 
 import {
   BLOBS_CONTEXT_VARIABLE,
@@ -33,8 +32,9 @@ import { runBuildTimeline } from '../../utils/run-build.js'
 import type { ServerSettings } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 import type { DevConfig } from '../dev/types.js'
+import type { ServeOptionValues } from './option_values.js'
 
-export const serve = async (options: OptionValues, command: BaseCommand) => {
+export const serve = async (options: ServeOptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, frameworksAPIPaths, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = config.dev != null ? { ...config.dev } : undefined
   config.build = { ...config.build }
@@ -120,6 +120,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     return exit(1)
   }
 
+  // @ts-expect-error FIXME: `serve` has no `--live` option
   command.setAnalyticsPayload({ live: options.live })
 
   log(`${NETLIFYDEVLOG} Building project for production`)
@@ -188,6 +189,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     return normalizedNewConfig
   }
 
+  // @ts-expect-error FIXME: `serve` has no `--edge-inspect` or `--edge-inspect-brk` options
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
   const url = await startProxyServer({
     addonsUrls,
@@ -195,7 +197,9 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     command,
     config: mergedConfig,
     configPath: configPathOverride,
+    // @ts-expect-error FIXME: `options.debug` is `undefined` when `--debug` is omitted, but `startProxyServer` expects a boolean
     debug: options.debug,
+    // @ts-expect-error FIXME: `options.internalDisableEdgeFunctions` is `undefined` when the flag is omitted, but `startProxyServer` expects a boolean
     disableEdgeFunctions: options.internalDisableEdgeFunctions,
     env,
     functionsRegistry,
@@ -203,6 +207,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     geoCountry: options.country,
     getUpdatedConfig,
     inspectSettings,
+    // @ts-expect-error FIXME: `options.offline` is `undefined` when `--offline` is omitted, but `startProxyServer` expects a boolean
     offline: options.offline,
     projectDir: command.workingDir,
     settings,

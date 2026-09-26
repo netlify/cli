@@ -3,6 +3,7 @@ import { Option } from 'commander'
 import { normalizeContext } from '../../utils/env/index.js'
 import { getGeoCountryArgParser } from '../../utils/validation.js'
 import type BaseCommand from '../base-command.js'
+import type { ServeOptionValues } from './option_values.js'
 
 export const createServeCommand = (program: BaseCommand) =>
   program
@@ -52,7 +53,7 @@ export const createServeCommand = (program: BaseCommand) =>
       'netlify serve --context deploy-preview # Use env var values from deploy-preview context',
       'netlify serve --context branch:feat/make-it-pop # Use env var values from the feat/make-it-pop branch context or branch-deploy context',
     ])
-    .action(async (options: Option, command: BaseCommand) => {
+    .action(async (options: ServeOptionValues, command: BaseCommand) => {
       const { serve } = await import('./serve.js')
       await serve(options, command)
     })
