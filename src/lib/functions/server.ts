@@ -77,11 +77,25 @@ const buildClientContext = function (headers: IncomingHttpHeaders) {
   return undefined
 }
 
-const hasBody = (req: Request) =>
+const getRequestBody = (req: Request, encoding: BufferEncoding): string | undefined => {
   // copied from is-type package
-  (req.header('transfer-encoding') !== undefined || !Number.isNaN(Number(req.header('content-length')))) &&
+  const hasBody = req.header('transfer-encoding') !== undefined || !Number.isNaN(Number(req.header('content-length')))
+  const body: unknown = req.body
+
+  if (!hasBody) {
+    return
+  }
+
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
-  (typeof req.body === 'string' || Buffer.isBuffer(req.body))
+  if (typeof body === 'string') {
+    return body
+  }
+
+  if (Buffer.isBuffer(body)) {
+    return body.toString(encoding)
+  }
+  return undefined
+}
 
 export const createHandler = function (options: GetFunctionsServerOptions): RequestHandler {
   const { functionsRegistry } = options
@@ -126,12 +140,9 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
     }
 
     const isBase64Encoded = shouldBase64Encode(request.header('content-type') ?? '')
-    let body: string | undefined
-    if (hasBody(request)) {
-      body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
-    }
+    const body = getRequestBody(request, isBase64Encoded ? 'base64' : 'utf8')
 
-    let remoteAddress = request.header('x-forwarded-for') || request.connection.remoteAddress || ''
+    let remoteAddress = request.header('x-forwarded-for') || request.socket.remoteAddress || ''
     remoteAddress =
       remoteAddress
         .split(remoteAddress.includes('.') ? ':' : ',')

@@ -513,13 +513,15 @@ export class FunctionsRegistry {
     // so we want to ignore any internal functions where there's a user-defined one with the same name
     const ignoredFunctions = new Set(
       functions
-        .filter(
-          (func) =>
+        .filter((func) => {
+          const registeredFunc = this.functions.get(func.name)
+
+          return (
             isInternalFunction(func, this.frameworksAPIPaths.functions.path) &&
-            this.functions.has(func.name) &&
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME: `has` doesn't narrow `get`
-            !isInternalFunction(this.functions.get(func.name)!, this.frameworksAPIPaths.functions.path),
-        )
+            registeredFunc !== undefined &&
+            !isInternalFunction(registeredFunc, this.frameworksAPIPaths.functions.path)
+          )
+        })
         .map((func) => func.name),
     )
 

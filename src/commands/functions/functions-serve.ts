@@ -30,14 +30,17 @@ export const functionsServe = async (options: FunctionsServeOptionValues, comman
 
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
 
+  const offline = Boolean(options.offline)
+  const debug = Boolean(options.debug)
+
   const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
-    offline: options.offline,
+    offline,
     api,
     site,
     siteInfo,
   })
 
-  if (!options.offline && !capabilities.aiGatewayDisabled) {
+  if (!offline && !capabilities.aiGatewayDisabled) {
     const resolvedAccountId = accountId ?? command.netlify.accounts[0]?.id
     await setupAIGateway({
       api,
@@ -47,7 +50,7 @@ export const functionsServe = async (options: FunctionsServeOptionValues, comman
       accountID: resolvedAccountId,
       siteHasDeploy: !!siteInfo.published_deploy,
     })
-  } else if (!options.offline && capabilities.aiGatewayDisabled) {
+  } else if (!offline && capabilities.aiGatewayDisabled) {
     log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
 
@@ -60,7 +63,7 @@ export const functionsServe = async (options: FunctionsServeOptionValues, comman
   })
 
   const blobsContext = await getBlobsContextWithEdgeAccess({
-    debug: options.debug,
+    debug,
     projectRoot: command.workingDir,
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
@@ -72,7 +75,7 @@ export const functionsServe = async (options: FunctionsServeOptionValues, comman
     aiGatewayContext,
     blobsContext,
     config,
-    debug: options.debug,
+    debug,
     command,
     settings: { functions: functionsDir, functionsPort },
     site,
@@ -81,11 +84,9 @@ export const functionsServe = async (options: FunctionsServeOptionValues, comman
     capabilities,
     timeouts,
     generatedFunctions: [],
-    // @ts-expect-error FIXME: `functions:serve` has no `--geo` option, so this is always `undefined`
-    geolocationMode: options.geo,
-    // @ts-expect-error FIXME: `functions:serve` has no `--country` option
-    geoCountry: options.country,
-    offline: options.offline,
+    // `functions:serve` has no `--geo` or `--country` flags
+    geolocationMode: 'update',
+    offline,
     state,
     accountId,
     deployEnvironment: [],
