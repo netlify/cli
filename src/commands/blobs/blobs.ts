@@ -1,13 +1,19 @@
-import type { OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
 import type BaseCommand from '../base-command.js'
+import type {
+  BlobsDeleteOptionValues,
+  BlobsGetOptionValues,
+  BlobsListOptionValues,
+  BlobsOptionValues,
+  BlobsSetOptionValues,
+} from './option_values.js'
 
 /**
  * The blobs command
  */
-const blobs = (_options: OptionValues, command: BaseCommand) => {
+const blobs = (_options: BlobsOptionValues, command: BaseCommand) => {
   command.help()
 }
 
@@ -26,7 +32,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
     )
     .alias('blob:delete')
     .hook('preAction', requiresSiteInfo)
-    .action(async (storeName: string, key: string, _options: OptionValues, command: BaseCommand) => {
+    .action(async (storeName: string, key: string, _options: BlobsDeleteOptionValues, command: BaseCommand) => {
       const { blobsDelete } = await import('./blobs-delete.js')
       await blobsDelete(storeName, key, _options, command)
     })
@@ -45,7 +51,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
     )
     .alias('blob:get')
     .hook('preAction', requiresSiteInfo)
-    .action(async (storeName: string, key: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (storeName: string, key: string, options: BlobsGetOptionValues, command: BaseCommand) => {
       const { blobsGet } = await import('./blobs-get.js')
       await blobsGet(storeName, key, options, command)
     })
@@ -69,7 +75,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
     )
     .alias('blob:list')
     .hook('preAction', requiresSiteInfo)
-    .action(async (storeName: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (storeName: string, options: BlobsListOptionValues, command: BaseCommand) => {
       const { blobsList } = await import('./blobs-list.js')
       await blobsList(storeName, options, command)
     })
@@ -91,7 +97,13 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .hook('preAction', requiresSiteInfo)
 
     .action(
-      async (storeName: string, key: string, valueParts: string[], options: OptionValues, command: BaseCommand) => {
+      async (
+        storeName: string,
+        key: string,
+        valueParts: string[],
+        options: BlobsSetOptionValues,
+        command: BaseCommand,
+      ) => {
         const { blobsSet } = await import('./blobs-set.js')
         await blobsSet(storeName, key, valueParts, options, command)
       },

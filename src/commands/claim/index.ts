@@ -1,4 +1,5 @@
 import type BaseCommand from '../base-command.js'
+import type { ClaimOptionValues } from './option_values.js'
 
 export const createClaimCommand = (program: BaseCommand) =>
   program
@@ -7,7 +8,7 @@ export const createClaimCommand = (program: BaseCommand) =>
     .requiredOption('-s, --site <siteId>', 'The site ID of the anonymous deploy to claim (required)')
     .requiredOption('--token <token>', 'The drop token provided when the site was deployed (required)')
     .addExamples(['netlify claim --site abc123 --token drop-jwt-token'])
-    .action(async (options: { site: string; token: string }, command: BaseCommand) => {
+    .action(async (options: ClaimOptionValues, command: BaseCommand) => {
       const { claim } = await import('./claim.js')
       await claim(options.site, options.token, command)
     })

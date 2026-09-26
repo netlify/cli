@@ -11,7 +11,7 @@ const getSite = vi.fn()
 
 const command = { netlify: { api: { getSite } } } as unknown as BaseCommand
 
-const runApi = async (data: string) => apiCommand('getSite', { data }, command)
+const runApi = async (data: string) => apiCommand('getSite', { data, list: false }, command)
 
 const captureError = async (data: string): Promise<Error> => {
   try {

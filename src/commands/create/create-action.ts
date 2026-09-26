@@ -7,7 +7,6 @@ import readline from 'readline'
 import { pipeline } from 'stream/promises'
 import { promisify } from 'util'
 
-import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
@@ -26,6 +25,7 @@ import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from '../agents/types.js'
 import { validatePrompt, validateAgent, formatStatus } from '../agents/utils.js'
 import type { SiteInfo } from '../../utils/types.js'
+import type { CreateOptionValues } from './option_values.js'
 
 const execFile = promisify(execFileCb)
 
@@ -63,20 +63,6 @@ interface ApiOptions {
   scheme?: string
   host?: string
   userAgent: string
-}
-
-interface CreateOptions extends OptionValues {
-  prompt?: string
-  agent?: string
-  model?: string
-  name?: string
-  dir?: string
-  accountSlug?: string
-  git?: string
-  repoOwner?: string
-  download?: boolean
-  wait?: boolean
-  json?: boolean
 }
 
 const POLL_INTERVAL = 2000
@@ -254,7 +240,8 @@ const pollRepoPush = async (
   }
 }
 
-export const createAction = async (promptArg: string, options: CreateOptions, command: BaseCommand) => {
+// `Partial` because `sites:create --prompt` delegates here without declaring `--no-download` and `--no-wait`
+export const createAction = async (promptArg: string, options: Partial<CreateOptionValues>, command: BaseCommand) => {
   const { accounts, api, apiOpts } = command.netlify
 
   await command.authenticate()
