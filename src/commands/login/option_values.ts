@@ -2,4 +2,9 @@
 
 import type { BaseOptionValues } from '../base-command.js'
 
-export type GitCredentialOptionValues = BaseOptionValues
+export type LoginOptionValues = BaseOptionValues & {
+  check?: string
+  json?: boolean
+  new?: boolean
+  request?: string
+}

@@ -1,9 +1,9 @@
 import { methods, type NetlifyAPI } from '@netlify/api'
 import AsciiTable from 'ascii-table'
-import type { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, exit, log, logJson } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { ApiOptionValues } from './option_values.js'
 
 type ApiMethodName = keyof NetlifyAPI
 type ApiMethod = (payload: unknown) => Promise<unknown>
@@ -16,12 +16,7 @@ const isCallable = (value: unknown): value is ApiMethod => typeof value === 'fun
 // FIXME(@netlify/api): `methods` is typed as `any[]`
 const apiMethodSpecs = methods as { operationId: string; parameters: { path?: Record<string, unknown> } }[]
 
-interface ApiOptions extends OptionValues {
-  data?: unknown
-  list?: boolean
-}
-
-export const apiCommand = async (apiMethodName: string | undefined, options: ApiOptions, command: BaseCommand) => {
+export const apiCommand = async (apiMethodName: string | undefined, options: ApiOptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 
   if (options.list) {

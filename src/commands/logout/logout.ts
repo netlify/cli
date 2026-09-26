@@ -1,10 +1,9 @@
-import type { OptionValues } from 'commander'
-
 import { exit, getToken, log } from '../../utils/command-helpers.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
+import type { LogoutOptionValues } from './option_values.js'
 
-export const logout = async (_options: OptionValues, command: BaseCommand) => {
+export const logout = async (_options: LogoutOptionValues, command: BaseCommand) => {
   const [accessToken, location] = await getToken()
 
   if (!accessToken) {
