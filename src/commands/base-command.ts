@@ -276,7 +276,7 @@ export default class BaseCommand extends Command {
 
     base.hook('preAction', async (_parentCommand, actionCommand) => {
       setCommandForErrorReporting(actionCommand.name())
-      if (actionCommand.opts<BaseOptionValues>()?.debug) {
+      if (actionCommand.opts<BaseOptionValues>().debug) {
         process.env.DEBUG = '*'
       }
       debug(`${commandName}:preAction`)('start')
@@ -344,19 +344,19 @@ export default class BaseCommand extends Command {
 
     const getCommands = (command: BaseCommand) => {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
-      return (
-        parentCommand?.commands
-          .filter((cmd) => {
-            if ((cmd as any)._hidden) return false
-            // the root command
-            if (this.name() === 'netlify') {
-              // don't include subcommands on the main page
-              return !cmd.name().includes(':')
-            }
-            return cmd.name().startsWith(`${command.name()}:`)
-          })
-          .sort((a, b) => a.name().localeCompare(b.name())) || []
-      )
+      if (!parentCommand) return []
+      const visibleCommands = new Set(help.visibleCommands(parentCommand))
+      return parentCommand.commands
+        .filter((cmd) => {
+          if (!visibleCommands.has(cmd)) return false
+          // the root command
+          if (this.name() === 'netlify') {
+            // don't include subcommands on the main page
+            return !cmd.name().includes(':')
+          }
+          return cmd.name().startsWith(`${command.name()}:`)
+        })
+        .sort((a, b) => a.name().localeCompare(b.name()))
     }
 
     help.longestSubcommandTermLength = (command: BaseCommand): number =>
@@ -426,11 +426,11 @@ export default class BaseCommand extends Command {
       }
 
       // Aliases
-      if (command.aliases().length !== 0) {
-        const aliases = command
-          .aliases()
-          // @ts-expect-error FIXME: throws for a non-root command without a parent
-          .map((alias) => formatItem(`${parentCommand.name()} ${alias}`, undefined, true))
+      const commandAliases = command.aliases()
+      if (commandAliases.length !== 0) {
+        const aliases = commandAliases.map((alias) =>
+          formatItem(`${parentCommand?.name() ?? ''} ${alias}`, undefined, true),
+        )
         output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
       }
 
@@ -632,7 +632,7 @@ export default class BaseCommand extends Command {
     // Get framework, add to analytics payload for every command, if a framework is set
     const fs = new NodeFS()
     // disable logging inside the project and FS if not in debug mode
-    fs.logger = actionCommand.opts<BaseOptionValues>()?.debug ? new DefaultLogger('debug') : new NoopLogger()
+    fs.logger = flags.debug ? new DefaultLogger('debug') : new NoopLogger()
     this.project = new Project(fs, this.workingDir, rootDir)
       .setEnvironment(process.env)
       .setNodeVersion(process.version)
@@ -652,7 +652,7 @@ export default class BaseCommand extends Command {
       this.project.workspace?.packages.length &&
       this.project.workspace.isRoot
     ) {
-      this.workspacePackage = await selectWorkspace(this.project, actionCommand.opts<BaseOptionValues>().filter)
+      this.workspacePackage = await selectWorkspace(this.project, flags.filter)
       this.workingDir = join(this.project.jsWorkspaceRoot, this.workspacePackage)
     }
 
@@ -903,15 +903,6 @@ export default class BaseCommand extends Command {
    */
   getDefaultContext(): 'production' | 'dev' {
     return this.name() === 'serve' ? 'production' : 'dev'
-  }
-
-  /**
-   * Retrieve feature flags for this site
-   */
-  getFeatureFlag<T extends null | boolean | string>(flagName: string): T {
-    // @ts-expect-error(serhalp) -- FIXME(serhalp): This probably isn't what we intend.
-    // We should return `false` feature flags as `false` and not `null`. Carefully fix.
-    return this.netlify.siteInfo.feature_flags?.[flagName] || null
   }
 }
 

@@ -2,7 +2,6 @@ import { getStore, listStores } from '@netlify/blobs'
 import { confirm } from '@inquirer/prompts'
 import pMap from 'p-map'
 
-import type BaseCommand from '../../commands/base-command.js'
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
 import { logAndThrowError, log } from '../../utils/command-helpers.js'
 
@@ -10,8 +9,8 @@ export const description = 'Migrate legacy Netlify Blobs stores'
 
 const BLOB_OPS_CONCURRENCY = 5
 
-export const run = async ({ args, command }: RunRecipeOptions & { command: BaseCommand }) => {
-  if (args.length !== 1) {
+export const run = async ({ args, command }: RunRecipeOptions) => {
+  if (args.length !== 1 || !command) {
     return logAndThrowError(`Usage: netlify recipes blobs-migrate <name of store>`)
   }
 
@@ -55,7 +54,7 @@ export const run = async ({ args, command }: RunRecipeOptions & { command: BaseC
   }
 
   const confirmMigration = await confirm({
-    message: `You're about to migrate the store '${storeName}' with ${blobs.length} blobs. Do you want to proceed?`,
+    message: `You're about to migrate the store '${storeName}' with ${blobs.length.toString()} blobs. Do you want to proceed?`,
     default: true,
   })
 

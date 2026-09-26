@@ -68,18 +68,15 @@ import { deployFileNormalizer, getEdgeFunctionsDistPathIfExists } from '../../ut
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
-import type { NetlifyOptions, NetlifySite } from '../types.js'
+import type { NetlifySite } from '../types.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type { DeployOptionValues } from './option_values.js'
 import boxen from 'boxen'
 import terminalLink from 'terminal-link'
 import { anyEdgeFunctionsDirectoryExists } from '../../lib/edge-functions/get-directories.js'
 
-// FIXME: `site.root` is typed as optional, but it is always set to the build directory by the time a deploy runs
-type DeploySite = NetlifySite & { root: string }
-
 // FIXME(@netlify/api): `SiteInfo['build_settings']` is missing `functions_dir`
-type DeploySiteData = { build_settings?: SiteInfo['build_settings'] & { functions_dir?: string } } | undefined
+type NetlifySiteData = { build_settings?: SiteInfo['build_settings'] & { functions_dir?: string } } | undefined
 
 // FIXME(@netlify/api): the `createSiteDeploy` types omit the source zip fields and make `id` optional
 type CreatedDeploy = Omit<Awaited<ReturnType<NetlifyAPI['createSiteDeploy']>>, 'id'> & {
@@ -135,8 +132,8 @@ const getDeployFolder = async ({
   command: BaseCommand
   config: DeployConfig
   options: DeployOptionValues
-  site: DeploySite
-  siteData: DeploySiteData
+  site: NetlifySite
+  siteData: NetlifySiteData
 }): Promise<string> => {
   let deployFolder: string | undefined
   // if the `--dir .` flag is provided we should resolve it to the working directory.
@@ -214,8 +211,8 @@ const getFunctionsFolder = ({
 }: {
   config: DeployConfig
   options: DeployOptionValues
-  site: DeploySite
-  siteData: DeploySiteData
+  site: NetlifySite
+  siteData: NetlifySiteData
   /** The process working directory where the build command is executed  */
   workingDir: string
 }): string | undefined => {
@@ -273,7 +270,7 @@ const validateFolders = async ({
   return { deployFolderStat, functionsFolderStat }
 }
 
-const getDeployFilesFilter = ({ deployFolder, site }: { deployFolder: string; site: DeploySite }) => {
+const getDeployFilesFilter = ({ deployFolder, site }: { deployFolder: string; site: NetlifySite }) => {
   // site.root === deployFolder can happen when users run `netlify deploy --dir .`
   // in that specific case we don't want to publish the repo node_modules
   // when site.root !== deployFolder the behaviour matches our buildbot
@@ -581,7 +578,7 @@ const runDeploy = async ({
   options: DeployOptionValues
   packagePath: string | undefined
   silent: boolean
-  site: DeploySite
+  site: NetlifySite
   siteData: SiteInfo
   siteId: string
   skipFunctionsCache: boolean
@@ -968,7 +965,7 @@ const prepAndRunDeploy = async ({
   config: DeployConfig
   deployToProduction: boolean
   options: DeployOptionValues
-  site: DeploySite
+  site: NetlifySite
   siteData: SiteInfo
   siteId: string
   workingDir: string
@@ -1183,7 +1180,7 @@ const ensureSiteExists = async (
 
 const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand) => {
   const { workingDir } = command
-  const { site, config } = command.netlify as NetlifyOptions & { site: DeploySite }
+  const { site, config } = command.netlify
 
   const dirHasFiles = async (dir: string | undefined): Promise<boolean> => {
     if (!dir) return false
@@ -1458,7 +1455,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
             options,
             workingDir,
             api,
-            site: site as DeploySite,
+            site,
             config: netlifyConfig,
             siteData,
             siteId,
@@ -1488,7 +1485,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
       options,
       workingDir,
       api,
-      site: site as DeploySite,
+      site,
       config: command.netlify.config,
       siteData,
       siteId,

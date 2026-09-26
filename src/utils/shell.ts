@@ -23,11 +23,11 @@ type CommandResult = {
 const isCommandResult = (value: unknown): value is CommandResult =>
   typeof value === 'object' &&
   value !== null &&
-  (typeof (value as CommandResult).exitCode === 'number' ||
-    typeof (value as CommandResult).message === 'string' ||
-    typeof (value as CommandResult).shortMessage === 'string' ||
-    typeof (value as CommandResult).stderr === 'string' ||
-    typeof (value as CommandResult).stdout === 'string')
+  (('exitCode' in value && typeof value.exitCode === 'number') ||
+    ('message' in value && typeof value.message === 'string') ||
+    ('shortMessage' in value && typeof value.shortMessage === 'string') ||
+    ('stderr' in value && typeof value.stderr === 'string') ||
+    ('stdout' in value && typeof value.stdout === 'string'))
 
 // With `reject: false`, a failed command resolves to an `ExecaError` instead of rejecting
 const isFailedResult = (result: execa.ExecaReturnValue | execa.ExecaError): result is execa.ExecaError => result.failed
@@ -60,11 +60,8 @@ const isMissingCommandMessage = ({ command, output }: { command: string; output:
 
 const createStripAnsiControlCharsStream = (): Transform =>
   new Transform({
-    transform(chunk, _encoding, callback) {
-      callback(
-        null,
-        stripVTControlCharacters(typeof chunk === 'string' ? chunk : ((chunk as unknown)?.toString() ?? '')),
-      )
+    transform(chunk: Buffer | string, _encoding, callback) {
+      callback(null, stripVTControlCharacters(chunk.toString()))
     },
   })
 
@@ -89,9 +86,8 @@ const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined }
 const ensureCleanupOnExit = () => {
   if (!cleanupRegistered) {
     cleanupRegistered = true
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- FIXME: `processOnExit` doesn't await its callbacks
-    processOnExit(async () => {
-      await cleanupBeforeExit({})
+    processOnExit(() => {
+      void cleanupBeforeExit({})
     })
   }
 }

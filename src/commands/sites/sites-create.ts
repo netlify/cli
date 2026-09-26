@@ -162,8 +162,7 @@ export const sitesCreate = async (options: SitesCreateOptionValues, command: Bas
       return logAndThrowError('Failed to get repo data')
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME: `configureRepo` requires `manual`, but the flag is unset unless passed
-    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual! })
+    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual ?? false })
   }
 
   if (options.json) {

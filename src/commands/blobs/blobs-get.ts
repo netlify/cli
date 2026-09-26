@@ -14,8 +14,7 @@ export const blobsGet = async (storeName: string, key: string, options: BlobsGet
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
     region: options.region as GetStoreOptions['region'],
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- FIXME: `siteInfo` and its `id` are typed as always set
-    siteID: siteInfo?.id ?? '',
+    siteID: siteInfo.id,
     token: api.accessToken ?? '',
   })
 

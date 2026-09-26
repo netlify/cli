@@ -1,7 +1,3 @@
-import fs from 'fs/promises'
-import { dirname, join, resolve } from 'path'
-import { fileURLToPath, pathToFileURL } from 'url'
-
 import type { RunRecipeOptions } from './recipes.js'
 
 export interface Recipe {
@@ -9,35 +5,23 @@ export interface Recipe {
   run: (options: RunRecipeOptions) => Promise<unknown>
 }
 
-const directoryPath = dirname(fileURLToPath(import.meta.url))
+const recipeLoaders = {
+  'ai-context': () => import('../../recipes/ai-context/index.js'),
+  'blobs-migrate': () => import('../../recipes/blobs-migrate/index.js'),
+  vscode: () => import('../../recipes/vscode/index.js'),
+} satisfies Record<string, () => Promise<Recipe>>
 
-export const getRecipe = async (name: string): Promise<Recipe> => {
-  const recipePath = resolve(directoryPath, '../../recipes', name, 'index.js')
+type RecipeName = keyof typeof recipeLoaders
 
-  // windows needs a URL for absolute paths
+const isRecipeName = (name: string): name is RecipeName => Object.hasOwn(recipeLoaders, name)
 
-  const recipe = (await import(pathToFileURL(recipePath).href)) as Recipe
+export const getRecipe = async (name: string): Promise<Recipe | undefined> =>
+  isRecipeName(name) ? await recipeLoaders[name]() : undefined
 
-  return recipe
-}
-
-export const listRecipes = async (): Promise<(Recipe & { name: string })[]> => {
-  const recipesPath = resolve(directoryPath, '../../recipes')
-  const recipeNames = await fs.readdir(recipesPath)
-  const recipes = await Promise.all(
-    recipeNames.map(async (name) => {
-      const recipePath = join(recipesPath, name, 'index.js')
-
-      // windows needs a URL for absolute paths
-
-      const recipe = (await import(pathToFileURL(recipePath).href)) as Recipe
-
-      return {
-        ...recipe,
-        name,
-      }
+export const listRecipes = async () =>
+  await Promise.all(
+    Object.entries(recipeLoaders).map(async ([name, load]) => {
+      const { description }: Recipe = await load()
+      return { description, name }
     }),
   )
-
-  return recipes
-}

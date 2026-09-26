@@ -18,23 +18,20 @@ export interface RunRecipeOptions {
   repositoryRoot: string
 }
 
-export const runRecipe = async ({
-  args,
-  command,
-  config,
-  recipeName,
-  repositoryRoot,
-}: RunRecipeOptions & { recipeName: string }) => {
+export const runRecipe = async ({ recipeName, ...options }: RunRecipeOptions & { recipeName: string }) => {
   const recipe = await getRecipe(recipeName)
+  if (!recipe) {
+    throw new Error(`${recipeName} is not a valid recipe name`)
+  }
 
-  return recipe.run({ args, command, config, repositoryRoot })
+  await recipe.run(options)
 }
 
 export const recipesCommand = async (
   recipeName: string,
   options: RecipesOptionValues,
   command: BaseCommand,
-): Promise<unknown> => {
+): Promise<void> => {
   const { config, repositoryRoot } = command.netlify
   const sanitizedRecipeName = basename(recipeName || '').toLowerCase()
 
@@ -44,34 +41,28 @@ export const recipesCommand = async (
 
   const args = command.args.slice(1)
 
-  try {
-    return await runRecipe({ args, command, config, recipeName: sanitizedRecipeName, repositoryRoot })
-  } catch (error) {
-    if (
-      // The ESM loader throws this instead of MODULE_NOT_FOUND
-      (error as NodeJS.ErrnoException).code !== 'ERR_MODULE_NOT_FOUND'
-    ) {
-      throw error
+  const recipe = await getRecipe(sanitizedRecipeName)
+  if (recipe) {
+    await recipe.run({ args, command, config, repositoryRoot })
+    return
+  }
+
+  log(`${NETLIFYDEVERR} ${chalk.yellow(recipeName)} is not a valid recipe name.`)
+
+  const recipes = await listRecipes()
+  const recipeNames = recipes.map(({ name }) => name)
+  const suggestion = closest(recipeName, recipeNames)
+  const applySuggestion = await confirm(
+    { message: `Did you mean ${chalk.blue(suggestion)}`, default: false },
+    { signal: AbortSignal.timeout(SUGGESTION_TIMEOUT) },
+  ).catch((error: unknown) => {
+    if (error instanceof Error && error.name === 'AbortPromptError') {
+      return false
     }
+    throw error
+  })
 
-    log(`${NETLIFYDEVERR} ${chalk.yellow(recipeName)} is not a valid recipe name.`)
-
-    const recipes = await listRecipes()
-    const recipeNames = recipes.map(({ name }) => name)
-    const suggestion = closest(recipeName, recipeNames)
-    const applySuggestion = await confirm(
-      { message: `Did you mean ${chalk.blue(suggestion)}`, default: false },
-      { signal: AbortSignal.timeout(SUGGESTION_TIMEOUT) },
-    ).catch((error: unknown) => {
-      if (error instanceof Error && error.name === 'AbortPromptError') {
-        return false
-      }
-      throw error
-    })
-
-    if (applySuggestion) {
-      return recipesCommand(suggestion, options, command)
-    }
-    return undefined
+  if (applySuggestion) {
+    await recipesCommand(suggestion, options, command)
   }
 }
