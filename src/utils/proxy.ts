@@ -1070,15 +1070,15 @@ export const startProxy = async function ({
   command: BaseCommand
   config: NormalizedCachedConfigConfig
   configPath?: string | undefined
-  debug: boolean
-  disableEdgeFunctions: boolean
+  debug: boolean | undefined
+  disableEdgeFunctions: boolean | undefined
   env: EnvironmentVariables
   functionsRegistry?: FunctionsRegistry | undefined
   geoCountry?: string | undefined
   geolocationMode: GeolocationMode
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   inspectSettings: InspectSettings
-  offline: boolean
+  offline: boolean | undefined
   projectDir: string
   repositoryRoot?: string | undefined
   settings: ServerSettings

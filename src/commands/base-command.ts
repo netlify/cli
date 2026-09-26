@@ -195,8 +195,8 @@ export type BaseOptionValues = {
   cwd?: string
   debug?: boolean
   filter?: string
-  httpProxy?: string
-  silent?: string
+  httpProxy?: string | true
+  silent?: boolean
   verbose?: boolean
 }
 
@@ -204,7 +204,7 @@ export type BaseOptionValues = {
 type InitOptionValues = BaseOptionValues & {
   config?: string
   context?: string
-  httpProxyCertificateFilename?: string
+  httpProxyCertificateFilename?: string | true
   offline?: boolean
   // `netlify open --site` is a boolean flag, while other commands take a project name or ID
   site?: string | boolean
@@ -707,7 +707,9 @@ export default class BaseCommand extends Command {
     }
 
     const agent = await getAgent({
+      // @ts-expect-error FIXME: a bare `--http-proxy` is `true`, which is then parsed as the URL "true"
       httpProxy: flags.httpProxy,
+      // @ts-expect-error FIXME: a bare `--http-proxy-certificate-filename` is `true`, which is then read as the file "true"
       certificateFile: flags.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }
