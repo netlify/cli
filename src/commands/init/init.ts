@@ -254,8 +254,7 @@ export const init = async (
       command,
       error: repoData.error,
       state,
-      // @ts-expect-error FIXME: `init` has no `--disable-linking` option
-      disableLinking: options.disableLinking ?? false, // eslint-disable-line @typescript-eslint/no-unsafe-assignment -- FIXME: see above
+      disableLinking: false,
       customizeExitMessage,
     })
   }
