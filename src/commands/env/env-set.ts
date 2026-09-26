@@ -152,13 +152,14 @@ export const envSet = async (key: string, value: string, options: EnvSetOptionVa
     return false
   }
 
-  const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
+  const contexts = context ?? ['all']
+  const withScope = scope ? ` scoped to ${chalk.white(scope.join(','))}` : ''
   const withSecret = secret ? ` as a ${chalk.blue('secret')}` : ''
-  const contextType = (SUPPORTED_CONTEXTS as readonly unknown[]).includes(context || 'all') ? 'context' : 'branch'
+  const contextType = contexts.every(isSupportedContext) ? 'context' : 'branch'
   log(
     `Set environment variable ${chalk.yellow(
       `${key}${value && !secret ? `=${value}` : ''}`,
-    )}${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
+    )}${withScope}${withSecret} in the ${chalk.magenta(contexts.join(','))} ${contextType}`,
   )
   log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
   return undefined
