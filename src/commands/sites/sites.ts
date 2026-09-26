@@ -1,8 +1,14 @@
-import type { OptionValues } from 'commander'
 import type BaseCommand from '../base-command.js'
+import type {
+  SitesCreateOptionValues,
+  SitesDeleteOptionValues,
+  SitesListOptionValues,
+  SitesOptionValues,
+  SitesSearchOptionValues,
+} from './option_values.js'
 import { validateSiteName } from '../../utils/validation.js'
 
-const sites = (_options: OptionValues, command: BaseCommand) => {
+const sites = (_options: SitesOptionValues, command: BaseCommand) => {
   command.help()
 }
 
@@ -24,7 +30,7 @@ Create a blank project that isn't associated with any git remote. Will link the 
       'after',
       `Create a blank project that isn't associated with any git remote. Will link the project to the current working directory.`,
     )
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: SitesCreateOptionValues, command: BaseCommand) => {
       if (options.prompt) {
         const { createAction } = await import('../create/create-action.js')
         await createAction('', options, command)
@@ -42,7 +48,7 @@ export const createSitesCommand = (program: BaseCommand) => {
     .command('sites:list')
     .description('List all projects you have access to')
     .option('--json', 'Output project data as JSON')
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: SitesListOptionValues, command: BaseCommand) => {
       const { sitesList } = await import('./sites-list.js')
       await sitesList(options, command)
     })
@@ -53,7 +59,7 @@ export const createSitesCommand = (program: BaseCommand) => {
     .argument('<search-term>', 'Full or partial project name to search for')
     .option('--json', 'Output project data as JSON')
     .addExamples(['netlify sites:search my-project', 'netlify sites:search "partial name" --json'])
-    .action(async (searchTerm: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (searchTerm: string, options: SitesSearchOptionValues, command: BaseCommand) => {
       const { sitesSearch } = await import('./sites-search.js')
       await sitesSearch(searchTerm, options, command)
     })
@@ -63,7 +69,7 @@ export const createSitesCommand = (program: BaseCommand) => {
     .description('Delete a project\nThis command will permanently delete the project on Netlify. Use with caution.')
     .argument('<id>', 'Project ID to delete.')
     .addExamples(['netlify sites:delete 1234-3262-1211'])
-    .action(async (siteId: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (siteId: string, options: SitesDeleteOptionValues, command: BaseCommand) => {
       const { sitesDelete } = await import('./sites-delete.js')
       await sitesDelete(siteId, options, command)
     })

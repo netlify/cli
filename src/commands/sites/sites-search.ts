@@ -1,15 +1,10 @@
-import type { OptionValues } from 'commander'
-
 import { listSites } from '../../lib/api.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { SitesSearchOptionValues } from './option_values.js'
 
-interface SitesSearchOptions extends OptionValues {
-  json?: boolean
-}
-
-export const sitesSearch = async (searchTerm: string, options: SitesSearchOptions, command: BaseCommand) => {
+export const sitesSearch = async (searchTerm: string, options: SitesSearchOptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 
   await command.authenticate()

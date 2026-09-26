@@ -6,6 +6,7 @@ import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
+import type { WatchOptionValues } from './option_values.js'
 
 // 1 second
 const INIT_WAIT = 1e3
@@ -46,7 +47,7 @@ const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spin
   return firstPass
 }
 
-export const watch = async (_options: unknown, command: BaseCommand) => {
+export const watch = async (_options: WatchOptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   let siteId = command.netlify.site.id

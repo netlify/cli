@@ -1,6 +1,5 @@
 import { basename } from 'path'
 
-import type { OptionValues } from 'commander'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
 
@@ -8,6 +7,7 @@ import { NETLIFYDEVERR, chalk, log, type NormalizedCachedConfigConfig } from '..
 import type BaseCommand from '../base-command.js'
 
 import { getRecipe, listRecipes } from './common.js'
+import type { RecipesOptionValues } from './option_values.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -32,7 +32,7 @@ export const runRecipe = async ({
 
 export const recipesCommand = async (
   recipeName: string,
-  options: OptionValues,
+  options: RecipesOptionValues,
   command: BaseCommand,
 ): Promise<unknown> => {
   const { config, repositoryRoot } = command.netlify

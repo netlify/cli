@@ -5,11 +5,7 @@ import type BaseCommand from '../base-command.js'
 import { connectRawClient } from './util/db-connection.js'
 import { executeMetaCommand } from './util/meta-commands.js'
 import { formatQueryResult, formatStatementResults, lastRowSet } from './util/psql-formatter.js'
-
-export interface ConnectOptions {
-  query?: string
-  json?: boolean
-}
+import type { DbConnectOptionValues } from './option_values.js'
 
 function redactConnectionString(connectionString: string): string {
   try {
@@ -22,7 +18,7 @@ function redactConnectionString(connectionString: string): string {
   }
 }
 
-export const connect = async (options: ConnectOptions, command: BaseCommand): Promise<void> => {
+export const connect = async (options: DbConnectOptionValues, command: BaseCommand): Promise<void> => {
   const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
   if (!buildDir) {
     throw new Error('Could not determine the project root directory.')

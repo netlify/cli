@@ -2,14 +2,10 @@ import inquirer from 'inquirer'
 
 import { chalk, log } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
-import type { BaseOptionValues } from '../base-command.js'
 import { login } from '../login/login.js'
+import type { SwitchOptionValues } from './option_values.js'
 
 const LOGIN_NEW = 'I would like to login to a new account'
-
-export type SwitchOptionValues = BaseOptionValues & {
-  email?: string | undefined
-}
 
 interface StoredUser {
   id: string

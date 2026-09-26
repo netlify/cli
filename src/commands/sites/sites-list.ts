@@ -1,16 +1,11 @@
-import type { OptionValues } from 'commander'
-
 import { listSites } from '../../lib/api.js'
 import { startSpinner } from '../../lib/spinner.js'
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
+import type { SitesListOptionValues } from './option_values.js'
 
-interface SitesListOptions extends OptionValues {
-  json?: boolean
-}
-
-export const sitesList = async (options: SitesListOptions, command: BaseCommand) => {
+export const sitesList = async (options: SitesListOptionValues, command: BaseCommand) => {
   const { api } = command.netlify
   let spinner
   if (!options.json) {
