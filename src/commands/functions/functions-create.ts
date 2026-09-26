@@ -7,7 +7,6 @@ import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
 
 import { input, search, select, Separator } from '@inquirer/prompts'
-import type { OptionValues } from 'commander'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import fetch from 'node-fetch'
@@ -28,6 +27,7 @@ import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import type BaseCommand from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
+import type { FunctionsCreateOptionValues } from './option_values.js'
 
 const require = createRequire(import.meta.url)
 
@@ -49,15 +49,7 @@ const MOON_SPINNER = {
 
 type FunctionType = 'edge' | 'serverless'
 
-interface FunctionsCreateOptions extends OptionValues {
-  name?: string
-  url?: string
-  language?: string
-  template?: string
-  offline?: boolean
-}
-
-type FunctionsCreateOptionsWithURL = FunctionsCreateOptions & { url: string }
+type FunctionsCreateOptionValuesWithURL = FunctionsCreateOptionValues & { url: string }
 
 /** The default export of a template's `.netlify-function-template.mjs` file */
 interface FunctionTemplateMetadata {
@@ -107,7 +99,7 @@ const validateFunctionName: (name: unknown) => asserts name is string = (name) =
  */
 const getNameFromArgs = async function (
   argumentName: string | undefined,
-  options: FunctionsCreateOptions,
+  options: FunctionsCreateOptionValues,
   defaultName?: string,
 ): Promise<string> {
   if (options.name) {
@@ -202,7 +194,7 @@ const formatRegistryArrayForInquirer = async function (
  * pick template from our existing templates
  */
 const pickTemplate = async function (
-  { language: languageFromFlag, template: templateFromFlag }: FunctionsCreateOptions,
+  { language: languageFromFlag, template: templateFromFlag }: FunctionsCreateOptionValues,
   funcType: FunctionType,
 ): Promise<FunctionTemplate | 'url' | 'report'> {
   const specialCommands = [
@@ -383,7 +375,7 @@ const ensureFunctionDirExists = async function (command: BaseCommand): Promise<s
  */
 const downloadFromURL = async function (
   command: BaseCommand,
-  options: FunctionsCreateOptionsWithURL,
+  options: FunctionsCreateOptionValuesWithURL,
   argumentName: string | undefined,
   functionsDir: string,
 ) {
@@ -516,7 +508,7 @@ const installDeps = async ({
  */
 const scaffoldFromTemplate = async function (
   command: BaseCommand,
-  options: FunctionsCreateOptions,
+  options: FunctionsCreateOptionValues,
   argumentName: string | undefined,
   functionsDir: string,
   funcType: FunctionType,
@@ -530,7 +522,7 @@ const scaffoldFromTemplate = async function (
     })
     options.url = chosenUrl.trim()
     try {
-      await downloadFromURL(command, options as FunctionsCreateOptionsWithURL, argumentName, functionsDir)
+      await downloadFromURL(command, options as FunctionsCreateOptionValuesWithURL, argumentName, functionsDir)
     } catch {
       return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
     }
@@ -707,7 +699,7 @@ const resolveTemplateMetadata = async (
 
 export const functionsCreate = async (
   name: string | undefined,
-  options: FunctionsCreateOptions,
+  options: FunctionsCreateOptionValues,
   command: BaseCommand,
 ) => {
   let functionType: FunctionType
@@ -732,7 +724,7 @@ export const functionsCreate = async (
 
   /* either download from URL or scaffold from template */
   if (options.url) {
-    await downloadFromURL(command, options as FunctionsCreateOptionsWithURL, name, functionsDir)
+    await downloadFromURL(command, options as FunctionsCreateOptionValuesWithURL, name, functionsDir)
   } else {
     await scaffoldFromTemplate(command, options, name, functionsDir, functionType)
   }

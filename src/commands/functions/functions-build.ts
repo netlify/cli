@@ -1,13 +1,13 @@
 import { mkdir } from 'fs/promises'
 
 import { zipFunctions } from '@netlify/zip-it-and-ship-it'
-import type { OptionValues } from 'commander'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, exit, log } from '../../utils/command-helpers.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import type BaseCommand from '../base-command.js'
+import type { FunctionsBuildOptionValues } from './option_values.js'
 
-export const functionsBuild = async (options: OptionValues, command: BaseCommand) => {
+export const functionsBuild = async (options: FunctionsBuildOptionValues, command: BaseCommand) => {
   const { config } = command.netlify
 
   const src =

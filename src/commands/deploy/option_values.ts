@@ -5,17 +5,17 @@ import type { DeployEnvironmentVariable } from '../../utils/env/deploy-env-vars.
 
 export type DeployOptionValues = BaseOptionValues & {
   alias?: string
-  allowAnonymous?: boolean
+  allowAnonymous: boolean
   build: boolean
   branch?: string
   context?: string
   createdVia?: string
-  createSite?: string | boolean
+  createSite?: string | true
   dir?: string
   draft: boolean
   env?: DeployEnvironmentVariable[]
   functions?: string
-  json: boolean
+  json?: boolean
   message?: string
   open: boolean
   prod: boolean
@@ -27,5 +27,5 @@ export type DeployOptionValues = BaseOptionValues & {
   team?: string
   timeout?: number
   trigger?: boolean
-  uploadSourceZip?: boolean
+  uploadSourceZip: boolean
 }
