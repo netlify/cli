@@ -9,6 +9,7 @@ import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import { utcTimestampPrefix } from './util/timestamp.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import type { DbMigrationsNewOptionValues } from './option_values.js'
+import { isErrnoException } from '../../utils/errors.js'
 
 export type NumberingScheme = 'sequential' | 'timestamp'
 
@@ -67,7 +68,7 @@ const getExistingMigrationNames = async (migrationsDirectory: string): Promise<s
       .map((entry) => entry.name)
       .sort()
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+    if (isErrnoException(error) && error.code === 'ENOENT') {
       return []
     }
     throw error

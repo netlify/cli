@@ -6,6 +6,7 @@ import multiparty from 'multiparty'
 import getRawBody from 'raw-body'
 
 import { warn } from '../../utils/command-helpers.js'
+import { getErrorMessage } from '../../utils/errors.js'
 import { BACKGROUND } from '../../utils/functions/index.js'
 import { capitalize } from '../string.js'
 
@@ -139,7 +140,7 @@ export const createFormSubmissionHandler = function ({
           )
         })
       } catch (error) {
-        warn(String(error))
+        warn(getErrorMessage(error))
         next()
         return
       }

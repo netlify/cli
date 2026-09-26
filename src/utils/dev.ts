@@ -6,10 +6,11 @@ import { isEmpty } from './object-utilities.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 
-import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, type APIError } from './command-helpers.js'
+import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
 import type { DevConfig } from '../commands/dev/types.js'
 import type { EnvironmentVariables, SiteInfo } from './types.js'
+import { getErrorMessage } from './errors.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES: Partial<Record<string, { name: string; printFn: (text: string) => string }>> = {
@@ -70,7 +71,7 @@ const getAccounts = async ({ api }: { api: NetlifyAPI }) => {
     const accounts = await api.listAccountsForUser()
     return accounts
   } catch (error_) {
-    return logAndThrowError(`Failed retrieving user account: ${(error_ as APIError).message}. ${ERROR_CALL_TO_ACTION}`)
+    return logAndThrowError(`Failed retrieving user account: ${getErrorMessage(error_)}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 

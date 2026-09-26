@@ -4,6 +4,7 @@ import { pipeline } from 'node:stream/promises'
 import { promisify } from 'node:util'
 
 import yauzl, { type Entry, type ZipFile } from 'yauzl'
+import { isErrnoException } from './errors.js'
 
 const openZip = promisify<string, yauzl.Options, ZipFile>(yauzl.open)
 
@@ -113,7 +114,7 @@ export const extractZip = async (zipPath: string, { dir }: { dir: string }): Pro
                 await fs.unlink(dest)
               }
             } catch (err) {
-              if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+              if (!isErrnoException(err) || err.code !== 'ENOENT') throw err
             }
             await pipeline(readStream, createWriteStream(dest, { mode: procMode }))
           }

@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path'
 import semver from 'semver'
 import { chalk, logAndThrowError, log, version } from '../../utils/command-helpers.js'
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
+import { getErrorMessage, isErrnoException } from '../../utils/errors.js'
 
 const ATTRIBUTES_REGEX = /(\S*)="([^\s"]*)"/gim
 // AI_CONTEXT_BASE_URL is used to help with local testing at non-production
@@ -195,10 +196,8 @@ export const getExistingContext = async (path: string) => {
 
     return parsedFile
   } catch (error) {
-    const exception = error as NodeJS.ErrnoException
-
-    if (exception.code !== 'ENOENT') {
-      throw new Error(`Could not open context file at ${path}: ${exception.message}`)
+    if (!isErrnoException(error) || error.code !== 'ENOENT') {
+      throw new Error(`Could not open context file at ${path}: ${getErrorMessage(error)}`)
     }
 
     return null

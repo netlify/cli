@@ -1,8 +1,6 @@
 import { constants } from 'fs'
 import { access, stat } from 'fs/promises'
-
-const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
-  value instanceof Error && Object.hasOwn(value, 'code')
+import { isErrnoException } from '../utils/errors.js'
 
 export const fileExistsAsync = async (filePath: string) => {
   try {

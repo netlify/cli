@@ -16,6 +16,7 @@ import { hasDependency } from './util/package-json.js'
 import { relativeToProject } from './util/paths.js'
 import { fileExistsAsync } from '../../lib/fs.js'
 import type { DbStatusOptionValues } from './option_values.js'
+import { isErrnoException } from '../../utils/errors.js'
 
 interface MigrationEntry {
   version: number
@@ -65,7 +66,7 @@ const readLocalMigrations = async (migrationsDirectory: string): Promise<Migrati
   try {
     entries = await readdir(migrationsDirectory, { withFileTypes: true })
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+    if (isErrnoException(error) && error.code === 'ENOENT') {
       return []
     }
     throw error

@@ -7,6 +7,7 @@ import pWaitFor from 'p-wait-for'
 
 import { DEPLOY_POLL, DEFAULT_DEPLOY_TIMEOUT, DEFAULT_CONCURRENT_UPLOAD, DEFAULT_MAX_RETRY } from './constants.js'
 import type { StatusCallback } from './status-cb.js'
+import { isAPIError } from '../errors.js'
 
 const APP_NETLIFY_REFERRER = 'https://app.netlify.com'
 
@@ -217,8 +218,7 @@ export const uploadDropFiles = async (
         await uploadDropFile(apiOptions, deployId, fileObj.normalizedPath, body, token)
         return
       } catch (error) {
-        const isPermanentFailure =
-          error instanceof Error && 'status' in error && (error.status === 400 || error.status === 422)
+        const isPermanentFailure = isAPIError(error) && (error.status === 400 || error.status === 422)
         if (isPermanentFailure || attempt + 1 > maxRetry) {
           throw error
         }

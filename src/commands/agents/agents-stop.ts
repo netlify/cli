@@ -4,6 +4,7 @@ import type BaseCommand from '../base-command.js'
 import type { AgentsStopOptionValues } from './option_values.js'
 import type { AgentRunner } from './types.js'
 import { formatStatus } from './utils.js'
+import { getErrorMessage } from '../../utils/errors.js'
 
 export const agentsStop = async (id: string, options: AgentsStopOptionValues, command: BaseCommand) => {
   const { api, apiOpts } = command.netlify
@@ -93,10 +94,8 @@ export const agentsStop = async (id: string, options: AgentsStopOptionValues, co
 
     return result
   } catch (error_) {
-    const error = error_ as Error
-
     stopSpinner({ spinner: statusSpinner, error: true })
 
-    return logAndThrowError(`Failed to stop agent task: ${error.message}`)
+    return logAndThrowError(`Failed to stop agent task: ${getErrorMessage(error_)}`)
   }
 }
