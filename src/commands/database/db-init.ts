@@ -27,10 +27,7 @@ import { relativeToProject } from './util/paths.js'
 import { PgClientExecutor } from './util/pg-client-executor.js'
 import { formatQueryResult } from './util/psql-formatter.js'
 import { spawnAsync } from './util/spawn-async.js'
-
-export interface DatabaseInitOptions {
-  yes?: boolean
-}
+import type { DbInitOptionValues } from './option_values.js'
 
 const NETLIFY_DATABASE_PACKAGE = '@netlify/database'
 const DRIZZLE_ORM_PACKAGE = 'drizzle-orm'
@@ -318,12 +315,12 @@ const printNextSteps = (orm: QueryStyle, withStarter: boolean): void => {
   log(`To explore more of Netlify Database, visit ${chalk.cyan(DOCS_URL)}.`)
 }
 
-export const initDatabase = async (options: DatabaseInitOptions, command: BaseCommand) => {
+export const initDatabase = async (options: DbInitOptionValues, command: BaseCommand) => {
   const projectRoot = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
   if (!projectRoot) {
     throw new Error('Could not determine the project root directory.')
   }
-  const yes = options.yes ?? false
+  const yes = options.yes
   const interactive = isInteractive() && !yes
   const pm = getPackageManager(command)
 

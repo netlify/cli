@@ -8,13 +8,9 @@ import { log, logJson } from '../../utils/command-helpers.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import type BaseCommand from '../base-command.js'
 import { connectToDatabase, LocalDatabaseStartError } from './util/db-connection.js'
+import type { DbResetOptionValues } from './option_values.js'
 
-export interface ResetOptions {
-  force?: boolean
-  json?: boolean
-}
-
-const discardLocalDatabase = async (error: LocalDatabaseStartError, options: ResetOptions) => {
+const discardLocalDatabase = async (error: LocalDatabaseStartError, options: DbResetOptionValues) => {
   const { directory } = error
   const { force, json } = options
 
@@ -49,7 +45,7 @@ const discardLocalDatabase = async (error: LocalDatabaseStartError, options: Res
   }
 }
 
-export const reset = async (options: ResetOptions, command: BaseCommand) => {
+export const reset = async (options: DbResetOptionValues, command: BaseCommand) => {
   const { json } = options
   const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
   if (!buildDir) {

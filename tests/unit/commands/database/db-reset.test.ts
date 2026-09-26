@@ -97,20 +97,20 @@ describe('reset', () => {
   })
 
   test('resets the database and calls cleanup', async () => {
-    await reset({}, createMockCommand())
+    await reset({ force: false }, createMockCommand())
 
     expect(mockResetDatabase).toHaveBeenCalledWith(mockExecutor)
     expect(mockCleanup).toHaveBeenCalledOnce()
   })
 
   test('logs success message after reset', async () => {
-    await reset({}, createMockCommand())
+    await reset({ force: false }, createMockCommand())
 
     expect(logMessages).toContain('Local development database has been reset.')
   })
 
   test('outputs JSON when --json flag is set', async () => {
-    await reset({ json: true }, createMockCommand())
+    await reset({ force: false, json: true }, createMockCommand())
 
     expect(jsonMessages).toHaveLength(1)
     expect(jsonMessages[0]).toEqual({ reset: true })
@@ -119,7 +119,7 @@ describe('reset', () => {
   test('calls cleanup even when reset throws', async () => {
     mockResetDatabase.mockRejectedValueOnce(new Error('reset failed'))
 
-    await expect(reset({}, createMockCommand())).rejects.toThrow('reset failed')
+    await expect(reset({ force: false }, createMockCommand())).rejects.toThrow('reset failed')
 
     expect(mockCleanup).toHaveBeenCalledOnce()
   })
@@ -130,7 +130,7 @@ describe('reset', () => {
       netlify: { site: { root: undefined }, config: {} },
     } as unknown as Parameters<typeof reset>[1]
 
-    await expect(reset({}, command)).rejects.toThrow('Could not determine the project root directory.')
+    await expect(reset({ force: false }, command)).rejects.toThrow('Could not determine the project root directory.')
   })
 
   describe('when the local database cannot be started', () => {
@@ -144,7 +144,7 @@ describe('reset', () => {
     test('discards the data directory once the user confirms', async () => {
       mockPrompt.mockResolvedValue({ confirmed: true })
 
-      await reset({}, createMockCommand())
+      await reset({ force: false }, createMockCommand())
 
       expect(mockRm).toHaveBeenCalledWith(DB_DIRECTORY, { recursive: true, force: true })
     })
@@ -152,7 +152,7 @@ describe('reset', () => {
     test('explains the underlying startup failure before prompting', async () => {
       mockPrompt.mockResolvedValue({ confirmed: true })
 
-      await reset({}, createMockCommand())
+      await reset({ force: false }, createMockCommand())
 
       expect(logMessages.join('\n')).toContain(PGLITE_ABORT)
     })
@@ -160,7 +160,7 @@ describe('reset', () => {
     test('keeps the data directory when the user declines', async () => {
       mockPrompt.mockResolvedValue({ confirmed: false })
 
-      await reset({}, createMockCommand())
+      await reset({ force: false }, createMockCommand())
 
       expect(mockRm).not.toHaveBeenCalled()
       expect(logMessages).toContain('Reset cancelled.')
@@ -182,13 +182,13 @@ describe('reset', () => {
     test('refuses to prompt in a non-interactive shell and points at --force', async () => {
       mockIsInteractive.mockReturnValue(false)
 
-      await expect(reset({}, createMockCommand())).rejects.toThrow('--force')
+      await expect(reset({ force: false }, createMockCommand())).rejects.toThrow('--force')
 
       expect(mockRm).not.toHaveBeenCalled()
     })
 
     test('refuses to prompt when --json is set without --force', async () => {
-      await expect(reset({ json: true }, createMockCommand())).rejects.toThrow('--force')
+      await expect(reset({ force: false, json: true }, createMockCommand())).rejects.toThrow('--force')
 
       expect(mockPrompt).not.toHaveBeenCalled()
       expect(mockRm).not.toHaveBeenCalled()
@@ -204,7 +204,7 @@ describe('reset', () => {
   test('propagates connection errors that are not local startup failures', async () => {
     mockConnectToDatabase.mockRejectedValue(new Error('password authentication failed'))
 
-    await expect(reset({}, createMockCommand())).rejects.toThrow('password authentication failed')
+    await expect(reset({ force: false }, createMockCommand())).rejects.toThrow('password authentication failed')
 
     expect(mockRm).not.toHaveBeenCalled()
   })

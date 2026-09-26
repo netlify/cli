@@ -1,8 +1,8 @@
-import type { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
 import { log } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
+import type { StatusHooksOptionValues } from './option_values.js'
 
 interface StatusHook {
   type: string | undefined
@@ -12,7 +12,7 @@ interface StatusHook {
   repo_url?: string
 }
 
-export const statusHooks = async (_options: OptionValues, command: BaseCommand): Promise<void> => {
+export const statusHooks = async (_options: StatusHooksOptionValues, command: BaseCommand): Promise<void> => {
   const { api, siteInfo } = command.netlify
 
   await command.authenticate()

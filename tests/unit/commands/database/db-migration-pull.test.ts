@@ -137,20 +137,20 @@ describe('migrationPull', () => {
   test('throws when project is not linked', async () => {
     const command = createMockCommand({ siteId: null })
 
-    await expect(migrationPull({}, command)).rejects.toThrow('must be linked')
+    await expect(migrationPull({ force: false }, command)).rejects.toThrow('must be linked')
   })
 
   test('throws when not logged in', async () => {
     const command = createMockCommand({ accessToken: null })
 
-    await expect(migrationPull({}, command)).rejects.toThrow('must be logged in')
+    await expect(migrationPull({ force: false }, command)).rejects.toThrow('must be logged in')
   })
 
   test('fetches migrations from the correct API endpoint', async () => {
     mockFetchResponse(sampleMigrations)
     vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
 
-    await migrationPull({}, createMockCommand())
+    await migrationPull({ force: false }, createMockCommand())
 
     const calledUrl = mockFetch.mock.calls[0][0] as URL
     expect(calledUrl.toString()).toBe(
@@ -234,7 +234,7 @@ describe('migrationPull', () => {
   test('logs message and exits when no migrations exist in production', async () => {
     mockFetchResponse([])
 
-    await migrationPull({}, createMockCommand())
+    await migrationPull({ force: false }, createMockCommand())
 
     expect(logMessages[0]).toContain('No migrations found for production')
     expect(mockRm).not.toHaveBeenCalled()
@@ -243,7 +243,7 @@ describe('migrationPull', () => {
   test('outputs json when no migrations and --json flag is set', async () => {
     mockFetchResponse([])
 
-    await migrationPull({ json: true }, createMockCommand())
+    await migrationPull({ force: false, json: true }, createMockCommand())
 
     expect(jsonMessages[0]).toEqual({ migrations_pulled: 0, branch: 'production' })
   })
@@ -252,7 +252,7 @@ describe('migrationPull', () => {
     mockFetchResponse(sampleMigrations)
     vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: false })
 
-    await migrationPull({}, createMockCommand())
+    await migrationPull({ force: false }, createMockCommand())
 
     expect(inquirer.prompt).toHaveBeenCalledTimes(1)
     expect(mockRm).not.toHaveBeenCalled()
@@ -274,7 +274,7 @@ describe('migrationPull', () => {
 
     const migrationsPath = '/project/netlify/database/migrations'
     const resolved = resolve(migrationsPath)
-    await migrationPull({}, createMockCommand({ migrationsPath }))
+    await migrationPull({ force: false }, createMockCommand({ migrationsPath }))
 
     expect(mockRm).toHaveBeenCalledWith(resolved, { recursive: true, force: true })
 
@@ -297,7 +297,7 @@ describe('migrationPull', () => {
     mockFetchResponse(sampleMigrations)
     vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
 
-    await migrationPull({}, createMockCommand())
+    await migrationPull({ force: false }, createMockCommand())
 
     expect(logMessages[0]).toContain('Pulled 2 migrations from production')
     expect(logMessages[1]).toContain('0001_create-users')
