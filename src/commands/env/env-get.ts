@@ -11,7 +11,7 @@ export const envGet = async (name: string, options: EnvGetOptionValues, command:
 
   if (!siteId) {
     log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return
   }
 
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
@@ -23,7 +23,7 @@ export const envGet = async (name: string, options: EnvGetOptionValues, command:
   // Return json response for piping commands
   if (options.json) {
     logJson(value ? { [name]: value } : {})
-    return false
+    return
   }
 
   if (!value) {
@@ -31,9 +31,8 @@ export const envGet = async (name: string, options: EnvGetOptionValues, command:
     const withContext = `in the ${chalk.magenta(context)} ${contextType}`
     const withScope = scope === 'any' ? '' : ` and the ${chalk.magenta(scope)} scope`
     log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellow(name)}`)
-    return false
+    return
   }
 
   log(value)
-  return undefined
 }
