@@ -6,6 +6,7 @@ import pMap from 'p-map'
 
 import { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } from './constants.js'
 import type { StatusCallback } from './status-cb.js'
+import { pluralize } from './util.js'
 
 export type UploadApi = Pick<
   NetlifyAPI,
@@ -68,9 +69,14 @@ const uploadFiles = async (
   { concurrentUpload, maxRetry, statusCb }: UploadFilesOptions,
 ) => {
   if (!concurrentUpload || !maxRetry) throw new Error('Missing required option concurrentUpload')
+
+  if (uploadList.length === 0) {
+    return []
+  }
+
   statusCb({
     type: 'upload',
-    msg: `Uploading ${uploadList.length} files`,
+    msg: `Uploading ${pluralize(uploadList.length, 'file')}`,
     phase: 'start',
   })
 
@@ -156,7 +162,7 @@ const uploadFiles = async (
   const results = await pMap(uploadList, uploadFile, { concurrency: concurrentUpload })
   statusCb({
     type: 'upload',
-    msg: `Finished uploading ${uploadList.length} assets`,
+    msg: `Finished uploading ${pluralize(uploadList.length, 'asset')}`,
     phase: 'stop',
   })
   return results
