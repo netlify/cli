@@ -238,7 +238,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   statusCb({
     type: 'create-deploy',
-    msg: newStats ? `Found ${newStats} to upload` : 'Everything is already uploaded',
+    msg: newStats ? `Found ${newStats} to upload` : 'Everything is uploaded',
     phase: 'stop',
   })
 
