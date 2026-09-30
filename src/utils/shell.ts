@@ -6,7 +6,7 @@ import execa from 'execa'
 
 import { type Spinner } from '../lib/spinner.js'
 
-import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
+import { chalk, exit, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
 
 const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
@@ -90,6 +90,16 @@ const ensureCleanupOnExit = () => {
       await cleanupBeforeExit({})
     })
   }
+}
+
+/**
+ * Ends the process the way a signal would, running the registered cleanup first. For exits raised
+ * from outside a command's own flow, where `process.exit` would abandon that work mid-flight.
+ */
+export const exitAfterCleanup = async (exitCode: number): Promise<never> => {
+  await cleanupBeforeExit({ exitCode })
+  // Only reached when another path already owns the cleanup, and is itself about to exit.
+  return exit(exitCode)
 }
 
 /**

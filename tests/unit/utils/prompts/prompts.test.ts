@@ -13,7 +13,7 @@ const { mockClack, mockExit, mockIsOutputSuppressed } = vi.hoisted(() => ({
     intro: vi.fn(),
     outro: vi.fn(),
   },
-  mockExit: vi.fn((code?: number) => {
+  mockExit: vi.fn((code?: number): never => {
     throw new Error(`exit(${String(code)})`)
   }),
 }))
@@ -25,8 +25,13 @@ vi.mock('@clack/prompts', async (importOriginal) => ({
 
 vi.mock('../../../../src/utils/command-helpers.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/utils/command-helpers.js')>()),
-  exit: mockExit,
   isOutputSuppressed: () => mockIsOutputSuppressed(),
+}))
+
+// Cancelling runs the command's registered shutdown work before exiting, so the real one would take
+// the test process down with it.
+vi.mock('../../../../src/utils/shell.js', () => ({
+  exitAfterCleanup: (code: number) => mockExit(code),
 }))
 
 import {

@@ -70,7 +70,7 @@ const writeResponse = (process: Process, responses: string[]) => {
 
 export const answerWithValue = (value = '') => [value, CONFIRM].flat()
 
-/** Enter. clack only submits on a carriage return (`\r`); a bare `\n` is a different key. */
+/** Enter, as a terminal sends it. The CLI accepts a bare `\n` over a pipe too. */
 export const CONFIRM = '\r'
 export const DOWN = '\u001B[B'
 /** Answers a confirm prompt with "No" and submits immediately; do not follow it with CONFIRM. */

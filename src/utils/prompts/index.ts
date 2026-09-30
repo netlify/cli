@@ -12,8 +12,9 @@ import type {
   TextOptions,
 } from '@clack/prompts'
 
-import { chalk, exit, isOutputSuppressed, NETLIFY_CYAN } from '../command-helpers.js'
+import { chalk, isOutputSuppressed, NETLIFY_CYAN } from '../command-helpers.js'
 import { EXIT_CODES } from '../exit-codes.js'
+import { exitAfterCleanup } from '../shell.js'
 
 type Cancellable<T> = T | typeof clack.CANCEL_SYMBOL
 type TextValidator = Extract<NonNullable<TextOptions['validate']>, (...args: never[]) => unknown>
@@ -28,14 +29,24 @@ const releaseStdin = (): void => {
 
 // The prompts submit on a carriage return, which is what a terminal sends, but a pipe or a here-doc
 // sends a line feed. Without this, `printf 'value\n' | netlify …` would leave the prompt unanswered.
-let previousKeyName: string | undefined
+// The line feed completing a CRLF pair is decoded from the same chunk as its carriage return, so it
+// reaches us before the event loop turns; a line feed arriving any later is an answer of its own.
+// Pairing on wall-clock time instead would be wrong, because a pipe can deliver writes seconds apart
+// as chunks milliseconds apart.
+let carriageReturnPending = false
 const treatLineFeedAsEnter = (_char: string | undefined, key: { name?: string } | undefined): void => {
   const name = key?.name
-  // A line feed closing a CRLF pair belongs to the carriage return that already submitted.
-  if (key != null && name === 'enter' && previousKeyName !== 'return') {
+  if (name === 'return') {
+    carriageReturnPending = true
+    process.nextTick(() => {
+      carriageReturnPending = false
+    })
+    return
+  }
+  if (key != null && name === 'enter' && !carriageReturnPending) {
     key.name = 'return'
   }
-  previousKeyName = name
+  carriageReturnPending = false
 }
 
 const withPipedInputSupport = async <T>(prompt: () => Promise<T>): Promise<T> => {
@@ -51,12 +62,14 @@ const withPipedInputSupport = async <T>(prompt: () => Promise<T>): Promise<T> =>
   }
 }
 
-const cancelAndExit = (): never => {
+const cancelAndExit = async (): Promise<never> => {
   clack.cancel('Cancelled.')
-  return exit(EXIT_CODES.CANCELLED)
+  // A command that already started a dev server or database registers asynchronous shutdown work;
+  // exiting straight out of the prompt would abandon it.
+  return exitAfterCleanup(EXIT_CODES.CANCELLED)
 }
 
-const settle = <T>(value: Cancellable<T>): T => {
+const settle = async <T>(value: Cancellable<T>): Promise<T> => {
   releaseStdin()
   if (clack.isCancel(value)) {
     return cancelAndExit()

@@ -94,7 +94,9 @@ describe('sites:delete command', () => {
     })
   })
 
-  test('accepts an answer piped with a line feed, as a shell script sends it', async (t) => {
+  // A bare line feed is what a pipe or here-doc sends. Answering with `y\n` would prove nothing, since
+  // the `y` submits on its own; only the line feed can submit this prompt on its default of "No".
+  test('submits a prompt answered with a bare line feed, as a pipe sends it', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
@@ -105,12 +107,14 @@ describe('sites:delete command', () => {
           getCLIOptions({ apiUrl, builder, env: promptingEnv }),
         )
 
-        handleQuestions(childProcess, [{ question: CONFIRM_QUESTION, answer: 'y\n' }])
+        handleQuestions(childProcess, [{ question: CONFIRM_QUESTION, answer: '\n' }])
 
-        const { stdout } = await childProcess
+        const { exitCode, stdout } = await childProcess
 
-        expect(stdout).toContain(DELETED_MESSAGE)
-        expect(deleteRequests(requests)).toHaveLength(1)
+        expect(exitCode).toBe(0)
+        expect(stdout).toContain(CONFIRM_QUESTION)
+        expect(stdout).not.toContain(DELETED_MESSAGE)
+        expect(deleteRequests(requests)).toHaveLength(0)
       })
     })
   })
