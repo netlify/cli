@@ -1,3 +1,5 @@
+import { PassThrough, Writable } from 'stream'
+
 import { CANCEL_SYMBOL } from '@clack/prompts'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
@@ -290,5 +292,83 @@ describe('branding helpers', () => {
 
     expect(mockClack.intro).not.toHaveBeenCalled()
     expect(mockClack.outro).not.toHaveBeenCalled()
+  })
+})
+
+describe('accessible mode', () => {
+  const collect = () => {
+    const written: string[] = []
+    const output = new Writable({
+      write(chunk: Buffer | string, _encoding, done) {
+        written.push(String(chunk))
+        done()
+      },
+    })
+    return { output, written: () => written.join('') }
+  }
+
+  beforeEach(() => {
+    vi.stubEnv('ACCESSIBLE', '1')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  test.each([
+    ['promptText', promptText, mockClack.text, { message: 'Name' }, 'value\n', 'value'],
+    ['promptPassword', promptPassword, mockClack.password, { message: 'Token' }, 's3cret\n', 's3cret'],
+    ['promptConfirm', promptConfirm, mockClack.confirm, { message: 'Continue?' }, 'n\n', false],
+    [
+      'promptSelect',
+      promptSelect,
+      mockClack.select,
+      { message: 'Pick', options: [{ value: 'a' }, { value: 'b' }] },
+      '2\n',
+      'b',
+    ],
+    [
+      'promptAutocomplete',
+      promptAutocomplete,
+      mockClack.autocomplete,
+      { message: 'Search', options: [{ value: 'a' }, { value: 'b' }] },
+      '1\n',
+      'a',
+    ],
+  ] as const)(
+    '%s asks a static question instead of drawing a widget',
+    async (_name, prompt, widget, options, answer, expected) => {
+      const input = new PassThrough()
+      input.write(answer)
+      const { output } = collect()
+
+      await expect(prompt({ ...options, input, output } as never)).resolves.toEqual(expected)
+
+      expect(widget).not.toHaveBeenCalled()
+    },
+  )
+
+  test('exits with 130 on a cancellation, without the framing a screen reader would read out', async () => {
+    const input = new PassThrough()
+    const { output } = collect()
+    const write = vi.spyOn(process.stdout, 'write').mockReturnValue(true)
+
+    const answer = promptText({ message: 'Name', input, output })
+    input.end()
+
+    await expect(answer).rejects.toThrow('exit(130)')
+    expect(mockClack.cancel).not.toHaveBeenCalled()
+    expect(write).toHaveBeenCalledWith('Cancelled.\n')
+  })
+
+  test('writes the intro and outro as plain lines', () => {
+    const write = vi.spyOn(process.stdout, 'write').mockReturnValue(true)
+
+    intro('Netlify Link')
+    outro('Linked!')
+
+    expect(mockClack.intro).not.toHaveBeenCalled()
+    expect(mockClack.outro).not.toHaveBeenCalled()
+    expect(write.mock.calls.map(([text]) => text)).toEqual(['Netlify Link\n', 'Linked!\n'])
   })
 })

@@ -16,6 +16,16 @@ import { chalk, isOutputSuppressed, NETLIFY_CYAN } from '../command-helpers.js'
 import { EXIT_CODES } from '../exit-codes.js'
 import { exitAfterCleanup } from '../shell.js'
 
+import {
+  accessibleAutocomplete,
+  accessibleConfirm,
+  accessiblePassword,
+  accessibleSelect,
+  accessibleText,
+  isAccessible,
+  writeLine,
+} from './accessible.js'
+
 type Cancellable<T> = T | typeof clack.CANCEL_SYMBOL
 type TextValidator = Extract<NonNullable<TextOptions['validate']>, (...args: never[]) => unknown>
 
@@ -62,15 +72,24 @@ const withPipedInputSupport = async <T>(prompt: () => Promise<T>): Promise<T> =>
   }
 }
 
+const runWidget = async <T>(prompt: () => Promise<Cancellable<T>>): Promise<Cancellable<T>> => {
+  const value = await withPipedInputSupport(prompt)
+  releaseStdin()
+  return value
+}
+
 const cancelAndExit = async (): Promise<never> => {
-  clack.cancel('Cancelled.')
+  if (isAccessible()) {
+    writeLine(process.stdout, 'Cancelled.')
+  } else {
+    clack.cancel('Cancelled.')
+  }
   // A command that already started a dev server or database registers asynchronous shutdown work;
   // exiting straight out of the prompt would abandon it.
   return exitAfterCleanup(EXIT_CODES.CANCELLED)
 }
 
 const settle = async <T>(value: Cancellable<T>): Promise<T> => {
-  releaseStdin()
   if (clack.isCancel(value)) {
     return cancelAndExit()
   }
@@ -89,10 +108,14 @@ const withDefaultAwareValidation = (options: TextOptions): TextOptions => {
 }
 
 export const promptText = async (options: TextOptions): Promise<string> =>
-  settle(await withPipedInputSupport(() => clack.text(withDefaultAwareValidation(options))))
+  settle(
+    isAccessible()
+      ? await accessibleText(options)
+      : await runWidget(() => clack.text(withDefaultAwareValidation(options))),
+  )
 
 export const promptPassword = async (options: PasswordOptions): Promise<string> =>
-  settle(await withPipedInputSupport(() => clack.password(options)))
+  settle(isAccessible() ? await accessiblePassword(options) : await runWidget(() => clack.password(options)))
 
 export type ConfirmOptions = Omit<ClackConfirmOptions, 'signal'> & {
   /** Treat the prompt as declined when it goes unanswered for this many milliseconds. */
@@ -113,22 +136,22 @@ export const promptConfirm = async ({ timeout, ...options }: ConfirmOptions): Pr
       : setTimeout(() => {
           controller.abort()
         }, timeout)
+  const timed = { ...options, signal: controller.signal }
   let value: Cancellable<boolean>
   try {
-    value = await withPipedInputSupport(() => clack.confirm({ ...options, signal: controller.signal }))
+    value = isAccessible() ? await accessibleConfirm(timed) : await runWidget(() => clack.confirm(timed))
   } finally {
     clearTimeout(timer)
   }
 
   if (clack.isCancel(value) && controller.signal.aborted) {
-    releaseStdin()
     return false
   }
   return settle(value)
 }
 
 export const promptSelect = async <Value>(options: SelectOptions<Value>): Promise<Value> =>
-  settle(await withPipedInputSupport(() => clack.select(options)))
+  settle(isAccessible() ? await accessibleSelect(options) : await runWidget(() => clack.select(options)))
 
 // Matches what the option shows: the default filter also searches the stringified value, so options
 // holding objects all match any substring of "[object Object]", and it searches the styled label, so
@@ -139,14 +162,28 @@ const matchesLabelOrHint = <Value>(search: string, option: Option<Value>): boole
     .includes(search.toLowerCase())
 
 export const promptAutocomplete = async <Value>(options: AutocompleteOptions<Value>): Promise<Value> =>
-  settle(await withPipedInputSupport(() => clack.autocomplete({ filter: matchesLabelOrHint, ...options })))
+  settle(
+    isAccessible()
+      ? await accessibleAutocomplete(options)
+      : await runWidget(() => clack.autocomplete({ filter: matchesLabelOrHint, ...options })),
+  )
 
 export const intro = (title: string): void => {
   if (isOutputSuppressed()) return
+  // The glyph and the framing bars are announced as content by a screen reader, so they are worth
+  // less there than the noise they add.
+  if (isAccessible()) {
+    writeLine(process.stdout, title)
+    return
+  }
   clack.intro(`${NETLIFY_CYAN('⬥')} ${chalk.bold(title)}`)
 }
 
 export const outro = (message: string): void => {
   if (isOutputSuppressed()) return
+  if (isAccessible()) {
+    writeLine(process.stdout, message)
+    return
+  }
   clack.outro(message)
 }

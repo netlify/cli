@@ -24,6 +24,15 @@ over the markers agents set on their own, such as `AI_AGENT`.
 Use only a product name and version. Never put a token, session ID, or other sensitive value in it: the value is sent to
 Netlify and can appear in the login URL the CLI prints.
 
+## Using the CLI with a screen reader
+
+Set `ACCESSIBLE` to have the CLI ask its questions as plain text, with the choices numbered, instead of drawing a
+widget that redraws itself as you type. Set it to `0` or `false` to turn it back off.
+
+```
+ACCESSIBLE=1 netlify init
+```
+
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->

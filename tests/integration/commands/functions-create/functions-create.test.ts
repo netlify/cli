@@ -71,6 +71,48 @@ describe.concurrent('functions:create command', async () => {
     })
   })
 
+  test('should ask for the same answers as plain text when ACCESSIBLE is set', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(
+          cliPath,
+          ['functions:create'],
+          getCLIOptions({ apiUrl, builder, env: { ACCESSIBLE: '1' } }),
+        )
+
+        handleQuestions(childProcess, [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue('2'),
+          },
+          {
+            question: 'Enter the path, relative to your project',
+            answer: answerWithValue('test/functions'),
+          },
+          {
+            question: 'Select the language of your function',
+            answer: CONFIRM,
+          },
+          {
+            question: 'Pick a template',
+            answer: CONFIRM,
+          },
+          {
+            question: 'Name your function',
+            answer: CONFIRM,
+          },
+        ])
+
+        const { stdout } = await childProcess
+
+        expect(stdout).toContain('2. Serverless function (Node)')
+        expect(stdout).toContain('Enter a number between 1 and 2 [1]:')
+        expect(existsSync(`${builder.directory}/test/functions/hello-world/hello-world.mjs`)).toBe(true)
+      })
+    })
+  })
+
   test('should create a new edge function directory when none is found', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
