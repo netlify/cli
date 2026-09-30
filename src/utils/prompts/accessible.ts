@@ -38,11 +38,12 @@ const EOT = '\u0004'
 const ERASE = new Set(['\u0008', '\u007F'])
 
 /**
- * Hands out one line at a time from a stream nothing else is reading.
+ * Hands out one line at a time from a stream it only listens to while a prompt is waiting.
  *
- * A prompt cannot own the stream for only as long as it is asking, because a pipe can deliver several
- * answers in one chunk: whatever a prompt does not consume has to wait somewhere for the next one.
- * Between prompts the stream is left paused, so it never holds the process open.
+ * A prompt cannot keep what it over-read to itself, because a pipe can deliver several answers in one
+ * chunk: the lines it does not consume have to wait somewhere for the next prompt, which is why the
+ * reader outlives the prompt. It stops listening in between, so the rest of the CLI — `netlify dev`
+ * forwarding stdin to a framework server, above all — gets the stream back untouched.
  */
 class LineReader {
   private readonly decoder = new StringDecoder('utf8')
@@ -51,21 +52,20 @@ class LineReader {
   private afterCarriageReturn = false
   private ended = false
   private hidingInput = false
+  private listening = false
   private wake: (() => void) | undefined
   private readonly input: Readable
 
   constructor(input: Readable) {
     this.input = input
-    input.on('data', (chunk: Buffer | string) => {
-      this.receive(typeof chunk === 'string' ? chunk : this.decoder.write(chunk))
-    })
-    input.on('end', () => {
-      this.finish()
-    })
-    input.on('close', () => {
-      this.finish()
-    })
-    input.pause()
+  }
+
+  private readonly onData = (chunk: Buffer | string): void => {
+    this.receive(typeof chunk === 'string' ? chunk : this.decoder.write(chunk))
+  }
+
+  private readonly onEnd = (): void => {
+    this.finish()
   }
 
   private finish(): void {
@@ -73,12 +73,31 @@ class LineReader {
     this.wake?.()
   }
 
-  // Node only stops reading a piped stdin when it sees a `pause` event, and `pause()` emits nothing when
-  // the stream is already paused. Reading one more chunk than it needed would then hold the process open,
-  // because a stream restarts its read after every chunk it takes.
+  private listen(): void {
+    if (this.listening) {
+      return
+    }
+    this.listening = true
+    this.input.on('data', this.onData)
+    this.input.on('end', this.onEnd)
+    this.input.on('close', this.onEnd)
+  }
+
   private release(): void {
+    if (!this.listening) {
+      return
+    }
+    this.listening = false
+    this.input.off('data', this.onData)
+    this.input.off('end', this.onEnd)
+    this.input.off('close', this.onEnd)
     this.input.pause()
-    this.input.emit('pause')
+    // Node only stops reading a piped stdin when it sees a `pause` event, and `pause()` emits nothing when
+    // the stream is already paused. Reading one more chunk than it needed would then hold the process open,
+    // because a stream restarts its read after every chunk it takes.
+    if (!isTerminal(this.input)) {
+      this.input.emit('pause')
+    }
   }
 
   private endLine(line: Cancellable<string>): void {
@@ -114,7 +133,6 @@ class LineReader {
     }
 
     if (this.lines.length !== 0) {
-      this.release()
       this.wake?.()
     }
   }
@@ -128,6 +146,7 @@ class LineReader {
       }
       this.wake = done
       signal?.addEventListener('abort', done, { once: true })
+      this.listen()
       this.input.resume()
     })
   }
@@ -147,14 +166,19 @@ class LineReader {
         if (line !== undefined) {
           return line
         }
-        if (this.ended || signal?.aborted === true) {
+        if (this.ended || this.input.readableEnded || signal?.aborted === true) {
           return CANCEL_SYMBOL
         }
         await this.waitForInput(signal)
       }
     } finally {
       this.hidingInput = false
-      restoreEcho?.()
+      if (restoreEcho !== undefined) {
+        restoreEcho()
+        // Raw mode ends a line with a carriage return and the driver sends a line feed once it is off
+        // again, so the next line feed answers the next question rather than closing this one.
+        this.afterCarriageReturn = false
+      }
       this.release()
     }
   }
@@ -265,6 +289,9 @@ const askUntilAccepted = async <Value>(
 
 const plain = (text: string): string => stripVTControlCharacters(text)
 
+// Several messages already end in a colon, and a screen reader reads the one this appends as a second.
+const asQuestion = (message: string): string => plain(message).replace(/\s*:\s*$/, '')
+
 const describeBlankAnswer = ({ defaultValue, initialValue, placeholder }: TextOptions): string => {
   const submittedWhenBlank = initialValue || defaultValue
   if (submittedWhenBlank) {
@@ -277,7 +304,9 @@ const describeBlankAnswer = ({ defaultValue, initialValue, placeholder }: TextOp
 export const accessibleText = async (options: TextOptions): Promise<Cancellable<string>> => {
   const { defaultValue, initialValue, message, validate } = options
 
-  return askUntilAccepted(`${plain(message)}${describeBlankAnswer(options)}: `, streamsOf(options), async (answer) => {
+  const question = `${asQuestion(message)}${describeBlankAnswer(options)}: `
+
+  return askUntilAccepted(question, streamsOf(options), async (answer) => {
     const value = answer === '' ? initialValue || defaultValue || '' : answer
     const problem = await runValidation(validate, value)
     return problem ?? [value]
@@ -287,7 +316,7 @@ export const accessibleText = async (options: TextOptions): Promise<Cancellable<
 export const accessiblePassword = async (options: PasswordOptions): Promise<Cancellable<string>> => {
   const { message, validate } = options
 
-  return askUntilAccepted(`${plain(message)}: `, { ...streamsOf(options), hideInput: true }, async (answer) => {
+  return askUntilAccepted(`${asQuestion(message)}: `, { ...streamsOf(options), hideInput: true }, async (answer) => {
     const problem = await runValidation(validate, answer)
     return problem ?? [answer]
   })
@@ -297,7 +326,7 @@ export const accessibleConfirm = async (options: ConfirmOptions): Promise<Cancel
   const { active = 'Yes', inactive = 'No', initialValue = true, message } = options
   const affirmative = new Set(['y', 'yes', active.toLowerCase()])
   const negative = new Set(['n', 'no', inactive.toLowerCase()])
-  const question = `${plain(message)} [${initialValue ? 'Y/n' : 'y/N'}]: `
+  const question = `${asQuestion(message)} [${initialValue ? 'Y/n' : 'y/N'}]: `
 
   return askUntilAccepted<boolean>(question, streamsOf(options), (answer) => {
     const normalized = plain(answer).trim().toLowerCase()

@@ -123,6 +123,15 @@ describe('accessibleText', () => {
     expect(written()).toContain('Say yes')
   })
 
+  test('does not add a second colon to a message that already ends in one', async () => {
+    const { input, output, written } = streams('src\n')
+
+    await expect(accessibleText({ message: 'Base directory (blank for current dir):', input, output })).resolves.toBe(
+      'src',
+    )
+    expect(written()).toBe('Base directory (blank for current dir): \n')
+  })
+
   test('strips styling out of the question, which a screen reader would read out', async () => {
     const { input, output, written } = streams('x\n')
 
@@ -137,6 +146,20 @@ describe('accessibleText', () => {
     input.end()
 
     await expect(answer).resolves.toBe(CANCEL_SYMBOL)
+  })
+})
+
+describe('a prompt on a terminal', () => {
+  test('lets the terminal echo the newline it has already written', async () => {
+    const input = new FakeTTY()
+    const { output, written } = collect()
+    const answer = accessibleText({ message: 'Name', input, output })
+
+    input.write('my-function\r')
+
+    await expect(answer).resolves.toBe('my-function')
+    expect(written()).toBe('Name: ')
+    expect(input.setRawMode).not.toHaveBeenCalled()
   })
 })
 
@@ -162,6 +185,16 @@ describe('accessiblePassword', () => {
     input.write('s3crxt\u007F\u007Ft\r')
 
     await expect(answer).resolves.toBe('s3crt')
+  })
+
+  test('is cancelled by Ctrl+D, which hidden typing has no end of stream for', async () => {
+    const input = new FakeTTY()
+    const { output } = collect()
+    const answer = accessiblePassword({ message: 'Token', input, output })
+
+    input.write('half-typed\u0004')
+
+    await expect(answer).resolves.toBe(CANCEL_SYMBOL)
   })
 
   test('is cancelled by Ctrl+C, which hidden typing receives as input rather than as a signal', async () => {
@@ -195,6 +228,13 @@ describe('accessibleConfirm', () => {
 
     await expect(accessibleConfirm({ message: 'Continue?', initialValue, input, output })).resolves.toBe(initialValue)
     expect(written()).toBe(question)
+  })
+
+  test('takes a blank answer as yes when the caller names no default, like the widget does', async () => {
+    const { input, output, written } = streams('\n')
+
+    await expect(accessibleConfirm({ message: 'Continue?', input, output })).resolves.toBe(true)
+    expect(written()).toBe('Continue? [Y/n]: \n')
   })
 
   test('accepts the labels the caller chose, and says what it wants otherwise', async () => {
@@ -295,16 +335,75 @@ describe('reading the input stream', () => {
     await expect(accessibleText({ message: 'Two', input, output })).resolves.toBe('second')
   })
 
-  test('says to stop reading again after taking an answer, since a read restarts itself', async () => {
+  test('pairs a carriage return with a line feed that only arrives at the next prompt', async () => {
+    const { input, output } = streams()
+
+    const first = accessibleText({ message: 'One', input, output })
+    input.write('first\r')
+    await expect(first).resolves.toBe('first')
+
+    const second = accessibleText({ message: 'Two', input, output })
+    input.write('\nsecond\n')
+    await expect(second).resolves.toBe('second')
+  })
+
+  test('does not take the line feed after a hidden answer for the tail of its carriage return', async () => {
+    const input = new FakeTTY()
+    const { output } = collect()
+
+    const secret = accessiblePassword({ message: 'Token', input, output })
+    input.write('s3cret\r')
+    await expect(secret).resolves.toBe('s3cret')
+
+    // Hiding input means raw mode, where Enter is a carriage return; the terminal sends a line feed
+    // once it is off again, and that answers the next question rather than closing the last one.
+    const directory = accessibleText({ message: 'Directory', defaultValue: 'public', input, output })
+    input.write('\n')
+    await expect(directory).resolves.toBe('public')
+  })
+
+  test('leaves the stream paused, so it does not hold the process open', async () => {
     const { input, output } = streams('answer\n')
-    const paused = vi.fn()
-    input.on('pause', paused)
 
     await accessibleText({ message: 'One', input, output })
 
     expect(input.isPaused()).toBe(true)
-    // Pausing an already paused stream emits nothing, and a piped stdin keeps the process alive until
-    // it sees the event, so the prompt has to raise it itself.
-    expect(paused.mock.calls.length).toBeGreaterThan(1)
+  })
+
+  test('raises the pause itself, because pausing an already paused stream emits nothing', async () => {
+    const { input, output } = streams('answer\n')
+    const paused = vi.fn()
+    input.on('pause', paused)
+    // By the time an answer is in hand the stream has usually stopped flowing on its own, and a piped
+    // stdin keeps the process alive until it sees the event.
+    vi.spyOn(input, 'pause').mockReturnValue(input)
+
+    await accessibleText({ message: 'One', input, output })
+
+    expect(paused).toHaveBeenCalled()
+  })
+
+  test('stops listening between prompts, so the rest of the CLI gets the stream back', async () => {
+    const { input, output } = streams('answer\n')
+
+    await accessibleText({ message: 'One', input, output })
+
+    // `netlify dev` forwards stdin to the framework server it starts after prompting; a reader still
+    // holding the stream would take that input and pause it away from the child on every line.
+    expect(input.listenerCount('data')).toBe(0)
+
+    const devServer = new Promise<string>((resolve) => {
+      input.once('data', (chunk: Buffer) => {
+        resolve(String(chunk))
+      })
+    })
+    input.resume()
+    input.write('typed at a dev server\n')
+    await expect(devServer).resolves.toBe('typed at a dev server\n')
+
+    const next = accessibleText({ message: 'Two', input, output })
+    input.write('the real answer\n')
+
+    await expect(next).resolves.toBe('the real answer')
   })
 })
