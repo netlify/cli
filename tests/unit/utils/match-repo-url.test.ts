@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { parseRepoUrl, siteMatchesRepoUrl } from '../../../src/utils/match-repo-url.js'
+import { formatRepoUrl, parseRepoUrl, siteMatchesRepoUrl } from '../../../src/utils/match-repo-url.js'
 import type { SiteInfo } from '../../../src/utils/types.js'
 
 const siteWithRepo = (provider: string, repoUrl?: string) =>
@@ -10,15 +10,28 @@ describe('parseRepoUrl', () => {
   it.each([
     ['https://GitHub.com/Acme/Widget.git/', { host: 'github.com', path: 'Acme/Widget' }],
     ['git@gitlab.example.com:acme/widget.git', { host: 'gitlab.example.com', path: 'acme/widget' }],
-    ['ssh://git@github.com:22/acme/widget.git', { host: 'github.com', path: 'acme/widget' }],
+    ['ssh://git@bitbucket.corp:7999/proj/repo.git', { host: 'bitbucket.corp', path: 'proj/repo' }],
+    ['https://user:p@ss@github.com/acme/widget', { host: 'github.com', path: 'acme/widget' }],
+    ['git+ssh://git@github.com/acme/widget', { host: 'github.com', path: 'acme/widget' }],
+    ['https://github.com/acme/widget?tab=readme#top', { host: 'github.com', path: 'acme/widget' }],
     ['https://token@gitlab.com/group/subgroup/widget', { host: 'gitlab.com', path: 'group/subgroup/widget' }],
     ['acme/widget', { host: undefined, path: 'acme/widget' }],
   ])('parses %s', (url, expected) => {
     expect(parseRepoUrl(url)).toEqual(expected)
   })
 
-  it.each(['', 'https://github.com/', 'https://exa mple.com/acme/widget'])('rejects %j', (url) => {
+  it.each(['', '  ', 'https://github.com/'])('rejects %j', (url) => {
     expect(parseRepoUrl(url)).toBeUndefined()
+  })
+})
+
+describe('formatRepoUrl', () => {
+  it('formats a credential-free https URL', () => {
+    expect(formatRepoUrl({ host: 'github.com', path: 'acme/widget' })).toBe('https://github.com/acme/widget')
+  })
+
+  it('keeps a host-less path bare', () => {
+    expect(formatRepoUrl({ path: 'acme/widget' })).toBe('acme/widget')
   })
 })
 

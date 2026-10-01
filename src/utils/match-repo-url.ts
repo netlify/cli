@@ -1,42 +1,29 @@
 import type { SiteInfo } from './types.js'
 
-interface ParsedRepoUrl {
+export interface ParsedRepoUrl {
   host?: string
   path: string
 }
 
-const URL_WITH_SCHEME = /^[a-z][a-z\d+.-]*:\/\//i
+// Kept identical to the API's `Repo::UrlLookup.parse` so both sides agree on what a remote names.
+const URL_WITH_SCHEME = /^[a-z][a-z\d+.-]*:\/\/(?:[^/?#]*@)?(?<host>[^/?#:]+)(?::\d*)?(?<path>[^?#]*)/i
 const SCP_LIKE_URL = /^(?:[^@/\s]+@)?(?<host>[^:/\s]+):(?<path>[^/].*)$/
 
-// Accepts https, ssh, scp-like (`git@host:owner/repo`) and bare `owner/repo` forms.
+// Accepts https, ssh, scp-like (`git@host:owner/repo`) and bare `owner/repo` forms. Userinfo and
+// ports are discarded, so embedded credentials never leave the machine.
 export const parseRepoUrl = (url: string): ParsedRepoUrl | undefined => {
   const raw = url.trim()
-  let host: string | undefined
-  let path = raw
-
-  if (URL_WITH_SCHEME.test(raw)) {
-    try {
-      const parsed = new URL(raw)
-      host = parsed.hostname
-      path = parsed.pathname
-    } catch {
-      return undefined
-    }
-  } else {
-    const scpMatch = SCP_LIKE_URL.exec(raw)
-    if (scpMatch?.groups) {
-      host = scpMatch.groups.host
-      path = scpMatch.groups.path
-    }
-  }
-
-  const normalizedPath = path.replace(/^\/+|\/+$/g, '').replace(/\.git$/i, '')
+  const groups = (URL_WITH_SCHEME.exec(raw) ?? SCP_LIKE_URL.exec(raw))?.groups
+  const normalizedPath = (groups?.path ?? raw).replace(/^\/+|\/+$/g, '').replace(/\.git$/i, '')
   if (normalizedPath === '') {
     return undefined
   }
 
-  return { host: host?.toLowerCase(), path: normalizedPath }
+  return { host: groups?.host.toLowerCase(), path: normalizedPath }
 }
+
+export const formatRepoUrl = ({ host, path }: ParsedRepoUrl): string =>
+  host === undefined ? path : `https://${host}/${path}`
 
 // Mirrors the API's `repo_url` site filter, so results agree whether or not the API applied it.
 export const siteMatchesRepoUrl = (site: SiteInfo, repoUrl: string): boolean => {

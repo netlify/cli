@@ -14,12 +14,19 @@ interface SitesRequest {
 
 let server: Server | undefined
 
-const withSitesRoute = async (sites: unknown, status = 200) => {
+type SitesHandler = (req: express.Request, res: express.Response) => void
+
+const withSitesRoute = async (sites: unknown, status = 200) =>
+  withSitesHandler((_req, res) => {
+    res.status(status).json(sites)
+  })
+
+const withSitesHandler = async (handler: SitesHandler) => {
   const requests: SitesRequest[] = []
   const app = express()
   app.get('/api/v1/sites', (req, res) => {
     requests.push({ query: req.query, authorization: req.headers.authorization })
-    res.status(status).json(sites)
+    handler(req, res)
   })
   server = app.listen()
   await new Promise((resolve) => server?.once('listening', resolve))
@@ -65,11 +72,47 @@ describe('findSiteByName', () => {
   test('rejects with the response status on API errors', async () => {
     const { api } = await withSitesRoute({ message: 'Unauthorized' }, 401)
 
-    await expect(findSiteByName(api, 'my-site')).rejects.toMatchObject({ status: 401 })
+    await expect(findSiteByName(api, 'my-site')).rejects.toMatchObject({
+      status: 401,
+      message: 'Unauthorized',
+      json: { message: 'Unauthorized' },
+    })
+  })
+
+  test('retries when rate limited', async () => {
+    let attempts = 0
+    const { api, requests } = await withSitesHandler((_req, res) => {
+      attempts++
+      if (attempts === 1) {
+        res
+          .status(429)
+          .set('X-RateLimit-Reset', String(Math.floor(Date.now() / 1000)))
+          .json({})
+        return
+      }
+      res.json([{ id: 'site-1', name: 'my-site' }])
+    })
+
+    await expect(findSiteByName(api, 'my-site')).resolves.toMatchObject({ id: 'site-1' })
+    expect(requests).toHaveLength(2)
   })
 })
 
 describe('listSitesByRepoUrl', () => {
+  test('sends the remote without credentials', async () => {
+    const { api, requests } = await withSitesRoute([])
+
+    await listSitesByRepoUrl(api, 'https://x-access-token:secret@github.com/acme/widget.git')
+    expect(requests.map(({ query }) => query.repo_url)).toEqual(['https://github.com/acme/widget'])
+  })
+
+  test('does not query the API for an unparseable remote', async () => {
+    const { api, requests } = await withSitesRoute([])
+
+    await expect(listSitesByRepoUrl(api, '   ')).resolves.toEqual([])
+    expect(requests).toHaveLength(0)
+  })
+
   test('requests a server-side repo filter', async () => {
     const site = {
       id: 'site-1',

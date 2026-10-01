@@ -1,8 +1,10 @@
+import { setTimeout } from 'node:timers/promises'
+
 import type { NetlifyAPI } from '@netlify/api'
-import fetch, { type RequestInit } from 'node-fetch'
+import fetch, { type RequestInit, type Response } from 'node-fetch'
 
 import { warn } from '../utils/command-helpers.js'
-import { siteMatchesRepoUrl } from '../utils/match-repo-url.js'
+import { formatRepoUrl, parseRepoUrl, siteMatchesRepoUrl } from '../utils/match-repo-url.js'
 import type { SiteInfo } from '../utils/types.js'
 
 export const cancelDeploy = async ({ api, deployId }: { api: NetlifyAPI; deployId: string }): Promise<void> => {
@@ -30,6 +32,39 @@ interface SitesPageParams {
   per_page?: number
 }
 
+// Mirrors @netlify/api's retry policy (`lib/methods/retry.js`), which this direct request bypasses.
+const MAX_RETRIES = 5
+const DEFAULT_RETRY_DELAY_MS = 5_000
+const MIN_RETRY_DELAY_MS = 1_000
+const RETRYABLE_ERROR_CODES = new Set(['ETIMEDOUT', 'ECONNRESET'])
+
+const getRetryDelayMs = (response?: Response): number => {
+  const rateLimitReset = response?.headers.get('X-RateLimit-Reset')
+  return rateLimitReset
+    ? Math.max(Number(rateLimitReset) * 1_000 - Date.now(), MIN_RETRY_DELAY_MS)
+    : DEFAULT_RETRY_DELAY_MS
+}
+
+const fetchWithRetry = async (url: URL, init: RequestInit): Promise<Response> => {
+  for (let attempt = 0; ; attempt++) {
+    let response: Response
+    try {
+      response = await fetch(url, init)
+    } catch (error) {
+      if (attempt < MAX_RETRIES && RETRYABLE_ERROR_CODES.has((error as NodeJS.ErrnoException).code ?? '')) {
+        await setTimeout(DEFAULT_RETRY_DELAY_MS)
+        continue
+      }
+      throw error
+    }
+    if (response.status === 429 && attempt < MAX_RETRIES) {
+      await setTimeout(getRetryDelayMs(response))
+      continue
+    }
+    return response
+  }
+}
+
 // TODO: Replace with `api.listSites` once `name_match_mode` and `repo_url` are added to @netlify/open-api.
 // Until then the client silently drops them, turning a targeted lookup back into a list of every site.
 const fetchSitesPageWithUnpublishedParams = async (api: NetlifyAPI, params: SitesPageParams): Promise<unknown[]> => {
@@ -40,17 +75,23 @@ const fetchSitesPageWithUnpublishedParams = async (api: NetlifyAPI, params: Site
     }
   }
 
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     headers: api.defaultHeaders,
     agent: api.agent as unknown as RequestInit['agent'],
   })
+  const body = await response.text()
   if (!response.ok) {
-    throw Object.assign(new Error(`${response.statusText || 'Request failed'}: ${await response.text()}`), {
-      status: response.status,
-    })
+    // Same shape as @netlify/api's `JSONHTTPError`/`TextHTTPError`, which callers format.
+    let json: unknown
+    try {
+      json = JSON.parse(body)
+    } catch {
+      json = undefined
+    }
+    throw Object.assign(new Error(response.statusText || body), { status: response.status, json, data: body })
   }
 
-  return (await response.json()) as unknown[]
+  return JSON.parse(body) as unknown[]
 }
 
 const fetchSitesPage = async (api: NetlifyAPI, params: SitesPageParams): Promise<SiteInfo[]> => {
@@ -85,7 +126,12 @@ export const findSiteByName = async (api: NetlifyAPI, name: string): Promise<Sit
 }
 
 export const listSitesByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<SiteInfo[]> => {
-  const sites = await listSites({ api, options: { repo_url: repoUrl, filter: 'all' } })
+  const target = parseRepoUrl(repoUrl)
+  if (target === undefined) {
+    return []
+  }
+
+  const sites = await listSites({ api, options: { repo_url: formatRepoUrl(target), filter: 'all' } })
   // API versions predating `repo_url` ignore it and return every site.
   return sites.filter((site) => siteMatchesRepoUrl(site, repoUrl))
 }

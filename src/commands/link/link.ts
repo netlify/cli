@@ -9,13 +9,16 @@ import { startSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
+import { formatRepoUrl, parseRepoUrl } from '../../utils/match-repo-url.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 import type { LinkOptionValues } from './option_values.js'
 
-const findSiteByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<SiteInfo> => {
+const findSiteByRepoUrl = async (api: NetlifyAPI, remoteUrl: string): Promise<SiteInfo> => {
+  const parsedRemoteUrl = parseRepoUrl(remoteUrl)
+  const repoUrl = parsedRemoteUrl ? formatRepoUrl(parsedRemoteUrl) : remoteUrl
   log()
   const spinner = startSpinner({ text: `Looking for projects connected to '${repoUrl}'` })
 
@@ -109,7 +112,8 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
       assert(!('error' in repoData))
 
       kind = 'gitRemote'
-      site = await findSiteByRepoUrl(api, repoData.httpsUrl)
+      // `httpsUrl` keeps only owner/name, which truncates GitLab subgroup and Azure DevOps paths.
+      site = await findSiteByRepoUrl(api, repoData.url)
       break
     }
     case SITE_NAME_PROMPT: {
