@@ -88,7 +88,18 @@ export const createRewriter = async function ({
 
   // The promise is cached, not the matcher, so concurrent requests share one
   // build and a reload mid-build cannot cache a matcher of the old rules.
-  const getMatcher = (): Promise<Pick<Matcher, 'match'>> => (matcher ??= buildMatcher())
+  const getMatcher = (): Promise<Pick<Matcher, 'match'>> => {
+    if (!matcher) {
+      const build = buildMatcher()
+      matcher = build
+      // A failed build is retried by the next request, unless a reload has
+      // already replaced it with a newer one.
+      build.catch(() => {
+        if (matcher === build) matcher = null
+      })
+    }
+    return matcher
+  }
 
   return async function rewriter(req: Request): Promise<MatchResult | null> {
     const matcherFunc = await getMatcher()

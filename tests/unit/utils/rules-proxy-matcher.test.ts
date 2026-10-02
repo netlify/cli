@@ -55,6 +55,16 @@ describe('createRewriter matcher lifecycle', () => {
     expect(createMatcher).toHaveBeenCalledTimes(1)
   })
 
+  test('a failed build is retried by the next request', async () => {
+    createMatcher.mockRejectedValueOnce(new Error('failed to load matcher'))
+    const { rewriter } = await rewriterFor('/old /new 301\n')
+
+    await expect(rewriter(request)).rejects.toThrow('failed to load matcher')
+    await expect(rewriter(request)).resolves.toBeNull()
+
+    expect(createMatcher).toHaveBeenCalledTimes(2)
+  })
+
   test('a reload during the first build does not leave the old rules cached', async () => {
     let finishFirstBuild = () => {}
     createMatcher.mockImplementationOnce(async () => {
