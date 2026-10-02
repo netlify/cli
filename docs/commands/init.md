@@ -22,6 +22,7 @@ netlify init
 - `force` (*boolean*) - Reinitialize CI hooks if the linked project is already configured to use CI
 - `git-remote-name` (*string*) - Name of Git remote to use. e.g. "origin"
 - `manual` (*boolean*) - Manually configure a git remote for CI
+- `skip-agent-setup` (*boolean*) - Skip installing Netlify skills for AI coding agents into the project
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
