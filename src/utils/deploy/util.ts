@@ -4,6 +4,8 @@ import pWaitFor from 'p-wait-for'
 
 import { DEPLOY_POLL } from './constants.js'
 
+export const pluralize = (amount: number, noun: string): string => `${amount} ${noun}${amount === 1 ? '' : 's'}`
+
 // normalize windows paths to unix paths
 export const normalizePath = (relname: string): string => {
   if (relname.includes('#') || relname.includes('?')) {
