@@ -4,9 +4,9 @@ import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 import { stdin, stdout } from 'process'
 
+import { confirm, input, select } from '@inquirer/prompts'
 import type { NetlifyAPI } from '@netlify/api'
 import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
-import inquirer from 'inquirer'
 import { parseAllHeaders } from '@netlify/headers-parser'
 import { parseAllRedirects } from '@netlify/redirect-parser'
 import prettyjson from 'prettyjson'
@@ -154,16 +154,11 @@ const getDeployFolder = async ({
 
     log(`\nTo specify directory non-interactively, use: ${copyableCommand}\n`)
 
-    const { promptPath } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'promptPath',
-        message: 'Publish directory',
-        default: '.',
-        filter: (input) => resolve(command.workingDir, input),
-      },
-    ])
-    deployFolder = promptPath as string
+    const promptPath = await input({
+      message: 'Publish directory',
+      default: '.',
+    })
+    deployFolder = resolve(command.workingDir, promptPath)
   }
 
   return deployFolder
@@ -395,14 +390,10 @@ const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
     log(`  ${overrideCommand}`)
     log('\nWarning: Only use --prod-if-unlocked if you are absolutely sure you want to override the deployment lock.\n')
 
-    const { unlockChoice } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'unlockChoice',
-        message: 'Would you like to "unlock" deployments for production context to proceed?',
-        default: false,
-      },
-    ])
+    const unlockChoice = await confirm({
+      message: 'Would you like to "unlock" deployments for production context to proceed?',
+      default: false,
+    })
     if (!unlockChoice) exit(0)
     await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
     log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
@@ -1110,23 +1101,19 @@ const promptForSiteAction = async (options: DeployOptionValues, command: BaseCom
     log(`\nYou must pick a --team: ${availableTeams.map((team) => team.slug).join(', ')}`)
   }
 
-  const { initChoice } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'initChoice',
-      message: 'What would you like to do?',
-      choices: [
-        {
-          name: '⇄  Link this directory to an existing project',
-          value: 'link',
-        },
-        {
-          name: '+  Create & configure a new project',
-          value: 'create',
-        },
-      ],
-    },
-  ])
+  const initChoice = await select({
+    message: 'What would you like to do?',
+    choices: [
+      {
+        name: '⇄  Link this directory to an existing project',
+        value: 'link',
+      },
+      {
+        name: '+  Create & configure a new project',
+        value: 'create',
+      },
+    ],
+  })
 
   const siteData = initChoice === 'create' ? await sitesCreate({}, command) : await link({}, command)
 
