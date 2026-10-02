@@ -230,3 +230,29 @@ test('should parse redirect rules from _redirects file and netlify.toml', async 
     expect(redirects).toEqual(expected)
   })
 })
+
+test('should trim leading and trailing whitespace from redirect `from` and `to`', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: {
+          redirects: [
+            {
+              from: ' /leading-space ',
+              status: 200,
+              to: ' https://www.netlify.com ',
+            },
+          ],
+        },
+      })
+      .build()
+
+    // @ts-expect-error TS(2345) FIXME: Argument of type '{ configPath: string; }' is not ... Remove this comment to see the full error message
+    const redirects = await parseRedirects({ configPath: `${builder.directory}/netlify.toml` })
+    expect(redirects[0]).toMatchObject({
+      origin: '/leading-space',
+      path: '/leading-space',
+      to: 'https://www.netlify.com',
+    })
+  })
+})
