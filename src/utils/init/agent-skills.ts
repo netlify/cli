@@ -12,10 +12,15 @@ export const DEFAULT_SKILLS_DIRECTORY = path.join('.agents', 'skills')
 const AGENT_DIRECTORIES = ['.claude', '.agents', '.grok'] as const
 const AGENT_DIRECTORY_BY_DRIVING_AGENT: Partial<Record<string, string>> = {
   claude: '.claude',
-  claudeai: '.claude',
 }
 
+const SUPPORTED_SCHEMA_VERSION = 1
 const SKILL_NAME = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/
+const STAGING_PREFIX = '.netlify-skill-'
+const STAGING_LEFTOVER = /^\.netlify-skill-.+-[A-Za-z0-9]{6}$/
+const RETIRED_LEFTOVER = /^(.+)\.old-\d+-[0-9a-f]{12}$/
+const FETCH_TIMEOUT_MS = 10_000
+const SETUP_TIMEOUT_MS = 120_000
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
 
 export interface SkillHistoryEntry {
@@ -72,6 +77,8 @@ export interface SkillsSyncResult {
 
 class SkillsError extends Error {}
 
+const errorMessage = (error: unknown): string => (error instanceof Error ? error.message : String(error))
+
 const sha256 = (bytes: Uint8Array): string => `sha256:${createHash('sha256').update(bytes).digest('hex')}`
 
 export const resolveSkillsHost = (env: NodeJS.ProcessEnv = process.env): string => {
@@ -90,8 +97,12 @@ export const resolveSkillsHost = (env: NodeJS.ProcessEnv = process.env): string 
 const urlFor = (host: string, ...parts: string[]): string =>
   `${host}/${parts.map((part) => encodeURIComponent(part)).join('/')}`
 
-const fetchBytes = async (url: string): Promise<Uint8Array> => {
-  const response = await fetch(url, { headers: { 'user-agent': `NetlifyCLI ${version}` } })
+const fetchBytes = async (url: string, signal?: AbortSignal): Promise<Uint8Array> => {
+  const requestTimeout = AbortSignal.timeout(FETCH_TIMEOUT_MS)
+  const response = await fetch(url, {
+    headers: { 'user-agent': `NetlifyCLI ${version}` },
+    signal: signal ? AbortSignal.any([requestTimeout, signal]) : requestTimeout,
+  })
   if (!response.ok) {
     throw new SkillsError(`${url}: HTTP ${response.status.toString()}`)
   }
@@ -143,14 +154,19 @@ const indexManifest = (manifest: SkillsManifest): ManifestIndex => {
   return { exact, prior }
 }
 
-export const fetchSkillsManifest = async (host: string): Promise<SkillsManifest> => {
+export const fetchSkillsManifest = async (host: string, signal?: AbortSignal): Promise<SkillsManifest> => {
   const url = urlFor(host, 'manifest.json')
-  const bytes = await fetchBytes(url)
+  const bytes = await fetchBytes(url, signal)
   let manifest: SkillsManifest
   try {
     manifest = JSON.parse(Buffer.from(bytes).toString('utf8')) as SkillsManifest
   } catch {
     throw new SkillsError(`${url}: invalid JSON`)
+  }
+  if (manifest.schema_version !== SUPPORTED_SCHEMA_VERSION) {
+    throw new SkillsError(
+      `${url}: manifest schema ${String(manifest.schema_version)} is not supported by this CLI version; update the Netlify CLI`,
+    )
   }
   indexManifest(manifest)
   return manifest
@@ -212,6 +228,14 @@ const isDirectory = async (dir: string): Promise<boolean> => {
   }
 }
 
+const isDirectoryOrLinkToOne = async (dir: string): Promise<boolean> => {
+  try {
+    return (await fs.stat(dir)).isDirectory()
+  } catch {
+    return false
+  }
+}
+
 const sortByName = <T extends { name: string }>(entries: T[]): T[] =>
   [...entries].sort((a, b) => a.name.localeCompare(b.name, 'en'))
 
@@ -224,19 +248,20 @@ export const classifySkillsDirectory = async (
   const presentActive = new Set<string>()
 
   let entries: Dirent[] = []
-  if (await isDirectory(root)) {
+  if (await isDirectoryOrLinkToOne(root)) {
     entries = sortByName(await fs.readdir(root, { withFileTypes: true }))
   }
 
   for (const entry of entries) {
-    if (!entry.isDirectory()) continue
     const known = exact.get(entry.name)
     const renamed = prior.get(entry.name)
     const target = known?.status === 'active' ? known : renamed?.status === 'active' ? renamed : null
     const retired = known?.status === 'deprecated' ? known : renamed?.status === 'deprecated' ? renamed : null
+    if (!entry.isDirectory() && !target && !retired) continue
     const dir = path.join(root, entry.name)
-    const hasSkillMd = await isFile(path.join(dir, 'SKILL.md'))
+    const hasSkillMd = entry.isDirectory() && (await isFile(path.join(dir, 'SKILL.md')))
     if (!hasSkillMd && !target && !retired) continue
+    if (entry.isDirectory() && !hasSkillMd && target && (await fs.readdir(dir)).length === 0) continue
 
     let treeHash: string | null = null
     if (hasSkillMd) {
@@ -315,14 +340,19 @@ const replaceDirectory = async (staged: string, target: string): Promise<void> =
   }
 }
 
-export const installSkill = async (host: string, dest: string, skill: ManifestSkill): Promise<number> => {
+export const installSkill = async (
+  host: string,
+  dest: string,
+  skill: ManifestSkill,
+  signal?: AbortSignal,
+): Promise<number> => {
   const files = Object.keys(skill.files ?? {}).sort()
   const downloaded: [string, Uint8Array][] = []
   for (const file of files) {
     if (!isSafeFilePath(file)) {
       throw new SkillsError(`${skill.name}: unsafe manifest file path: ${file}`)
     }
-    const bytes = await fetchBytes(urlFor(host, 'skills', skill.name, ...file.split('/')))
+    const bytes = await fetchBytes(urlFor(host, 'skills', skill.name, ...file.split('/')), signal)
     if (sha256(bytes) !== skill.files?.[file]) {
       throw new SkillsError(`${skill.name}/${file}: hash mismatch`)
     }
@@ -330,7 +360,7 @@ export const installSkill = async (host: string, dest: string, skill: ManifestSk
   }
 
   await fs.mkdir(dest, { recursive: true })
-  const staged = await fs.mkdtemp(path.join(dest, `.netlify-skill-${skill.name}-`))
+  const staged = await fs.mkdtemp(path.join(dest, `${STAGING_PREFIX}${skill.name}-`))
   try {
     const executable = new Set(skill.executable ?? [])
     for (const [file, bytes] of downloaded) {
@@ -341,22 +371,46 @@ export const installSkill = async (host: string, dest: string, skill: ManifestSk
     await replaceDirectory(staged, path.join(dest, skill.name))
   } catch (error) {
     await fs.rm(staged, { recursive: true, force: true })
-    throw new SkillsError(`${skill.name}: could not install: ${(error as Error).message}`)
+    throw new SkillsError(`${skill.name}: could not install: ${errorMessage(error)}`)
   }
   return files.length
+}
+
+const isInstallLeftover = (name: string, { exact, prior }: ManifestIndex): boolean => {
+  if (STAGING_LEFTOVER.test(name)) {
+    return true
+  }
+  const retired = RETIRED_LEFTOVER.exec(name)
+  return retired !== null && (exact.has(retired[1]) || prior.has(retired[1]))
+}
+
+const removeInstallLeftovers = async (root: string, index: ManifestIndex): Promise<string[]> => {
+  if (!(await isDirectoryOrLinkToOne(root))) {
+    return []
+  }
+  const removed: string[] = []
+  for (const entry of await fs.readdir(root, { withFileTypes: true })) {
+    if (entry.isDirectory() && isInstallLeftover(entry.name, index)) {
+      await fs.rm(path.join(root, entry.name), { recursive: true, force: true })
+      removed.push(entry.name)
+    }
+  }
+  return removed.sort()
 }
 
 export const syncSkills = async ({
   host,
   directory,
   manifest,
+  signal,
 }: {
   host: string
   directory: string
   manifest: SkillsManifest
+  signal?: AbortSignal
 }): Promise<SkillsSyncResult> => {
-  const { exact } = indexManifest(manifest)
-  const before = await classifySkillsDirectory(directory, manifest)
+  const index = indexManifest(manifest)
+  const { exact } = index
   const actions: SkillActionRecord[] = []
   const installed = new Set<string>()
   const act = (name: string, action: SkillAction, detail?: string) => {
@@ -370,6 +424,11 @@ export const syncSkills = async ({
     return skill
   }
 
+  for (const leftover of await removeInstallLeftovers(directory, index)) {
+    act(leftover, 'removed', 'leftover from an interrupted install')
+  }
+  const before = await classifySkillsDirectory(directory, manifest)
+
   for (const record of before.skills) {
     const dir = path.join(directory, record.name)
     switch (record.status) {
@@ -378,7 +437,7 @@ export const syncSkills = async ({
         break
       case 'stale': {
         const skill = skillByName(record.name)
-        await installSkill(host, directory, skill)
+        await installSkill(host, directory, skill, signal)
         act(record.name, 'updated', `${record.have ?? 'unknown'} -> ${skill.version ?? 'latest'}`)
         break
       }
@@ -395,7 +454,7 @@ export const syncSkills = async ({
           await fs.rm(dir, { recursive: true, force: true })
           act(record.name, 'removed', `superseded by ${record.currentName}`)
         } else {
-          await installSkill(host, directory, skillByName(record.currentName))
+          await installSkill(host, directory, skillByName(record.currentName), signal)
           installed.add(record.currentName)
           await fs.rm(dir, { recursive: true, force: true })
           act(record.name, 'renamed', `-> ${record.currentName}`)
@@ -424,7 +483,7 @@ export const syncSkills = async ({
   for (const name of before.missing) {
     if (installed.has(name)) continue
     const skill = skillByName(name)
-    await installSkill(host, directory, skill)
+    await installSkill(host, directory, skill, signal)
     act(name, 'added', skill.version ?? undefined)
   }
 
@@ -437,7 +496,7 @@ export const resolveSkillsDirectories = async (
 ): Promise<string[]> => {
   const present: string[] = []
   for (const agentDirectory of AGENT_DIRECTORIES) {
-    if (await isDirectory(path.join(workingDir, agentDirectory))) {
+    if (await isDirectoryOrLinkToOne(path.join(workingDir, agentDirectory))) {
       present.push(path.join(agentDirectory, 'skills'))
     }
   }
@@ -497,19 +556,21 @@ export const setupAgentSkills = async ({
   workingDir: string
   env?: NodeJS.ProcessEnv
 }): Promise<AgentSkillsSetupSummary> => {
-  const directories = await resolveSkillsDirectories(workingDir, env)
+  let directories: string[] = []
   try {
+    directories = await resolveSkillsDirectories(workingDir, env)
     const host = resolveSkillsHost(env)
-    const manifest = await fetchSkillsManifest(host)
+    const signal = AbortSignal.timeout(SETUP_TIMEOUT_MS)
+    const manifest = await fetchSkillsManifest(host, signal)
     const actions: SkillActionRecord[] = []
     for (const directory of directories) {
-      const result = await syncSkills({ host, directory: path.resolve(workingDir, directory), manifest })
+      const result = await syncSkills({ host, directory: path.resolve(workingDir, directory), manifest, signal })
       actions.push(...result.actions)
       log(describeSync({ directory, actions: result.actions }))
     }
     return { installed: true, directories, skillsVersion: manifest.version, summary: summarize(actions) }
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
+    const message = errorMessage(error)
     warn(`Could not set up Netlify skills for AI agents: ${message}`)
     log(
       `Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} again later, or use ${chalk.cyan('--skip-agent-setup')} to opt out.`,

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { chmod, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -329,6 +329,104 @@ describe('agent skills', () => {
         action: 'kept',
         detail: 'deprecated; use netlify-deploy, but edited locally',
       })
+    })
+
+    test('removes the old directory when a renamed skill is already installed under its new name', async () => {
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, DEPLOY.name, DEPLOY.files, DEPLOY.executable)
+      const manifest = await fetchSkillsManifest(hostUrl)
+
+      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+
+      expect(actions).toContainEqual({
+        name: 'netlify-cli-and-deploy',
+        action: 'removed',
+        detail: 'superseded by netlify-deploy',
+      })
+      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'current', detail: '2.0.0' })
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+    })
+
+    test('reinstalls over an empty directory carrying a skill name', async () => {
+      await mkdir(join(skillsDir, FUNCTIONS.name), { recursive: true })
+      const manifest = await fetchSkillsManifest(hostUrl)
+
+      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+
+      expect(actions).toContainEqual({ name: 'netlify-functions', action: 'added', detail: '2.0.0' })
+      await expect(readFile(join(skillsDir, 'netlify-functions', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v2\n')
+    })
+
+    test('sweeps staging and backup directories left by an interrupted install', async () => {
+      await writeSkill(skillsDir, '.netlify-skill-netlify-functions-Ab12Cd', FUNCTIONS.files)
+      await writeSkill(skillsDir, 'netlify-deploy.old-4242-0123456789ab', DEPLOY.files)
+      await writeSkill(skillsDir, 'my-skill.old-4242-0123456789ab', { 'SKILL.md': '# mine\n' })
+      const manifest = await fetchSkillsManifest(hostUrl)
+
+      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+
+      expect(actions.filter(({ action }) => action === 'removed')).toEqual([
+        {
+          name: '.netlify-skill-netlify-functions-Ab12Cd',
+          action: 'removed',
+          detail: 'leftover from an interrupted install',
+        },
+        {
+          name: 'netlify-deploy.old-4242-0123456789ab',
+          action: 'removed',
+          detail: 'leftover from an interrupted install',
+        },
+      ])
+      await expect(listDirectories(skillsDir)).resolves.toEqual([
+        'my-skill.old-4242-0123456789ab',
+        'netlify-deploy',
+        'netlify-functions',
+      ])
+    })
+
+    test('refuses a manifest with an unsupported schema version', async () => {
+      host.corrupt('/manifest.json', JSON.stringify({ ...host.manifest, schema_version: 2 }))
+
+      await expect(fetchSkillsManifest(hostUrl)).rejects.toThrow(/schema 2 is not supported/)
+    })
+
+    test('follows a symlinked skills root and still keeps edited copies there', async () => {
+      const sharedDir = join(projectDir, 'shared-skills')
+      await writeSkill(sharedDir, DEPLOY.name, { ...DEPLOY.files, 'SKILL.md': '# my own notes\n' })
+      await mkdir(join(projectDir, '.agents'))
+      await symlink(sharedDir, skillsDir)
+      const manifest = await fetchSkillsManifest(hostUrl)
+
+      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+
+      expect(actions).toEqual([
+        { name: 'netlify-deploy', action: 'kept', detail: 'edited locally' },
+        { name: 'netlify-functions', action: 'added', detail: '2.0.0' },
+      ])
+      await expect(readFile(join(sharedDir, 'netlify-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# my own notes\n')
+      await expect(listDirectories(sharedDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+    })
+
+    test('never replaces or deletes a skill entry that is a symlink', async () => {
+      const elsewhere = join(projectDir, 'elsewhere')
+      await writeSkill(elsewhere, 'functions-source', FUNCTIONS_V1)
+      await writeSkill(elsewhere, 'legacy-source', RETIRED_FILES)
+      await mkdir(skillsDir, { recursive: true })
+      await symlink(join(elsewhere, 'functions-source'), join(skillsDir, 'netlify-functions'))
+      await symlink(join(elsewhere, 'legacy-source'), join(skillsDir, 'netlify-legacy'))
+      const manifest = await fetchSkillsManifest(hostUrl)
+
+      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+
+      expect(actions).toContainEqual({ name: 'netlify-functions', action: 'kept', detail: 'edited locally' })
+      expect(actions).toContainEqual({
+        name: 'netlify-legacy',
+        action: 'kept',
+        detail: 'deprecated; use netlify-deploy, but edited locally',
+      })
+      await expect(lstat(join(skillsDir, 'netlify-functions'))).resolves.toMatchObject({})
+      await expect(readFile(join(elsewhere, 'functions-source', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v1\n')
+      await expect(readFile(join(elsewhere, 'legacy-source', 'SKILL.md'), 'utf8')).resolves.toBe('# retired\n')
     })
 
     test('rejects a file whose bytes do not match the manifest and leaves no partial install', async () => {

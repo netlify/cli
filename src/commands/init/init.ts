@@ -229,7 +229,7 @@ type InitExtraOptions = {
 
 const installAgentSkills = async (command: BaseCommand): Promise<void> => {
   log()
-  const result = await setupAgentSkills({ workingDir: command.workingDir })
+  const result = await setupAgentSkills({ workingDir: command.netlify.repositoryRoot })
   await track('sites_agentSkillsSetup', {
     installed: result.installed,
     directories: result.directories,
