@@ -1,5 +1,5 @@
 import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 
 import { chalk, logAndThrowError, exit, log, type APIError } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
@@ -34,9 +34,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     log()
     log(chalk.bold('Be careful here. There is no undo!'))
     log()
-    const { wantsToDelete } = await inquirer.prompt({
-      type: 'confirm',
-      name: 'wantsToDelete',
+    const wantsToDelete = await confirm({
       message: `WARNING: Are you sure you want to delete the "${siteData.name}" project?`,
       default: false,
     })
@@ -57,9 +55,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     log()
     log(`Verify this project ID "${siteId}" supplied is correct and proceed.`)
     log('To skip this prompt, pass a --force flag to the delete command')
-    const { wantsToDelete } = await inquirer.prompt({
-      type: 'confirm',
-      name: 'wantsToDelete',
+    const wantsToDelete = await confirm({
       message: `Verify & Proceed with deletion of project "${siteId}"?`,
       default: false,
     })

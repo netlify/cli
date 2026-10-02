@@ -3,7 +3,8 @@ import type { RepoData } from '../../../../src/utils/get-repo-data.js'
 import type { NetlifyAPI } from '@netlify/api'
 import type BaseCommand from '../../../../src/commands/base-command.js'
 
-const mockPrompt = vi.fn()
+const mockConfirm = vi.fn()
+const mockInput = vi.fn()
 const mockLog = vi.fn()
 const mockExit = vi.fn()
 const mockCreateDeployKey = vi.fn()
@@ -11,10 +12,9 @@ const mockGetBuildSettings = vi.fn()
 const mockSaveNetlifyToml = vi.fn()
 const mockSetupSite = vi.fn()
 
-vi.mock('inquirer', () => ({
-  default: {
-    prompt: mockPrompt,
-  },
+vi.mock('@inquirer/prompts', () => ({
+  confirm: mockConfirm,
+  input: mockInput,
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', () => ({
@@ -46,11 +46,8 @@ describe('config-manual', () => {
       } as BaseCommand['netlify'],
     }
 
-    mockPrompt.mockResolvedValue({
-      sshKeyAdded: true,
-      repoPath: 'git@gitlab.com:test/repo.git',
-      deployHookAdded: true,
-    })
+    mockConfirm.mockResolvedValue(true)
+    mockInput.mockResolvedValue('git@gitlab.com:test/repo.git')
 
     mockCreateDeployKey.mockResolvedValue({ id: 'key-123', public_key: 'ssh-rsa test' })
     mockGetBuildSettings.mockResolvedValue({

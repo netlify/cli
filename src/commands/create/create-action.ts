@@ -8,9 +8,9 @@ import { pipeline } from 'stream/promises'
 import { promisify } from 'util'
 
 import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
+import { select } from '@inquirer/prompts'
 import type { NetlifyAPI } from '@netlify/api'
 import { LocalState } from '@netlify/dev-utils'
 
@@ -155,16 +155,10 @@ const selectRepoOwner = async (ghToken: string, repoOwnerFlag?: string): Promise
     ...orgs.map((org) => ({ name: org.login, value: org.login })),
   ]
 
-  const { owner } = await inquirer.prompt<{ owner: string }>([
-    {
-      type: 'list',
-      name: 'owner',
-      message: 'Where should the GitHub repo be created?',
-      choices,
-    },
-  ])
-
-  return owner
+  return await select({
+    message: 'Where should the GitHub repo be created?',
+    choices,
+  })
 }
 
 // TODO: Replace with api client call once the site repo endpoint is added to @netlify/open-api
@@ -283,18 +277,13 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   if (accountSlugFlag) {
     accountSlug = accountSlugFlag
   } else if (accounts.length > 1) {
-    const { accountSlug: selected } = await inquirer.prompt<{ accountSlug: string }>([
-      {
-        type: 'list',
-        name: 'accountSlug',
-        message: 'Team:',
-        choices: accounts.map((account) => ({
-          value: account.slug,
-          name: account.name,
-        })),
-      },
-    ])
-    accountSlug = selected
+    accountSlug = await select({
+      message: 'Team:',
+      choices: accounts.map((account) => ({
+        value: account.slug,
+        name: account.name,
+      })),
+    })
   } else {
     accountSlug = accounts[0]?.slug
   }
