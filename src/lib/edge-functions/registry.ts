@@ -499,13 +499,24 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
   matchURLPath(urlPath: string, method: string, headers: Record<string, string | string[] | undefined>) {
     const functionNames: string[] = []
     const routeIndexes: number[] = []
+    // `urlPath` comes from `URL.prototype.pathname`, which does not decode
+    // percent-encoding. Route patterns are written against decoded paths
+    // (e.g. `/admin/*`), so a request to `/%61dmin/x` would otherwise skip a
+    // route meant to match `/admin/x`. Malformed sequences fall back to the
+    // raw path rather than throwing.
+    let decodedUrlPath = urlPath
+    try {
+      decodedUrlPath = decodeURIComponent(urlPath)
+    } catch {
+      // Leave decodedUrlPath as the raw urlPath.
+    }
 
     this.routes.forEach((route, index) => {
       if (route.methods && route.methods.length !== 0 && !route.methods.includes(method)) {
         return
       }
 
-      if (!route.pattern.test(urlPath)) {
+      if (!route.pattern.test(decodedUrlPath)) {
         return
       }
 
@@ -539,13 +550,13 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
       }
 
       const isExcludedForFunction = this.manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
-        new RegExp(pattern).test(urlPath),
+        new RegExp(pattern).test(decodedUrlPath),
       )
       if (isExcludedForFunction) {
         return
       }
 
-      const isExcludedForRoute = route.excluded_patterns.some((pattern) => new RegExp(pattern).test(urlPath))
+      const isExcludedForRoute = route.excluded_patterns.some((pattern) => new RegExp(pattern).test(decodedUrlPath))
       if (isExcludedForRoute) {
         return
       }
