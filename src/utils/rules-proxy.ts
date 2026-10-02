@@ -54,7 +54,7 @@ export const createRewriter = async function ({
   jwtSecret: string
   projectDir: string
 }): Promise<Rewriter> {
-  let matcher: Matcher | null = null
+  let matcher: Promise<Pick<Matcher, 'match'>> | null = null
   const redirectsFiles = [
     ...new Set([path.resolve(distDir ?? '', '_redirects'), path.resolve(projectDir, '_redirects')]),
   ]
@@ -68,24 +68,27 @@ export const createRewriter = async function ({
       existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile)),
     )
     redirects = await parseRedirects({ config, redirectsFiles, configPath })
-    matcher?.close()
+    // Not closed: a request may still hold the previous matcher. The package
+    // frees it once it is garbage-collected.
     matcher = null
   })
 
-  const getMatcher = async (): Promise<Pick<Matcher, 'match'>> => {
-    if (matcher) return matcher
-
+  const buildMatcher = async (): Promise<Pick<Matcher, 'match'>> => {
     // Without rules, skip compiling the matcher's WebAssembly module.
     if (redirects.length === 0) {
       return { match: () => null }
     }
 
-    matcher = await createMatcher(redirects, { jwtSecret, jwtRoleClaim })
-    if (matcher.parseErrors.length !== 0) {
-      log(NETLIFYDEVERR, `Redirects matcher errors:\n${matcher.parseErrors.map(({ message }) => message).join('\n\n')}`)
+    const built = await createMatcher(redirects, { jwtSecret, jwtRoleClaim })
+    if (built.parseErrors.length !== 0) {
+      log(NETLIFYDEVERR, `Redirects matcher errors:\n${built.parseErrors.map(({ message }) => message).join('\n\n')}`)
     }
-    return matcher
+    return built
   }
+
+  // The promise is cached, not the matcher, so concurrent requests share one
+  // build and a reload mid-build cannot cache a matcher of the old rules.
+  const getMatcher = (): Promise<Pick<Matcher, 'match'>> => (matcher ??= buildMatcher())
 
   return async function rewriter(req: Request): Promise<MatchResult | null> {
     const matcherFunc = await getMatcher()
