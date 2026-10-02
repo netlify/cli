@@ -9,11 +9,10 @@ import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
+import search from '@inquirer/search'
 import { Command, CommanderError, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
 import { findUp } from 'find-up'
-import inquirer from 'inquirer'
-import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import { deepMerge, pick } from '../utils/object-utilities.js'
 
 import { getAgent } from '../lib/http-agent.js'
@@ -36,6 +35,7 @@ import {
   logError,
 } from '../utils/command-helpers.js'
 import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import { EXIT_CODES } from '../utils/exit-codes.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
@@ -52,8 +52,6 @@ type Analytics = {
   payload?: Record<string, unknown>
 }
 
-// load the autocomplete plugin
-inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 /** Netlify CLI client id. Lives in bot@netlify.com */
 // TODO: setup client for multiple environments
 export const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
@@ -149,13 +147,9 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
       )
     }
 
-    const { result } = await inquirer.prompt({
-      name: 'result',
-      // @ts-expect-error(serhalp) -- I think this is because `inquirer-autocomplete-prompt` extends known
-      // `type`s but TS doesn't know about it
-      type: 'autocomplete',
+    return await search({
       message: 'Select the project you want to work with',
-      source: (_unused: unknown, input = '') =>
+      source: (input = '') =>
         (project.workspace?.packages || [])
           .filter((pkg) => pkg.path.includes(input))
           .map((pkg) => ({
@@ -165,8 +159,6 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
             value: pkg.path,
           })),
     })
-
-    return result
   }
   return selected.path
 }
@@ -472,6 +464,11 @@ export default class BaseCommand extends Command {
       debug(`${this.name()}:onEnd`)(
         `Command: ${command}. Telemetry tracking failed: ${err instanceof Error ? err.message : err?.toString()}`,
       )
+    }
+
+    // Inquirer prompts reject with this on Ctrl+C, but the error class isn't exported.
+    if (error_ instanceof Error && error_.name === 'ExitPromptError') {
+      return exit(EXIT_CODES.INTERRUPTED)
     }
 
     if (error_ !== undefined) {
