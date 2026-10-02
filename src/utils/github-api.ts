@@ -5,7 +5,8 @@ export class GitHubAPIError extends Error {
 
   constructor(message: string, status: number) {
     super(message)
-    this.name = 'GitHubAPIError'
+    // Keeps error output identical to what Octokit printed before it was replaced.
+    this.name = 'HttpError'
     this.status = status
   }
 }
@@ -27,18 +28,22 @@ export interface GitHubWebhook {
 interface GitHubErrorBody {
   message?: string
   errors?: unknown[]
+  documentation_url?: string
 }
 
+// Mirrors Octokit's message format, which callers rely on to detect specific validation errors.
 const readErrorMessage = async (response: Response): Promise<string> => {
+  const text = await response.text()
   let body: GitHubErrorBody
   try {
-    body = (await response.json()) as GitHubErrorBody
+    body = JSON.parse(text) as GitHubErrorBody
   } catch {
-    return response.statusText
+    return text || response.statusText
   }
   const message = body.message ?? response.statusText
-  // Matches the format Octokit used, which callers rely on to detect specific validation errors.
-  return body.errors?.length ? `${message}: ${body.errors.map((error) => JSON.stringify(error)).join(', ')}` : message
+  const details = body.errors?.length ? `: ${body.errors.map((error) => JSON.stringify(error)).join(', ')}` : ''
+  const suffix = body.documentation_url ? ` - ${body.documentation_url}` : ''
+  return `${message}${details}${suffix}`
 }
 
 export const requestGitHub = async <T>(
@@ -55,10 +60,10 @@ export const requestGitHub = async <T>(
   const response = await fetch(url, {
     method,
     headers: {
-      Accept: 'application/vnd.github+json',
+      Accept: 'application/vnd.github.v3+json',
       Authorization: `token ${token}`,
       'User-Agent': 'netlify-cli',
-      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      ...(body === undefined ? {} : { 'Content-Type': 'application/json; charset=utf-8' }),
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   })

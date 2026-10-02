@@ -27,7 +27,7 @@ describe('requestGitHub', () => {
     expect((url as URL).href).toBe('https://api.github.com/user')
     expect(init?.method).toBe('GET')
     expect(init?.headers).toMatchObject({
-      Accept: 'application/vnd.github+json',
+      Accept: 'application/vnd.github.v3+json',
       Authorization: `token ${TOKEN}`,
     })
     expect(init?.body).toBeUndefined()
@@ -42,7 +42,7 @@ describe('requestGitHub', () => {
     const [url, init] = vi.mocked(fetch).mock.calls[0]
     expect((url as URL).href).toBe('https://api.github.com/repos/owner/repo/hooks?per_page=100')
     expect(init?.body).toBe(JSON.stringify(body))
-    expect(init?.headers).toMatchObject({ 'Content-Type': 'application/json' })
+    expect(init?.headers).toMatchObject({ 'Content-Type': 'application/json; charset=utf-8' })
   })
 
   test('resolves to undefined for responses without content', async () => {
@@ -51,13 +51,16 @@ describe('requestGitHub', () => {
     await expect(requestGitHub(TOKEN, 'DELETE', '/repos/owner/repo/hooks/1')).resolves.toBeUndefined()
   })
 
-  test('rejects with the response status and message on an error response', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(404, { message: 'Not Found' }))
+  test('rejects with the status and an Octokit-compatible HttpError message on an error response', async () => {
+    const documentationUrl = 'https://docs.github.com/rest'
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse(401, { message: 'Bad credentials', documentation_url: documentationUrl }),
+    )
 
-    const error = await requestGitHub(TOKEN, 'GET', '/repos/owner/missing').catch((error_: unknown) => error_)
+    const error = await requestGitHub(TOKEN, 'GET', '/user').catch((error_: unknown) => error_)
 
     expect(error).toBeInstanceOf(GitHubAPIError)
-    expect(error).toMatchObject({ status: 404, message: 'Not Found' })
+    expect(error).toMatchObject({ name: 'HttpError', status: 401, message: `Bad credentials - ${documentationUrl}` })
   })
 
   test('includes validation error details in the error message', async () => {
@@ -72,11 +75,12 @@ describe('requestGitHub', () => {
     })
   })
 
-  test('falls back to the status text when the error body is not JSON', async () => {
-    vi.mocked(fetch).mockResolvedValue(new Response('<html>oops</html>', { status: 502, statusText: 'Bad Gateway' }))
+  test('uses the raw body as the message when the error body is not JSON', async () => {
+    const body = '<html>oops</html>'
+    vi.mocked(fetch).mockResolvedValue(new Response(body, { status: 502, statusText: 'Bad Gateway' }))
 
     const error = await requestGitHub(TOKEN, 'GET', '/user').catch((error_: unknown) => error_)
 
-    expect(error).toMatchObject({ status: 502, message: 'Bad Gateway' })
+    expect(error).toMatchObject({ status: 502, message: body })
   })
 })
