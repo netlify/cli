@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises'
+import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -449,6 +449,8 @@ describe('agent skills', () => {
       await writeSkill(skillsDir, 'netlify-functions.old-123-0123456789ab', FUNCTIONS_V1)
       await writeSkill(skillsDir, 'netlify-deploy.old-123-0123456789ab', DEPLOY.files, DEPLOY.executable)
       await writeSkill(skillsDir, '.netlify-skill-someone-else-Ab12Cd', { 'SKILL.md': '# not ours\n' })
+      const anHourAgo = new Date(Date.now() - 60 * 60_000)
+      await utimes(join(skillsDir, '.netlify-skill-netlify-deploy-Ab12Cd'), anHourAgo, anHourAgo)
 
       const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
@@ -470,6 +472,46 @@ describe('agent skills', () => {
         'netlify-deploy',
         'netlify-functions',
       ])
+    })
+
+    test('leaves a fresh staging directory alone, since another run may still be writing it', async () => {
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+      await writeSkill(skillsDir, DEPLOY.name, DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, '.netlify-skill-netlify-deploy-Ab12Cd', { 'SKILL.md': '# half written\n' })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions.map(({ action }) => action)).toEqual(['current', 'current'])
+      await expect(readdir(skillsDir)).resolves.toContain('.netlify-skill-netlify-deploy-Ab12Cd')
+    })
+
+    test('refuses to install when the assembled tree does not match the manifest tree_hash', async () => {
+      const broken = structuredClone(manifest)
+      const functions = broken.skills.find(({ name }) => name === 'netlify-functions')
+      if (functions) functions.tree_hash = 'sha256:not-what-the-files-hash-to'
+
+      await expect(installSkill(HOST, skillsDir, functions ?? manifestSkill('netlify-functions'))).rejects.toThrow(
+        /staged tree hash .* does not match/,
+      )
+      await expect(listDirectories(skillsDir)).resolves.toEqual([])
+    })
+
+    test('--reset-context never migrates over a case twin that has no SKILL.md', async () => {
+      await writeSkill(skillsDir, 'Netlify-Deploy', { 'notes.md': '# keep me\n' })
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', { 'SKILL.md': '# my deploy notes\n' })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+
+      await expect(readFile(join(skillsDir, 'Netlify-Deploy', 'notes.md'), 'utf8')).resolves.toBe('# keep me\n')
+      await expect(listDirectories(skillsDir)).resolves.toContain('netlify-cli-and-deploy')
+      const caseInsensitive = !(await listDirectories(skillsDir)).includes('netlify-deploy')
+      if (caseInsensitive) {
+        expect(actions).toContainEqual({
+          name: 'netlify-deploy',
+          action: 'kept',
+          detail: 'Netlify-Deploy already uses this name; left in place',
+        })
+      }
     })
 
     test('keeps a backup directory the user has edited', async () => {

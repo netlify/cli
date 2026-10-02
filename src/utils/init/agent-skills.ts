@@ -20,6 +20,7 @@ const STAGING_PREFIX = '.netlify-skill-'
 const STAGING_LEFTOVER = /^\.netlify-skill-(.+)-[A-Za-z0-9]{6}$/
 const RETIRED_LEFTOVER = /^(.+)\.old-\d+-[0-9a-f]{12}$/
 const FETCH_TIMEOUT_MS = 10_000
+const LEFTOVER_MIN_AGE_MS = 10 * 60_000
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
 
 export interface SkillHistoryEntry {
@@ -266,6 +267,14 @@ const isDirectoryOrLinkToOne = async (dir: string): Promise<boolean> => {
   }
 }
 
+const isOlderThan = async (file: string, ageMs: number): Promise<boolean> => {
+  try {
+    return Date.now() - (await fs.lstat(file)).mtimeMs >= ageMs
+  } catch {
+    return false
+  }
+}
+
 const isSameEntry = async (a: string, b: string): Promise<boolean> => {
   try {
     const [statA, statB] = await Promise.all([fs.lstat(a), fs.lstat(b)])
@@ -307,6 +316,7 @@ export const classifySkillsDirectory = async (
   }
 
   for (const entry of entries) {
+    if (entry.name.startsWith(STAGING_PREFIX)) continue
     const known = exact.get(entry.name)
     const renamed = prior.get(entry.name)
     const target = known?.status === 'active' ? known : renamed?.status === 'active' ? renamed : null
@@ -441,6 +451,10 @@ export const installSkill = async (
       await fs.mkdir(path.dirname(output), { recursive: true })
       await fs.writeFile(output, bytes, { mode: executable.has(file) ? 0o755 : 0o644 })
     }
+    const stagedHash = await hashSkillTree(staged)
+    if (stagedHash !== skill.tree_hash) {
+      throw new SkillsError(`staged tree hash ${stagedHash} does not match the manifest`)
+    }
     await replaceDirectory(staged, target)
   } catch (error) {
     await fs.rm(staged, { recursive: true, force: true })
@@ -459,7 +473,7 @@ const removeInstallLeftovers = async (root: string, index: ManifestIndex): Promi
     const leftover = path.join(root, entry.name)
     const staging = STAGING_LEFTOVER.exec(entry.name)
     if (staging) {
-      if (skillUnderName(index, staging[1])) {
+      if (skillUnderName(index, staging[1]) && (await isOlderThan(leftover, LEFTOVER_MIN_AGE_MS))) {
         await fs.rm(leftover, { recursive: true, force: true })
         removed.push(entry.name)
       }
@@ -515,12 +529,11 @@ export const syncSkills = async ({
     }
     const before = await classifySkillsDirectory(directory, manifest)
 
-    const foreign = before.skills
-      .filter(({ status }) => status === 'duplicate' || status === 'unknown')
-      .map(({ name }) => name)
     const occupantOf = async (name: string): Promise<string | undefined> => {
-      for (const other of foreign) {
-        if (await isSameEntry(path.join(directory, other), path.join(directory, name))) return other
+      if (!(await isDirectoryOrLinkToOne(directory))) return undefined
+      for (const entry of await fs.readdir(directory)) {
+        if (entry === name) continue
+        if (await isSameEntry(path.join(directory, entry), path.join(directory, name))) return entry
       }
       return undefined
     }
@@ -581,7 +594,7 @@ export const syncSkills = async ({
             act(record.name, 'kept', `${record.currentName} is already installed and edited locally`)
             break
           }
-          if (!currentPresent && !(await install(skill, { force: reset }))) {
+          if (!currentPresent && !(await install(skill))) {
             act(record.name, 'kept', `now called ${record.currentName}, which could not be installed`)
             break
           }
