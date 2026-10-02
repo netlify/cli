@@ -35,6 +35,7 @@ import {
   logError,
 } from '../utils/command-helpers.js'
 import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import { EXIT_CODES } from '../utils/exit-codes.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
@@ -463,6 +464,11 @@ export default class BaseCommand extends Command {
       debug(`${this.name()}:onEnd`)(
         `Command: ${command}. Telemetry tracking failed: ${err instanceof Error ? err.message : err?.toString()}`,
       )
+    }
+
+    // Inquirer prompts reject with this on Ctrl+C, but the error class isn't exported.
+    if (error_ instanceof Error && error_.name === 'ExitPromptError') {
+      return exit(EXIT_CODES.INTERRUPTED)
     }
 
     if (error_ !== undefined) {
