@@ -430,16 +430,12 @@ describe('agent skills', () => {
       await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
     })
 
-    test('reports a copy of a skill living under an unrelated name and never touches it', async () => {
+    test('never touches a copy of a skill living under an unrelated name', async () => {
       await writeSkill(skillsDir, 'deploy-copy', DEPLOY.files, DEPLOY.executable)
 
       const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
-      expect(actions).toContainEqual({
-        name: 'deploy-copy',
-        action: 'ignored',
-        detail: 'copy of netlify-deploy under another name',
-      })
+      expect(actions).toContainEqual({ name: 'deploy-copy', action: 'ignored', detail: 'not a Netlify skill' })
       await expect(listDirectories(skillsDir)).resolves.toEqual(['deploy-copy', 'netlify-deploy', 'netlify-functions'])
     })
 
@@ -454,19 +450,13 @@ describe('agent skills', () => {
 
       const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
-      expect(actions.slice(0, 2)).toEqual([
-        {
-          name: '.netlify-skill-netlify-deploy-Ab12Cd',
-          action: 'removed',
-          detail: 'leftover from an interrupted install',
-        },
-        {
-          name: 'netlify-functions.old-123-0123456789ab',
-          action: 'removed',
-          detail: 'leftover from an interrupted install',
-        },
+      const leftover = { action: 'removed', detail: 'leftover from an interrupted install' }
+      expect(actions.slice(0, 3)).toEqual([
+        { name: '.netlify-skill-netlify-deploy-Ab12Cd', ...leftover },
+        { name: 'netlify-deploy.old-123-0123456789ab', ...leftover },
+        { name: 'netlify-functions.old-123-0123456789ab', ...leftover },
       ])
-      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'current', detail: '2.0.0' })
+      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
       await expect(readdir(skillsDir)).resolves.toEqual([
         '.netlify-skill-someone-else-Ab12Cd',
         'netlify-deploy',
@@ -611,11 +601,7 @@ describe('agent skills', () => {
 
       const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
-      expect(actions).toContainEqual({
-        name: 'Netlify-Deploy',
-        action: 'ignored',
-        detail: 'copy of netlify-deploy under another name',
-      })
+      expect(actions).toContainEqual({ name: 'Netlify-Deploy', action: 'ignored', detail: 'not a Netlify skill' })
       const directories = await listDirectories(skillsDir)
       expect(directories).toContain('Netlify-Deploy')
       if (!directories.includes('netlify-deploy')) {
@@ -672,13 +658,26 @@ describe('agent skills', () => {
       ])
     })
 
-    test('restores a backup left under a prior name and then migrates it', async () => {
+    test('removes an unedited backup left under a prior name and installs the current name', async () => {
       await writeSkill(skillsDir, 'netlify-cli-and-deploy.old-123-0123456789ab', DEPLOY.files, DEPLOY.executable)
 
       const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
-      expect(actions).toContainEqual({ name: 'netlify-cli-and-deploy', action: 'renamed', detail: '-> netlify-deploy' })
+      expect(actions).toContainEqual({
+        name: 'netlify-cli-and-deploy.old-123-0123456789ab',
+        action: 'removed',
+        detail: 'leftover from an interrupted install',
+      })
+      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
       await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+    })
+
+    test('does not point at --reset-context when the only kept copies are not edited Netlify skills', async () => {
+      await writeSkill(skillsDir, 'Netlify-Functions', { 'SKILL.md': '# mine\n', 'notes.md': '# keep me\n' })
+
+      await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
+
+      expect(loggedLines().join('\n')).not.toContain('--reset-context')
     })
 
     test('--reset-context never forces over a directory that is not classified as a Netlify skill', async () => {

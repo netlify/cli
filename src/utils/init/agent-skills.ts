@@ -54,7 +54,6 @@ export type SkillRecord =
   | { name: string; status: 'modified'; version: string | null }
   | { name: string; status: 'renamed'; currentName: string; modified: boolean }
   | { name: string; status: 'deprecated'; replacedBy: string | null; modified: boolean }
-  | { name: string; status: 'duplicate'; currentName: string }
   | { name: string; status: 'unknown' }
 
 export interface SkillsClassification {
@@ -342,14 +341,7 @@ export const classifySkillsDirectory = async (
     }
 
     if (!target) {
-      const twin = manifest.skills.find(
-        (skill) => skill.status === 'active' && lastMatching(skill, treeHash) !== undefined,
-      )
-      records.push(
-        twin
-          ? { name: entry.name, status: 'duplicate', currentName: twin.name }
-          : { name: entry.name, status: 'unknown' },
-      )
+      records.push({ name: entry.name, status: 'unknown' })
       continue
     }
 
@@ -482,10 +474,7 @@ const removeInstallLeftovers = async (root: string, index: ManifestIndex): Promi
     const retired = RETIRED_LEFTOVER.exec(entry.name)
     const skill = retired ? skillUnderName(index, retired[1]) : undefined
     if (!retired || !skill) continue
-    const original = path.join(root, retired[1])
-    if (!(await exists(original))) {
-      await fs.rename(leftover, original)
-    } else if (await isUneditedRelease(leftover, skill)) {
+    if (await isUneditedRelease(leftover, skill)) {
       await fs.rm(leftover, { recursive: true, force: true })
       removed.push(entry.name)
     }
@@ -621,9 +610,6 @@ export const syncSkills = async ({
           act(record.name, 'removed', `deprecated${replacement}`)
           break
         }
-        case 'duplicate':
-          act(record.name, 'ignored', `copy of ${record.currentName} under another name`)
-          break
         case 'unknown':
           act(record.name, 'ignored', 'not a Netlify skill')
           break
@@ -707,7 +693,7 @@ const logSync = (directory: string, result: SkillsSyncResult, reset: boolean): v
   for (const { name, detail } of kept) {
     log(`  ${chalk.dim(name)}: ${detail ?? 'kept'}`)
   }
-  if (kept.length > 0 && !reset) {
+  if (!reset && kept.some(({ detail }) => detail?.includes('edited locally'))) {
     log(
       `  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init --reset-context`)} to replace edited Netlify skills with the latest release.`,
     )
