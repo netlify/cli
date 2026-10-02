@@ -2,7 +2,7 @@ import type { Buffer } from 'buffer'
 import type { IncomingMessage } from 'http'
 
 import type { PollingStrategy } from '@netlify/build-info'
-import type { Match } from 'netlify-redirector'
+import type { MatchResult } from '@netlify/redirect-matcher'
 
 export type { GlobalConfigStore } from '@netlify/dev-utils'
 export type { LocalState } from '@netlify/dev-utils'
@@ -67,7 +67,7 @@ export interface Request extends IncomingMessage {
   hostname?: string
 }
 
-export type Rewriter = (req: Request) => Promise<Match | null>
+export type Rewriter = (req: Request) => Promise<MatchResult | null>
 
 // FIXME(serhalp): Much of this appears to be wrong? Most of these should be optional, or at
 // the very least `siteInfo` should be optional on `CachedConfig` when no site is linked...

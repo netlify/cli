@@ -1,14 +1,13 @@
 import path from 'path'
 
+import { createMatcher, type Matcher, type MatchResult } from '@netlify/redirect-matcher'
 import chokidar, { type FSWatcher } from 'chokidar'
 import { parseCookie } from 'cookie'
-import redirector from 'netlify-redirector'
-import type { Match, RedirectMatcher } from 'netlify-redirector'
 import pFilter from 'p-filter'
 
 import { fileExistsAsync } from '../lib/fs.js'
 
-import { NETLIFYDEVLOG, type NormalizedCachedConfigConfig } from './command-helpers.js'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, log, type NormalizedCachedConfigConfig } from './command-helpers.js'
 import { parseRedirects } from './redirects.js'
 import type { Request, Rewriter } from './types.js'
 
@@ -55,7 +54,7 @@ export const createRewriter = async function ({
   jwtSecret: string
   projectDir: string
 }): Promise<Rewriter> {
-  let matcher: RedirectMatcher | null = null
+  let matcher: Matcher | null = null
   const redirectsFiles = [
     ...new Set([path.resolve(distDir ?? '', '_redirects'), path.resolve(projectDir, '_redirects')]),
   ]
@@ -69,26 +68,26 @@ export const createRewriter = async function ({
       existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile)),
     )
     redirects = await parseRedirects({ config, redirectsFiles, configPath })
+    matcher?.close()
     matcher = null
   })
 
-  const getMatcher = async (): Promise<RedirectMatcher> => {
+  const getMatcher = async (): Promise<Pick<Matcher, 'match'>> => {
     if (matcher) return matcher
 
-    if (redirects.length !== 0) {
-      return (matcher = await redirector.parseJSON(JSON.stringify(redirects), {
-        jwtSecret,
-        jwtRoleClaim,
-      }))
+    // Without rules, skip compiling the matcher's WebAssembly module.
+    if (redirects.length === 0) {
+      return { match: () => null }
     }
-    return {
-      match() {
-        return null
-      },
+
+    matcher = await createMatcher(redirects, { jwtSecret, jwtRoleClaim })
+    if (matcher.parseErrors.length !== 0) {
+      log(NETLIFYDEVERR, `Redirects matcher errors:\n${matcher.parseErrors.map(({ message }) => message).join('\n\n')}`)
     }
+    return matcher
   }
 
-  return async function rewriter(req: Request): Promise<Match | null> {
+  return async function rewriter(req: Request): Promise<MatchResult | null> {
     const matcherFunc = await getMatcher()
     const reqUrl = new URL(
       req.url ?? '',
@@ -103,24 +102,13 @@ export const createRewriter = async function ({
       ...req.headers,
     }
 
-    // Definition: https://github.com/netlify/libredirect/blob/e81bbeeff9f7c260a5fb74cad296ccc67a92325b/node/src/redirects.cpp#L28-L60
-    const matchReq = {
+    return matcherFunc.match({
       scheme: reqUrl.protocol.replace(/:.*$/, ''),
       host: reqUrl.hostname,
       path: decodeURIComponent(reqUrl.pathname),
       query: reqUrl.search.slice(1),
       headers,
-      cookieValues,
-      getHeader: (name: string) => {
-        const val = headers[name.toLowerCase()]
-        if (Array.isArray(val)) {
-          return val[0]
-        }
-        return val || ''
-      },
-      getCookie: (key: string) => cookieValues[key] || '',
-    }
-    const match = matcherFunc.match(matchReq)
-    return match
+      cookies: cookieValues,
+    })
   }
 }

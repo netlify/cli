@@ -19,17 +19,14 @@ import { ServerHandler } from '@netlify/server-dev'
 
 import { runBeforeProcessExit } from './shell.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
+import type { MatchResult } from '@netlify/redirect-matcher'
 import contentType from 'content-type'
-import { parseCookie } from 'cookie'
-import { getProperty } from 'dot-prop'
 import generateETag from 'etag'
 import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
-import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
 import { throttle } from './object-utilities.js'
-import type { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 
 import type { BaseCommand } from '../commands/index.js'
@@ -172,8 +169,8 @@ const isEndpointExists = async function (endpoint: string, origin: string) {
   }
 }
 
-const isExternal = function (match: Match): boolean {
-  return 'to' in match && /^https?:\/\//.exec(match.to) != null
+const isExternal = function (match: MatchResult): match is Extract<MatchResult, { type: 'match' }> {
+  return match.type === 'match' && /^https?:\/\//.exec(match.to) != null
 }
 
 const stripOrigin = function ({ hash, pathname, search }: URL): string {
@@ -208,7 +205,7 @@ const handleAddonUrl = function ({ addonUrl, req, res }) {
   proxyToExternalUrl({ req, res, dest, destURL })
 }
 
-const isRedirect = function (match: Match | { status?: number | undefined }): boolean {
+const isRedirect = function (match: MatchResult | { status?: number | undefined }): boolean {
   return 'status' in match && match.status != null && match.status >= 300 && match.status <= 400
 }
 
@@ -270,14 +267,14 @@ const serveRedirect = async function ({
   res,
   siteInfo,
 }: {
-  match: Match | null
+  match: MatchResult | null
 } & Record<string, $TSFixMe>) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
   options.match = null
 
-  if (match.force404) {
+  if (match.type === 'forcedNotFound') {
     res.writeHead(404)
     res.end(await render404(options.publicFolder))
     return
@@ -289,8 +286,9 @@ const serveRedirect = async function ({
     })
   }
 
-  if (match.signingSecret) {
-    const signingSecretVar = env[match.signingSecret]
+  const signingSecretName = match.signer?.jwtSecret
+  if (signingSecretName) {
+    const signingSecretVar = env[signingSecretName]
 
     if (signingSecretVar) {
       req.headers['x-nf-sign'] = signRedirect({
@@ -302,7 +300,7 @@ const serveRedirect = async function ({
     } else {
       log(
         NETLIFYDEVWARN,
-        `Could not sign redirect because environment variable ${chalk.yellow(match.signingSecret)} is not set`,
+        `Could not sign redirect because environment variable ${chalk.yellow(signingSecretName)} is not set`,
       )
     }
   }
@@ -318,50 +316,6 @@ const serveRedirect = async function ({
   }
 
   const originalURL = req.url
-  if (match.exceptions && match.exceptions.JWT) {
-    // Some values of JWT can start with :, so, make sure to normalize them
-    const expectedRoles = new Set(
-      match.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
-    )
-
-    const cookieValues = parseCookie(req.headers.cookie || '')
-    const token = cookieValues.nf_jwt
-
-    // Serve not found by default
-    req.url = '/.netlify/non-existent-path'
-
-    if (token) {
-      let jwtValue = {}
-      try {
-        jwtValue = jwtDecode(token) || {}
-      } catch (error) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', error.message)
-        res.writeHead(400)
-        res.end('Invalid JWT provided. Please see logs for more info.')
-        return
-      }
-
-      // @ts-expect-error TS(2339) FIXME: Property 'exp' does not exist on type '{}'.
-      if ((jwtValue.exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
-        console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
-      } else {
-        const presentedRoles = getProperty(jwtValue, options.jwtRolePath) || []
-        if (!Array.isArray(presentedRoles)) {
-          console.warn(NETLIFYDEVWARN, `Invalid roles value provided in JWT ${options.jwtRolePath}`, presentedRoles)
-          res.writeHead(400)
-          res.end('Invalid JWT provided. Please see logs for more info.')
-          return
-        }
-
-        // Restore the URL if everything is correct
-        if (presentedRoles.some((pr) => expectedRoles.has(pr))) {
-          req.url = originalURL
-        }
-      }
-    }
-  }
-
   const reqUrl = reqToURL(req, req.url)
   const isHiddenProxy =
     match.proxyHeaders &&
@@ -487,8 +441,6 @@ const reqToURL = function (req, pathname) {
     }`,
   )
 }
-
-const MILLISEC_TO_SEC = 1e3
 
 const initializeProxy = async function ({
   config,
@@ -1138,7 +1090,7 @@ export const startProxy = async function ({
     }
 
     const match = await rewriter(req)
-    if (match && !match.force404 && isExternal(match)) {
+    if (match && isExternal(match)) {
       const reqUrl = reqToURL(req, req.url)
       const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
       const destURL = stripOrigin(dest)
