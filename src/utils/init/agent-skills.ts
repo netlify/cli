@@ -73,6 +73,8 @@ export interface SkillsSyncResult {
 
 class SkillsError extends Error {}
 
+class SkillConflictError extends SkillsError {}
+
 const errorMessage = (error: unknown): string => {
   if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
     return `the download timed out after ${String(FETCH_TIMEOUT_MS / 1000)}s`
@@ -231,6 +233,15 @@ const isDirectory = async (dir: string): Promise<boolean> => {
   }
 }
 
+const exists = async (file: string): Promise<boolean> => {
+  try {
+    await fs.lstat(file)
+    return true
+  } catch {
+    return false
+  }
+}
+
 const isDirectoryOrLinkToOne = async (dir: string): Promise<boolean> => {
   try {
     return (await fs.stat(dir)).isDirectory()
@@ -326,18 +337,46 @@ const replaceDirectory = async (staged: string, target: string): Promise<void> =
   }
 }
 
-export const installSkill = async (host: string, dest: string, skill: ManifestSkill): Promise<number> => {
-  const files = Object.keys(skill.files ?? {}).sort()
+const isReplaceableCopy = async (target: string, skill: ManifestSkill): Promise<boolean> => {
+  if (!(await isDirectory(target))) {
+    return !(await exists(target))
+  }
+  if ((await fs.readdir(target)).length === 0) {
+    return true
+  }
+  try {
+    const treeHash = await hashSkillTree(target)
+    return historyOf(skill).some((entry) => entry.tree_hash === treeHash)
+  } catch {
+    return false
+  }
+}
+
+const downloadSkill = async (host: string, skill: ManifestSkill): Promise<[string, Uint8Array][]> => {
   const downloaded: [string, Uint8Array][] = []
-  for (const file of files) {
+  for (const file of Object.keys(skill.files ?? {}).sort()) {
     if (!isSafeFilePath(file)) {
       throw new SkillsError(`${skill.name}: unsafe manifest file path: ${file}`)
     }
-    const bytes = await fetchBytes(urlFor(host, 'skills', skill.name, ...file.split('/')))
+    let bytes: Uint8Array
+    try {
+      bytes = await fetchBytes(urlFor(host, 'skills', skill.name, ...file.split('/')))
+    } catch (error) {
+      throw new SkillsError(`${skill.name}/${file}: ${errorMessage(error)}`)
+    }
     if (sha256(bytes) !== skill.files?.[file]) {
       throw new SkillsError(`${skill.name}/${file}: hash mismatch`)
     }
     downloaded.push([file, bytes])
+  }
+  return downloaded
+}
+
+export const installSkill = async (host: string, dest: string, skill: ManifestSkill): Promise<number> => {
+  const downloaded = await downloadSkill(host, skill)
+  const target = path.join(dest, skill.name)
+  if (!(await isReplaceableCopy(target, skill))) {
+    throw new SkillConflictError(`${target} already exists and is not an unedited Netlify skill; left in place`)
   }
 
   await fs.mkdir(dest, { recursive: true })
@@ -349,12 +388,12 @@ export const installSkill = async (host: string, dest: string, skill: ManifestSk
       await fs.mkdir(path.dirname(output), { recursive: true })
       await fs.writeFile(output, bytes, { mode: executable.has(file) ? 0o755 : 0o644 })
     }
-    await replaceDirectory(staged, path.join(dest, skill.name))
+    await replaceDirectory(staged, target)
   } catch (error) {
     await fs.rm(staged, { recursive: true, force: true })
     throw new SkillsError(`${skill.name}: could not install: ${errorMessage(error)}`)
   }
-  return files.length
+  return downloaded.length
 }
 
 export const syncSkills = async ({
@@ -380,17 +419,27 @@ export const syncSkills = async ({
     return skill
   }
 
+  const install = async (name: string, onInstalled: (skill: ManifestSkill) => void) => {
+    const skill = skillByName(name)
+    try {
+      await installSkill(host, directory, skill)
+      onInstalled(skill)
+    } catch (error) {
+      if (!(error instanceof SkillConflictError)) throw error
+      act(name, 'kept', error.message)
+    }
+  }
+
   for (const record of before.skills) {
     switch (record.status) {
       case 'current':
         act(record.name, 'current', record.version ?? undefined)
         break
-      case 'stale': {
-        const skill = skillByName(record.name)
-        await installSkill(host, directory, skill)
-        act(record.name, 'updated', `${record.have ?? 'unknown'} -> ${skill.version ?? 'latest'}`)
+      case 'stale':
+        await install(record.name, (skill) => {
+          act(record.name, 'updated', `${record.have ?? 'unknown'} -> ${skill.version ?? 'latest'}`)
+        })
         break
-      }
       case 'modified':
         act(record.name, 'kept', 'edited locally')
         break
@@ -407,9 +456,9 @@ export const syncSkills = async ({
   }
 
   for (const name of before.missing) {
-    const skill = skillByName(name)
-    await installSkill(host, directory, skill)
-    act(name, 'added', skill.version ?? undefined)
+    await install(name, (skill) => {
+      act(name, 'added', skill.version ?? undefined)
+    })
   }
 
   return { directory, actions }

@@ -389,6 +389,49 @@ describe('agent skills', () => {
       await expect(readFile(join(elsewhere, 'functions-source', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v1\n')
     })
 
+    test('refuses to replace a directory that is not an unedited Netlify skill, even when asked directly', async () => {
+      await writeSkill(skillsDir, FUNCTIONS.name, { 'SKILL.md': '# mine\n', 'notes.md': '# keep me\n' })
+      const manifest = await fetchSkillsManifest(hostUrl)
+      const functions = manifest.skills.find(({ name }) => name === 'netlify-functions')
+      if (!functions) throw new Error('netlify-functions missing from manifest')
+
+      await expect(installSkill(hostUrl, skillsDir, functions)).rejects.toThrow(/already exists/)
+      await expect(readFile(join(skillsDir, 'netlify-functions', 'notes.md'), 'utf8')).resolves.toBe('# keep me\n')
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-functions'])
+    })
+
+    test('survives a user directory that differs only by case and keeps syncing the rest', async () => {
+      await writeSkill(skillsDir, 'Netlify-Functions', { 'SKILL.md': '# mine\n', 'notes.md': '# keep me\n' })
+      const manifest = await fetchSkillsManifest(hostUrl)
+
+      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+
+      await expect(readFile(join(skillsDir, 'Netlify-Functions', 'notes.md'), 'utf8')).resolves.toBe('# keep me\n')
+      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
+      const functions = actions.find(({ name }) => name === 'netlify-functions')
+      expect(functions?.action === 'added' || functions?.detail?.includes('already exists')).toBe(true)
+    })
+
+    test('keeps reporting a renamed copy on the second run without extra downloads', async () => {
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
+      const manifest = await fetchSkillsManifest(hostUrl)
+      await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const requestsAfterInstall = host.requests.length
+
+      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+
+      expect(actions).toEqual([
+        {
+          name: 'netlify-cli-and-deploy',
+          action: 'kept',
+          detail: 'now called netlify-deploy; this copy can be removed',
+        },
+        { name: 'netlify-deploy', action: 'current', detail: '2.0.0' },
+        { name: 'netlify-functions', action: 'current', detail: '2.0.0' },
+      ])
+      expect(host.requests.length).toBe(requestsAfterInstall)
+    })
+
     test('rejects a file whose bytes do not match the manifest and leaves no partial install', async () => {
       host.corrupt('/skills/netlify-functions/SKILL.md', '# tampered\n')
       const manifest = await fetchSkillsManifest(hostUrl)
