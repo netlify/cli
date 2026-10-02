@@ -1,7 +1,5 @@
 import { createHash } from 'node:crypto'
 import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises'
-import { createServer, type Server } from 'node:http'
-import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -37,6 +35,8 @@ interface SkillSpec {
   priorNames?: string[]
   previous?: { version: string; files: Files }[]
 }
+
+const HOST = 'https://skills.test'
 
 const sha256 = (content: string | Uint8Array) => `sha256:${createHash('sha256').update(content).digest('hex')}`
 
@@ -94,59 +94,26 @@ const DEPLOY: SkillSpec = {
 
 const RETIRED_FILES: Files = { 'SKILL.md': '# retired\n' }
 
-class SkillsHost {
-  private server: Server | undefined
-  private readonly responses = new Map<string, Uint8Array>()
-  readonly requests: string[] = []
-  readonly manifest: SkillsManifest
+const buildManifest = (skills: SkillSpec[], extraSkills: ManifestSkill[] = []): SkillsManifest => ({
+  schema_version: 1,
+  version: '2.0.0',
+  skills: [...skills.map(activeSkill), ...extraSkills],
+})
 
-  constructor(skills: SkillSpec[], extraSkills: ManifestSkill[] = []) {
-    this.manifest = {
-      schema_version: 1,
-      version: '2.0.0',
-      skills: [...skills.map(activeSkill), ...extraSkills],
-    }
-    this.responses.set('/manifest.json', Buffer.from(JSON.stringify(this.manifest)))
-    for (const { name, files } of skills) {
-      for (const [file, content] of Object.entries(files)) {
-        this.responses.set(`/skills/${name}/${file}`, Buffer.from(content))
-      }
+const hostedResponses = (manifest: SkillsManifest, skills: SkillSpec[]) => {
+  const responses = new Map<string, string>([['/manifest.json', JSON.stringify(manifest)]])
+  for (const { name, files } of skills) {
+    for (const [file, content] of Object.entries(files)) {
+      responses.set(`/skills/${name}/${file}`, content)
     }
   }
-
-  corrupt(path: string, content: string) {
-    this.responses.set(path, Buffer.from(content))
-  }
-
-  async start(): Promise<string> {
-    this.server = createServer((req, res) => {
-      const url = decodeURIComponent(req.url ?? '')
-      this.requests.push(url)
-      const body = this.responses.get(url)
-      if (!body) {
-        res.statusCode = 404
-        res.end('not found')
-        return
-      }
-      res.end(body)
-    })
-    await new Promise<void>((resolve) => this.server?.listen(0, '127.0.0.1', resolve))
-    const { port } = this.server.address() as AddressInfo
-    return `http://127.0.0.1:${port.toString()}`
-  }
-
-  async stop() {
-    await new Promise<void>((resolve, reject) => {
-      this.server?.close((error) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve()
-        }
-      })
-    })
-  }
+  return responses
 }
+
+const requestPath = (input: string | URL | Request) =>
+  decodeURIComponent(new URL(input instanceof Request ? input.url : input).pathname)
+
+const requestedPaths = () => vi.mocked(fetch).mock.calls.map(([input]) => requestPath(input))
 
 const writeSkill = async (root: string, name: string, files: Files, executable: string[] = []) => {
   for (const [file, content] of Object.entries(files)) {
@@ -168,11 +135,13 @@ describe('agent skills', () => {
   let skillsDir: string
 
   beforeEach(async () => {
+    vi.stubGlobal('fetch', vi.fn())
     projectDir = await mkdtemp(join(tmpdir(), 'agent-skills-'))
     skillsDir = join(projectDir, '.agents', 'skills')
   })
 
   afterEach(async () => {
+    vi.unstubAllGlobals()
     await rm(projectDir, { recursive: true, force: true })
   })
 
@@ -227,21 +196,25 @@ describe('agent skills', () => {
   })
 
   describe('syncing against a hosted release', () => {
-    let host: SkillsHost
-    let hostUrl: string
+    const skills = [FUNCTIONS, DEPLOY]
+    let manifest: SkillsManifest
+    let responses: Map<string, string>
 
-    beforeEach(async () => {
-      host = new SkillsHost([FUNCTIONS, DEPLOY], [deprecatedSkill('netlify-legacy', RETIRED_FILES, 'netlify-deploy')])
-      hostUrl = await host.start()
-    })
-
-    afterEach(async () => {
-      await host.stop()
+    beforeEach(() => {
+      manifest = buildManifest(skills, [deprecatedSkill('netlify-legacy', RETIRED_FILES, 'netlify-deploy')])
+      responses = hostedResponses(manifest, skills)
+      vi.mocked(fetch).mockImplementation((input) => {
+        const body = responses.get(requestPath(input))
+        return Promise.resolve(body === undefined ? new Response('not found', { status: 404 }) : new Response(body))
+      })
     })
 
     test('installs every active skill into an empty directory with verified bytes and modes', async () => {
-      const manifest = await fetchSkillsManifest(hostUrl)
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const { actions } = await syncSkills({
+        host: HOST,
+        directory: skillsDir,
+        manifest: await fetchSkillsManifest(HOST),
+      })
 
       expect(actions).toEqual([
         { name: 'netlify-deploy', action: 'added', detail: '2.0.0' },
@@ -254,15 +227,16 @@ describe('agent skills', () => {
       const script = await stat(join(skillsDir, 'netlify-deploy', 'scripts', 'deploy.sh'))
       expect(script.mode & 0o111).not.toBe(0)
       await expect(readdir(join(skillsDir, 'netlify-functions'))).resolves.toEqual(['SKILL.md', 'references'])
+      const [, init] = vi.mocked(fetch).mock.calls[0]
+      expect(new Headers(init?.headers).get('user-agent')).toMatch(/^NetlifyCLI /)
     })
 
     test('is idempotent: a second run reports everything current and changes nothing', async () => {
-      const manifest = await fetchSkillsManifest(hostUrl)
-      await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      await syncSkills({ host: HOST, directory: skillsDir, manifest })
       const before = await stat(join(skillsDir, 'netlify-functions', 'SKILL.md'))
-      const requestsAfterInstall = host.requests.length
+      vi.mocked(fetch).mockClear()
 
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       expect(actions).toEqual([
         { name: 'netlify-deploy', action: 'current', detail: '2.0.0' },
@@ -270,13 +244,12 @@ describe('agent skills', () => {
       ])
       const after = await stat(join(skillsDir, 'netlify-functions', 'SKILL.md'))
       expect(after.mtimeMs).toBe(before.mtimeMs)
-      expect(host.requests.length).toBe(requestsAfterInstall)
+      expect(requestedPaths()).toEqual([])
     })
 
     test('replaces a stale copy and keeps a locally edited one', async () => {
       await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS_V1)
       await writeSkill(skillsDir, DEPLOY.name, { ...DEPLOY.files, 'SKILL.md': '# my own notes\n' })
-      const manifest = await fetchSkillsManifest(hostUrl)
 
       const classification = await classifySkillsDirectory(skillsDir, manifest)
       expect(classification.skills).toEqual([
@@ -284,7 +257,7 @@ describe('agent skills', () => {
         { name: 'netlify-functions', status: 'stale', version: '2.0.0', have: '1.0.0' },
       ])
 
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
       expect(actions).toEqual([
         { name: 'netlify-deploy', action: 'kept', detail: 'edited locally' },
         { name: 'netlify-functions', action: 'updated', detail: '1.0.0 -> 2.0.0' },
@@ -295,9 +268,8 @@ describe('agent skills', () => {
 
     test('installs the new name beside a copy under a prior name and leaves the old copy alone', async () => {
       await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
-      const manifest = await fetchSkillsManifest(hostUrl)
 
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       expect(actions).toContainEqual({
         name: 'netlify-cli-and-deploy',
@@ -312,12 +284,30 @@ describe('agent skills', () => {
       ])
     })
 
+    test('keeps reporting a renamed copy on the second run without extra downloads', async () => {
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
+      await syncSkills({ host: HOST, directory: skillsDir, manifest })
+      vi.mocked(fetch).mockClear()
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions).toEqual([
+        {
+          name: 'netlify-cli-and-deploy',
+          action: 'kept',
+          detail: 'now called netlify-deploy; this copy can be removed',
+        },
+        { name: 'netlify-deploy', action: 'current', detail: '2.0.0' },
+        { name: 'netlify-functions', action: 'current', detail: '2.0.0' },
+      ])
+      expect(requestedPaths()).toEqual([])
+    })
+
     test('reports a deprecated skill and leaves it and unknown directories alone', async () => {
       await writeSkill(skillsDir, 'netlify-legacy', RETIRED_FILES)
       await writeSkill(skillsDir, 'my-team-skill', { 'SKILL.md': '# ours\n' })
-      const manifest = await fetchSkillsManifest(hostUrl)
 
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       expect(actions).toContainEqual({ name: 'my-team-skill', action: 'ignored', detail: 'not a Netlify skill' })
       expect(actions).toContainEqual({
@@ -335,27 +325,26 @@ describe('agent skills', () => {
 
     test('reinstalls over an empty directory carrying a skill name', async () => {
       await mkdir(join(skillsDir, FUNCTIONS.name), { recursive: true })
-      const manifest = await fetchSkillsManifest(hostUrl)
 
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       expect(actions).toContainEqual({ name: 'netlify-functions', action: 'added', detail: '2.0.0' })
       await expect(readFile(join(skillsDir, 'netlify-functions', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v2\n')
     })
 
     test('refuses a manifest with an unsupported schema version', async () => {
-      host.corrupt('/manifest.json', JSON.stringify({ ...host.manifest, schema_version: 2 }))
+      responses.set('/manifest.json', JSON.stringify({ ...manifest, schema_version: 2 }))
 
-      await expect(fetchSkillsManifest(hostUrl)).rejects.toThrow(/schema 2 is not supported/)
+      await expect(fetchSkillsManifest(HOST)).rejects.toThrow(/schema 2 is not supported/)
     })
 
     test('refuses an active skill without a tree hash', async () => {
-      const broken = structuredClone(host.manifest)
+      const broken = structuredClone(manifest)
       const functions = broken.skills.find(({ name }) => name === 'netlify-functions')
       if (functions) functions.tree_hash = null
-      host.corrupt('/manifest.json', JSON.stringify(broken))
+      responses.set('/manifest.json', JSON.stringify(broken))
 
-      await expect(fetchSkillsManifest(hostUrl)).rejects.toThrow(/has no tree_hash/)
+      await expect(fetchSkillsManifest(HOST)).rejects.toThrow(/has no tree_hash/)
     })
 
     test('follows a symlinked skills root and still keeps edited copies there', async () => {
@@ -363,9 +352,8 @@ describe('agent skills', () => {
       await writeSkill(sharedDir, DEPLOY.name, { ...DEPLOY.files, 'SKILL.md': '# my own notes\n' })
       await mkdir(join(projectDir, '.agents'))
       await symlink(sharedDir, skillsDir)
-      const manifest = await fetchSkillsManifest(hostUrl)
 
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       expect(actions).toEqual([
         { name: 'netlify-deploy', action: 'kept', detail: 'edited locally' },
@@ -380,9 +368,8 @@ describe('agent skills', () => {
       await writeSkill(elsewhere, 'functions-source', FUNCTIONS_V1)
       await mkdir(skillsDir, { recursive: true })
       await symlink(join(elsewhere, 'functions-source'), join(skillsDir, 'netlify-functions'))
-      const manifest = await fetchSkillsManifest(hostUrl)
 
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       expect(actions).toContainEqual({ name: 'netlify-functions', action: 'kept', detail: 'edited locally' })
       expect((await lstat(join(skillsDir, 'netlify-functions'))).isSymbolicLink()).toBe(true)
@@ -391,20 +378,18 @@ describe('agent skills', () => {
 
     test('refuses to replace a directory that is not an unedited Netlify skill, even when asked directly', async () => {
       await writeSkill(skillsDir, FUNCTIONS.name, { 'SKILL.md': '# mine\n', 'notes.md': '# keep me\n' })
-      const manifest = await fetchSkillsManifest(hostUrl)
       const functions = manifest.skills.find(({ name }) => name === 'netlify-functions')
       if (!functions) throw new Error('netlify-functions missing from manifest')
 
-      await expect(installSkill(hostUrl, skillsDir, functions)).rejects.toThrow(/already exists/)
+      await expect(installSkill(HOST, skillsDir, functions)).rejects.toThrow(/already exists/)
       await expect(readFile(join(skillsDir, 'netlify-functions', 'notes.md'), 'utf8')).resolves.toBe('# keep me\n')
       await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-functions'])
     })
 
     test('survives a user directory that differs only by case and keeps syncing the rest', async () => {
       await writeSkill(skillsDir, 'Netlify-Functions', { 'SKILL.md': '# mine\n', 'notes.md': '# keep me\n' })
-      const manifest = await fetchSkillsManifest(hostUrl)
 
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       await expect(readFile(join(skillsDir, 'Netlify-Functions', 'notes.md'), 'utf8')).resolves.toBe('# keep me\n')
       expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
@@ -412,39 +397,18 @@ describe('agent skills', () => {
       expect(functions?.action === 'added' || functions?.detail?.includes('already exists')).toBe(true)
     })
 
-    test('keeps reporting a renamed copy on the second run without extra downloads', async () => {
-      await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
-      const manifest = await fetchSkillsManifest(hostUrl)
-      await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
-      const requestsAfterInstall = host.requests.length
-
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
-
-      expect(actions).toEqual([
-        {
-          name: 'netlify-cli-and-deploy',
-          action: 'kept',
-          detail: 'now called netlify-deploy; this copy can be removed',
-        },
-        { name: 'netlify-deploy', action: 'current', detail: '2.0.0' },
-        { name: 'netlify-functions', action: 'current', detail: '2.0.0' },
-      ])
-      expect(host.requests.length).toBe(requestsAfterInstall)
-    })
-
     test('rejects a file whose bytes do not match the manifest and leaves no partial install', async () => {
-      host.corrupt('/skills/netlify-functions/SKILL.md', '# tampered\n')
-      const manifest = await fetchSkillsManifest(hostUrl)
+      responses.set('/skills/netlify-functions/SKILL.md', '# tampered\n')
       const functions = manifest.skills.find(({ name }) => name === 'netlify-functions')
       if (!functions) throw new Error('netlify-functions missing from manifest')
 
-      await expect(installSkill(hostUrl, skillsDir, functions)).rejects.toThrow(/hash mismatch/)
+      await expect(installSkill(HOST, skillsDir, functions)).rejects.toThrow(/hash mismatch/)
       await expect(stat(skillsDir)).rejects.toThrow(/ENOENT/)
     })
 
     test('setupAgentSkills installs into the detected directories and reports a summary', async () => {
       await mkdir(join(projectDir, '.claude'))
-      const result = await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: hostUrl } })
+      const result = await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
 
       expect(result.installed).toBe(true)
       expect(result.directories).toEqual([join('.claude', 'skills')])
@@ -458,13 +422,21 @@ describe('agent skills', () => {
   })
 
   test('setupAgentSkills does not throw when the host is unreachable', async () => {
-    const result = await setupAgentSkills({
-      workingDir: projectDir,
-      env: { NETLIFY_SKILLS_HOST: 'http://127.0.0.1:1' },
-    })
+    vi.mocked(fetch).mockRejectedValue(new TypeError('fetch failed'))
+
+    const result = await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
 
     expect(result.installed).toBe(false)
-    expect(result.error).toBeDefined()
+    expect(result.error).toBe('fetch failed')
     await expect(readdir(projectDir)).resolves.toEqual([])
+  })
+
+  test('setupAgentSkills reports a timed out download in plain words', async () => {
+    vi.mocked(fetch).mockRejectedValue(new DOMException('The operation was aborted due to timeout', 'TimeoutError'))
+
+    const result = await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
+
+    expect(result.installed).toBe(false)
+    expect(result.error).toBe('the download timed out after 10s')
   })
 })
