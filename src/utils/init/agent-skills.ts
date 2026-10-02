@@ -19,6 +19,8 @@ const SKILL_NAME = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/
 const STAGING_PREFIX = '.netlify-skill-'
 const STAGING_LEFTOVER = /^\.netlify-skill-.+-[A-Za-z0-9]{6}$/
 const RETIRED_LEFTOVER = /^(.+)\.old-\d+-[0-9a-f]{12}$/
+const OWNERSHIP_MARKER = '.netlify-skills-install'
+const LEFTOVER_MIN_AGE_MS = 10 * 60_000
 const FETCH_TIMEOUT_MS = 10_000
 const SETUP_TIMEOUT_MS = 120_000
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
@@ -77,7 +79,12 @@ export interface SkillsSyncResult {
 
 class SkillsError extends Error {}
 
-const errorMessage = (error: unknown): string => (error instanceof Error ? error.message : String(error))
+const errorMessage = (error: unknown): string => {
+  if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+    return `the download timed out after ${String(FETCH_TIMEOUT_MS / 1000)}s`
+  }
+  return error instanceof Error ? error.message : String(error)
+}
 
 const sha256 = (bytes: Uint8Array): string => `sha256:${createHash('sha256').update(bytes).digest('hex')}`
 
@@ -136,6 +143,9 @@ const indexManifest = (manifest: SkillsManifest): ManifestIndex => {
     assertSkillName(skill.name, 'skill name')
     if (exact.has(skill.name)) {
       throw new SkillsError(`manifest: duplicate skill name ${JSON.stringify(skill.name)}`)
+    }
+    if (skill.status === 'active' && typeof skill.tree_hash !== 'string') {
+      throw new SkillsError(`manifest: active skill ${skill.name} has no tree_hash`)
     }
     exact.set(skill.name, skill)
     for (const name of skill.prior_names ?? []) {
@@ -261,7 +271,9 @@ export const classifySkillsDirectory = async (
     const dir = path.join(root, entry.name)
     const hasSkillMd = entry.isDirectory() && (await isFile(path.join(dir, 'SKILL.md')))
     if (!hasSkillMd && !target && !retired) continue
-    if (entry.isDirectory() && !hasSkillMd && target && (await fs.readdir(dir)).length === 0) continue
+    if (entry.isDirectory() && !hasSkillMd && known?.status === 'active' && (await fs.readdir(dir)).length === 0) {
+      continue
+    }
 
     let treeHash: string | null = null
     if (hasSkillMd) {
@@ -321,16 +333,20 @@ export const classifySkillsDirectory = async (
   return { skills: records, missing }
 }
 
+const markOwned = (dir: string): Promise<void> => fs.writeFile(path.join(dir, OWNERSHIP_MARKER), '')
+
 const replaceDirectory = async (staged: string, target: string): Promise<void> => {
   const exists = await isDirectory(target)
   const retired = `${target}.old-${process.pid.toString()}-${randomBytes(6).toString('hex')}`
   if (exists) {
     await fs.rename(target, retired)
+    await markOwned(retired)
   }
   try {
     await fs.rename(staged, target)
   } catch (error) {
     if (exists) {
+      await fs.rm(path.join(retired, OWNERSHIP_MARKER), { force: true })
       await fs.rename(retired, target)
     }
     throw error
@@ -362,11 +378,17 @@ export const installSkill = async (
   await fs.mkdir(dest, { recursive: true })
   const staged = await fs.mkdtemp(path.join(dest, `${STAGING_PREFIX}${skill.name}-`))
   try {
+    await markOwned(staged)
     const executable = new Set(skill.executable ?? [])
     for (const [file, bytes] of downloaded) {
       const output = path.join(staged, ...file.split('/'))
       await fs.mkdir(path.dirname(output), { recursive: true })
       await fs.writeFile(output, bytes, { mode: executable.has(file) ? 0o755 : 0o644 })
+    }
+    await fs.rm(path.join(staged, OWNERSHIP_MARKER))
+    const stagedHash = await hashSkillTree(staged)
+    if (stagedHash !== skill.tree_hash) {
+      throw new SkillsError(`staged tree hash ${stagedHash} does not match the manifest`)
     }
     await replaceDirectory(staged, path.join(dest, skill.name))
   } catch (error) {
@@ -384,14 +406,26 @@ const isInstallLeftover = (name: string, { exact, prior }: ManifestIndex): boole
   return retired !== null && (exact.has(retired[1]) || prior.has(retired[1]))
 }
 
+const isAbandonedInstallDirectory = async (dir: string, now: number): Promise<boolean> => {
+  try {
+    const marker = await fs.lstat(path.join(dir, OWNERSHIP_MARKER))
+    return marker.isFile() && now - marker.mtimeMs >= LEFTOVER_MIN_AGE_MS
+  } catch {
+    return false
+  }
+}
+
 const removeInstallLeftovers = async (root: string, index: ManifestIndex): Promise<string[]> => {
   if (!(await isDirectoryOrLinkToOne(root))) {
     return []
   }
+  const now = Date.now()
   const removed: string[] = []
   for (const entry of await fs.readdir(root, { withFileTypes: true })) {
-    if (entry.isDirectory() && isInstallLeftover(entry.name, index)) {
-      await fs.rm(path.join(root, entry.name), { recursive: true, force: true })
+    if (!entry.isDirectory() || !isInstallLeftover(entry.name, index)) continue
+    const dir = path.join(root, entry.name)
+    if (await isAbandonedInstallDirectory(dir, now)) {
+      await fs.rm(dir, { recursive: true, force: true })
       removed.push(entry.name)
     }
   }

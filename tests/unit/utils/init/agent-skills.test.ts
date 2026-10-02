@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises'
+import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -357,9 +357,21 @@ describe('agent skills', () => {
       await expect(readFile(join(skillsDir, 'netlify-functions', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v2\n')
     })
 
-    test('sweeps staging and backup directories left by an interrupted install', async () => {
-      await writeSkill(skillsDir, '.netlify-skill-netlify-functions-Ab12Cd', FUNCTIONS.files)
+    test('sweeps only aged, marker-owned staging and backup directories left by an interrupted install', async () => {
+      const elevenMinutesAgo = new Date(Date.now() - 11 * 60_000)
+      const markOwned = async (name: string, at?: Date) => {
+        const marker = join(skillsDir, name, '.netlify-skills-install')
+        await writeFile(marker, '')
+        if (at) await utimes(marker, at, at)
+      }
+      await writeSkill(skillsDir, '.netlify-skill-netlify-functions-Ab12Cd', FUNCTIONS_V1)
+      await markOwned('.netlify-skill-netlify-functions-Ab12Cd', elevenMinutesAgo)
       await writeSkill(skillsDir, 'netlify-deploy.old-4242-0123456789ab', DEPLOY.files)
+      await markOwned('netlify-deploy.old-4242-0123456789ab', elevenMinutesAgo)
+      await writeSkill(skillsDir, '.netlify-skill-netlify-deploy-Zz99Yy', { 'SKILL.md': '# in flight\n' })
+      await markOwned('.netlify-skill-netlify-deploy-Zz99Yy')
+      await writeSkill(skillsDir, '.netlify-skill-my-notes-Ab12Cd', { 'SKILL.md': '# a user dir\n' })
+      await writeSkill(skillsDir, 'netlify-deploy.old-1111-abcdefabcdef', { 'SKILL.md': '# a user dir\n' })
       await writeSkill(skillsDir, 'my-skill.old-4242-0123456789ab', { 'SKILL.md': '# mine\n' })
       const manifest = await fetchSkillsManifest(hostUrl)
 
@@ -378,10 +390,32 @@ describe('agent skills', () => {
         },
       ])
       await expect(listDirectories(skillsDir)).resolves.toEqual([
+        '.netlify-skill-my-notes-Ab12Cd',
+        '.netlify-skill-netlify-deploy-Zz99Yy',
         'my-skill.old-4242-0123456789ab',
         'netlify-deploy',
+        'netlify-deploy.old-1111-abcdefabcdef',
         'netlify-functions',
       ])
+    })
+
+    test('does not leave its ownership marker inside an installed skill', async () => {
+      const manifest = await fetchSkillsManifest(hostUrl)
+      await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
+
+      await expect(readdir(join(skillsDir, 'netlify-functions'))).resolves.toEqual(['SKILL.md', 'references'])
+      await expect(hashSkillTree(join(skillsDir, 'netlify-deploy'))).resolves.toBe(
+        treeHashOf(DEPLOY.files, DEPLOY.executable),
+      )
+    })
+
+    test('refuses an active skill without a tree hash', async () => {
+      const broken = structuredClone(host.manifest)
+      const functions = broken.skills.find(({ name }) => name === 'netlify-functions')
+      if (functions) functions.tree_hash = null
+      host.corrupt('/manifest.json', JSON.stringify(broken))
+
+      await expect(fetchSkillsManifest(hostUrl)).rejects.toThrow(/has no tree_hash/)
     })
 
     test('refuses a manifest with an unsupported schema version', async () => {
@@ -414,6 +448,7 @@ describe('agent skills', () => {
       await mkdir(skillsDir, { recursive: true })
       await symlink(join(elsewhere, 'functions-source'), join(skillsDir, 'netlify-functions'))
       await symlink(join(elsewhere, 'legacy-source'), join(skillsDir, 'netlify-legacy'))
+      await symlink(join(elsewhere, 'legacy-source'), join(skillsDir, 'netlify-deploy.old-4242-0123456789ab'))
       const manifest = await fetchSkillsManifest(hostUrl)
 
       const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
@@ -424,7 +459,9 @@ describe('agent skills', () => {
         action: 'kept',
         detail: 'deprecated; use netlify-deploy, but edited locally',
       })
-      await expect(lstat(join(skillsDir, 'netlify-functions'))).resolves.toMatchObject({})
+      expect(actions.filter(({ action }) => action === 'removed')).toEqual([])
+      expect((await lstat(join(skillsDir, 'netlify-functions'))).isSymbolicLink()).toBe(true)
+      expect((await lstat(join(skillsDir, 'netlify-deploy.old-4242-0123456789ab'))).isSymbolicLink()).toBe(true)
       await expect(readFile(join(elsewhere, 'functions-source', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v1\n')
       await expect(readFile(join(elsewhere, 'legacy-source', 'SKILL.md'), 'utf8')).resolves.toBe('# retired\n')
     })
