@@ -6,6 +6,7 @@ import path, { dirname, join, relative } from 'path'
 import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
 
+import search, { Separator } from '@inquirer/search'
 import { OptionValues } from 'commander'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
@@ -178,7 +179,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
 // @ts-expect-error TS(7031) FIXME: Binding element 'languageFromFlag' implicitly has ... Remove this comment to see the full error message
 const pickTemplate = async function ({ language: languageFromFlag, template: templateFromFlag }, funcType) {
   const specialCommands = [
-    new inquirer.Separator(),
+    new Separator(),
     {
       name: `Clone template from GitHub URL`,
       value: 'url',
@@ -189,7 +190,7 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
       value: 'report',
       short: 'gh-report',
     },
-    new inquirer.Separator(),
+    new Separator(),
   ]
 
   let language = languageFromFlag
@@ -230,12 +231,9 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
     return match.value
   }
 
-  const { chosenTemplate } = await inquirer.prompt({
-    name: 'chosenTemplate',
+  const chosenTemplate = await search({
     message: 'Pick a template',
-    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-    type: 'autocomplete',
-    source(_answersSoFar: unknown, input: string | undefined) {
+    source(input: string | undefined) {
       // if Edge Functions template, don't show url option
       // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Separator... Remove this comment to see the full error message
       const edgeCommands = specialCommands.filter((val) => val.value !== 'url')

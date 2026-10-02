@@ -13,11 +13,11 @@ import fetch from 'node-fetch'
 
 import type { NetlifyAPI } from '@netlify/api'
 import { LocalState } from '@netlify/dev-utils'
-import { Octokit } from '@octokit/rest'
 
 import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getGitHubToken as promptForGitHubToken } from '../../utils/gh-auth.js'
+import { requestGitHub, type GitHubUser } from '../../utils/github-api.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -38,8 +38,7 @@ const resolveGitHubToken = async (globalConfig: {
     const cached = globalConfig.get(`users.${userId}.auth.github`) as { token?: string; user?: string } | undefined
     if (cached?.token) {
       try {
-        const octokit = new Octokit({ auth: `token ${cached.token}` })
-        await octokit.rest.users.getAuthenticated()
+        await requestGitHub<GitHubUser>(cached.token, 'GET', '/user')
         return cached.token
       } catch {
         // Token expired or invalid, fall through to re-auth
@@ -144,9 +143,8 @@ const selectRepoOwner = async (ghToken: string, repoOwnerFlag?: string): Promise
     return repoOwnerFlag
   }
 
-  const octokit = new Octokit({ auth: `token ${ghToken}` })
-  const { data: user } = await octokit.rest.users.getAuthenticated()
-  const { data: orgs } = await octokit.rest.orgs.listForAuthenticatedUser()
+  const user = await requestGitHub<GitHubUser>(ghToken, 'GET', '/user')
+  const orgs = await requestGitHub<GitHubUser[]>(ghToken, 'GET', '/user/orgs')
 
   if (orgs.length === 0) {
     return user.login
