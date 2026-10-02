@@ -17,12 +17,7 @@ const AGENT_DIRECTORY_BY_DRIVING_AGENT: Partial<Record<string, string>> = {
 const SUPPORTED_SCHEMA_VERSION = 1
 const SKILL_NAME = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/
 const STAGING_PREFIX = '.netlify-skill-'
-const STAGING_LEFTOVER = /^\.netlify-skill-.+-[A-Za-z0-9]{6}$/
-const RETIRED_LEFTOVER = /^(.+)\.old-\d+-[0-9a-f]{12}$/
-const OWNERSHIP_MARKER = '.netlify-skills-install'
-const LEFTOVER_MIN_AGE_MS = 10 * 60_000
 const FETCH_TIMEOUT_MS = 10_000
-const SETUP_TIMEOUT_MS = 120_000
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
 
 export interface SkillHistoryEntry {
@@ -54,9 +49,8 @@ export type SkillRecord =
   | { name: string; status: 'current'; version: string | null }
   | { name: string; status: 'stale'; version: string | null; have: string | null }
   | { name: string; status: 'modified'; version: string | null }
-  | { name: string; status: 'renamed'; currentName: string; modified: boolean }
-  | { name: string; status: 'deprecated'; replacedBy: string | null; modified: boolean }
-  | { name: string; status: 'duplicate'; currentName: string }
+  | { name: string; status: 'renamed'; currentName: string }
+  | { name: string; status: 'deprecated'; replacedBy: string | null }
   | { name: string; status: 'unknown' }
 
 export interface SkillsClassification {
@@ -64,7 +58,7 @@ export interface SkillsClassification {
   missing: string[]
 }
 
-export type SkillAction = 'current' | 'added' | 'updated' | 'renamed' | 'removed' | 'kept' | 'ignored'
+export type SkillAction = 'current' | 'added' | 'updated' | 'kept' | 'ignored'
 
 export interface SkillActionRecord {
   name: string
@@ -104,11 +98,10 @@ export const resolveSkillsHost = (env: NodeJS.ProcessEnv = process.env): string 
 const urlFor = (host: string, ...parts: string[]): string =>
   `${host}/${parts.map((part) => encodeURIComponent(part)).join('/')}`
 
-const fetchBytes = async (url: string, signal?: AbortSignal): Promise<Uint8Array> => {
-  const requestTimeout = AbortSignal.timeout(FETCH_TIMEOUT_MS)
+const fetchBytes = async (url: string): Promise<Uint8Array> => {
   const response = await fetch(url, {
     headers: { 'user-agent': `NetlifyCLI ${version}` },
-    signal: signal ? AbortSignal.any([requestTimeout, signal]) : requestTimeout,
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })
   if (!response.ok) {
     throw new SkillsError(`${url}: HTTP ${response.status.toString()}`)
@@ -164,9 +157,9 @@ const indexManifest = (manifest: SkillsManifest): ManifestIndex => {
   return { exact, prior }
 }
 
-export const fetchSkillsManifest = async (host: string, signal?: AbortSignal): Promise<SkillsManifest> => {
+export const fetchSkillsManifest = async (host: string): Promise<SkillsManifest> => {
   const url = urlFor(host, 'manifest.json')
-  const bytes = await fetchBytes(url, signal)
+  const bytes = await fetchBytes(url)
   let manifest: SkillsManifest
   try {
     manifest = JSON.parse(Buffer.from(bytes).toString('utf8')) as SkillsManifest
@@ -265,16 +258,29 @@ export const classifySkillsDirectory = async (
   for (const entry of entries) {
     const known = exact.get(entry.name)
     const renamed = prior.get(entry.name)
-    const target = known?.status === 'active' ? known : renamed?.status === 'active' ? renamed : null
-    const retired = known?.status === 'deprecated' ? known : renamed?.status === 'deprecated' ? renamed : null
-    if (!entry.isDirectory() && !target && !retired) continue
+    if (!entry.isDirectory() && !known && !renamed) continue
     const dir = path.join(root, entry.name)
     const hasSkillMd = entry.isDirectory() && (await isFile(path.join(dir, 'SKILL.md')))
-    if (!hasSkillMd && !target && !retired) continue
+    if (!hasSkillMd && !known && !renamed) continue
     if (entry.isDirectory() && !hasSkillMd && known?.status === 'active' && (await fs.readdir(dir)).length === 0) {
       continue
     }
 
+    if (known?.status === 'deprecated' || renamed?.status === 'deprecated') {
+      const retired = known?.status === 'deprecated' ? known : renamed
+      records.push({ name: entry.name, status: 'deprecated', replacedBy: retired?.deprecated?.replaced_by ?? null })
+      continue
+    }
+    if (!known && renamed) {
+      records.push({ name: entry.name, status: 'renamed', currentName: renamed.name })
+      continue
+    }
+    if (!known) {
+      records.push({ name: entry.name, status: 'unknown' })
+      continue
+    }
+
+    presentActive.add(known.name)
     let treeHash: string | null = null
     if (hasSkillMd) {
       try {
@@ -283,45 +289,13 @@ export const classifySkillsDirectory = async (
         treeHash = null
       }
     }
-
-    if (retired) {
-      const match = lastMatching(retired, treeHash)
-      records.push({
-        name: entry.name,
-        status: 'deprecated',
-        replacedBy: retired.deprecated?.replaced_by ?? null,
-        modified: !match,
-      })
-      continue
-    }
-
-    if (!target) {
-      const twin = treeHash
-        ? manifest.skills.find(
-            (skill) => skill.status === 'active' && historyOf(skill).some((item) => item.tree_hash === treeHash),
-          )
-        : undefined
-      records.push(
-        twin
-          ? { name: entry.name, status: 'duplicate', currentName: twin.name }
-          : { name: entry.name, status: 'unknown' },
-      )
-      continue
-    }
-
-    const match = lastMatching(target, treeHash)
-    if (target === renamed) {
-      records.push({ name: entry.name, status: 'renamed', currentName: target.name, modified: !match })
-      continue
-    }
-
-    presentActive.add(target.name)
-    if (treeHash === target.tree_hash) {
-      records.push({ name: entry.name, status: 'current', version: target.version })
+    const match = lastMatching(known, treeHash)
+    if (treeHash === known.tree_hash) {
+      records.push({ name: entry.name, status: 'current', version: known.version })
     } else if (match) {
-      records.push({ name: entry.name, status: 'stale', version: target.version, have: match.version })
+      records.push({ name: entry.name, status: 'stale', version: known.version, have: match.version })
     } else {
-      records.push({ name: entry.name, status: 'modified', version: target.version })
+      records.push({ name: entry.name, status: 'modified', version: known.version })
     }
   }
 
@@ -333,20 +307,16 @@ export const classifySkillsDirectory = async (
   return { skills: records, missing }
 }
 
-const markOwned = (dir: string): Promise<void> => fs.writeFile(path.join(dir, OWNERSHIP_MARKER), '')
-
 const replaceDirectory = async (staged: string, target: string): Promise<void> => {
   const exists = await isDirectory(target)
   const retired = `${target}.old-${process.pid.toString()}-${randomBytes(6).toString('hex')}`
   if (exists) {
     await fs.rename(target, retired)
-    await markOwned(retired)
   }
   try {
     await fs.rename(staged, target)
   } catch (error) {
     if (exists) {
-      await fs.rm(path.join(retired, OWNERSHIP_MARKER), { force: true })
       await fs.rename(retired, target)
     }
     throw error
@@ -356,19 +326,14 @@ const replaceDirectory = async (staged: string, target: string): Promise<void> =
   }
 }
 
-export const installSkill = async (
-  host: string,
-  dest: string,
-  skill: ManifestSkill,
-  signal?: AbortSignal,
-): Promise<number> => {
+export const installSkill = async (host: string, dest: string, skill: ManifestSkill): Promise<number> => {
   const files = Object.keys(skill.files ?? {}).sort()
   const downloaded: [string, Uint8Array][] = []
   for (const file of files) {
     if (!isSafeFilePath(file)) {
       throw new SkillsError(`${skill.name}: unsafe manifest file path: ${file}`)
     }
-    const bytes = await fetchBytes(urlFor(host, 'skills', skill.name, ...file.split('/')), signal)
+    const bytes = await fetchBytes(urlFor(host, 'skills', skill.name, ...file.split('/')))
     if (sha256(bytes) !== skill.files?.[file]) {
       throw new SkillsError(`${skill.name}/${file}: hash mismatch`)
     }
@@ -378,17 +343,11 @@ export const installSkill = async (
   await fs.mkdir(dest, { recursive: true })
   const staged = await fs.mkdtemp(path.join(dest, `${STAGING_PREFIX}${skill.name}-`))
   try {
-    await markOwned(staged)
     const executable = new Set(skill.executable ?? [])
     for (const [file, bytes] of downloaded) {
       const output = path.join(staged, ...file.split('/'))
       await fs.mkdir(path.dirname(output), { recursive: true })
       await fs.writeFile(output, bytes, { mode: executable.has(file) ? 0o755 : 0o644 })
-    }
-    await fs.rm(path.join(staged, OWNERSHIP_MARKER))
-    const stagedHash = await hashSkillTree(staged)
-    if (stagedHash !== skill.tree_hash) {
-      throw new SkillsError(`staged tree hash ${stagedHash} does not match the manifest`)
     }
     await replaceDirectory(staged, path.join(dest, skill.name))
   } catch (error) {
@@ -398,55 +357,18 @@ export const installSkill = async (
   return files.length
 }
 
-const isInstallLeftover = (name: string, { exact, prior }: ManifestIndex): boolean => {
-  if (STAGING_LEFTOVER.test(name)) {
-    return true
-  }
-  const retired = RETIRED_LEFTOVER.exec(name)
-  return retired !== null && (exact.has(retired[1]) || prior.has(retired[1]))
-}
-
-const isAbandonedInstallDirectory = async (dir: string, now: number): Promise<boolean> => {
-  try {
-    const marker = await fs.lstat(path.join(dir, OWNERSHIP_MARKER))
-    return marker.isFile() && now - marker.mtimeMs >= LEFTOVER_MIN_AGE_MS
-  } catch {
-    return false
-  }
-}
-
-const removeInstallLeftovers = async (root: string, index: ManifestIndex): Promise<string[]> => {
-  if (!(await isDirectoryOrLinkToOne(root))) {
-    return []
-  }
-  const now = Date.now()
-  const removed: string[] = []
-  for (const entry of await fs.readdir(root, { withFileTypes: true })) {
-    if (!entry.isDirectory() || !isInstallLeftover(entry.name, index)) continue
-    const dir = path.join(root, entry.name)
-    if (await isAbandonedInstallDirectory(dir, now)) {
-      await fs.rm(dir, { recursive: true, force: true })
-      removed.push(entry.name)
-    }
-  }
-  return removed.sort()
-}
-
 export const syncSkills = async ({
   host,
   directory,
   manifest,
-  signal,
 }: {
   host: string
   directory: string
   manifest: SkillsManifest
-  signal?: AbortSignal
 }): Promise<SkillsSyncResult> => {
-  const index = indexManifest(manifest)
-  const { exact } = index
+  const { exact } = indexManifest(manifest)
+  const before = await classifySkillsDirectory(directory, manifest)
   const actions: SkillActionRecord[] = []
-  const installed = new Set<string>()
   const act = (name: string, action: SkillAction, detail?: string) => {
     actions.push(detail ? { name, action, detail } : { name, action })
   }
@@ -458,55 +380,25 @@ export const syncSkills = async ({
     return skill
   }
 
-  for (const leftover of await removeInstallLeftovers(directory, index)) {
-    act(leftover, 'removed', 'leftover from an interrupted install')
-  }
-  const before = await classifySkillsDirectory(directory, manifest)
-
   for (const record of before.skills) {
-    const dir = path.join(directory, record.name)
     switch (record.status) {
       case 'current':
         act(record.name, 'current', record.version ?? undefined)
         break
       case 'stale': {
         const skill = skillByName(record.name)
-        await installSkill(host, directory, skill, signal)
+        await installSkill(host, directory, skill)
         act(record.name, 'updated', `${record.have ?? 'unknown'} -> ${skill.version ?? 'latest'}`)
         break
       }
       case 'modified':
         act(record.name, 'kept', 'edited locally')
         break
-      case 'renamed': {
-        const current = before.skills.find((other) => other.name === record.currentName)
-        if (record.modified) {
-          act(record.name, 'kept', `edited locally; now called ${record.currentName}`)
-        } else if (current?.status === 'modified') {
-          act(record.name, 'kept', `${record.currentName} is already installed and edited locally`)
-        } else if (current) {
-          await fs.rm(dir, { recursive: true, force: true })
-          act(record.name, 'removed', `superseded by ${record.currentName}`)
-        } else {
-          await installSkill(host, directory, skillByName(record.currentName), signal)
-          installed.add(record.currentName)
-          await fs.rm(dir, { recursive: true, force: true })
-          act(record.name, 'renamed', `-> ${record.currentName}`)
-        }
+      case 'renamed':
+        act(record.name, 'kept', `now called ${record.currentName}; this copy can be removed`)
         break
-      }
-      case 'deprecated': {
-        const replacement = record.replacedBy ? `; use ${record.replacedBy}` : ''
-        if (record.modified) {
-          act(record.name, 'kept', `deprecated${replacement}, but edited locally`)
-        } else {
-          await fs.rm(dir, { recursive: true, force: true })
-          act(record.name, 'removed', `deprecated${replacement}`)
-        }
-        break
-      }
-      case 'duplicate':
-        act(record.name, 'ignored', `copy of ${record.currentName} under another name`)
+      case 'deprecated':
+        act(record.name, 'kept', `deprecated${record.replacedBy ? `; use ${record.replacedBy}` : ''}`)
         break
       case 'unknown':
         act(record.name, 'ignored', 'not a Netlify skill')
@@ -515,9 +407,8 @@ export const syncSkills = async ({
   }
 
   for (const name of before.missing) {
-    if (installed.has(name)) continue
     const skill = skillByName(name)
-    await installSkill(host, directory, skill, signal)
+    await installSkill(host, directory, skill)
     act(name, 'added', skill.version ?? undefined)
   }
 
@@ -543,15 +434,7 @@ export const resolveSkillsDirectories = async (
 }
 
 const summarize = (actions: SkillActionRecord[]): Record<SkillAction, number> => {
-  const summary: Record<SkillAction, number> = {
-    current: 0,
-    added: 0,
-    updated: 0,
-    renamed: 0,
-    removed: 0,
-    kept: 0,
-    ignored: 0,
-  }
+  const summary: Record<SkillAction, number> = { current: 0, added: 0, updated: 0, kept: 0, ignored: 0 }
   for (const { action } of actions) {
     summary[action] += 1
   }
@@ -560,17 +443,14 @@ const summarize = (actions: SkillActionRecord[]): Record<SkillAction, number> =>
 
 const describeSync = ({ directory, actions }: SkillsSyncResult): string => {
   const summary = summarize(actions)
-  const changed = summary.added + summary.updated + summary.renamed + summary.removed
   const location = chalk.underline(directory)
-  if (changed === 0) {
+  if (summary.added + summary.updated === 0) {
     return `Netlify skills in ${location} are up to date.`
   }
   const parts = [
     summary.added > 0 ? `${summary.added.toString()} added` : '',
     summary.updated > 0 ? `${summary.updated.toString()} updated` : '',
-    summary.renamed > 0 ? `${summary.renamed.toString()} renamed` : '',
-    summary.removed > 0 ? `${summary.removed.toString()} removed` : '',
-    summary.kept > 0 ? `${summary.kept.toString()} kept (edited locally)` : '',
+    summary.kept > 0 ? `${summary.kept.toString()} kept` : '',
   ].filter(Boolean)
   return `Installed Netlify skills in ${location} (${parts.join(', ')}).`
 }
@@ -594,13 +474,15 @@ export const setupAgentSkills = async ({
   try {
     directories = await resolveSkillsDirectories(workingDir, env)
     const host = resolveSkillsHost(env)
-    const signal = AbortSignal.timeout(SETUP_TIMEOUT_MS)
-    const manifest = await fetchSkillsManifest(host, signal)
+    const manifest = await fetchSkillsManifest(host)
     const actions: SkillActionRecord[] = []
     for (const directory of directories) {
-      const result = await syncSkills({ host, directory: path.resolve(workingDir, directory), manifest, signal })
+      const result = await syncSkills({ host, directory: path.resolve(workingDir, directory), manifest })
       actions.push(...result.actions)
       log(describeSync({ directory, actions: result.actions }))
+      for (const { name, detail } of result.actions.filter(({ action }) => action === 'kept')) {
+        log(`  ${chalk.dim(name)}: ${detail ?? 'kept'}`)
+      }
     }
     return { installed: true, directories, skillsVersion: manifest.version, summary: summarize(actions) }
   } catch (error) {

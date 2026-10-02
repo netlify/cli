@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
+import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -253,6 +253,7 @@ describe('agent skills', () => {
       )
       const script = await stat(join(skillsDir, 'netlify-deploy', 'scripts', 'deploy.sh'))
       expect(script.mode & 0o111).not.toBe(0)
+      await expect(readdir(join(skillsDir, 'netlify-functions'))).resolves.toEqual(['SKILL.md', 'references'])
     })
 
     test('is idempotent: a second run reports everything current and changes nothing', async () => {
@@ -292,18 +293,26 @@ describe('agent skills', () => {
       await expect(readFile(join(skillsDir, 'netlify-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# my own notes\n')
     })
 
-    test('migrates a skill installed under a prior name', async () => {
+    test('installs the new name beside a copy under a prior name and leaves the old copy alone', async () => {
       await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
       const manifest = await fetchSkillsManifest(hostUrl)
 
       const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
 
-      expect(actions).toContainEqual({ name: 'netlify-cli-and-deploy', action: 'renamed', detail: '-> netlify-deploy' })
-      expect(actions.filter(({ name }) => name === 'netlify-deploy')).toEqual([])
-      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+      expect(actions).toContainEqual({
+        name: 'netlify-cli-and-deploy',
+        action: 'kept',
+        detail: 'now called netlify-deploy; this copy can be removed',
+      })
+      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
+      await expect(listDirectories(skillsDir)).resolves.toEqual([
+        'netlify-cli-and-deploy',
+        'netlify-deploy',
+        'netlify-functions',
+      ])
     })
 
-    test('removes an unedited deprecated skill and leaves edited or unknown directories alone', async () => {
+    test('reports a deprecated skill and leaves it and unknown directories alone', async () => {
       await writeSkill(skillsDir, 'netlify-legacy', RETIRED_FILES)
       await writeSkill(skillsDir, 'my-team-skill', { 'SKILL.md': '# ours\n' })
       const manifest = await fetchSkillsManifest(hostUrl)
@@ -313,38 +322,15 @@ describe('agent skills', () => {
       expect(actions).toContainEqual({ name: 'my-team-skill', action: 'ignored', detail: 'not a Netlify skill' })
       expect(actions).toContainEqual({
         name: 'netlify-legacy',
-        action: 'removed',
+        action: 'kept',
         detail: 'deprecated; use netlify-deploy',
       })
       await expect(listDirectories(skillsDir)).resolves.toEqual([
         'my-team-skill',
         'netlify-deploy',
         'netlify-functions',
+        'netlify-legacy',
       ])
-
-      await writeSkill(skillsDir, 'netlify-legacy', { 'SKILL.md': '# retired but edited\n' })
-      const second = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
-      expect(second.actions).toContainEqual({
-        name: 'netlify-legacy',
-        action: 'kept',
-        detail: 'deprecated; use netlify-deploy, but edited locally',
-      })
-    })
-
-    test('removes the old directory when a renamed skill is already installed under its new name', async () => {
-      await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
-      await writeSkill(skillsDir, DEPLOY.name, DEPLOY.files, DEPLOY.executable)
-      const manifest = await fetchSkillsManifest(hostUrl)
-
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
-
-      expect(actions).toContainEqual({
-        name: 'netlify-cli-and-deploy',
-        action: 'removed',
-        detail: 'superseded by netlify-deploy',
-      })
-      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'current', detail: '2.0.0' })
-      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
     })
 
     test('reinstalls over an empty directory carrying a skill name', async () => {
@@ -357,56 +343,10 @@ describe('agent skills', () => {
       await expect(readFile(join(skillsDir, 'netlify-functions', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v2\n')
     })
 
-    test('sweeps only aged, marker-owned staging and backup directories left by an interrupted install', async () => {
-      const elevenMinutesAgo = new Date(Date.now() - 11 * 60_000)
-      const markOwned = async (name: string, at?: Date) => {
-        const marker = join(skillsDir, name, '.netlify-skills-install')
-        await writeFile(marker, '')
-        if (at) await utimes(marker, at, at)
-      }
-      await writeSkill(skillsDir, '.netlify-skill-netlify-functions-Ab12Cd', FUNCTIONS_V1)
-      await markOwned('.netlify-skill-netlify-functions-Ab12Cd', elevenMinutesAgo)
-      await writeSkill(skillsDir, 'netlify-deploy.old-4242-0123456789ab', DEPLOY.files)
-      await markOwned('netlify-deploy.old-4242-0123456789ab', elevenMinutesAgo)
-      await writeSkill(skillsDir, '.netlify-skill-netlify-deploy-Zz99Yy', { 'SKILL.md': '# in flight\n' })
-      await markOwned('.netlify-skill-netlify-deploy-Zz99Yy')
-      await writeSkill(skillsDir, '.netlify-skill-my-notes-Ab12Cd', { 'SKILL.md': '# a user dir\n' })
-      await writeSkill(skillsDir, 'netlify-deploy.old-1111-abcdefabcdef', { 'SKILL.md': '# a user dir\n' })
-      await writeSkill(skillsDir, 'my-skill.old-4242-0123456789ab', { 'SKILL.md': '# mine\n' })
-      const manifest = await fetchSkillsManifest(hostUrl)
+    test('refuses a manifest with an unsupported schema version', async () => {
+      host.corrupt('/manifest.json', JSON.stringify({ ...host.manifest, schema_version: 2 }))
 
-      const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
-
-      expect(actions.filter(({ action }) => action === 'removed')).toEqual([
-        {
-          name: '.netlify-skill-netlify-functions-Ab12Cd',
-          action: 'removed',
-          detail: 'leftover from an interrupted install',
-        },
-        {
-          name: 'netlify-deploy.old-4242-0123456789ab',
-          action: 'removed',
-          detail: 'leftover from an interrupted install',
-        },
-      ])
-      await expect(listDirectories(skillsDir)).resolves.toEqual([
-        '.netlify-skill-my-notes-Ab12Cd',
-        '.netlify-skill-netlify-deploy-Zz99Yy',
-        'my-skill.old-4242-0123456789ab',
-        'netlify-deploy',
-        'netlify-deploy.old-1111-abcdefabcdef',
-        'netlify-functions',
-      ])
-    })
-
-    test('does not leave its ownership marker inside an installed skill', async () => {
-      const manifest = await fetchSkillsManifest(hostUrl)
-      await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
-
-      await expect(readdir(join(skillsDir, 'netlify-functions'))).resolves.toEqual(['SKILL.md', 'references'])
-      await expect(hashSkillTree(join(skillsDir, 'netlify-deploy'))).resolves.toBe(
-        treeHashOf(DEPLOY.files, DEPLOY.executable),
-      )
+      await expect(fetchSkillsManifest(hostUrl)).rejects.toThrow(/schema 2 is not supported/)
     })
 
     test('refuses an active skill without a tree hash', async () => {
@@ -416,12 +356,6 @@ describe('agent skills', () => {
       host.corrupt('/manifest.json', JSON.stringify(broken))
 
       await expect(fetchSkillsManifest(hostUrl)).rejects.toThrow(/has no tree_hash/)
-    })
-
-    test('refuses a manifest with an unsupported schema version', async () => {
-      host.corrupt('/manifest.json', JSON.stringify({ ...host.manifest, schema_version: 2 }))
-
-      await expect(fetchSkillsManifest(hostUrl)).rejects.toThrow(/schema 2 is not supported/)
     })
 
     test('follows a symlinked skills root and still keeps edited copies there', async () => {
@@ -441,29 +375,18 @@ describe('agent skills', () => {
       await expect(listDirectories(sharedDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
     })
 
-    test('never replaces or deletes a skill entry that is a symlink', async () => {
+    test('never replaces a skill entry that is a symlink', async () => {
       const elsewhere = join(projectDir, 'elsewhere')
       await writeSkill(elsewhere, 'functions-source', FUNCTIONS_V1)
-      await writeSkill(elsewhere, 'legacy-source', RETIRED_FILES)
       await mkdir(skillsDir, { recursive: true })
       await symlink(join(elsewhere, 'functions-source'), join(skillsDir, 'netlify-functions'))
-      await symlink(join(elsewhere, 'legacy-source'), join(skillsDir, 'netlify-legacy'))
-      await symlink(join(elsewhere, 'legacy-source'), join(skillsDir, 'netlify-deploy.old-4242-0123456789ab'))
       const manifest = await fetchSkillsManifest(hostUrl)
 
       const { actions } = await syncSkills({ host: hostUrl, directory: skillsDir, manifest })
 
       expect(actions).toContainEqual({ name: 'netlify-functions', action: 'kept', detail: 'edited locally' })
-      expect(actions).toContainEqual({
-        name: 'netlify-legacy',
-        action: 'kept',
-        detail: 'deprecated; use netlify-deploy, but edited locally',
-      })
-      expect(actions.filter(({ action }) => action === 'removed')).toEqual([])
       expect((await lstat(join(skillsDir, 'netlify-functions'))).isSymbolicLink()).toBe(true)
-      expect((await lstat(join(skillsDir, 'netlify-deploy.old-4242-0123456789ab'))).isSymbolicLink()).toBe(true)
       await expect(readFile(join(elsewhere, 'functions-source', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v1\n')
-      await expect(readFile(join(elsewhere, 'legacy-source', 'SKILL.md'), 'utf8')).resolves.toBe('# retired\n')
     })
 
     test('rejects a file whose bytes do not match the manifest and leaves no partial install', async () => {
