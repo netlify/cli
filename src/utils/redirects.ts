@@ -36,6 +36,11 @@ const getErrorMessage = function ({ message }) {
 //  - `from` is called `origin`
 //  - `query` is called `params`
 //  - `conditions.role|country|language` are capitalized
+// Leading and trailing whitespace in `from` and `to` is trimmed so that typos
+// such as `to = " https://example.com"` do not silently break redirects
+// (see https://github.com/netlify/cli/issues/4707).
+const trimValue = (value: string | unknown): string | unknown => (typeof value === 'string' ? value.trim() : value)
+
 const normalizeRedirect = function ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'country' implicitly has an 'any' ... Remove this comment to see the full error message
   conditions: { country, language, role, ...conditions },
@@ -45,11 +50,15 @@ const normalizeRedirect = function ({
   query,
   // @ts-expect-error TS(7031) FIXME: Binding element 'signed' implicitly has an 'any' t... Remove this comment to see the full error message
   signed,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'to' implicitly has an 'any type...
+  to,
   ...redirect
 }) {
   return {
     ...redirect,
-    origin: from,
+    origin: trimValue(from),
+    path: trimValue(from),
+    to: trimValue(to),
     params: query,
     conditions: {
       ...conditions,

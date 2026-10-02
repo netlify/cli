@@ -15,7 +15,7 @@ const BUILD_FINISH_INTERVAL = 1e3
 // 20 minutes
 const BUILD_FINISH_TIMEOUT = 12e5
 
-const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spinner: Spinner) {
+const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spinner: Spinner | undefined) {
   let firstPass = true
 
   const waitForBuildToFinish = async function () {
@@ -27,7 +27,11 @@ const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spin
     // @TODO implement build error messages into this
 
     if (!currentBuilds || currentBuilds.length === 0) {
-      stopSpinner({ spinner })
+      if (spinner) {
+        stopSpinner({ spinner })
+      } else {
+        log('Waiting for active project deploys to complete... done')
+      }
       return true
     }
     firstPass = false
@@ -46,7 +50,7 @@ const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spin
   return firstPass
 }
 
-export const watch = async (_options: unknown, command: BaseCommand) => {
+export const watch = async (options: { silent?: boolean; json?: boolean }, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   let siteId = command.netlify.site.id
@@ -80,7 +84,11 @@ export const watch = async (_options: unknown, command: BaseCommand) => {
   //     "created_at": "2018-07-17T17:14:03.423Z"
   // }
   //
-  const spinner = startSpinner({ text: 'Waiting for active project deploys to complete' })
+  // Allow suppressing the spinner via --silent or --json (see #5301)
+  const suppressSpinner = options?.silent || options?.json
+  const spinner = suppressSpinner
+    ? undefined
+    : startSpinner({ text: 'Waiting for active project deploys to complete' })
   try {
     // Fetch all builds!
     // const builds = await client.listSiteBuilds({siteId})

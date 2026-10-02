@@ -310,7 +310,7 @@ const detectServerSettings = async (
   return {
     ...settings,
     port: acquiredPort,
-    jwtSecret: devConfig.jwtSecret || 'secret',
+    jwtSecret: devConfig.jwtSecret || process.env.NETLIFY_DEV_JWT_SECRET || 'secret',
     jwtRolePath: devConfig.jwtRolePath || 'app_metadata.authorization.roles',
     functions: functionsDir,
     functionsPort: await getPort({ port: devConfig.functionsPort || 0 }),
