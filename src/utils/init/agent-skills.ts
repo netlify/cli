@@ -340,7 +340,7 @@ const replaceDirectory = async (staged: string, target: string): Promise<void> =
     throw error
   }
   if (exists) {
-    await fs.rm(retired, { recursive: true, force: true })
+    await fs.rm(retired, { recursive: true, force: true }).catch(() => undefined)
   }
 }
 
@@ -550,7 +550,13 @@ export const setupAgentSkills = async ({
         }
       }
     }
-    return { installed: true, directories, skillsVersion: manifest.version, summary: summarize(actions) }
+    const summary = summarize(actions)
+    return {
+      installed: summary.current + summary.added + summary.updated > 0,
+      directories,
+      skillsVersion: manifest.version,
+      summary,
+    }
   } catch (error) {
     const message = errorMessage(error)
     warn(`Could not set up Netlify skills for AI agents: ${message}`)
