@@ -1,6 +1,6 @@
 import { relative, sep } from 'path'
 
-import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach, afterAll } from 'vitest'
 
 const {
   mockReaddir,
@@ -85,6 +85,10 @@ vi.mock('../../../../src/commands/database/util/db-connection.js', () => ({
 }))
 
 vi.stubGlobal('fetch', mockFetch)
+// Test files share one thread, so a leftover stub would leak into later files.
+afterAll(() => {
+  vi.unstubAllGlobals()
+})
 
 import { statusDb } from '../../../../src/commands/database/db-status.js'
 
