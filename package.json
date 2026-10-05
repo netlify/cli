@@ -52,7 +52,6 @@
     "typecheck:watch": "node ./node_modules/typescript-native/bin/tsc --watch"
   },
   "dependencies": {
-    "@fastify/static": "^10.0.0",
     "@inquirer/prompts": "^8.7.2",
     "@netlify/ai": "^1.0.1",
     "@netlify/api": "^15.1.2",
@@ -98,7 +97,6 @@
     "express": "^5.2.1",
     "express-logging": "^1.1.1",
     "fastest-levenshtein": "^1.0.16",
-    "fastify": "^5.8.5",
     "find-up": "^8.0.0",
     "folder-walker": "^3.2.0",
     "fuzzy": "^0.1.3",
