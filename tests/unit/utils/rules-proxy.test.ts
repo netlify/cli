@@ -37,8 +37,10 @@ describe('createRewriter', () => {
     await Promise.all(
       getWatchers().map(
         (watcher) =>
-          new Promise((resolve) => {
-            watcher.once('ready', resolve)
+          new Promise<void>((resolve) => {
+            watcher.once('ready', () => {
+              resolve()
+            })
           }),
       ),
     )
