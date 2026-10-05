@@ -189,7 +189,7 @@ describe('agent skills', () => {
   describe('hashSkillTree', () => {
     test('matches the manifest tree_hash formula including the executable bit', async () => {
       await writeSkill(skillsDir, DEPLOY.name, DEPLOY.files, DEPLOY.executable)
-      await expect(hashSkillTree(join(skillsDir, DEPLOY.name))).resolves.toBe(
+      await expect(hashSkillTree(join(skillsDir, DEPLOY.name), new Set(DEPLOY.executable))).resolves.toBe(
         treeHashOf(DEPLOY.files, DEPLOY.executable),
       )
     })
@@ -224,8 +224,10 @@ describe('agent skills', () => {
       await expect(readFile(join(skillsDir, 'netlify-functions', 'references', 'routing.md'), 'utf8')).resolves.toBe(
         '# routing\n',
       )
-      const script = await stat(join(skillsDir, 'netlify-deploy', 'scripts', 'deploy.sh'))
-      expect(script.mode & 0o111).not.toBe(0)
+      if (process.platform !== 'win32') {
+        const script = await stat(join(skillsDir, 'netlify-deploy', 'scripts', 'deploy.sh'))
+        expect(script.mode & 0o111).not.toBe(0)
+      }
       await expect(readdir(join(skillsDir, 'netlify-functions'))).resolves.toEqual(['SKILL.md', 'references'])
       const [, init] = vi.mocked(fetch).mock.calls[0]
       expect(new Headers(init?.headers).get('user-agent')).toMatch(/^NetlifyCLI /)
@@ -395,6 +397,56 @@ describe('agent skills', () => {
       expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
       const functions = actions.find(({ name }) => name === 'netlify-functions')
       expect(functions?.action === 'added' || functions?.detail?.includes('already exists')).toBe(true)
+    })
+
+    test('records a skill whose download fails and keeps installing the others', async () => {
+      responses.delete('/skills/netlify-functions/references/routing.md')
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions.map(({ name, action }) => `${name}:${action}`)).toEqual([
+        'netlify-deploy:added',
+        'netlify-functions:failed',
+      ])
+      expect(actions[1].detail).toMatch(/routing\.md: .*HTTP 404/)
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy'])
+
+      const result = await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
+      expect(result.installed).toBe(true)
+      expect(result.summary).toMatchObject({ current: 1, failed: 1 })
+    })
+
+    test('refuses a manifest file path that escapes the skill directory', async () => {
+      const escaping = structuredClone(manifest)
+      const functions = escaping.skills.find(({ name }) => name === 'netlify-functions')
+      if (!functions) throw new Error('netlify-functions missing from manifest')
+      functions.files = { ...functions.files, '../../escape.md': sha256('# escaped\n') }
+      responses.set('/skills/netlify-functions/../../escape.md', '# escaped\n')
+
+      await expect(installSkill(HOST, skillsDir, functions)).rejects.toThrow(/unsafe manifest file path/)
+      await expect(stat(join(projectDir, 'escape.md'))).rejects.toThrow(/ENOENT/)
+      await expect(stat(skillsDir)).rejects.toThrow(/ENOENT/)
+    })
+
+    test('keeps a directory that appears while the skill is downloading', async () => {
+      const fetchHosted = vi.mocked(fetch).getMockImplementation()
+      if (!fetchHosted) throw new Error('fetch is not stubbed')
+      vi.mocked(fetch).mockImplementation(async (input, init) => {
+        if (requestPath(input) === '/skills/netlify-functions/references/routing.md') {
+          await writeSkill(skillsDir, 'netlify-functions', { 'SKILL.md': '# written mid-download\n' })
+        }
+        return fetchHosted(input, init)
+      })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      const functions = actions.find(({ name }) => name === 'netlify-functions')
+      expect(functions?.action).toBe('kept')
+      expect(functions?.detail).toMatch(/left in place/)
+      await expect(readFile(join(skillsDir, 'netlify-functions', 'SKILL.md'), 'utf8')).resolves.toBe(
+        '# written mid-download\n',
+      )
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
     })
 
     test('rejects a file whose bytes do not match the manifest and leaves no partial install', async () => {

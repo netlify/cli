@@ -58,7 +58,7 @@ export interface SkillsClassification {
   missing: string[]
 }
 
-export type SkillAction = 'current' | 'added' | 'updated' | 'kept' | 'ignored'
+export type SkillAction = 'current' | 'added' | 'updated' | 'kept' | 'ignored' | 'failed'
 
 export interface SkillActionRecord {
   name: string
@@ -206,12 +206,19 @@ const listRegularFiles = async (dir: string): Promise<string[]> => {
   return files.sort()
 }
 
-export const hashSkillTree = async (dir: string): Promise<string> => {
+const isExecutable = async (absolute: string, relative: string, declared?: Set<string>): Promise<boolean> => {
+  if (process.platform === 'win32') {
+    return declared?.has(relative) ?? false
+  }
+  return ((await fs.stat(absolute)).mode & 0o111) !== 0
+}
+
+export const hashSkillTree = async (dir: string, declaredExecutable?: Set<string>): Promise<string> => {
   const hash = createHash('sha256')
   for (const relative of await listRegularFiles(dir)) {
     const absolute = path.join(dir, ...relative.split('/'))
-    const [bytes, stat] = await Promise.all([fs.readFile(absolute), fs.stat(absolute)])
-    const mode = stat.mode & 0o111 ? '100755' : '100644'
+    const bytes = await fs.readFile(absolute)
+    const mode = (await isExecutable(absolute, relative, declaredExecutable)) ? '100755' : '100644'
     hash.update(`${relative}\0${mode}\0${sha256(bytes).replace(/^sha256:/, '')}\n`)
   }
   return `sha256:${hash.digest('hex')}`
@@ -295,7 +302,7 @@ export const classifySkillsDirectory = async (
     let treeHash: string | null = null
     if (hasSkillMd) {
       try {
-        treeHash = await hashSkillTree(dir)
+        treeHash = await hashSkillTree(dir, new Set(known.executable ?? []))
       } catch {
         treeHash = null
       }
@@ -345,7 +352,7 @@ const isReplaceableCopy = async (target: string, skill: ManifestSkill): Promise<
     return true
   }
   try {
-    const treeHash = await hashSkillTree(target)
+    const treeHash = await hashSkillTree(target, new Set(skill.executable ?? []))
     return historyOf(skill).some((entry) => entry.tree_hash === treeHash)
   } catch {
     return false
@@ -388,9 +395,13 @@ export const installSkill = async (host: string, dest: string, skill: ManifestSk
       await fs.mkdir(path.dirname(output), { recursive: true })
       await fs.writeFile(output, bytes, { mode: executable.has(file) ? 0o755 : 0o644 })
     }
+    if (!(await isReplaceableCopy(target, skill))) {
+      throw new SkillConflictError(`${target} changed while downloading; left in place`)
+    }
     await replaceDirectory(staged, target)
   } catch (error) {
     await fs.rm(staged, { recursive: true, force: true })
+    if (error instanceof SkillConflictError) throw error
     throw new SkillsError(`${skill.name}: could not install: ${errorMessage(error)}`)
   }
   return downloaded.length
@@ -425,8 +436,11 @@ export const syncSkills = async ({
       await installSkill(host, directory, skill)
       onInstalled(skill)
     } catch (error) {
-      if (!(error instanceof SkillConflictError)) throw error
-      act(name, 'kept', error.message)
+      if (error instanceof SkillConflictError) {
+        act(name, 'kept', error.message)
+      } else {
+        act(name, 'failed', errorMessage(error))
+      }
     }
   }
 
@@ -483,7 +497,7 @@ export const resolveSkillsDirectories = async (
 }
 
 const summarize = (actions: SkillActionRecord[]): Record<SkillAction, number> => {
-  const summary: Record<SkillAction, number> = { current: 0, added: 0, updated: 0, kept: 0, ignored: 0 }
+  const summary: Record<SkillAction, number> = { current: 0, added: 0, updated: 0, kept: 0, ignored: 0, failed: 0 }
   for (const { action } of actions) {
     summary[action] += 1
   }
@@ -493,14 +507,15 @@ const summarize = (actions: SkillActionRecord[]): Record<SkillAction, number> =>
 const describeSync = ({ directory, actions }: SkillsSyncResult): string => {
   const summary = summarize(actions)
   const location = chalk.underline(directory)
-  if (summary.added + summary.updated === 0) {
-    return `Netlify skills in ${location} are up to date.`
-  }
   const parts = [
     summary.added > 0 ? `${summary.added.toString()} added` : '',
     summary.updated > 0 ? `${summary.updated.toString()} updated` : '',
     summary.kept > 0 ? `${summary.kept.toString()} kept` : '',
+    summary.failed > 0 ? `${summary.failed.toString()} failed` : '',
   ].filter(Boolean)
+  if (summary.added + summary.updated + summary.failed === 0) {
+    return `Netlify skills in ${location} are up to date${parts.length > 0 ? ` (${parts.join(', ')})` : ''}.`
+  }
   return `Installed Netlify skills in ${location} (${parts.join(', ')}).`
 }
 
@@ -529,8 +544,10 @@ export const setupAgentSkills = async ({
       const result = await syncSkills({ host, directory: path.resolve(workingDir, directory), manifest })
       actions.push(...result.actions)
       log(describeSync({ directory, actions: result.actions }))
-      for (const { name, detail } of result.actions.filter(({ action }) => action === 'kept')) {
-        log(`  ${chalk.dim(name)}: ${detail ?? 'kept'}`)
+      for (const { name, action, detail } of result.actions) {
+        if (action === 'kept' || action === 'failed') {
+          log(`  ${chalk.dim(name)}: ${detail ?? action}`)
+        }
       }
     }
     return { installed: true, directories, skillsVersion: manifest.version, summary: summarize(actions) }
