@@ -290,7 +290,7 @@ describe('agent skills', () => {
         detail: 'edited copy replaced with 2.0.0',
       })
       await expect(readFile(join(skillsDir, 'netlify-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# deploy\n')
-      await expect(readdir(join(skillsDir, 'netlify-deploy'))).resolves.toEqual(['SKILL.md', 'scripts'])
+      expect((await readdir(join(skillsDir, 'netlify-deploy'))).sort()).toEqual(['SKILL.md', 'scripts'])
     })
 
     test('--reset-context replaces a symlink standing in for a skill without touching its target', async () => {
@@ -460,7 +460,7 @@ describe('agent skills', () => {
         { name: 'netlify-functions.old-123-0123456789ab', ...leftover },
       ])
       expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
-      await expect(readdir(skillsDir)).resolves.toEqual([
+      expect((await readdir(skillsDir)).sort()).toEqual([
         '.netlify-skill-someone-else-Ab12Cd',
         'netlify-deploy',
         'netlify-deploy.old-123-0123456789ab',
@@ -470,7 +470,7 @@ describe('agent skills', () => {
       const second = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       expect(second.actions).toContainEqual({ name: 'netlify-deploy.old-123-0123456789ab', ...leftover })
-      await expect(readdir(skillsDir)).resolves.toEqual([
+      expect((await readdir(skillsDir)).sort()).toEqual([
         '.netlify-skill-someone-else-Ab12Cd',
         'netlify-deploy',
         'netlify-functions',
