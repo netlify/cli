@@ -36,7 +36,8 @@ const getErrorStatus = (error: unknown) =>
 
 const isDirectoryInRoot = async (rootPath: string, decodedPath: string) => {
   const filePath = path.resolve(rootPath, `.${decodedPath}`)
-  if (filePath !== rootPath && !filePath.startsWith(`${rootPath}${path.sep}`)) {
+  const relativePath = path.relative(rootPath, filePath)
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
     return false
   }
   try {
