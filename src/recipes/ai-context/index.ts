@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 
-import inquirer from 'inquirer'
+import { input, select } from '@inquirer/prompts'
 import execa from 'execa'
 
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
@@ -42,28 +42,20 @@ const presets = cliContextConsumers.map((consumer) => ({
 presets.push({ name: 'Custom location', value: rulesForDefaultConsumer.key })
 
 const promptForContextConsumerSelection = async (): Promise<ConsumerConfig> => {
-  const { consumerKey } = await inquirer.prompt([
-    {
-      name: 'consumerKey',
-      message: 'Where should we put the context files?',
-      type: 'list',
-      choices: presets,
-    },
-  ])
+  const consumerKey = await select({
+    message: 'Where should we put the context files?',
+    choices: presets,
+  })
 
   const contextConsumer = consumerKey ? cliContextConsumers.find((consumer) => consumer.key === consumerKey) : null
   if (contextConsumer) {
     return contextConsumer
   }
 
-  const { customPath } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'customPath',
-      message: 'Enter the path, relative to the project root, where the context files should be placed',
-      default: './ai-context',
-    },
-  ])
+  const customPath = await input({
+    message: 'Enter the path, relative to the project root, where the context files should be placed',
+    default: './ai-context',
+  })
 
   if (customPath) {
     return { ...rulesForDefaultConsumer, path: customPath || rulesForDefaultConsumer.path }

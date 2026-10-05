@@ -183,7 +183,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -279,7 +279,7 @@ describe.concurrent('commands/init', () => {
         question: 'Yes, create and deploy project manually',
         answer: CONFIRM, // List selection only needs one CONFIRM, not answerWithValue
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -362,7 +362,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -467,7 +467,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -660,7 +660,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),

@@ -1,5 +1,5 @@
 import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import { input, select } from '@inquirer/prompts'
 import { pick } from '../../utils/object-utilities.js'
 import prettyjson from 'prettyjson'
 
@@ -16,16 +16,11 @@ import { link } from '../link/link.js'
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {
-    const { name: nameInput } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'name',
-        message: 'Project name (leave blank for a random name; you can change it later):',
-        validate: (input) =>
-          /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
-      },
-    ])
-    name = typeof nameInput === 'string' ? nameInput : ''
+    name = await input({
+      message: 'Project name (leave blank for a random name; you can change it later):',
+      validate: (value) =>
+        !value || /^[a-zA-Z\d-]+$/.test(value) || 'Only alphanumeric characters and hyphens are allowed',
+    })
   }
 
   return { name }
@@ -46,20 +41,13 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       accountSlug = team.slug
       log(`Using team: ${team.name}`)
     } else {
-      const { accountSlug: accountSlugInput }: { accountSlug: string } = await inquirer.prompt<
-        Promise<{ accountSlug: string }>
-      >([
-        {
-          type: 'list',
-          name: 'accountSlug',
-          message: 'Team:',
-          choices: accounts.map((account) => ({
-            value: account.slug,
-            name: account.name,
-          })),
-        },
-      ])
-      accountSlug = accountSlugInput
+      accountSlug = await select({
+        message: 'Team:',
+        choices: accounts.map((account) => ({
+          value: account.slug,
+          name: account.name,
+        })),
+      })
     }
   }
 
