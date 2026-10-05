@@ -34,7 +34,11 @@ const listen = (server: http.Server, port: number | undefined, host: string) =>
 const getErrorStatus = (error: unknown) =>
   error instanceof Object && 'status' in error && typeof error.status === 'number' ? error.status : 500
 
-const isDirectory = async (filePath: string) => {
+const isDirectoryInRoot = async (rootPath: string, decodedPath: string) => {
+  const filePath = path.resolve(rootPath, `.${decodedPath}`)
+  if (filePath !== rootPath && !filePath.startsWith(`${rootPath}${path.sep}`)) {
+    return false
+  }
   try {
     return (await stat(filePath)).isDirectory()
   } catch {
@@ -79,12 +83,16 @@ const createApp = (rootPath: string) => {
       next()
       return
     }
+    if (decodedPath.split('/').includes('..')) {
+      res.status(403).type('text/plain').send('Forbidden')
+      return
+    }
 
     // No validators are sent, so conditional requests always get the full file.
     delete req.headers['if-none-match']
     delete req.headers['if-modified-since']
     // Directories without a trailing slash serve their index.html directly instead of redirecting.
-    if (!req.path.endsWith('/') && (await isDirectory(path.join(rootPath, decodedPath)))) {
+    if (!req.path.endsWith('/') && (await isDirectoryInRoot(rootPath, decodedPath))) {
       req.url = req.url.replace(req.path, `${req.path}/`)
     }
     serveFile(req, res, next)

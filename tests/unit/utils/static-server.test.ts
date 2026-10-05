@@ -21,7 +21,11 @@ const PLAIN = 'text/plain; charset=utf-8'
 const CUSTOM_404 = '<h1>custom 404</h1>'
 
 const createSite = async ({ with404Page }: { with404Page: boolean }) => {
-  const root = await mkdtemp(join(tmpdir(), 'static-server-'))
+  const parent = await mkdtemp(join(tmpdir(), 'static-server-'))
+  await writeFile(join(parent, 'outside.txt'), 'outside')
+  await mkdir(join(parent, 'outside-dir'))
+  const root = join(parent, 'site')
+  await mkdir(root)
   await writeFile(join(root, 'index.html'), '<h1>home</h1>')
   await writeFile(join(root, 'style.css'), 'body{}')
   await writeFile(join(root, 'data.json'), '{"a":1}')
@@ -34,8 +38,25 @@ const createSite = async ({ with404Page }: { with404Page: boolean }) => {
   if (with404Page) {
     await writeFile(join(root, '404.html'), CUSTOM_404)
   }
-  return root
+  return { parent, root }
 }
+
+// fetch normalizes `..` segments away, so traversal attempts need a raw request.
+const sendRawRequest = (port: number, rawPath: string) =>
+  new Promise<{ status: number; body: string }>((resolve, reject) => {
+    const socket = net.connect({ host: '127.0.0.1', port }, () => {
+      socket.write(`GET ${rawPath} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n`)
+    })
+    let response = ''
+    socket.on('data', (chunk) => {
+      response += chunk.toString()
+    })
+    socket.on('end', () => {
+      const [head, body = ''] = response.split('\r\n\r\n')
+      resolve({ status: Number(head.split(' ')[1]), body })
+    })
+    socket.on('error', reject)
+  })
 
 const canConnect = (host: string, port: number) =>
   new Promise<boolean>((resolve) => {
@@ -55,8 +76,8 @@ describe('startStaticServer', () => {
   let family: string
 
   beforeAll(async () => {
-    const root = await createSite({ with404Page: true })
-    sites.push(root)
+    const { parent, root } = await createSite({ with404Page: true })
+    sites.push(parent)
     port = await getPort()
     ;({ family } = await startStaticServer({ settings: { dist: root, frameworkPort: port } }))
     baseUrl = `http://127.0.0.1:${String(port)}`
@@ -149,6 +170,16 @@ describe('startStaticServer', () => {
     expect(response.headers.get('age')).toBeNull()
   })
 
+  test.each(['/../outside.txt', '/../outside-dir', '/%2e%2e/outside.txt', '/sub/../index.html'])(
+    'rejects the path %s containing a parent segment with 403',
+    async (rawPath) => {
+      const response = await sendRawRequest(port, rawPath)
+
+      expect(response.status).toBe(403)
+      expect(response.body).not.toContain('outside')
+    },
+  )
+
   test('does not send validators, range support or a framework banner', async () => {
     const response = await fetch(`${baseUrl}/style.css`)
 
@@ -169,8 +200,8 @@ describe('startStaticServer', () => {
   })
 
   test('falls back to a plain-text 404 when the site has no 404.html', async () => {
-    const root = await createSite({ with404Page: false })
-    sites.push(root)
+    const { parent, root } = await createSite({ with404Page: false })
+    sites.push(parent)
     const otherPort = await getPort()
     await startStaticServer({ settings: { dist: root, frameworkPort: otherPort } })
 
