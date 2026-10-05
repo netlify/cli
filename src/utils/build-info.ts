@@ -1,5 +1,5 @@
 import type { Settings } from '@netlify/build-info'
-import search from '@inquirer/search'
+import { search } from '@inquirer/prompts'
 import { isCI } from 'ci-info'
 import fuzzy from 'fuzzy'
 

@@ -15,7 +15,6 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 const {
   mockSpawnAsync,
   mockConnectRawClient,
-  mockInquirerPrompt,
   mockIsInteractive,
   mockFormatQueryResult,
   mockApplyMigrations,
@@ -25,7 +24,6 @@ const {
 } = vi.hoisted(() => ({
   mockSpawnAsync: vi.fn(),
   mockConnectRawClient: vi.fn(),
-  mockInquirerPrompt: vi.fn(),
   mockIsInteractive: vi.fn().mockReturnValue(true),
   mockFormatQueryResult: vi.fn(),
   mockApplyMigrations: vi.fn(),
@@ -34,12 +32,7 @@ const {
   logMessages: [] as string[],
 }))
 
-vi.mock('inquirer', () => ({
-  default: {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    prompt: (...args: unknown[]) => mockInquirerPrompt(...args),
-  },
-}))
+vi.mock('@inquirer/prompts')
 
 vi.mock('../../../../src/commands/database/util/spawn-async.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/commands/database/util/spawn-async.js')>()),
@@ -79,6 +72,8 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   },
 }))
 
+import { confirm, select } from '@inquirer/prompts'
+
 import { initDatabase } from '../../../../src/commands/database/db-init.js'
 import { utcTimestampPrefix } from '../../../../src/commands/database/util/timestamp.js'
 
@@ -99,13 +94,9 @@ function createCommand(projectRoot: string) {
   } as unknown as Parameters<typeof initDatabase>[1]
 }
 
-const setPrompts = (...responses: Record<string, unknown>[]) => {
-  const queue = [...responses]
-  mockInquirerPrompt.mockImplementation(() => {
-    const next = queue.shift()
-    if (!next) throw new Error('Unexpected inquirer.prompt call — no response queued')
-    return Promise.resolve(next)
-  })
+const answerPrompts = ({ queryStyle, createSampleData }: { queryStyle: string; createSampleData: boolean }) => {
+  vi.mocked(select).mockResolvedValueOnce(queryStyle)
+  vi.mocked(confirm).mockResolvedValueOnce(createSampleData)
 }
 
 const exists = async (path: string): Promise<boolean> => {
@@ -131,6 +122,8 @@ beforeEach(async () => {
 
   logMessages.length = 0
   vi.clearAllMocks()
+  vi.mocked(select).mockReset().mockRejectedValue(new Error('Unexpected select prompt — no answer queued'))
+  vi.mocked(confirm).mockReset().mockRejectedValue(new Error('Unexpected confirm prompt — no answer queued'))
 
   // Simulate `drizzle-kit generate` by writing a timestamp-prefixed directory
   // with a migration.sql under the configured out dir. Anything else (package
@@ -175,7 +168,7 @@ afterEach(async () => {
 
 describe('initDatabase (integration)', () => {
   test('raw SQL + starter writes a timestamp-prefixed migration with a CREATE TABLE and seed data', async () => {
-    setPrompts({ queryStyle: 'raw' }, { answer: true })
+    answerPrompts({ queryStyle: 'raw', createSampleData: true })
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -199,7 +192,7 @@ describe('initDatabase (integration)', () => {
   })
 
   test('Drizzle + starter writes schema/config, runs drizzle-kit generate, and seeds after it', async () => {
-    setPrompts({ queryStyle: 'drizzle' }, { answer: true })
+    answerPrompts({ queryStyle: 'drizzle', createSampleData: true })
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -242,7 +235,7 @@ describe('initDatabase (integration)', () => {
   })
 
   test('Drizzle without starter scaffolds drizzle.config.ts only (no schema, no migration, no generate)', async () => {
-    setPrompts({ queryStyle: 'drizzle' }, { answer: false })
+    answerPrompts({ queryStyle: 'drizzle', createSampleData: false })
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -260,7 +253,7 @@ describe('initDatabase (integration)', () => {
   })
 
   test('raw without starter writes nothing extra; next steps point at `database migrations new`', async () => {
-    setPrompts({ queryStyle: 'raw' }, { answer: false })
+    answerPrompts({ queryStyle: 'raw', createSampleData: false })
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -282,7 +275,8 @@ describe('initDatabase (integration)', () => {
     await initDatabase({}, createCommand(projectRoot()))
 
     expect(await readMigrations(projectRoot())).toEqual(['0001_existing.sql'])
-    expect(mockInquirerPrompt).not.toHaveBeenCalled()
+    expect(select).not.toHaveBeenCalled()
+    expect(confirm).not.toHaveBeenCalled()
     expect(mockSpawnAsync).not.toHaveBeenCalled()
     expect(mockConnectRawClient).not.toHaveBeenCalled()
     expect(logMessages.join('\n')).toContain('you already have migrations set up')
@@ -293,7 +287,8 @@ describe('initDatabase (integration)', () => {
 
     await initDatabase({}, createCommand(projectRoot()))
 
-    expect(mockInquirerPrompt).not.toHaveBeenCalled()
+    expect(select).not.toHaveBeenCalled()
+    expect(confirm).not.toHaveBeenCalled()
     expect(await exists(join(projectRoot(), 'drizzle.config.ts'))).toBe(true)
     expect(await exists(join(projectRoot(), 'db', 'schema.ts'))).toBe(true)
     expect((await readMigrations(projectRoot())).some((name) => name.includes('seed_planets'))).toBe(true)

@@ -1,23 +1,8 @@
-// tests/utils/inquirer-mock.ts
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 import { vi } from 'vitest'
 
-export const mockPrompt = (response = { confirm: true }) => {
-  // Create the mock function
-  const mockFn = vi.fn().mockResolvedValue(response)
+// Callers must mock the module in their own test file with `vi.mock('@inquirer/prompts')`,
+// because `vi.mock` is hoisted per file.
+export const mockConfirm = (answer: boolean) => vi.mocked(confirm).mockReset().mockResolvedValue(answer)
 
-  // Preserve the original properties of inquirer.prompt
-  Object.assign(mockFn, inquirer.prompt)
-
-  // Create the spy with our prepared mock
-  const spy = vi.spyOn(inquirer, 'prompt').mockImplementation(mockFn)
-
-  inquirer.registerPrompt = vi.fn()
-  inquirer.prompt.registerPrompt = vi.fn()
-
-  return spy
-}
-
-export const spyOnMockPrompt = () => {
-  return vi.spyOn(inquirer, 'prompt')
-}
+export const spyOnConfirm = () => vi.mocked(confirm).mockReset()

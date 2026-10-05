@@ -33,6 +33,17 @@ describe('createRewriter', () => {
       jwtSecret,
       projectDir,
     })
+    // createRewriter doesn't wait for its file watchers, and a write before they're ready is never reported.
+    await Promise.all(
+      getWatchers().map(
+        (watcher) =>
+          new Promise<void>((resolve) => {
+            watcher.once('ready', () => {
+              resolve()
+            })
+          }),
+      ),
+    )
     return { projectDir, rewriter }
   }
 

@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 
 import { chalk, exit, log, netlifyCommand } from '../../utils/command-helpers.js'
@@ -60,13 +60,9 @@ const createNewSiteAndExit = async ({
   persistState({ state, siteInfo })
 
   if (!disableLinking) {
-    const { shouldConfigureBuild } = await inquirer.prompt<{ shouldConfigureBuild: boolean }>([
-      {
-        type: 'confirm',
-        name: 'shouldConfigureBuild',
-        message: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
-      },
-    ])
+    const shouldConfigureBuild = await confirm({
+      message: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
+    })
     if (shouldConfigureBuild) {
       const {
         cachedConfig: { configPath },
@@ -155,14 +151,10 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   const NEW_SITE_NO_GIT = 'Yes, create and deploy project manually'
   const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
-  const { noGitRemoteChoice } = await inquirer.prompt<{ noGitRemoteChoice: typeof NEW_SITE_NO_GIT | typeof NO_ABORT }>([
-    {
-      type: 'list',
-      name: 'noGitRemoteChoice',
-      message: 'Do you want to create a Netlify project without a git repository?',
-      choices: [NEW_SITE_NO_GIT, NO_ABORT],
-    },
-  ])
+  const noGitRemoteChoice = await select({
+    message: 'Do you want to create a Netlify project without a git repository?',
+    choices: [NEW_SITE_NO_GIT, NO_ABORT],
+  })
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
     // TODO(ndhoule): Shove a custom error message in here
@@ -180,15 +172,10 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
 
   const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
-  // TODO(serhalp): inquirer should infer the choice type here, but doesn't. Fix.
-  const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
-    {
-      type: 'list',
-      name: 'initChoice',
-      message: 'What would you like to do?',
-      choices: initializeOpts,
-    },
-  ])
+  const initChoice = await select({
+    message: 'What would you like to do?',
+    choices: initializeOpts,
+  })
 
   // create site or search for one
   if (initChoice === NEW_SITE) {
