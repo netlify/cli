@@ -104,6 +104,7 @@ const fetchBytes = async (url: string): Promise<Uint8Array> => {
   const response = await fetch(url, {
     headers: { 'user-agent': `NetlifyCLI ${version}` },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    redirect: 'error',
   })
   if (!response.ok) {
     throw new SkillsError(`${url}: HTTP ${response.status.toString()}`)

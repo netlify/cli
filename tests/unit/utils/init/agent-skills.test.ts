@@ -228,9 +228,10 @@ describe('agent skills', () => {
         const script = await stat(join(skillsDir, 'netlify-deploy', 'scripts', 'deploy.sh'))
         expect(script.mode & 0o111).not.toBe(0)
       }
-      await expect(readdir(join(skillsDir, 'netlify-functions'))).resolves.toEqual(['SKILL.md', 'references'])
+      expect((await readdir(join(skillsDir, 'netlify-functions'))).sort()).toEqual(['SKILL.md', 'references'])
       const [, init] = vi.mocked(fetch).mock.calls[0]
       expect(new Headers(init?.headers).get('user-agent')).toMatch(/^NetlifyCLI /)
+      expect(init?.redirect).toBe('error')
     })
 
     test('is idempotent: a second run reports everything current and changes nothing', async () => {
