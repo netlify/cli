@@ -484,6 +484,15 @@ describe('agent skills', () => {
     await expect(readdir(projectDir)).resolves.toEqual([])
   })
 
+  test('setupAgentSkills includes the underlying cause of a failed fetch', async () => {
+    vi.mocked(fetch).mockRejectedValue(new TypeError('fetch failed', { cause: new Error('unexpected redirect') }))
+
+    const result = await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
+
+    expect(result.installed).toBe(false)
+    expect(result.error).toBe('fetch failed: unexpected redirect')
+  })
+
   test('setupAgentSkills reports a timed out download in plain words', async () => {
     vi.mocked(fetch).mockRejectedValue(new DOMException('The operation was aborted due to timeout', 'TimeoutError'))
 

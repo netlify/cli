@@ -79,7 +79,10 @@ const errorMessage = (error: unknown): string => {
   if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
     return `the download timed out after ${String(FETCH_TIMEOUT_MS / 1000)}s`
   }
-  return error instanceof Error ? error.message : String(error)
+  if (error instanceof Error) {
+    return error.cause instanceof Error ? `${error.message}: ${error.cause.message}` : error.message
+  }
+  return String(error)
 }
 
 const sha256 = (bytes: Uint8Array): string => `sha256:${createHash('sha256').update(bytes).digest('hex')}`
@@ -553,7 +556,7 @@ export const setupAgentSkills = async ({
     }
     const summary = summarize(actions)
     return {
-      installed: summary.current + summary.added + summary.updated > 0,
+      installed: summary.current + summary.added + summary.updated + summary.kept > 0,
       directories,
       skillsVersion: manifest.version,
       summary,
