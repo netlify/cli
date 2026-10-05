@@ -448,23 +448,78 @@ describe('agent skills', () => {
       await writeSkill(skillsDir, 'netlify-deploy.old-123-0123456789ab', DEPLOY.files, DEPLOY.executable)
       await writeSkill(skillsDir, '.netlify-skill-someone-else-Ab12Cd', { 'SKILL.md': '# not ours\n' })
       const anHourAgo = new Date(Date.now() - 60 * 60_000)
-      await utimes(join(skillsDir, '.netlify-skill-netlify-deploy-Ab12Cd'), anHourAgo, anHourAgo)
-      await utimes(join(skillsDir, '.netlify-skill-someone-else-Ab12Cd'), anHourAgo, anHourAgo)
+      for (const name of await readdir(skillsDir)) {
+        await utimes(join(skillsDir, name), anHourAgo, anHourAgo)
+      }
 
       const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       const leftover = { action: 'removed', detail: 'leftover from an interrupted install' }
-      expect(actions.slice(0, 3)).toEqual([
+      expect(actions.slice(0, 2)).toEqual([
         { name: '.netlify-skill-netlify-deploy-Ab12Cd', ...leftover },
-        { name: 'netlify-deploy.old-123-0123456789ab', ...leftover },
         { name: 'netlify-functions.old-123-0123456789ab', ...leftover },
       ])
       expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
       await expect(readdir(skillsDir)).resolves.toEqual([
         '.netlify-skill-someone-else-Ab12Cd',
         'netlify-deploy',
+        'netlify-deploy.old-123-0123456789ab',
         'netlify-functions',
       ])
+
+      const second = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(second.actions).toContainEqual({ name: 'netlify-deploy.old-123-0123456789ab', ...leftover })
+      await expect(readdir(skillsDir)).resolves.toEqual([
+        '.netlify-skill-someone-else-Ab12Cd',
+        'netlify-deploy',
+        'netlify-functions',
+      ])
+    })
+
+    test('keeps a backup while its skill is missing, so a failed download leaves a copy behind', async () => {
+      await writeSkill(skillsDir, 'netlify-functions.old-123-0123456789ab', FUNCTIONS.files)
+      const anHourAgo = new Date(Date.now() - 60 * 60_000)
+      await utimes(join(skillsDir, 'netlify-functions.old-123-0123456789ab'), anHourAgo, anHourAgo)
+      responses.delete('/skills/netlify-functions/SKILL.md')
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions.find(({ name }) => name === 'netlify-functions')?.action).toBe('failed')
+      await expect(listDirectories(skillsDir)).resolves.toEqual([
+        'netlify-deploy',
+        'netlify-functions.old-123-0123456789ab',
+      ])
+    })
+
+    test('--reset-context leaves a directory at a skill name alone when it has no SKILL.md', async () => {
+      await writeSkill(skillsDir, FUNCTIONS.name, { 'notes.md': '# my notes, not a skill\n' })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+
+      expect(actions).toContainEqual({
+        name: 'netlify-functions',
+        action: 'kept',
+        detail: 'has no SKILL.md, so it is not a Netlify skill; left in place',
+      })
+      await expect(readFile(join(skillsDir, 'netlify-functions', 'notes.md'), 'utf8')).resolves.toBe(
+        '# my notes, not a skill\n',
+      )
+      await expect(readdir(join(skillsDir, 'netlify-functions'))).resolves.toEqual(['notes.md'])
+    })
+
+    test('renames a prior-name copy in place when the names differ only by case', async () => {
+      const caseOnly = buildManifest([FUNCTIONS, { ...DEPLOY, priorNames: ['Netlify-Deploy'] }])
+      await writeSkill(skillsDir, 'Netlify-Deploy', DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest: caseOnly })
+
+      expect(actions).toContainEqual({ name: 'Netlify-Deploy', action: 'renamed', detail: '-> netlify-deploy' })
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+
+      const second = await syncSkills({ host: HOST, directory: skillsDir, manifest: caseOnly })
+      expect(second.actions.map(({ action }) => action)).toEqual(['current', 'current'])
     })
 
     test('leaves a fresh staging directory alone, since another run may still be writing it', async () => {
@@ -684,17 +739,21 @@ describe('agent skills', () => {
       ])
     })
 
-    test('removes an unedited backup left under a prior name and installs the current name', async () => {
+    test('removes an unedited backup left under a prior name once the current name is installed', async () => {
       await writeSkill(skillsDir, 'netlify-cli-and-deploy.old-123-0123456789ab', DEPLOY.files, DEPLOY.executable)
+      const anHourAgo = new Date(Date.now() - 60 * 60_000)
+      await utimes(join(skillsDir, 'netlify-cli-and-deploy.old-123-0123456789ab'), anHourAgo, anHourAgo)
 
-      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+      const first = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+      expect(first.actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
+      await expect(listDirectories(skillsDir)).resolves.toContain('netlify-cli-and-deploy.old-123-0123456789ab')
 
-      expect(actions).toContainEqual({
+      const second = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+      expect(second.actions).toContainEqual({
         name: 'netlify-cli-and-deploy.old-123-0123456789ab',
         action: 'removed',
         detail: 'leftover from an interrupted install',
       })
-      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
       await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
     })
 

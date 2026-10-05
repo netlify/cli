@@ -286,7 +286,7 @@ const isOlderThan = async (file: string, ageMs: number): Promise<boolean> => {
 const isSameEntry = async (a: string, b: string): Promise<boolean> => {
   try {
     const [statA, statB] = await Promise.all([fs.lstat(a), fs.lstat(b)])
-    return statA.ino === statB.ino && statA.dev === statB.dev
+    return statA.ino !== 0 && statA.ino === statB.ino && statA.dev === statB.dev
   } catch {
     return false
   }
@@ -488,7 +488,12 @@ const removeInstallLeftovers = async (root: string, index: ManifestIndex): Promi
     const retired = RETIRED_LEFTOVER.exec(entry.name)
     const skill = retired ? skillUnderName(index, retired[1]) : undefined
     if (!retired || !skill) continue
-    if (await isUneditedRelease(leftover, skill)) {
+    const skillPresent = (await exists(path.join(root, retired[1]))) || (await exists(path.join(root, skill.name)))
+    if (
+      skillPresent &&
+      (await isOlderThan(leftover, LEFTOVER_MIN_AGE_MS)) &&
+      (await isUneditedRelease(leftover, skill))
+    ) {
       await fs.rm(leftover, { recursive: true, force: true })
       removed.push(entry.name)
     }
@@ -581,6 +586,11 @@ export const syncSkills = async ({
           act(record.name, 'kept', 'edited locally')
           break
         }
+        const target = path.join(directory, record.name)
+        if ((await isDirectory(target)) && !(await isFile(path.join(target, 'SKILL.md')))) {
+          act(record.name, 'kept', 'has no SKILL.md, so it is not a Netlify skill; left in place')
+          break
+        }
         const skill = skillByName(record.name)
         if (await install(skill, { force: true })) {
           act(record.name, 'reset', `edited copy replaced with ${skill.version ?? 'latest'}`)
@@ -597,6 +607,13 @@ export const syncSkills = async ({
         }
         if (!reset && current?.status === 'modified') {
           act(record.name, 'kept', `${record.currentName} is already installed and edited locally`)
+          break
+        }
+        const priorDir = path.join(directory, record.name)
+        if (!currentPresent && (await isSameEntry(priorDir, path.join(directory, record.currentName)))) {
+          await fs.rename(priorDir, path.join(directory, record.currentName))
+          installed.add(record.currentName)
+          act(record.name, 'renamed', `-> ${record.currentName}`)
           break
         }
         if (!currentPresent && !(await install(skill))) {
