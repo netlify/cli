@@ -5,9 +5,10 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@netlify/api', () => ({
-  NetlifyAPI: vi.fn().mockImplementation(() => ({
-    createTicket: mocks.createTicket,
-  })),
+  // vitest 4 constructs mocks called with `new`, so the implementation cannot be an arrow function.
+  NetlifyAPI: vi.fn(function () {
+    return { createTicket: mocks.createTicket }
+  }),
 }))
 
 import { loginRequest } from '../../../../src/commands/login/login-request.js'

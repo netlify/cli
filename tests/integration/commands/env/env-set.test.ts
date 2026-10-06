@@ -244,7 +244,7 @@ describe('env:set command', async () => {
             offline: false,
             parseJson: false,
           }),
-        ).rejects.toThrowError(`please specify a non-development context`)
+        ).rejects.toThrow(`please specify a non-development context`)
       })
       test.concurrent<FixtureTestContext>('should error when set with a post-processing --scope', async ({
         fixture,
@@ -257,7 +257,7 @@ describe('env:set command', async () => {
               parseJson: false,
             },
           ),
-        ).rejects.toThrowError(`Secret values cannot be used within the post-processing scope.`)
+        ).rejects.toThrow(`Secret values cannot be used within the post-processing scope.`)
       })
       test.concurrent<FixtureTestContext>('should error when --scope and --context are passed on an existing env var', async ({
         fixture,
@@ -267,7 +267,7 @@ describe('env:set command', async () => {
             offline: false,
             parseJson: false,
           }),
-        ).rejects.toThrowError(`Setting the context and scope at the same time on an existing env var is not allowed`)
+        ).rejects.toThrow(`Setting the context and scope at the same time on an existing env var is not allowed`)
       })
     })
   })
