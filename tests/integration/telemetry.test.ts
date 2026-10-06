@@ -83,7 +83,7 @@ await withMockApi(routes, () => {
   })
 
   test<MockApiTestContext>('should send invoked command on failure', async ({ apiUrl, requests }) => {
-    await expect(callCli(['dev:exec', 'exit 1'], getCLIOptions(apiUrl))).rejects.toThrowError()
+    await expect(callCli(['dev:exec', 'exit 1'], getCLIOptions(apiUrl))).rejects.toThrow()
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
 
@@ -136,7 +136,7 @@ await withMockApi(routes, () => {
   }) => {
     await expect(
       callCli(['blobs:get', '--filter', 'web', '-O', './output_dir', 'my-store', 'my-key'], getCLIOptions(apiUrl)),
-    ).rejects.toThrowError(/You don't appear to be in a folder that is linked to a project/)
+    ).rejects.toThrow(/You don't appear to be in a folder that is linked to a project/)
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
 

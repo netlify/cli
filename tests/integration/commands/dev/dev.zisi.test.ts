@@ -434,7 +434,7 @@ export const handler = async function () {
               `Expect: 100-continue' header`,
             ]),
           )
-          .resolves.not.toThrowError()
+          .resolves.not.toThrow()
       })
     })
   })

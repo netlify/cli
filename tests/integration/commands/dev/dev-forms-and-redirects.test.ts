@@ -520,7 +520,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
             true,
           ),
         )
-        .rejects.toThrowError()
+        .rejects.toThrow()
     })
   })
 })
