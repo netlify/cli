@@ -63,7 +63,7 @@
     "@netlify/dev": "^5.1.6",
     "@netlify/dev-utils": "^6.0.3",
     "@netlify/edge-bundler": "^16.1.2",
-    "@netlify/edge-functions": "^4.0.0",
+    "@netlify/edge-functions": "^4.0.2",
     "@netlify/edge-functions-bootstrap": "^3.2.0",
     "@netlify/headers-parser": "^10.1.1",
     "@netlify/images": "^2.0.1",
