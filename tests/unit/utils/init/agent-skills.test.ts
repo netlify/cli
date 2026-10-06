@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises'
+import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -19,6 +19,7 @@ import {
   setupAgentSkills,
   syncSkills,
 } from '../../../../src/utils/init/agent-skills.js'
+import { log } from '../../../../src/utils/command-helpers.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/utils/command-helpers.js')>()),
@@ -130,12 +131,15 @@ const listDirectories = async (root: string) =>
     .map((entry) => entry.name)
     .sort()
 
+const loggedLines = () => vi.mocked(log).mock.calls.map(([line]) => String(line))
+
 describe('agent skills', () => {
   let projectDir: string
   let skillsDir: string
 
   beforeEach(async () => {
     vi.stubGlobal('fetch', vi.fn())
+    vi.mocked(log).mockClear()
     projectDir = await mkdtemp(join(tmpdir(), 'agent-skills-'))
     skillsDir = join(projectDir, '.agents', 'skills')
   })
@@ -199,6 +203,12 @@ describe('agent skills', () => {
     const skills = [FUNCTIONS, DEPLOY]
     let manifest: SkillsManifest
     let responses: Map<string, string>
+
+    const manifestSkill = (name: string): ManifestSkill => {
+      const skill = manifest.skills.find((candidate) => candidate.name === name)
+      if (!skill) throw new Error(`${name} missing from manifest`)
+      return skill
+    }
 
     beforeEach(() => {
       manifest = buildManifest(skills, [deprecatedSkill('netlify-legacy', RETIRED_FILES, 'netlify-deploy')])
@@ -269,15 +279,76 @@ describe('agent skills', () => {
       await expect(readFile(join(skillsDir, 'netlify-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# my own notes\n')
     })
 
-    test('installs the new name beside a copy under a prior name and leaves the old copy alone', async () => {
+    test('--reset-context replaces a locally edited copy with the latest release', async () => {
+      await writeSkill(skillsDir, DEPLOY.name, { ...DEPLOY.files, 'SKILL.md': '# my own notes\n', 'notes.md': 'x\n' })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+
+      expect(actions).toContainEqual({
+        name: 'netlify-deploy',
+        action: 'reset',
+        detail: 'edited copy replaced with 2.0.0',
+      })
+      await expect(readFile(join(skillsDir, 'netlify-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# deploy\n')
+      expect((await readdir(join(skillsDir, 'netlify-deploy'))).sort()).toEqual(['SKILL.md', 'scripts'])
+    })
+
+    test('--reset-context replaces a symlink standing in for a skill without touching its target', async () => {
+      const elsewhere = join(projectDir, 'elsewhere')
+      await writeSkill(elsewhere, 'functions-source', FUNCTIONS_V1)
+      await mkdir(skillsDir, { recursive: true })
+      await symlink(join(elsewhere, 'functions-source'), join(skillsDir, 'netlify-functions'))
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+
+      expect(actions).toContainEqual({
+        name: 'netlify-functions',
+        action: 'reset',
+        detail: 'edited copy replaced with 2.0.0',
+      })
+      expect((await lstat(join(skillsDir, 'netlify-functions'))).isDirectory()).toBe(true)
+      await expect(readFile(join(skillsDir, 'netlify-functions', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v2\n')
+      await expect(readFile(join(elsewhere, 'functions-source', 'SKILL.md'), 'utf8')).resolves.toBe('# functions v1\n')
+    })
+
+    test('migrates an unedited copy under a prior name to the current name', async () => {
       await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions).toEqual([
+        { name: 'netlify-cli-and-deploy', action: 'renamed', detail: '-> netlify-deploy' },
+        { name: 'netlify-functions', action: 'added', detail: '2.0.0' },
+      ])
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+      await expect(readFile(join(skillsDir, 'netlify-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# deploy\n')
+    })
+
+    test('removes an unedited prior-name copy when the current name is already installed', async () => {
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, DEPLOY.name, DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions).toEqual([
+        { name: 'netlify-cli-and-deploy', action: 'removed', detail: 'superseded by netlify-deploy' },
+        { name: 'netlify-deploy', action: 'current', detail: '2.0.0' },
+        { name: 'netlify-functions', action: 'current', detail: '2.0.0' },
+      ])
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+      expect(requestedPaths()).toEqual([])
+    })
+
+    test('keeps an edited prior-name copy and still installs the current name beside it', async () => {
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', { 'SKILL.md': '# my deploy notes\n' })
 
       const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
       expect(actions).toContainEqual({
         name: 'netlify-cli-and-deploy',
         action: 'kept',
-        detail: 'now called netlify-deploy; this copy can be removed',
+        detail: 'edited locally; now called netlify-deploy',
       })
       expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
       await expect(listDirectories(skillsDir)).resolves.toEqual([
@@ -287,26 +358,42 @@ describe('agent skills', () => {
       ])
     })
 
-    test('keeps reporting a renamed copy on the second run without extra downloads', async () => {
+    test('keeps a prior-name copy when the current name is installed and edited', async () => {
       await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
-      await syncSkills({ host: HOST, directory: skillsDir, manifest })
-      vi.mocked(fetch).mockClear()
+      await writeSkill(skillsDir, DEPLOY.name, { 'SKILL.md': '# my deploy notes\n' })
 
       const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
 
-      expect(actions).toEqual([
-        {
-          name: 'netlify-cli-and-deploy',
-          action: 'kept',
-          detail: 'now called netlify-deploy; this copy can be removed',
-        },
-        { name: 'netlify-deploy', action: 'current', detail: '2.0.0' },
-        { name: 'netlify-functions', action: 'current', detail: '2.0.0' },
-      ])
-      expect(requestedPaths()).toEqual([])
+      expect(actions).toContainEqual({
+        name: 'netlify-cli-and-deploy',
+        action: 'kept',
+        detail: 'netlify-deploy is already installed and edited locally',
+      })
+      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'kept', detail: 'edited locally' })
+      await expect(readFile(join(skillsDir, 'netlify-cli-and-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# deploy\n')
     })
 
-    test('reports a deprecated skill and leaves it and unknown directories alone', async () => {
+    test('--reset-context migrates an edited prior-name copy over an edited current one', async () => {
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', { 'SKILL.md': '# my deploy notes\n' })
+      await writeSkill(skillsDir, DEPLOY.name, { 'SKILL.md': '# other notes\n' })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+
+      expect(actions).toContainEqual({
+        name: 'netlify-cli-and-deploy',
+        action: 'removed',
+        detail: 'superseded by netlify-deploy',
+      })
+      expect(actions).toContainEqual({
+        name: 'netlify-deploy',
+        action: 'reset',
+        detail: 'edited copy replaced with 2.0.0',
+      })
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+      await expect(readFile(join(skillsDir, 'netlify-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# deploy\n')
+    })
+
+    test('deletes an unedited deprecated skill and leaves unknown directories alone', async () => {
       await writeSkill(skillsDir, 'netlify-legacy', RETIRED_FILES)
       await writeSkill(skillsDir, 'my-team-skill', { 'SKILL.md': '# ours\n' })
 
@@ -315,15 +402,197 @@ describe('agent skills', () => {
       expect(actions).toContainEqual({ name: 'my-team-skill', action: 'ignored', detail: 'not a Netlify skill' })
       expect(actions).toContainEqual({
         name: 'netlify-legacy',
-        action: 'kept',
+        action: 'removed',
         detail: 'deprecated; use netlify-deploy',
       })
       await expect(listDirectories(skillsDir)).resolves.toEqual([
         'my-team-skill',
         'netlify-deploy',
         'netlify-functions',
-        'netlify-legacy',
       ])
+    })
+
+    test('keeps an edited deprecated skill until --reset-context', async () => {
+      await writeSkill(skillsDir, 'netlify-legacy', { 'SKILL.md': '# retired, with my notes\n' })
+
+      const first = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+      expect(first.actions).toContainEqual({
+        name: 'netlify-legacy',
+        action: 'kept',
+        detail: 'deprecated; use netlify-deploy, but edited locally',
+      })
+      await expect(listDirectories(skillsDir)).resolves.toContain('netlify-legacy')
+
+      const second = await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+      expect(second.actions).toContainEqual({
+        name: 'netlify-legacy',
+        action: 'removed',
+        detail: 'deprecated; use netlify-deploy',
+      })
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+    })
+
+    test('never touches a copy of a skill living under an unrelated name', async () => {
+      await writeSkill(skillsDir, 'deploy-copy', DEPLOY.files, DEPLOY.executable)
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions).toContainEqual({ name: 'deploy-copy', action: 'ignored', detail: 'not a Netlify skill' })
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['deploy-copy', 'netlify-deploy', 'netlify-functions'])
+    })
+
+    test('cleans up staging and backup directories left by an interrupted install', async () => {
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+      await writeSkill(skillsDir, '.netlify-skill-netlify-deploy-Ab12Cd', { 'SKILL.md': '# half written\n' })
+      await writeSkill(skillsDir, 'netlify-functions.old-123-0123456789ab', FUNCTIONS_V1)
+      await writeSkill(skillsDir, 'netlify-deploy.old-123-0123456789ab', DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, '.netlify-skill-someone-else-Ab12Cd', { 'SKILL.md': '# not ours\n' })
+      const anHourAgo = new Date(Date.now() - 60 * 60_000)
+      for (const name of await readdir(skillsDir)) {
+        await utimes(join(skillsDir, name), anHourAgo, anHourAgo)
+      }
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      const leftover = { action: 'removed', detail: 'leftover from an interrupted install' }
+      expect(actions.slice(0, 2)).toEqual([
+        { name: '.netlify-skill-netlify-deploy-Ab12Cd', ...leftover },
+        { name: 'netlify-functions.old-123-0123456789ab', ...leftover },
+      ])
+      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
+      expect((await readdir(skillsDir)).sort()).toEqual([
+        '.netlify-skill-someone-else-Ab12Cd',
+        'netlify-deploy',
+        'netlify-deploy.old-123-0123456789ab',
+        'netlify-functions',
+      ])
+
+      const second = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(second.actions).toContainEqual({ name: 'netlify-deploy.old-123-0123456789ab', ...leftover })
+      expect((await readdir(skillsDir)).sort()).toEqual([
+        '.netlify-skill-someone-else-Ab12Cd',
+        'netlify-deploy',
+        'netlify-functions',
+      ])
+    })
+
+    test('keeps a backup while its skill is missing, so a failed download leaves a copy behind', async () => {
+      await writeSkill(skillsDir, 'netlify-functions.old-123-0123456789ab', FUNCTIONS.files)
+      const anHourAgo = new Date(Date.now() - 60 * 60_000)
+      await utimes(join(skillsDir, 'netlify-functions.old-123-0123456789ab'), anHourAgo, anHourAgo)
+      responses.delete('/skills/netlify-functions/SKILL.md')
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions.find(({ name }) => name === 'netlify-functions')?.action).toBe('failed')
+      await expect(listDirectories(skillsDir)).resolves.toEqual([
+        'netlify-deploy',
+        'netlify-functions.old-123-0123456789ab',
+      ])
+    })
+
+    test('--reset-context leaves a directory at a skill name alone when it has no SKILL.md', async () => {
+      await writeSkill(skillsDir, FUNCTIONS.name, { 'notes.md': '# my notes, not a skill\n' })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+
+      expect(actions).toContainEqual({
+        name: 'netlify-functions',
+        action: 'kept',
+        detail: 'has no SKILL.md, so it is not a Netlify skill; left in place',
+      })
+      await expect(readFile(join(skillsDir, 'netlify-functions', 'notes.md'), 'utf8')).resolves.toBe(
+        '# my notes, not a skill\n',
+      )
+      await expect(readdir(join(skillsDir, 'netlify-functions'))).resolves.toEqual(['notes.md'])
+    })
+
+    test('renames a prior-name copy in place when the names differ only by case', async () => {
+      const caseOnly = buildManifest([FUNCTIONS, { ...DEPLOY, priorNames: ['Netlify-Deploy'] }])
+      await writeSkill(skillsDir, 'Netlify-Deploy', DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest: caseOnly })
+
+      expect(actions).toContainEqual({ name: 'Netlify-Deploy', action: 'renamed', detail: '-> netlify-deploy' })
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+
+      const second = await syncSkills({ host: HOST, directory: skillsDir, manifest: caseOnly })
+      expect(second.actions.map(({ action }) => action)).toEqual(['current', 'current'])
+    })
+
+    test('leaves a fresh staging directory alone, since another run may still be writing it', async () => {
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+      await writeSkill(skillsDir, DEPLOY.name, DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, '.netlify-skill-netlify-deploy-Ab12Cd', { 'SKILL.md': '# half written\n' })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions.map(({ action }) => action)).toEqual(['current', 'current'])
+      await expect(readdir(skillsDir)).resolves.toContain('.netlify-skill-netlify-deploy-Ab12Cd')
+    })
+
+    test('refuses to install when the assembled tree does not match the manifest tree_hash', async () => {
+      const broken = structuredClone(manifest)
+      const functions = broken.skills.find(({ name }) => name === 'netlify-functions')
+      if (functions) functions.tree_hash = 'sha256:not-what-the-files-hash-to'
+
+      await expect(installSkill(HOST, skillsDir, functions ?? manifestSkill('netlify-functions'))).rejects.toThrow(
+        /staged tree hash .* does not match/,
+      )
+      await expect(listDirectories(skillsDir)).resolves.toEqual([])
+    })
+
+    test('--reset-context never migrates over a case twin that has no SKILL.md', async () => {
+      await writeSkill(skillsDir, 'Netlify-Deploy', { 'notes.md': '# keep me\n' })
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', { 'SKILL.md': '# my deploy notes\n' })
+      const caseInsensitive = await lstat(join(skillsDir, 'netlify-deploy')).then(
+        () => true,
+        () => false,
+      )
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+
+      await expect(readFile(join(skillsDir, 'Netlify-Deploy', 'notes.md'), 'utf8')).resolves.toBe('# keep me\n')
+      if (caseInsensitive) {
+        expect(actions).toContainEqual({
+          name: 'netlify-deploy',
+          action: 'kept',
+          detail: 'Netlify-Deploy already uses this name; left in place',
+        })
+        expect(actions).toContainEqual({
+          name: 'netlify-cli-and-deploy',
+          action: 'kept',
+          detail: 'now called netlify-deploy, which could not be installed',
+        })
+        await expect(listDirectories(skillsDir)).resolves.toEqual([
+          'Netlify-Deploy',
+          'netlify-cli-and-deploy',
+          'netlify-functions',
+        ])
+      } else {
+        expect(actions).toContainEqual({
+          name: 'netlify-cli-and-deploy',
+          action: 'renamed',
+          detail: '-> netlify-deploy',
+        })
+        await expect(listDirectories(skillsDir)).resolves.toEqual([
+          'Netlify-Deploy',
+          'netlify-deploy',
+          'netlify-functions',
+        ])
+      }
+    })
+
+    test('keeps a backup directory the user has edited', async () => {
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+      await writeSkill(skillsDir, 'netlify-functions.old-123-0123456789ab', { 'SKILL.md': '# my recovery\n' })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions.map(({ action }) => action)).not.toContain('removed')
+      await expect(listDirectories(skillsDir)).resolves.toContain('netlify-functions.old-123-0123456789ab')
     })
 
     test('reinstalls over an empty directory carrying a skill name', async () => {
@@ -381,10 +650,8 @@ describe('agent skills', () => {
 
     test('refuses to replace a directory that is not an unedited Netlify skill, even when asked directly', async () => {
       await writeSkill(skillsDir, FUNCTIONS.name, { 'SKILL.md': '# mine\n', 'notes.md': '# keep me\n' })
-      const functions = manifest.skills.find(({ name }) => name === 'netlify-functions')
-      if (!functions) throw new Error('netlify-functions missing from manifest')
 
-      await expect(installSkill(HOST, skillsDir, functions)).rejects.toThrow(/already exists/)
+      await expect(installSkill(HOST, skillsDir, manifestSkill('netlify-functions'))).rejects.toThrow(/already exists/)
       await expect(readFile(join(skillsDir, 'netlify-functions', 'notes.md'), 'utf8')).resolves.toBe('# keep me\n')
       await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-functions'])
     })
@@ -396,8 +663,114 @@ describe('agent skills', () => {
 
       await expect(readFile(join(skillsDir, 'Netlify-Functions', 'notes.md'), 'utf8')).resolves.toBe('# keep me\n')
       expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
-      const functions = actions.find(({ name }) => name === 'netlify-functions')
-      expect(functions?.action === 'added' || functions?.detail?.includes('already exists')).toBe(true)
+      const functions = actions.filter(({ name }) => name === 'netlify-functions')
+      expect(functions).toHaveLength(1)
+      const caseInsensitive = (await listDirectories(skillsDir)).length === 2
+      expect(functions[0]).toEqual(
+        caseInsensitive
+          ? {
+              name: 'netlify-functions',
+              action: 'kept',
+              detail: 'Netlify-Functions already uses this name; left in place',
+            }
+          : { name: 'netlify-functions', action: 'added', detail: '2.0.0' },
+      )
+    })
+
+    test('never renames away a user directory that differs only by case but holds release content', async () => {
+      await writeSkill(skillsDir, 'Netlify-Deploy', DEPLOY.files, DEPLOY.executable)
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions).toContainEqual({ name: 'Netlify-Deploy', action: 'ignored', detail: 'not a Netlify skill' })
+      const directories = await listDirectories(skillsDir)
+      expect(directories).toContain('Netlify-Deploy')
+      if (!directories.includes('netlify-deploy')) {
+        expect(actions).toContainEqual({
+          name: 'netlify-deploy',
+          action: 'kept',
+          detail: 'Netlify-Deploy already uses this name; left in place',
+        })
+      }
+    })
+
+    test('migrates two prior names of one skill in a single run and is quiet afterwards', async () => {
+      const twice = buildManifest([FUNCTIONS, { ...DEPLOY, priorNames: ['netlify-cli-and-deploy', 'deploy-skill'] }])
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, 'deploy-skill', DEPLOY.files, DEPLOY.executable)
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+
+      const first = await syncSkills({ host: HOST, directory: skillsDir, manifest: twice })
+      expect(first.actions).toEqual([
+        { name: 'deploy-skill', action: 'renamed', detail: '-> netlify-deploy' },
+        { name: 'netlify-cli-and-deploy', action: 'removed', detail: 'superseded by netlify-deploy' },
+        { name: 'netlify-functions', action: 'current', detail: '2.0.0' },
+      ])
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+
+      const second = await syncSkills({ host: HOST, directory: skillsDir, manifest: twice })
+      expect(second.actions.map(({ action }) => action)).toEqual(['current', 'current'])
+    })
+
+    test('deletes an unedited deprecated skill found under one of its prior names', async () => {
+      const legacy = { ...deprecatedSkill('netlify-legacy', RETIRED_FILES), prior_names: ['netlify-old'] }
+      const withLegacy = buildManifest(skills, [legacy])
+      await writeSkill(skillsDir, 'netlify-old', RETIRED_FILES)
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest: withLegacy })
+
+      expect(actions).toContainEqual({ name: 'netlify-old', action: 'removed', detail: 'deprecated' })
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+    })
+
+    test('leaves a directory without SKILL.md under a prior or deprecated name alone, even on --reset-context', async () => {
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy', { 'notes.md': '# not a skill\n' })
+      await writeSkill(skillsDir, 'netlify-legacy', { 'notes.md': '# not a skill either\n' })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+
+      expect(actions.map(({ name }) => name)).not.toContain('netlify-cli-and-deploy')
+      expect(actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
+      await expect(listDirectories(skillsDir)).resolves.toEqual([
+        'netlify-cli-and-deploy',
+        'netlify-deploy',
+        'netlify-functions',
+        'netlify-legacy',
+      ])
+    })
+
+    test('removes an unedited backup left under a prior name once the current name is installed', async () => {
+      await writeSkill(skillsDir, 'netlify-cli-and-deploy.old-123-0123456789ab', DEPLOY.files, DEPLOY.executable)
+      const anHourAgo = new Date(Date.now() - 60 * 60_000)
+      await utimes(join(skillsDir, 'netlify-cli-and-deploy.old-123-0123456789ab'), anHourAgo, anHourAgo)
+
+      const first = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+      expect(first.actions).toContainEqual({ name: 'netlify-deploy', action: 'added', detail: '2.0.0' })
+      await expect(listDirectories(skillsDir)).resolves.toContain('netlify-cli-and-deploy.old-123-0123456789ab')
+
+      const second = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+      expect(second.actions).toContainEqual({
+        name: 'netlify-cli-and-deploy.old-123-0123456789ab',
+        action: 'removed',
+        detail: 'leftover from an interrupted install',
+      })
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+    })
+
+    test('does not point at --reset-context when the only kept copies are not edited Netlify skills', async () => {
+      await writeSkill(skillsDir, 'Netlify-Functions', { 'SKILL.md': '# mine\n', 'notes.md': '# keep me\n' })
+
+      await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
+
+      expect(loggedLines().join('\n')).not.toContain('--reset-context')
+    })
+
+    test('--reset-context never forces over a directory that is not classified as a Netlify skill', async () => {
+      await writeSkill(skillsDir, 'Netlify-Functions', { 'SKILL.md': '# mine\n', 'notes.md': '# keep me\n' })
+
+      await syncSkills({ host: HOST, directory: skillsDir, manifest, reset: true })
+
+      await expect(readFile(join(skillsDir, 'Netlify-Functions', 'notes.md'), 'utf8')).resolves.toBe('# keep me\n')
     })
 
     test('records a skill whose download fails and keeps installing the others', async () => {
@@ -452,11 +825,48 @@ describe('agent skills', () => {
 
     test('rejects a file whose bytes do not match the manifest and leaves no partial install', async () => {
       responses.set('/skills/netlify-functions/SKILL.md', '# tampered\n')
-      const functions = manifest.skills.find(({ name }) => name === 'netlify-functions')
-      if (!functions) throw new Error('netlify-functions missing from manifest')
 
-      await expect(installSkill(HOST, skillsDir, functions)).rejects.toThrow(/hash mismatch/)
+      await expect(installSkill(HOST, skillsDir, manifestSkill('netlify-functions'))).rejects.toThrow(/hash mismatch/)
       await expect(stat(skillsDir)).rejects.toThrow(/ENOENT/)
+    })
+
+    test('a failed download records that skill and the rest of the sync still happens', async () => {
+      await writeSkill(skillsDir, 'netlify-legacy', RETIRED_FILES)
+      responses.delete('/skills/netlify-functions/SKILL.md')
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions.map(({ name, action }) => `${name}:${action}`)).toEqual([
+        'netlify-legacy:removed',
+        'netlify-deploy:added',
+        'netlify-functions:failed',
+      ])
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy'])
+    })
+
+    test('re-hashes a deprecated copy right before deleting it, so an edit made mid-run is kept', async () => {
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS_V1)
+      await writeSkill(skillsDir, 'netlify-legacy', RETIRED_FILES)
+      const fetchHosted = vi.mocked(fetch).getMockImplementation()
+      if (!fetchHosted) throw new Error('fetch is not stubbed')
+      vi.mocked(fetch).mockImplementation(async (input, init) => {
+        if (requestPath(input) === '/skills/netlify-functions/SKILL.md') {
+          await writeFile(join(skillsDir, 'netlify-legacy', 'SKILL.md'), '# retired, edited during the sync\n')
+        }
+        return fetchHosted(input, init)
+      })
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest })
+
+      expect(actions).toContainEqual({ name: 'netlify-functions', action: 'updated', detail: '1.0.0 -> 2.0.0' })
+      expect(actions).toContainEqual({
+        name: 'netlify-legacy',
+        action: 'kept',
+        detail: 'deprecated; use netlify-deploy, but edited locally',
+      })
+      await expect(readFile(join(skillsDir, 'netlify-legacy', 'SKILL.md'), 'utf8')).resolves.toBe(
+        '# retired, edited during the sync\n',
+      )
     })
 
     test('setupAgentSkills installs into the detected directories and reports a summary', async () => {
@@ -471,6 +881,36 @@ describe('agent skills', () => {
         'netlify-deploy',
         'netlify-functions',
       ])
+      expect(loggedLines()).toEqual([expect.stringContaining('Installed Netlify skills')])
+    })
+
+    test('setupAgentSkills summarizes a sync and points edited copies at --reset-context', async () => {
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS_V1)
+      await writeSkill(skillsDir, DEPLOY.name, { 'SKILL.md': '# my own notes\n' })
+      await writeSkill(skillsDir, 'netlify-legacy', RETIRED_FILES)
+
+      const result = await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
+
+      expect(result.summary).toMatchObject({ updated: 1, removed: 1, kept: 1 })
+      const lines = loggedLines()
+      expect(lines[0]).toMatch(/Synced Netlify skills in .*\(1 updated, 1 removed, 1 kept\)\./)
+      expect(lines[1]).toContain('netlify-deploy')
+      expect(lines[1]).toContain('edited locally')
+      expect(lines[2]).toContain('--reset-context')
+    })
+
+    test('setupAgentSkills reports a failed skill next to what landed', async () => {
+      await writeSkill(skillsDir, 'netlify-legacy', RETIRED_FILES)
+      responses.delete('/skills/netlify-functions/SKILL.md')
+
+      const result = await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
+
+      expect(result.installed).toBe(true)
+      expect(result.summary).toMatchObject({ added: 1, removed: 1, failed: 1 })
+      const lines = loggedLines()
+      expect(lines[0]).toMatch(/Synced Netlify skills in .*\(1 added, 1 removed, 1 failed\)\./)
+      expect(lines[1]).toMatch(/netlify-functions.*SKILL\.md: .*HTTP 404/)
+      expect(lines.join('\n')).not.toContain('--reset-context')
     })
   })
 

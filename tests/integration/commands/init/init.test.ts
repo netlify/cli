@@ -20,36 +20,59 @@ const SKILL_CONTENT = '# netlify-functions\n'
 
 const sha256 = (content: string) => `sha256:${createHash('sha256').update(content).digest('hex')}`
 
-const skillsManifest = () => {
-  const fileHash = sha256(SKILL_CONTENT)
-  const treeHash = `sha256:${createHash('sha256')
-    .update(`SKILL.md\u0000100644\u0000${fileHash.replace(/^sha256:/, '')}\n`)
-    .digest('hex')}`
-  return {
-    schema_version: 1,
-    version: '1.0.0',
-    skills: [
-      {
-        name: 'netlify-functions',
-        status: 'active',
-        version: '1.0.0',
-        prior_names: [],
-        description: 'Netlify Functions',
-        tree_hash: treeHash,
-        files: { 'SKILL.md': fileHash },
-        executable: [],
-        history: [{ version: '1.0.0', tree_hash: treeHash }],
-      },
-    ],
+type SkillFiles = Record<string, string>
+
+const treeHashOf = (files: SkillFiles) => {
+  const hash = createHash('sha256')
+  for (const file of Object.keys(files).sort()) {
+    hash.update(`${file}\u0000100644\u0000${sha256(files[file]).replace(/^sha256:/, '')}\n`)
   }
+  return `sha256:${hash.digest('hex')}`
 }
 
-const withSkillsHost = async (handler: (host: { url: string; requests: string[] }) => Promise<void>) => {
+interface HostedSkill {
+  files: SkillFiles
+  status?: 'active' | 'deprecated'
+  previous?: Record<string, SkillFiles>
+}
+
+const DEFAULT_HOSTED_SKILLS: Record<string, HostedSkill> = {
+  'netlify-functions': { files: { 'SKILL.md': SKILL_CONTENT } },
+}
+
+const skillsManifest = (skills: Record<string, HostedSkill>) => ({
+  schema_version: 1,
+  version: '1.0.0',
+  skills: Object.entries(skills).map(([name, { files, status = 'active', previous = {} }]) => {
+    const current = status === 'active' ? treeHashOf(files) : null
+    return {
+      name,
+      status,
+      version: current ? '1.0.0' : null,
+      prior_names: [],
+      description: name,
+      tree_hash: current,
+      files: Object.fromEntries(Object.entries(files).map(([file, content]) => [file, sha256(content)])),
+      executable: [],
+      history: [
+        ...Object.entries(previous).map(([version, oldFiles]) => ({ version, tree_hash: treeHashOf(oldFiles) })),
+        ...(current ? [{ version: '1.0.0', tree_hash: current }] : []),
+      ],
+    }
+  }),
+})
+
+const withSkillsHost = async (
+  handler: (host: { url: string; requests: string[] }) => Promise<void>,
+  skills: Record<string, HostedSkill> = DEFAULT_HOSTED_SKILLS,
+) => {
   const requests: string[] = []
-  const responses = new Map<string, string>([
-    ['/manifest.json', JSON.stringify(skillsManifest())],
-    ['/skills/netlify-functions/SKILL.md', SKILL_CONTENT],
-  ])
+  const responses = new Map<string, string>([['/manifest.json', JSON.stringify(skillsManifest(skills))]])
+  for (const [name, { files }] of Object.entries(skills)) {
+    for (const [file, content] of Object.entries(files)) {
+      responses.set(`/skills/${name}/${file}`, content)
+    }
+  }
   const server = createServer((req, res) => {
     const url = req.url ?? ''
     requests.push(url)
@@ -760,53 +783,56 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init installs Netlify skills for AI agents by default and is idempotent', async (t) => {
-    const siteInfo = {
-      admin_url: 'https://app.netlify.com/projects/site-name/overview',
-      ssl_url: 'https://site-name.netlify.app/',
-      id: 'site_id',
-      name: 'site-name',
-      build_settings: { repo_url: 'https://github.com/owner/repo' },
+  const linkedSiteInfo = {
+    admin_url: 'https://app.netlify.com/projects/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+  const linkedSiteRoutes = [
+    { path: 'accounts', response: [{ slug: 'test-account' }] },
+    { path: 'sites/site_id/service-instances', response: [] },
+    { path: 'sites/site_id', response: linkedSiteInfo },
+    { path: 'sites', response: [linkedSiteInfo] },
+    { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
+    { path: 'sites/site_id', method: 'PATCH' as const, response: { deploy_hook: 'deploy_hook' } },
+  ]
+  const manualQuestions = () => [
+    { question: 'Your build command (hugo build/yarn run build/etc)', answer: answerWithValue('npm run build') },
+    { question: 'Directory to deploy (blank for current dir)', answer: answerWithValue('dist') },
+    { question: 'No netlify.toml detected', answer: CONFIRM },
+    { question: 'Give this Netlify SSH public key access to your repository', answer: CONFIRM },
+    { question: 'The SSH URL of the remote git repo', answer: CONFIRM },
+    { question: 'Configure the following webhook for your repository', answer: CONFIRM },
+  ]
+  const initOnLinkedSite =
+    ({ apiUrl, cwd, skillsHost }: { apiUrl: string; cwd: string; skillsHost: string }) =>
+    async (...flags: string[]) => {
+      const env = {
+        NETLIFY_API_URL: apiUrl,
+        NETLIFY_SITE_ID: 'site_id',
+        NETLIFY_AUTH_TOKEN: 'fake-token',
+        NETLIFY_SKILLS_HOST: skillsHost,
+      }
+      const childProcess = execa(cliPath, ['init', '--manual', ...flags], { cwd, env })
+      if (process.env.DEBUG_TESTS) {
+        childProcess.stdout?.on('data', (data: Buffer) => {
+          process.stderr.write(data)
+        })
+      }
+      handleQuestions(childProcess, manualQuestions())
+      return await childProcess
     }
-    const routes = [
-      { path: 'accounts', response: [{ slug: 'test-account' }] },
-      { path: 'sites/site_id/service-instances', response: [] },
-      { path: 'sites/site_id', response: siteInfo },
-      { path: 'sites', response: [siteInfo] },
-      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
-      { path: 'sites/site_id', method: 'PATCH' as const, response: { deploy_hook: 'deploy_hook' } },
-    ]
-    const manualQuestions = () => [
-      { question: 'Your build command (hugo build/yarn run build/etc)', answer: answerWithValue('npm run build') },
-      { question: 'Directory to deploy (blank for current dir)', answer: answerWithValue('dist') },
-      { question: 'No netlify.toml detected', answer: CONFIRM },
-      { question: 'Give this Netlify SSH public key access to your repository', answer: CONFIRM },
-      { question: 'The SSH URL of the remote git repo', answer: CONFIRM },
-      { question: 'Configure the following webhook for your repository', answer: CONFIRM },
-    ]
 
+  test('netlify init installs Netlify skills for AI agents by default and is idempotent', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withGit().ensureDirectoryExists(path.join(builder.directory, '.agents')).build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
+      await withMockApi(linkedSiteRoutes, async ({ apiUrl }) => {
         await withSkillsHost(async (skillsHost) => {
-          const env = {
-            NETLIFY_API_URL: apiUrl,
-            NETLIFY_SITE_ID: 'site_id',
-            NETLIFY_AUTH_TOKEN: 'fake-token',
-            NETLIFY_SKILLS_HOST: skillsHost.url,
-          }
           const skillPath = path.join(builder.directory, '.agents', 'skills', 'netlify-functions', 'SKILL.md')
-          const runInit = async (...flags: string[]) => {
-            const childProcess = execa(cliPath, ['init', '--manual', ...flags], { cwd: builder.directory, env })
-            if (process.env.DEBUG_TESTS) {
-              childProcess.stdout?.on('data', (data: Buffer) => {
-                process.stderr.write(data)
-              })
-            }
-            handleQuestions(childProcess, manualQuestions())
-            return await childProcess
-          }
+          const runInit = initOnLinkedSite({ apiUrl, cwd: builder.directory, skillsHost: skillsHost.url })
 
           const first = await runInit()
           t.expect(first.stdout).toContain('Installed Netlify skills')
@@ -822,6 +848,49 @@ describe.concurrent('commands/init', () => {
           t.expect(skipped.stdout).not.toContain('Netlify skills')
           t.expect(skillsHost.requests.length).toBe(requestsAfterFirstRun + 1)
         })
+      })
+    })
+  })
+
+  test('netlify init syncs installed skills: updates stale copies, removes deprecated ones, keeps edits until --reset-context', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const skillsDir = path.join('.agents', 'skills')
+      await builder
+        .withGit()
+        .withContentFiles([
+          { path: path.join(skillsDir, 'netlify-functions', 'SKILL.md'), content: '# functions (old)\n' },
+          { path: path.join(skillsDir, 'netlify-blobs', 'SKILL.md'), content: '# blobs plus my notes\n' },
+          { path: path.join(skillsDir, 'netlify-db', 'SKILL.md'), content: '# db\n' },
+        ])
+        .build()
+      const skillFile = (name: string) => readFile(path.join(builder.directory, skillsDir, name, 'SKILL.md'), 'utf8')
+
+      await withMockApi(linkedSiteRoutes, async ({ apiUrl }) => {
+        await withSkillsHost(
+          async (skillsHost) => {
+            const runInit = initOnLinkedSite({ apiUrl, cwd: builder.directory, skillsHost: skillsHost.url })
+
+            const first = await runInit()
+            t.expect(first.stdout).toMatch(/Synced Netlify skills in .*\(1 updated, 1 removed, 1 kept\)\./)
+            t.expect(first.stdout).toContain('netlify-blobs: edited locally')
+            t.expect(first.stdout).toContain('--reset-context')
+            await t.expect(skillFile('netlify-functions')).resolves.toBe('# functions\n')
+            await t.expect(skillFile('netlify-blobs')).resolves.toBe('# blobs plus my notes\n')
+            await t.expect(skillFile('netlify-db')).rejects.toThrow(/ENOENT/)
+
+            const second = await runInit('--reset-context')
+            t.expect(second.stdout).toMatch(/Synced Netlify skills in .*\(1 reset\)\./)
+            await t.expect(skillFile('netlify-blobs')).resolves.toBe('# blobs\n')
+          },
+          {
+            'netlify-functions': {
+              files: { 'SKILL.md': '# functions\n' },
+              previous: { '0.9.0': { 'SKILL.md': '# functions (old)\n' } },
+            },
+            'netlify-blobs': { files: { 'SKILL.md': '# blobs\n' } },
+            'netlify-db': { files: {}, status: 'deprecated', previous: { '0.9.0': { 'SKILL.md': '# db\n' } } },
+          },
+        )
       })
     })
   })

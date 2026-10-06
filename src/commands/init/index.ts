@@ -12,6 +12,10 @@ export const createInitCommand = (program: BaseCommand) =>
     .option('-m, --manual', 'Manually configure a git remote for CI')
     .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
     .option('--skip-agent-setup', 'Skip installing Netlify skills for AI coding agents into the project')
+    .option(
+      '--reset-context',
+      'Replace locally edited Netlify skills with the latest release, and migrate or delete edited copies under renamed or deprecated names',
+    )
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/get-started/'
       return `
@@ -20,5 +24,8 @@ For more information about getting started with Netlify CLI, see ${terminalLink(
     })
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { init } = await import('./init.js')
-      await init(options, command, { setupAgentSkills: !options.skipAgentSetup })
+      await init(options, command, {
+        setupAgentSkills: !options.skipAgentSetup,
+        resetContext: Boolean(options.resetContext),
+      })
     })
