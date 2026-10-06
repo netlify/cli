@@ -47,15 +47,13 @@ export const fetchEdgeFunctionHistoricalLogs = async ({
       filterNames.map(async (filterName) => {
         const baseUrl = buildEdgeFunctionLogsUrl({ siteId, search: filterName })
         const entries = await fetchHistoricalLogs({ baseUrl, accessToken, from, to, deployId })
-        return entries.map(
-          (entry): LogEntry => ({
-            source: 'edge-function',
-            name: entry.name ?? entry.function ?? filterName,
-            ts: entry.ts,
-            level: entry.level || 'INFO',
-            message: entry.message,
-          }),
-        )
+        return entries.map((entry): LogEntry => ({
+          source: 'edge-function',
+          name: entry.name ?? entry.function ?? filterName,
+          ts: entry.ts,
+          level: entry.level || 'INFO',
+          message: entry.message,
+        }))
       }),
     )
     return results.flat()
@@ -63,15 +61,13 @@ export const fetchEdgeFunctionHistoricalLogs = async ({
 
   const baseUrl = buildEdgeFunctionLogsUrl({ siteId })
   const entries = await fetchHistoricalLogs({ baseUrl, accessToken, from, to, deployId })
-  return entries.map(
-    (entry): LogEntry => ({
-      source: 'edge-function',
-      name: entry.name ?? entry.function ?? 'edge-function',
-      ts: entry.ts,
-      level: entry.level || 'INFO',
-      message: entry.message,
-    }),
-  )
+  return entries.map((entry): LogEntry => ({
+    source: 'edge-function',
+    name: entry.name ?? entry.function ?? 'edge-function',
+    ts: entry.ts,
+    level: entry.level || 'INFO',
+    message: entry.message,
+  }))
 }
 
 export const streamEdgeFunctions = (

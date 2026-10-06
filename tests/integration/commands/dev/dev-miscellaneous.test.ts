@@ -244,7 +244,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     await withSiteBuilder(t, async (builder) => {
       setupRoleBasedRedirectsSite(builder)
       await builder.build()
-      await t.expect(validateRoleBasedRedirectsSite({ builder, t })).resolves.not.toThrowError()
+      await t.expect(validateRoleBasedRedirectsSite({ builder, t })).resolves.not.toThrow()
     })
   })
 
@@ -261,7 +261,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         },
       })
       await builder.build()
-      await t.expect(validateRoleBasedRedirectsSite({ builder, t, jwtSecret, jwtRolePath })).resolves.not.toThrowError()
+      await t.expect(validateRoleBasedRedirectsSite({ builder, t, jwtSecret, jwtRolePath })).resolves.not.toThrow()
     })
   })
 
