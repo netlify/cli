@@ -82,7 +82,7 @@ describe('sites command', () => {
 
         await expect(async () => {
           await program.parseAsync(['', '', 'sites:create', '--name', Array.from({ length: 64 }).fill('a').join('')])
-        }).rejects.toThrowError('--name should be less than 64 characters')
+        }).rejects.toThrow('--name should be less than 64 characters')
       })
     })
 
@@ -165,7 +165,7 @@ describe('sites command', () => {
             'test-account',
             '--disable-linking',
           ])
-        }).rejects.toThrowError(/already taken/)
+        }).rejects.toThrow(/already taken/)
 
         const siteCreateRequests = requests.filter(
           (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
@@ -224,7 +224,7 @@ describe('sites command', () => {
             'test-account',
             '--disable-linking',
           ])
-        }).rejects.toThrowError(/already taken/)
+        }).rejects.toThrow(/already taken/)
 
         const siteCreateRequests = requests.filter(
           (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',

@@ -20,7 +20,7 @@ import { ServerHandler } from '@netlify/server-dev'
 import { runBeforeProcessExit } from './shell.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import type { MatchResult } from '@netlify/redirect-matcher'
-import contentType from 'content-type'
+import { parse as parseContentType } from 'content-type'
 import generateETag from 'etag'
 import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
@@ -379,7 +379,7 @@ const serveRedirect = async function ({
       return
     }
 
-    const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+    const ct = parseContentType(req.headers['content-type'] ?? '').type
     if (
       req.method === 'POST' &&
       !isInternal(req.url) &&
@@ -901,7 +901,7 @@ const onRequest = async (
   const hasFormSubmissionHandler: boolean =
     functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
 
-  const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+  const ct = parseContentType(req.headers['content-type'] ?? '').type
   if (
     hasFormSubmissionHandler &&
     functionsServer &&

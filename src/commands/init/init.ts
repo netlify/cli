@@ -11,6 +11,7 @@ import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { LocalState, SiteInfo } from '../../utils/types.js'
+import { setupAgentSkills } from '../../utils/init/agent-skills.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
 import { type InitExitCode, LINKED_EXISTING_SITE_EXIT_CODE, LINKED_NEW_SITE_EXIT_CODE } from './constants.js'
 
@@ -210,14 +211,30 @@ type InitExitMessageCustomizer = (code: InitExitCode, defaultMessage: string) =>
 type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
+  setupAgentSkills?: boolean | undefined
+}
+
+const installAgentSkills = async (command: BaseCommand): Promise<void> => {
+  log()
+  const result = await setupAgentSkills({ workingDir: command.netlify.repositoryRoot })
+  await track('sites_agentSkillsSetup', {
+    installed: result.installed,
+    directories: result.directories,
+    skillsVersion: result.skillsVersion,
+    ...result.summary,
+  })
 }
 
 export const init = async (
   options: OptionValues,
   command: BaseCommand,
-  { customizeExitMessage, exitAfterConfiguringRepo = false }: InitExtraOptions = {},
+  {
+    customizeExitMessage,
+    exitAfterConfiguringRepo = false,
+    setupAgentSkills: shouldSetupAgentSkills = false,
+  }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
-  command.setAnalyticsPayload({ manual: options.manual, force: options.force })
+  command.setAnalyticsPayload({ manual: options.manual, force: options.force, skipAgentSetup: options.skipAgentSetup })
 
   const { repositoryRoot, state } = command.netlify
   const { siteInfo: existingSiteInfo } = command.netlify
@@ -227,6 +244,10 @@ export const init = async (
 
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
+
+  if (shouldSetupAgentSkills) {
+    await installAgentSkills(command)
+  }
 
   const repoUrl = getRepoUrl(existingSiteInfo)
   if (repoUrl && !options.force) {
