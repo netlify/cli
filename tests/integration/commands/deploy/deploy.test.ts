@@ -599,7 +599,7 @@ describe.concurrent('deploy command', () => {
 
         const output: string = await callCli(['deploy', '--json'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder }))
 
-        expect(() => JSON.parse(output)).not.toThrowError()
+        expect(() => JSON.parse(output)).not.toThrow()
       })
     })
   })
@@ -805,7 +805,7 @@ describe.concurrent('deploy command', () => {
         })
 
         // stdout should still be valid JSON
-        expect(() => JSON.parse(stdout)).not.toThrowError()
+        expect(() => JSON.parse(stdout)).not.toThrow()
 
         // stderr should contain the build output with line breaks preserved
         expect(stderr).toContain('Build stdout line 1')

@@ -4,13 +4,11 @@ export default defineConfig({
   test: {
     include: ['e2e/**/*.e2e.[jt]s'],
     testTimeout: 1200_000,
-    // Pin to vitest@1 behavior: https://vitest.dev/guide/migration.html#default-pool-is-forks.
+    // Vitest 2 made `forks` the default pool; stay on a single thread, one file at a time, as
+    // vitest 1 did. File isolation stays on: vitest 4's `isolate: false` shares module mocks
+    // between files.
     // TODO(serhalp) Remove this and fix flaky hanging e2e tests on Windows.
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
+    maxWorkers: 1,
   },
 })
