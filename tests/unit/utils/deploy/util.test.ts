@@ -11,9 +11,9 @@ describe('normalizePath', () => {
   })
 
   test('normalizePath should throw the error if name is invalid', () => {
-    expect(() => normalizePath('invalid name#')).toThrowError()
-    expect(() => normalizePath('invalid name?')).toThrowError()
-    expect(() => normalizePath('??')).toThrowError()
-    expect(() => normalizePath('#')).toThrowError()
+    expect(() => normalizePath('invalid name#')).toThrow()
+    expect(() => normalizePath('invalid name?')).toThrow()
+    expect(() => normalizePath('??')).toThrow()
+    expect(() => normalizePath('#')).toThrow()
   })
 })
