@@ -9,7 +9,9 @@ import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
 import { routes } from './api-routes.js'
-import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
+import { mockConfirm, spyOnConfirm } from '../../utils/inquirer-mock-prompt.js'
+
+vi.mock('@inquirer/prompts')
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -242,7 +244,7 @@ describe('env:set command', async () => {
             offline: false,
             parseJson: false,
           }),
-        ).rejects.toThrowError(`please specify a non-development context`)
+        ).rejects.toThrow(`please specify a non-development context`)
       })
       test.concurrent<FixtureTestContext>('should error when set with a post-processing --scope', async ({
         fixture,
@@ -255,7 +257,7 @@ describe('env:set command', async () => {
               parseJson: false,
             },
           ),
-        ).rejects.toThrowError(`Secret values cannot be used within the post-processing scope.`)
+        ).rejects.toThrow(`Secret values cannot be used within the post-processing scope.`)
       })
       test.concurrent<FixtureTestContext>('should error when --scope and --context are passed on an existing env var', async ({
         fixture,
@@ -265,7 +267,7 @@ describe('env:set command', async () => {
             offline: false,
             parseJson: false,
           }),
-        ).rejects.toThrowError(`Setting the context and scope at the same time on an existing env var is not allowed`)
+        ).rejects.toThrow(`Setting the context and scope at the same time on an existing env var is not allowed`)
       })
     })
   })
@@ -306,13 +308,11 @@ describe('env:set command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = mockPrompt({ confirm: true })
+          const promptSpy = mockConfirm(true)
 
           await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
           expect(promptSpy).toHaveBeenCalledWith({
-            type: 'confirm',
-            name: 'confirm',
             message: expect.stringContaining(overwriteConfirmation),
             default: false,
           })
@@ -327,7 +327,7 @@ describe('env:set command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'env:set', 'NEW_ENV_VAR', 'NEW_VALUE'])
 
@@ -345,7 +345,7 @@ describe('env:set command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'env:set', existingVar, newEnvValue, '--force'])
 
@@ -361,7 +361,7 @@ describe('env:set command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = mockPrompt({ confirm: false })
+          const promptSpy = mockConfirm(false)
 
           try {
             await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
@@ -387,7 +387,7 @@ describe('env:set command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
@@ -405,7 +405,7 @@ describe('env:set command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
           await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
           expect(promptSpy).not.toHaveBeenCalled()

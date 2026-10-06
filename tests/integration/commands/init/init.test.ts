@@ -1,5 +1,8 @@
-import path from 'node:path'
+import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
+import { createServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
+import path from 'node:path'
 
 import cleanDeep from 'clean-deep'
 import execa from 'execa'
@@ -12,6 +15,62 @@ import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
 const defaultFunctionsDirectory = 'netlify/functions'
+
+const SKILL_CONTENT = '# netlify-functions\n'
+
+const sha256 = (content: string) => `sha256:${createHash('sha256').update(content).digest('hex')}`
+
+const skillsManifest = () => {
+  const fileHash = sha256(SKILL_CONTENT)
+  const treeHash = `sha256:${createHash('sha256')
+    .update(`SKILL.md\u0000100644\u0000${fileHash.replace(/^sha256:/, '')}\n`)
+    .digest('hex')}`
+  return {
+    schema_version: 1,
+    version: '1.0.0',
+    skills: [
+      {
+        name: 'netlify-functions',
+        status: 'active',
+        version: '1.0.0',
+        prior_names: [],
+        description: 'Netlify Functions',
+        tree_hash: treeHash,
+        files: { 'SKILL.md': fileHash },
+        executable: [],
+        history: [{ version: '1.0.0', tree_hash: treeHash }],
+      },
+    ],
+  }
+}
+
+const withSkillsHost = async (handler: (host: { url: string; requests: string[] }) => Promise<void>) => {
+  const requests: string[] = []
+  const responses = new Map<string, string>([
+    ['/manifest.json', JSON.stringify(skillsManifest())],
+    ['/skills/netlify-functions/SKILL.md', SKILL_CONTENT],
+  ])
+  const server = createServer((req, res) => {
+    const url = req.url ?? ''
+    requests.push(url)
+    const body = responses.get(url)
+    res.statusCode = body === undefined ? 404 : 200
+    res.end(body ?? 'not found')
+  })
+  await new Promise<void>((resolve) => {
+    server.listen(0, '127.0.0.1', resolve)
+  })
+  const { port } = server.address() as AddressInfo
+  try {
+    await handler({ url: `http://127.0.0.1:${port.toString()}`, requests })
+  } finally {
+    await new Promise<void>((resolve) => {
+      server.close(() => {
+        resolve()
+      })
+    })
+  }
+}
 
 const assertNetlifyToml = async (
   t: TestContext,
@@ -102,7 +161,7 @@ describe.concurrent('commands/init', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         // --force is required since we return an existing site in the `sites` route
         // --manual is used to avoid the config-github flow that uses GitHub API
-        const childProcess = execa(cliPath, ['init', '--force', '--manual'], {
+        const childProcess = execa(cliPath, ['init', '--force', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           // NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN are required for @netlify/config to retrieve site info
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
@@ -124,7 +183,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -198,7 +257,7 @@ describe.concurrent('commands/init', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --manual is used to avoid the config-github flow that uses GitHub API
-        const childProcess = execa(cliPath, ['init', '--manual'], {
+        const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
           encoding: 'utf8',
@@ -220,7 +279,7 @@ describe.concurrent('commands/init', () => {
         question: 'Yes, create and deploy project manually',
         answer: CONFIRM, // List selection only needs one CONFIRM, not answerWithValue
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -277,7 +336,7 @@ describe.concurrent('commands/init', () => {
       await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const childProcess = execa(cliPath, ['init'], {
+        const childProcess = execa(cliPath, ['init', '--skip-agent-setup'], {
           cwd: builder.directory,
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
           encoding: 'utf8',
@@ -303,7 +362,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -385,7 +444,7 @@ describe.concurrent('commands/init', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --manual is used to avoid the config-github flow that uses GitHub API
-        const childProcess = execa(cliPath, ['init', '--manual'], {
+        const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
@@ -408,7 +467,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -490,7 +549,7 @@ describe.concurrent('commands/init', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --manual is used to avoid the config-github flow that uses GitHub API
-        const childProcess = execa(cliPath, ['init', '--manual'], {
+        const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
@@ -581,7 +640,7 @@ describe.concurrent('commands/init', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         // --force is required since we return an existing site in the `sites` route
         // --manual is used to avoid the config-github flow that uses GitHub API
-        const childProcess = execa(cliPath, ['init', '--force', '--manual'], {
+        const childProcess = execa(cliPath, ['init', '--force', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           // NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN are required for @netlify/config to retrieve site info
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
@@ -601,7 +660,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -687,7 +746,7 @@ describe.concurrent('commands/init', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --manual is used to avoid the config-github flow that uses GitHub API
-        const childProcess = execa(cliPath, ['init', '--manual'], {
+        const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
@@ -697,6 +756,72 @@ describe.concurrent('commands/init', () => {
         await childProcess
 
         await assertNetlifyToml(t, builder.directory, { command, functions: defaultFunctionsDirectory, publish })
+      })
+    })
+  })
+
+  test('netlify init installs Netlify skills for AI agents by default and is idempotent', async (t) => {
+    const siteInfo = {
+      admin_url: 'https://app.netlify.com/projects/site-name/overview',
+      ssl_url: 'https://site-name.netlify.app/',
+      id: 'site_id',
+      name: 'site-name',
+      build_settings: { repo_url: 'https://github.com/owner/repo' },
+    }
+    const routes = [
+      { path: 'accounts', response: [{ slug: 'test-account' }] },
+      { path: 'sites/site_id/service-instances', response: [] },
+      { path: 'sites/site_id', response: siteInfo },
+      { path: 'sites', response: [siteInfo] },
+      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
+      { path: 'sites/site_id', method: 'PATCH' as const, response: { deploy_hook: 'deploy_hook' } },
+    ]
+    const manualQuestions = () => [
+      { question: 'Your build command (hugo build/yarn run build/etc)', answer: answerWithValue('npm run build') },
+      { question: 'Directory to deploy (blank for current dir)', answer: answerWithValue('dist') },
+      { question: 'No netlify.toml detected', answer: CONFIRM },
+      { question: 'Give this Netlify SSH public key access to your repository', answer: CONFIRM },
+      { question: 'The SSH URL of the remote git repo', answer: CONFIRM },
+      { question: 'Configure the following webhook for your repository', answer: CONFIRM },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().ensureDirectoryExists(path.join(builder.directory, '.agents')).build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        await withSkillsHost(async (skillsHost) => {
+          const env = {
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+            NETLIFY_SKILLS_HOST: skillsHost.url,
+          }
+          const skillPath = path.join(builder.directory, '.agents', 'skills', 'netlify-functions', 'SKILL.md')
+          const runInit = async (...flags: string[]) => {
+            const childProcess = execa(cliPath, ['init', '--manual', ...flags], { cwd: builder.directory, env })
+            if (process.env.DEBUG_TESTS) {
+              childProcess.stdout?.on('data', (data: Buffer) => {
+                process.stderr.write(data)
+              })
+            }
+            handleQuestions(childProcess, manualQuestions())
+            return await childProcess
+          }
+
+          const first = await runInit()
+          t.expect(first.stdout).toContain('Installed Netlify skills')
+          await t.expect(readFile(skillPath, 'utf8')).resolves.toBe(SKILL_CONTENT)
+          const requestsAfterFirstRun = skillsHost.requests.length
+
+          const second = await runInit()
+          t.expect(second.stdout).toContain('are up to date')
+          t.expect(skillsHost.requests.slice(requestsAfterFirstRun)).toEqual(['/manifest.json'])
+          await t.expect(readFile(skillPath, 'utf8')).resolves.toBe(SKILL_CONTENT)
+
+          const skipped = await runInit('--skip-agent-setup')
+          t.expect(skipped.stdout).not.toContain('Netlify skills')
+          t.expect(skillsHost.requests.length).toBe(requestsAfterFirstRun + 1)
+        })
       })
     })
   })

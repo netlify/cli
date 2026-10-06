@@ -10,7 +10,9 @@ import { reportError } from '../../../../src/utils/telemetry/report-error.js'
 import { Route } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
-import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
+import { mockConfirm, spyOnConfirm } from '../../utils/inquirer-mock-prompt.js'
+
+vi.mock('@inquirer/prompts')
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -93,13 +95,11 @@ describe('blobs:delete command', () => {
             delete: mockDelete,
           })
 
-          const promptSpy = mockPrompt({ confirm: true })
+          const promptSpy = mockConfirm(true)
 
           await runMockProgram(['', '', 'blobs:delete', storeName, key])
 
           expect(promptSpy).toHaveBeenCalledWith({
-            type: 'confirm',
-            name: 'confirm',
             message: expect.stringContaining(overwriteConfirmation),
             default: false,
           })
@@ -120,7 +120,7 @@ describe('blobs:delete command', () => {
             delete: mockDelete,
           })
 
-          const promptSpy = mockPrompt({ confirm: false })
+          const promptSpy = mockConfirm(false)
 
           try {
             await runMockProgram(['', '', 'blobs:delete', storeName, key])
@@ -131,8 +131,6 @@ describe('blobs:delete command', () => {
           }
 
           expect(promptSpy).toHaveBeenCalledWith({
-            type: 'confirm',
-            name: 'confirm',
             message: expect.stringContaining(overwriteConfirmation),
             default: false,
           })
@@ -153,7 +151,7 @@ describe('blobs:delete command', () => {
             delete: mockDelete,
           })
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
 
@@ -178,7 +176,7 @@ describe('blobs:delete command', () => {
               delete: mockDelete,
             })
 
-            const promptSpy = spyOnMockPrompt()
+            const promptSpy = spyOnConfirm()
 
             try {
               await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
@@ -214,7 +212,7 @@ describe('blobs:delete command', () => {
             delete: mockDelete,
           })
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'blobs:delete', storeName, key])
           expect(promptSpy).not.toHaveBeenCalled()
@@ -236,7 +234,7 @@ describe('blobs:delete command', () => {
             delete: mockDelete,
           })
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'blobs:delete', storeName, key])
 

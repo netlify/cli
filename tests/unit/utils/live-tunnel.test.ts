@@ -133,17 +133,17 @@ describe('startLiveTunnel', () => {
   })
 
   test('exits when siteId is missing', async () => {
-    await expect(startLiveTunnel({ ...TUNNEL_ARGS, siteId: undefined })).rejects.toThrowError('process.exit(1)')
+    await expect(startLiveTunnel({ ...TUNNEL_ARGS, siteId: undefined })).rejects.toThrow('process.exit(1)')
   })
 
   test('exits when netlifyApiToken is missing', async () => {
-    await expect(startLiveTunnel({ ...TUNNEL_ARGS, netlifyApiToken: null })).rejects.toThrowError('process.exit(1)')
+    await expect(startLiveTunnel({ ...TUNNEL_ARGS, netlifyApiToken: null })).rejects.toThrow('process.exit(1)')
   })
 
   test('throws the API error message when session creation fails', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(422, { message: 'Slug already taken' }))
 
-    await expect(startLiveTunnel({ ...TUNNEL_ARGS, slug: 'taken-slug' })).rejects.toThrowError('Slug already taken')
+    await expect(startLiveTunnel({ ...TUNNEL_ARGS, slug: 'taken-slug' })).rejects.toThrow('Slug already taken')
   })
 
   test('throws the API error message when polling fails', async () => {
@@ -153,7 +153,7 @@ describe('startLiveTunnel', () => {
       )
       .mockResolvedValueOnce(jsonResponse(500, { message: 'Internal server error' }))
 
-    await expect(startLiveTunnel(TUNNEL_ARGS)).rejects.toThrowError('Internal server error')
+    await expect(startLiveTunnel(TUNNEL_ARGS)).rejects.toThrow('Internal server error')
   })
 })
 

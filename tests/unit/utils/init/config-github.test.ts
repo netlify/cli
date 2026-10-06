@@ -1,5 +1,4 @@
-import { Octokit } from '@octokit/rest'
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { GlobalConfigStore } from '../../../../src/utils/types.js'
 
 import { getGitHubToken } from '../../../../src/utils/init/config-github.js'
@@ -18,19 +17,6 @@ vi.mock('../../../../src/utils/gh-auth.js', () => ({
       user: 'spongebob',
     }),
 }))
-
-vi.mock('@octokit/rest', () => {
-  const Client = vi.fn()
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  Client.prototype.rest = {
-    users: { getAuthenticated: vi.fn() },
-  }
-
-  return {
-    Octokit: Client,
-  }
-})
 
 describe('getGitHubToken', () => {
   // mocked configstore
@@ -52,20 +38,20 @@ describe('getGitHubToken', () => {
       user: 'spongebob',
     })
 
-    // @ts-expect-error: Missing from type definition
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    Octokit.mockClear()
+    vi.stubGlobal('fetch', vi.fn())
   })
 
-  test('should create a octokit client with the provided token if the token is valid', async () => {
-    // @ts-expect-error: Missing from type definition
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    Octokit.prototype.rest.users.getAuthenticated.mockImplementation(() => Promise.resolve({ status: 200 }))
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  test('should keep the stored token when GitHub accepts it', async () => {
+    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ login: 'spongebob' }), { status: 200 }))
 
     const token = await getGitHubToken({ globalConfig })
 
-    expect(Octokit).toHaveBeenCalledOnce()
-    expect(Octokit).toHaveBeenCalledWith({ auth: 'token old_token' })
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(vi.mocked(fetch).mock.calls[0][1]?.headers).toMatchObject({ Authorization: 'token old_token' })
 
     expect(token).toBe('old_token')
     expect(globalConfig.get(`users.spongebob.auth.github`)).toEqual({
@@ -76,19 +62,12 @@ describe('getGitHubToken', () => {
   })
 
   test('should renew the github token when the provided token is not valid', async () => {
-    // @ts-expect-error: Missing from type definition
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    Octokit.prototype.rest.users.getAuthenticated.mockImplementation(() => {
-      const authError = new Error('Bad Credentials')
-      // @ts-expect-error TS(2339) FIXME: Property 'status' does not exist on type 'Error'.
-      authError.status = 401
+    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ message: 'Bad credentials' }), { status: 401 }))
 
-      throw authError
-    })
     const token = await getGitHubToken({ globalConfig })
 
-    expect(Octokit).toHaveBeenCalledOnce()
-    expect(Octokit).toHaveBeenCalledWith({ auth: 'token old_token' })
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(vi.mocked(fetch).mock.calls[0][1]?.headers).toMatchObject({ Authorization: 'token old_token' })
 
     expect(token).toBe('new_token')
     expect(globalConfig.get(`users.spongebob.auth.github`)).toEqual({
