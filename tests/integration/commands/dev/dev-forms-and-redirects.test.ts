@@ -213,6 +213,49 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
     })
   })
 
+  test('should keep serving when a form submission carries a malformed content type', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder
+        .withContentFile({
+          path: 'index.html',
+          content: '<h1>⊂◉‿◉つ</h1>',
+        })
+        .withNetlifyToml({
+          config: {
+            functions: { directory: 'functions' },
+          },
+        })
+        .withFunction({
+          path: 'submission-created.js',
+          handler: async (event: HandlerEvent) =>
+            Promise.resolve({
+              statusCode: 200,
+              body: JSON.stringify(event),
+            }),
+        })
+
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await fetch(`${server.url}/`, {
+          method: 'POST',
+          body: 'Something',
+          headers: {
+            'content-type': 'not/a valid; ;;',
+          },
+        })
+        t.expect(response.status).toBe(405)
+
+        // node-fetch adds a text/plain Content-Type to a string body; a Buffer body gets none.
+        const withoutHeader = await fetch(`${server.url}/`, { method: 'POST', body: Buffer.from('Something') })
+        t.expect(withoutHeader.status).toBe(405)
+
+        const followUp = await fetch(`${server.url}/`)
+        t.expect(followUp.status).toBe(200)
+      })
+    })
+  })
+
   test('should return existing local file even when rewrite matches when force=false', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder
