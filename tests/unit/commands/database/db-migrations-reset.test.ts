@@ -1,6 +1,6 @@
 import { join } from 'path'
 
-import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach, afterAll } from 'vitest'
 
 const { mockCleanup, mockExecutor, mockQuery, mockReaddir, mockRm, mockFetch, logMessages, jsonMessages } = vi.hoisted(
   () => {
@@ -47,6 +47,10 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 }))
 
 vi.stubGlobal('fetch', mockFetch)
+// Test files share one thread, so a leftover stub would leak into later files.
+afterAll(() => {
+  vi.unstubAllGlobals()
+})
 
 import { migrationsReset } from '../../../../src/commands/database/db-migrations-reset.js'
 

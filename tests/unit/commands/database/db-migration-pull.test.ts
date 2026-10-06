@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach, afterAll } from 'vitest'
 
 const { mockRm, mockMkdir, mockWriteFile, mockFetch, mockExeca, logMessages, jsonMessages } = vi.hoisted(() => {
   const mockRm = vi.fn().mockResolvedValue(undefined)
@@ -42,6 +42,10 @@ vi.mock('../../../../src/utils/execa.js', () => ({
 }))
 
 vi.stubGlobal('fetch', mockFetch)
+// Test files share one thread, so a leftover stub would leak into later files.
+afterAll(() => {
+  vi.unstubAllGlobals()
+})
 
 import { resolve } from 'path'
 
