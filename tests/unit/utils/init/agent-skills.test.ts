@@ -522,6 +522,36 @@ describe('agent skills', () => {
       expect(second.actions.map(({ action }) => action)).toEqual(['current', 'current'])
     })
 
+    test('refreshes a stale copy in the same run when its old name differs only by case', async () => {
+      const deployV1: Files = { 'SKILL.md': '# deploy v1\n' }
+      const caseOnly = buildManifest([
+        FUNCTIONS,
+        { ...DEPLOY, priorNames: ['Netlify-Deploy'], previous: [{ version: '1.0.0', files: deployV1 }] },
+      ])
+      await writeSkill(skillsDir, 'Netlify-Deploy', deployV1)
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+
+      const { actions } = await syncSkills({ host: HOST, directory: skillsDir, manifest: caseOnly })
+
+      expect(actions).toContainEqual({ name: 'Netlify-Deploy', action: 'renamed', detail: '-> netlify-deploy' })
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+      await expect(readFile(join(skillsDir, 'netlify-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# deploy\n')
+
+      const second = await syncSkills({ host: HOST, directory: skillsDir, manifest: caseOnly })
+      expect(second.actions.map(({ action }) => action)).toEqual(['current', 'current'])
+    })
+
+    test('--reset-context replaces an edited copy in the same run when its old name differs only by case', async () => {
+      const caseOnly = buildManifest([FUNCTIONS, { ...DEPLOY, priorNames: ['Netlify-Deploy'] }])
+      await writeSkill(skillsDir, 'Netlify-Deploy', { 'SKILL.md': '# my deploy notes\n' })
+      await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
+
+      await syncSkills({ host: HOST, directory: skillsDir, manifest: caseOnly, reset: true })
+
+      await expect(listDirectories(skillsDir)).resolves.toEqual(['netlify-deploy', 'netlify-functions'])
+      await expect(readFile(join(skillsDir, 'netlify-deploy', 'SKILL.md'), 'utf8')).resolves.toBe('# deploy\n')
+    })
+
     test('leaves a fresh staging directory alone, since another run may still be writing it', async () => {
       await writeSkill(skillsDir, FUNCTIONS.name, FUNCTIONS.files)
       await writeSkill(skillsDir, DEPLOY.name, DEPLOY.files, DEPLOY.executable)
@@ -897,6 +927,17 @@ describe('agent skills', () => {
       expect(lines[1]).toContain('netlify-deploy')
       expect(lines[1]).toContain('edited locally')
       expect(lines[2]).toContain('--reset-context')
+    })
+
+    test('setupAgentSkills does not say installed when every download failed', async () => {
+      responses.delete('/skills/netlify-functions/SKILL.md')
+      responses.delete('/skills/netlify-deploy/SKILL.md')
+
+      const result = await setupAgentSkills({ workingDir: projectDir, env: { NETLIFY_SKILLS_HOST: HOST } })
+
+      expect(result.installed).toBe(false)
+      expect(result.summary).toMatchObject({ added: 0, failed: 2 })
+      expect(loggedLines()[0]).toMatch(/Could not sync Netlify skills in .*\(2 failed\)\./)
     })
 
     test('setupAgentSkills reports a failed skill next to what landed', async () => {
