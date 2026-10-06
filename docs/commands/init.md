@@ -24,6 +24,7 @@ netlify init
 - `manual` (*boolean*) - Manually configure a git remote for CI
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `skip-agent-setup` (*boolean*) - Skip installing Netlify skills for AI coding agents into the project
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->
