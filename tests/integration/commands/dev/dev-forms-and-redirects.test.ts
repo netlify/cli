@@ -246,7 +246,8 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
         })
         t.expect(response.status).toBe(405)
 
-        const withoutHeader = await fetch(`${server.url}/`, { method: 'POST', body: 'Something', headers: {} })
+        // node-fetch adds a text/plain Content-Type to a string body; a Buffer body gets none.
+        const withoutHeader = await fetch(`${server.url}/`, { method: 'POST', body: Buffer.from('Something') })
         t.expect(withoutHeader.status).toBe(405)
 
         const followUp = await fetch(`${server.url}/`)
