@@ -49,6 +49,7 @@ import {
   getInternalFunctionsDir,
   getServerManifestPath,
 } from '../../utils/functions/index.js'
+import { getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import { isEmpty } from '../../utils/object-utilities.js'
 import openBrowser from '../../utils/open-browser.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
@@ -793,7 +794,10 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
     ...options,
     packagePath: command.workspacePackage,
     buffer: true,
-    featureFlags: edgeFunctionsFeatureFlags,
+    featureFlags: {
+      ...edgeFunctionsFeatureFlags,
+      ...getFeatureFlagsFromSiteInfo(command.netlify.cachedConfig.siteInfo),
+    },
     // We log our own progress so we don't want this as well. Plus, this logs much of the same
     // information as the build that (likely) came before this as part of the deploy build.
     quiet: options.debug ?? true,
