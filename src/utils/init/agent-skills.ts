@@ -17,7 +17,10 @@ const AGENT_DIRECTORY_BY_DRIVING_AGENT: Partial<Record<string, string>> = {
 const SUPPORTED_SCHEMA_VERSION = 1
 const SKILL_NAME = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/
 const STAGING_PREFIX = '.netlify-skill-'
+const STAGING_LEFTOVER = /^\.netlify-skill-(.+)-[A-Za-z0-9]{6}$/
+const RETIRED_LEFTOVER = /^(.+)\.old-\d+-[0-9a-f]{12}$/
 const FETCH_TIMEOUT_MS = 10_000
+const LEFTOVER_MIN_AGE_MS = 10 * 60_000
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
 
 export interface SkillHistoryEntry {
@@ -49,8 +52,8 @@ export type SkillRecord =
   | { name: string; status: 'current'; version: string | null }
   | { name: string; status: 'stale'; version: string | null; have: string | null }
   | { name: string; status: 'modified'; version: string | null }
-  | { name: string; status: 'renamed'; currentName: string }
-  | { name: string; status: 'deprecated'; replacedBy: string | null }
+  | { name: string; status: 'renamed'; currentName: string; modified: boolean }
+  | { name: string; status: 'deprecated'; replacedBy: string | null; modified: boolean }
   | { name: string; status: 'unknown' }
 
 export interface SkillsClassification {
@@ -58,7 +61,16 @@ export interface SkillsClassification {
   missing: string[]
 }
 
-export type SkillAction = 'current' | 'added' | 'updated' | 'kept' | 'ignored' | 'failed'
+export type SkillAction =
+  | 'current'
+  | 'added'
+  | 'updated'
+  | 'reset'
+  | 'renamed'
+  | 'removed'
+  | 'kept'
+  | 'ignored'
+  | 'failed'
 
 export interface SkillActionRecord {
   name: string
@@ -163,6 +175,9 @@ const indexManifest = (manifest: SkillsManifest): ManifestIndex => {
   return { exact, prior }
 }
 
+const skillUnderName = ({ exact, prior }: ManifestIndex, name: string): ManifestSkill | undefined =>
+  exact.get(name) ?? prior.get(name)
+
 export const fetchSkillsManifest = async (host: string): Promise<SkillsManifest> => {
   const url = urlFor(host, 'manifest.json')
   const bytes = await fetchBytes(url)
@@ -190,6 +205,8 @@ const historyOf = (skill: ManifestSkill): SkillHistoryEntry[] => {
 
 const lastMatching = (skill: ManifestSkill, treeHash: string | null): SkillHistoryEntry | undefined =>
   treeHash ? historyOf(skill).findLast((entry) => entry.tree_hash === treeHash) : undefined
+
+const executableOf = (skill: ManifestSkill): Set<string> => new Set(skill.executable ?? [])
 
 const listRegularFiles = async (dir: string): Promise<string[]> => {
   const files: string[] = []
@@ -261,8 +278,40 @@ const isDirectoryOrLinkToOne = async (dir: string): Promise<boolean> => {
   }
 }
 
+const isOlderThan = async (file: string, ageMs: number): Promise<boolean> => {
+  try {
+    return Date.now() - (await fs.lstat(file)).mtimeMs >= ageMs
+  } catch {
+    return false
+  }
+}
+
+const isSameEntry = async (a: string, b: string): Promise<boolean> => {
+  try {
+    const [statA, statB] = await Promise.all([fs.lstat(a), fs.lstat(b)])
+    return statA.ino !== 0 && statA.ino === statB.ino && statA.dev === statB.dev
+  } catch {
+    return false
+  }
+}
+
 const sortByName = <T extends { name: string }>(entries: T[]): T[] =>
   [...entries].sort((a, b) => a.name.localeCompare(b.name, 'en'))
+
+const hashIfPossible = async (dir: string, skill: ManifestSkill): Promise<string | null> => {
+  try {
+    return await hashSkillTree(dir, executableOf(skill))
+  } catch {
+    return null
+  }
+}
+
+const isUneditedRelease = async (dir: string, skill: ManifestSkill): Promise<boolean> => {
+  if (!(await isDirectory(dir))) {
+    return false
+  }
+  return lastMatching(skill, await hashIfPossible(dir, skill)) !== undefined
+}
 
 export const classifySkillsDirectory = async (
   root: string,
@@ -278,46 +327,50 @@ export const classifySkillsDirectory = async (
   }
 
   for (const entry of entries) {
+    if (entry.name.startsWith(STAGING_PREFIX)) continue
     const known = exact.get(entry.name)
     const renamed = prior.get(entry.name)
-    if (!entry.isDirectory() && !known && !renamed) continue
+    const target = known?.status === 'active' ? known : renamed?.status === 'active' ? renamed : null
+    const retired = known?.status === 'deprecated' ? known : renamed?.status === 'deprecated' ? renamed : null
+    if (!entry.isDirectory() && !target && !retired) continue
     const dir = path.join(root, entry.name)
     const hasSkillMd = entry.isDirectory() && (await isFile(path.join(dir, 'SKILL.md')))
-    if (!hasSkillMd && !known && !renamed) continue
+    if (!hasSkillMd && known?.status !== 'active') continue
     if (entry.isDirectory() && !hasSkillMd && known?.status === 'active' && (await fs.readdir(dir)).length === 0) {
       continue
     }
 
-    if (known?.status === 'deprecated' || renamed?.status === 'deprecated') {
-      const retired = known?.status === 'deprecated' ? known : renamed
-      records.push({ name: entry.name, status: 'deprecated', replacedBy: retired?.deprecated?.replaced_by ?? null })
+    const subject = target ?? retired
+    const treeHash = hasSkillMd && subject ? await hashIfPossible(dir, subject) : null
+
+    if (retired) {
+      records.push({
+        name: entry.name,
+        status: 'deprecated',
+        replacedBy: retired.deprecated?.replaced_by ?? null,
+        modified: lastMatching(retired, treeHash) === undefined,
+      })
       continue
     }
-    if (!known && renamed) {
-      records.push({ name: entry.name, status: 'renamed', currentName: renamed.name })
-      continue
-    }
-    if (!known) {
+
+    if (!target) {
       records.push({ name: entry.name, status: 'unknown' })
       continue
     }
 
-    presentActive.add(known.name)
-    let treeHash: string | null = null
-    if (hasSkillMd) {
-      try {
-        treeHash = await hashSkillTree(dir, new Set(known.executable ?? []))
-      } catch {
-        treeHash = null
-      }
+    const match = lastMatching(target, treeHash)
+    if (target === renamed) {
+      records.push({ name: entry.name, status: 'renamed', currentName: target.name, modified: match === undefined })
+      continue
     }
-    const match = lastMatching(known, treeHash)
-    if (treeHash === known.tree_hash) {
-      records.push({ name: entry.name, status: 'current', version: known.version })
+
+    presentActive.add(target.name)
+    if (treeHash === target.tree_hash) {
+      records.push({ name: entry.name, status: 'current', version: target.version })
     } else if (match) {
-      records.push({ name: entry.name, status: 'stale', version: known.version, have: match.version })
+      records.push({ name: entry.name, status: 'stale', version: target.version, have: match.version })
     } else {
-      records.push({ name: entry.name, status: 'modified', version: known.version })
+      records.push({ name: entry.name, status: 'modified', version: target.version })
     }
   }
 
@@ -330,20 +383,24 @@ export const classifySkillsDirectory = async (
 }
 
 const replaceDirectory = async (staged: string, target: string): Promise<void> => {
-  const exists = await isDirectory(target)
+  let existing = await fs.lstat(target).catch(() => null)
+  if (existing && !existing.isDirectory()) {
+    await fs.rm(target, { force: true })
+    existing = null
+  }
   const retired = `${target}.old-${process.pid.toString()}-${randomBytes(6).toString('hex')}`
-  if (exists) {
+  if (existing) {
     await fs.rename(target, retired)
   }
   try {
     await fs.rename(staged, target)
   } catch (error) {
-    if (exists) {
+    if (existing) {
       await fs.rename(retired, target)
     }
     throw error
   }
-  if (exists) {
+  if (existing) {
     await fs.rm(retired, { recursive: true, force: true }).catch(() => undefined)
   }
 }
@@ -355,12 +412,7 @@ const isReplaceableCopy = async (target: string, skill: ManifestSkill): Promise<
   if ((await fs.readdir(target)).length === 0) {
     return true
   }
-  try {
-    const treeHash = await hashSkillTree(target, new Set(skill.executable ?? []))
-    return historyOf(skill).some((entry) => entry.tree_hash === treeHash)
-  } catch {
-    return false
-  }
+  return isUneditedRelease(target, skill)
 }
 
 const downloadSkill = async (host: string, skill: ManifestSkill): Promise<[string, Uint8Array][]> => {
@@ -383,23 +435,32 @@ const downloadSkill = async (host: string, skill: ManifestSkill): Promise<[strin
   return downloaded
 }
 
-export const installSkill = async (host: string, dest: string, skill: ManifestSkill): Promise<number> => {
+export const installSkill = async (
+  host: string,
+  dest: string,
+  skill: ManifestSkill,
+  { force = false }: { force?: boolean } = {},
+): Promise<number> => {
   const downloaded = await downloadSkill(host, skill)
   const target = path.join(dest, skill.name)
-  if (!(await isReplaceableCopy(target, skill))) {
+  if (!force && !(await isReplaceableCopy(target, skill))) {
     throw new SkillConflictError(`${target} already exists and is not an unedited Netlify skill; left in place`)
   }
 
   await fs.mkdir(dest, { recursive: true })
   const staged = await fs.mkdtemp(path.join(dest, `${STAGING_PREFIX}${skill.name}-`))
   try {
-    const executable = new Set(skill.executable ?? [])
+    const executable = executableOf(skill)
     for (const [file, bytes] of downloaded) {
       const output = path.join(staged, ...file.split('/'))
       await fs.mkdir(path.dirname(output), { recursive: true })
       await fs.writeFile(output, bytes, { mode: executable.has(file) ? 0o755 : 0o644 })
     }
-    if (!(await isReplaceableCopy(target, skill))) {
+    const stagedHash = await hashSkillTree(staged, executable)
+    if (stagedHash !== skill.tree_hash) {
+      throw new SkillsError(`staged tree hash ${stagedHash} does not match the manifest`)
+    }
+    if (!force && !(await isReplaceableCopy(target, skill))) {
       throw new SkillConflictError(`${target} changed while downloading; left in place`)
     }
     await replaceDirectory(staged, target)
@@ -411,40 +472,103 @@ export const installSkill = async (host: string, dest: string, skill: ManifestSk
   return downloaded.length
 }
 
+const removeInstallLeftovers = async (root: string, index: ManifestIndex): Promise<string[]> => {
+  if (!(await isDirectoryOrLinkToOne(root))) {
+    return []
+  }
+  const removed: string[] = []
+  for (const entry of sortByName(await fs.readdir(root, { withFileTypes: true }))) {
+    if (!entry.isDirectory()) continue
+    const leftover = path.join(root, entry.name)
+    const staging = STAGING_LEFTOVER.exec(entry.name)
+    if (staging) {
+      if (skillUnderName(index, staging[1]) && (await isOlderThan(leftover, LEFTOVER_MIN_AGE_MS))) {
+        await fs.rm(leftover, { recursive: true, force: true })
+        removed.push(entry.name)
+      }
+      continue
+    }
+    const retired = RETIRED_LEFTOVER.exec(entry.name)
+    const skill = retired ? skillUnderName(index, retired[1]) : undefined
+    if (!retired || !skill) continue
+    const skillPresent = (await exists(path.join(root, retired[1]))) || (await exists(path.join(root, skill.name)))
+    if (
+      skillPresent &&
+      (await isOlderThan(leftover, LEFTOVER_MIN_AGE_MS)) &&
+      (await isUneditedRelease(leftover, skill))
+    ) {
+      await fs.rm(leftover, { recursive: true, force: true })
+      removed.push(entry.name)
+    }
+  }
+  return removed
+}
+
 export const syncSkills = async ({
   host,
   directory,
   manifest,
+  reset = false,
 }: {
   host: string
   directory: string
   manifest: SkillsManifest
+  reset?: boolean
 }): Promise<SkillsSyncResult> => {
-  const { exact } = indexManifest(manifest)
-  const before = await classifySkillsDirectory(directory, manifest)
+  const index = indexManifest(manifest)
   const actions: SkillActionRecord[] = []
   const act = (name: string, action: SkillAction, detail?: string) => {
     actions.push(detail ? { name, action, detail } : { name, action })
   }
   const skillByName = (name: string): ManifestSkill => {
-    const skill = exact.get(name)
+    const skill = skillUnderName(index, name)
     if (!skill) {
       throw new SkillsError(`manifest: unknown skill ${name}`)
     }
     return skill
   }
+  const stillUnedited = async (name: string, skill: ManifestSkill): Promise<boolean> =>
+    reset || isUneditedRelease(path.join(directory, name), skill)
+  const removeUnlessSame = async (name: string, keep: string): Promise<void> => {
+    if (await isSameEntry(path.join(directory, name), path.join(directory, keep))) return
+    await fs.rm(path.join(directory, name), { recursive: true, force: true })
+  }
+  const occupantOf = async (name: string): Promise<string | undefined> => {
+    if (!(await isDirectoryOrLinkToOne(directory))) return undefined
+    for (const entry of await fs.readdir(directory)) {
+      if (entry === name) continue
+      if (await isSameEntry(path.join(directory, entry), path.join(directory, name))) return entry
+    }
+    return undefined
+  }
 
-  const install = async (name: string, onInstalled: (skill: ManifestSkill) => void) => {
-    const skill = skillByName(name)
+  for (const leftover of await removeInstallLeftovers(directory, index)) {
+    act(leftover, 'removed', 'leftover from an interrupted install')
+  }
+  const before = await classifySkillsDirectory(directory, manifest)
+
+  const installed = new Set<string>()
+  const settled = new Set<string>()
+  const install = async (skill: ManifestSkill, options: { force?: boolean } = {}): Promise<boolean> => {
+    if (settled.has(skill.name)) return false
+    const occupant = await occupantOf(skill.name)
+    if (occupant) {
+      settled.add(skill.name)
+      act(skill.name, 'kept', `${occupant} already uses this name; left in place`)
+      return false
+    }
     try {
-      await installSkill(host, directory, skill)
-      onInstalled(skill)
+      await installSkill(host, directory, skill, options)
+      installed.add(skill.name)
+      return true
     } catch (error) {
+      settled.add(skill.name)
       if (error instanceof SkillConflictError) {
-        act(name, 'kept', error.message)
+        act(skill.name, 'kept', error.message)
       } else {
-        act(name, 'failed', errorMessage(error))
+        act(skill.name, 'failed', errorMessage(error))
       }
+      return false
     }
   }
 
@@ -453,20 +577,75 @@ export const syncSkills = async ({
       case 'current':
         act(record.name, 'current', record.version ?? undefined)
         break
-      case 'stale':
-        await install(record.name, (skill) => {
+      case 'stale': {
+        const skill = skillByName(record.name)
+        if (await install(skill)) {
           act(record.name, 'updated', `${record.have ?? 'unknown'} -> ${skill.version ?? 'latest'}`)
-        })
+        }
         break
-      case 'modified':
-        act(record.name, 'kept', 'edited locally')
+      }
+      case 'modified': {
+        if (!reset) {
+          act(record.name, 'kept', 'edited locally')
+          break
+        }
+        const target = path.join(directory, record.name)
+        if ((await isDirectory(target)) && !(await isFile(path.join(target, 'SKILL.md')))) {
+          act(record.name, 'kept', 'has no SKILL.md, so it is not a Netlify skill; left in place')
+          break
+        }
+        const skill = skillByName(record.name)
+        if (await install(skill, { force: true })) {
+          act(record.name, 'reset', `edited copy replaced with ${skill.version ?? 'latest'}`)
+        }
         break
-      case 'renamed':
-        act(record.name, 'kept', `now called ${record.currentName}; this copy can be removed`)
+      }
+      case 'renamed': {
+        const skill = skillByName(record.currentName)
+        const current = before.skills.find((other) => other.name === record.currentName)
+        const currentPresent = current !== undefined || installed.has(record.currentName)
+        if (!reset && record.modified) {
+          act(record.name, 'kept', `edited locally; now called ${record.currentName}`)
+          break
+        }
+        if (!reset && current?.status === 'modified') {
+          act(record.name, 'kept', `${record.currentName} is already installed and edited locally`)
+          break
+        }
+        const priorDir = path.join(directory, record.name)
+        if (!currentPresent && (await isSameEntry(priorDir, path.join(directory, record.currentName)))) {
+          await fs.rename(priorDir, path.join(directory, record.currentName))
+          installed.add(record.currentName)
+          act(record.name, 'renamed', `-> ${record.currentName}`)
+          break
+        }
+        if (!currentPresent && !(await install(skill))) {
+          act(record.name, 'kept', `now called ${record.currentName}, which could not be installed`)
+          break
+        }
+        if (!(await stillUnedited(record.name, skill))) {
+          act(record.name, 'kept', `edited locally; now called ${record.currentName}`)
+          break
+        }
+        await removeUnlessSame(record.name, record.currentName)
+        if (currentPresent) {
+          act(record.name, 'removed', `superseded by ${record.currentName}`)
+        } else {
+          act(record.name, 'renamed', `-> ${record.currentName}`)
+        }
         break
-      case 'deprecated':
-        act(record.name, 'kept', `deprecated${record.replacedBy ? `; use ${record.replacedBy}` : ''}`)
+      }
+      case 'deprecated': {
+        const retired = skillByName(record.name)
+        const replacement = record.replacedBy ? `; use ${record.replacedBy}` : ''
+        if ((record.modified && !reset) || !(await stillUnedited(record.name, retired))) {
+          act(record.name, 'kept', `deprecated${replacement}, but edited locally`)
+          break
+        }
+        await fs.rm(path.join(directory, record.name), { recursive: true, force: true })
+        act(record.name, 'removed', `deprecated${replacement}`)
         break
+      }
       case 'unknown':
         act(record.name, 'ignored', 'not a Netlify skill')
         break
@@ -474,9 +653,11 @@ export const syncSkills = async ({
   }
 
   for (const name of before.missing) {
-    await install(name, (skill) => {
+    if (installed.has(name)) continue
+    const skill = skillByName(name)
+    if (await install(skill)) {
       act(name, 'added', skill.version ?? undefined)
-    })
+    }
   }
 
   return { directory, actions }
@@ -501,7 +682,17 @@ export const resolveSkillsDirectories = async (
 }
 
 const summarize = (actions: SkillActionRecord[]): Record<SkillAction, number> => {
-  const summary: Record<SkillAction, number> = { current: 0, added: 0, updated: 0, kept: 0, ignored: 0, failed: 0 }
+  const summary: Record<SkillAction, number> = {
+    current: 0,
+    added: 0,
+    updated: 0,
+    reset: 0,
+    renamed: 0,
+    removed: 0,
+    kept: 0,
+    ignored: 0,
+    failed: 0,
+  }
   for (const { action } of actions) {
     summary[action] += 1
   }
@@ -511,16 +702,34 @@ const summarize = (actions: SkillActionRecord[]): Record<SkillAction, number> =>
 const describeSync = ({ directory, actions }: SkillsSyncResult): string => {
   const summary = summarize(actions)
   const location = chalk.underline(directory)
+  const changed = summary.added + summary.updated + summary.reset + summary.renamed + summary.removed
   const parts = [
     summary.added > 0 ? `${summary.added.toString()} added` : '',
     summary.updated > 0 ? `${summary.updated.toString()} updated` : '',
+    summary.reset > 0 ? `${summary.reset.toString()} reset` : '',
+    summary.renamed > 0 ? `${summary.renamed.toString()} renamed` : '',
+    summary.removed > 0 ? `${summary.removed.toString()} removed` : '',
     summary.kept > 0 ? `${summary.kept.toString()} kept` : '',
     summary.failed > 0 ? `${summary.failed.toString()} failed` : '',
   ].filter(Boolean)
-  if (summary.added + summary.updated + summary.failed === 0) {
+  if (changed + summary.failed === 0) {
     return `Netlify skills in ${location} are up to date${parts.length > 0 ? ` (${parts.join(', ')})` : ''}.`
   }
-  return `Installed Netlify skills in ${location} (${parts.join(', ')}).`
+  const verb = changed === summary.added ? 'Installed' : 'Synced'
+  return `${verb} Netlify skills in ${location} (${parts.join(', ')}).`
+}
+
+const logSync = (directory: string, result: SkillsSyncResult, reset: boolean): void => {
+  log(describeSync({ directory, actions: result.actions }))
+  const listed = result.actions.filter(({ action }) => action === 'kept' || action === 'failed')
+  for (const { name, action, detail } of listed) {
+    log(`  ${chalk.dim(name)}: ${detail ?? action}`)
+  }
+  if (!reset && listed.some(({ action, detail }) => action === 'kept' && detail?.includes('edited locally'))) {
+    log(
+      `  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init --reset-context`)} to replace edited Netlify skills with the latest release.`,
+    )
+  }
 }
 
 export interface AgentSkillsSetupSummary {
@@ -534,9 +743,11 @@ export interface AgentSkillsSetupSummary {
 export const setupAgentSkills = async ({
   workingDir,
   env = process.env,
+  reset = false,
 }: {
   workingDir: string
   env?: NodeJS.ProcessEnv
+  reset?: boolean
 }): Promise<AgentSkillsSetupSummary> => {
   let directories: string[] = []
   try {
@@ -545,18 +756,13 @@ export const setupAgentSkills = async ({
     const manifest = await fetchSkillsManifest(host)
     const actions: SkillActionRecord[] = []
     for (const directory of directories) {
-      const result = await syncSkills({ host, directory: path.resolve(workingDir, directory), manifest })
+      const result = await syncSkills({ host, directory: path.resolve(workingDir, directory), manifest, reset })
       actions.push(...result.actions)
-      log(describeSync({ directory, actions: result.actions }))
-      for (const { name, action, detail } of result.actions) {
-        if (action === 'kept' || action === 'failed') {
-          log(`  ${chalk.dim(name)}: ${detail ?? action}`)
-        }
-      }
+      logSync(directory, result, reset)
     }
     const summary = summarize(actions)
     return {
-      installed: summary.current + summary.added + summary.updated + summary.kept > 0,
+      installed: summary.current + summary.added + summary.updated + summary.reset + summary.renamed + summary.kept > 0,
       directories,
       skillsVersion: manifest.version,
       summary,

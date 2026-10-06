@@ -212,15 +212,17 @@ type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
   setupAgentSkills?: boolean | undefined
+  resetContext?: boolean | undefined
 }
 
-const installAgentSkills = async (command: BaseCommand): Promise<void> => {
+const installAgentSkills = async (command: BaseCommand, reset: boolean): Promise<void> => {
   log()
-  const result = await setupAgentSkills({ workingDir: command.netlify.repositoryRoot })
+  const result = await setupAgentSkills({ workingDir: command.netlify.repositoryRoot, reset })
   await track('sites_agentSkillsSetup', {
     installed: result.installed,
     directories: result.directories,
     skillsVersion: result.skillsVersion,
+    resetContext: reset,
     ...result.summary,
   })
 }
@@ -232,9 +234,15 @@ export const init = async (
     customizeExitMessage,
     exitAfterConfiguringRepo = false,
     setupAgentSkills: shouldSetupAgentSkills = false,
+    resetContext = false,
   }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
-  command.setAnalyticsPayload({ manual: options.manual, force: options.force, skipAgentSetup: options.skipAgentSetup })
+  command.setAnalyticsPayload({
+    manual: options.manual,
+    force: options.force,
+    skipAgentSetup: options.skipAgentSetup,
+    resetContext: options.resetContext,
+  })
 
   const { repositoryRoot, state } = command.netlify
   const { siteInfo: existingSiteInfo } = command.netlify
@@ -246,7 +254,7 @@ export const init = async (
   await ensureNetlifyIgnore(repositoryRoot)
 
   if (shouldSetupAgentSkills) {
-    await installAgentSkills(command)
+    await installAgentSkills(command, resetContext)
   }
 
   const repoUrl = getRepoUrl(existingSiteInfo)
