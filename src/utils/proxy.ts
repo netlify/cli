@@ -517,7 +517,7 @@ const initializeProxy = async function ({
     headers = await parseHeaders({ headersFiles, configPath, config })
   })
 
-  // @ts-expect-error TS(2339) FIXME: Property 'before' does not exist on type 'Server'.
+  // @ts-expect-error FIXME(@types/http-proxy): the undocumented `before()` hook is missing from the types
   proxy.before('web', 'stream', (req: ProxyRequest) => {
     // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
     if (req.headers.expect) {
@@ -598,8 +598,7 @@ const initializeProxy = async function ({
     if (options.isChangingTarget) {
       // got a response after switching the ipVer for host (and its not an error since we will be in on('error') handler) - let's remember this host now
 
-      // options are not exported in ts for the proxy:
-      // @ts-expect-error TS(2339) FIXME: Property 'options' does not exist on type 'In...
+      // @ts-expect-error FIXME(@types/http-proxy): the internal `options` property is missing from the types
       proxy.options.target.host = options.targetHostname
 
       options.changeSettings?.({

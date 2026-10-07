@@ -115,7 +115,7 @@ export const serve = async (options: ServeOptionValues, command: BaseCommand) =>
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    // @ts-expect-error FIXME: assumes the caught value is an `Error`
     log(NETLIFYDEVERR, error_.message)
     return exit(1)
   }

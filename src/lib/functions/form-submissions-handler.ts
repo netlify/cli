@@ -13,6 +13,16 @@ import type NetlifyFunction from './netlify-function.js'
 import type { FunctionsRegistry } from './registry.js'
 import type { BaseBuildResult } from './runtimes/index.js'
 
+interface UploadedFile {
+  filename: string
+  size: number
+  type: string | undefined
+  url: string
+}
+
+type FormFields = Record<string, string | string[]>
+type FormFiles = Record<string, UploadedFile | UploadedFile[]>
+
 export const getFormHandler = function ({
   functionsRegistry,
   logWarning = true,
@@ -81,8 +91,8 @@ export const createFormSubmissionHandler = function ({
 
     // A missing header parses to an empty type and takes the unsupported-type branch below.
     const ct = parseContentType(req.headers['content-type'] ?? '')
-    let fields = {}
-    let files = {}
+    let fields: FormFields = {}
+    let files: FormFiles = {}
     if (ct.type.endsWith('/x-www-form-urlencoded')) {
       const bodyData = await getRawBody(fakeRequest, {
         length: req.headers['content-length'],
@@ -93,44 +103,43 @@ export const createFormSubmissionHandler = function ({
       fields = Object.fromEntries(new URLSearchParams(bodyData.toString()))
     } else if (ct.type === 'multipart/form-data') {
       try {
-        ;[fields, files] = await new Promise((resolve, reject) => {
+        ;[fields, files] = await new Promise<[FormFields, FormFiles]>((resolve, reject) => {
           const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
-          // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
-          form.parse(fakeRequest, (err, Fields, Files) => {
-            if (err) {
-              reject(err)
-              return
-            }
-            Files = Object.entries(Files).reduce(
-              (prev, [name, values]) => ({
-                ...prev,
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                [name]: values.map((value) => ({
-                  filename: value.originalFilename,
-                  size: value.size,
-                  type: value.headers?.['content-type'],
-                  url: value.path,
-                })),
-              }),
-              {},
-            )
-            resolve([
-              Object.entries(Fields).reduce(
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
+          form.parse(
+            // @ts-expect-error FIXME(@types/multiparty): `parse` only reads `headers` and the body stream, but demands an `IncomingMessage`
+            fakeRequest,
+            (err: Error | null, rawFields: Record<string, string[]>, rawFiles: Record<string, multiparty.File[]>) => {
+              if (err) {
+                reject(err)
+                return
+              }
+              const uploadedFiles: Record<string, UploadedFile[]> = Object.entries(rawFiles).reduce(
+                (prev, [name, values]) => ({
+                  ...prev,
+                  [name]: values.map((value) => ({
+                    filename: value.originalFilename,
+                    size: value.size,
+                    type: value.headers?.['content-type'],
+                    url: value.path,
+                  })),
+                }),
                 {},
-              ),
-              Object.entries(Files).reduce(
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-                {},
-              ),
-            ])
-          })
+              )
+              resolve([
+                Object.entries(rawFields).reduce(
+                  (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
+                  {},
+                ),
+                Object.entries(uploadedFiles).reduce(
+                  (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
+                  {},
+                ),
+              ])
+            },
+          )
         })
       } catch (error) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-        warn(error)
+        warn(String(error))
         next()
         return
       }
@@ -139,30 +148,22 @@ export const createFormSubmissionHandler = function ({
       next()
       return
     }
+    // FIXME: with no matching field, this reads the field literally named "undefined"
+    const fieldMatching = (names: string[]) =>
+      fields[String(Object.keys(fields).find((name) => names.includes(name.toLowerCase())))]
+    const fileUrls = Object.entries(files).reduce(
+      // @ts-expect-error FIXME: a field with several files holds an array, so its `url` is `undefined`
+      (prev, [name, { url }]) => ({ ...prev, [name]: url }),
+      {},
+    )
     const data = JSON.stringify({
       payload: {
-        company:
-          // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-          fields[Object.keys(fields).find((name) => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
-        last_name:
-          // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-          fields[Object.keys(fields).find((name) => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
-        first_name:
-          fields[
-            // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-            Object.keys(fields).find((name) => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))
-          ],
-        // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-        name: fields[Object.keys(fields).find((name) => ['name', 'fullname'].includes(name.toLowerCase()))],
-        email:
-          fields[
-            // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-            Object.keys(fields).find((name) =>
-              ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()),
-            )
-          ],
-        // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-        title: fields[Object.keys(fields).find((name) => ['title', 'subject'].includes(name.toLowerCase()))],
+        company: fieldMatching(['company', 'business', 'employer']),
+        last_name: fieldMatching(['lastname', 'surname', 'byname']),
+        first_name: fieldMatching(['firstname', 'givenname', 'forename']),
+        name: fieldMatching(['name', 'fullname']),
+        email: fieldMatching(['email', 'mail', 'from', 'twitter', 'sender']),
+        title: fieldMatching(['title', 'subject']),
         data: {
           ...fields,
           ...files,
@@ -173,13 +174,11 @@ export const createFormSubmissionHandler = function ({
         created_at: new Date().toISOString(),
         human_fields: Object.entries({
           ...fields,
-          // @ts-expect-error TS(2339) FIXME: Property 'url' does not exist on type 'unknown'.
-          ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
+          ...fileUrls,
         }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
         ordered_human_fields: Object.entries({
           ...fields,
-          // @ts-expect-error TS(2339) FIXME: Property 'url' does not exist on type 'unknown'.
-          ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
+          ...fileUrls,
         }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
         site_url: siteUrl,
       },

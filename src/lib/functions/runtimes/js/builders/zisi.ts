@@ -137,8 +137,8 @@ type FunctionMetadata = NonNullable<Awaited<ReturnType<typeof getFunctionMetadat
 const clearFunctionsCache = (functionsPath: string) => {
   Object.keys(require.cache)
     .filter((key) => key.startsWith(functionsPath))
-    // @ts-expect-error(serhalp) -- `decache` is typed but TS thinks it isn't callable. Investigate.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- What in the world is going on?
+    // @ts-expect-error FIXME(decache): types only declare `export default` for a CommonJS `module.exports =` function
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- the call is untyped because of the error above
     .forEach((key) => decache(key))
 }
 
@@ -186,7 +186,7 @@ export default async function detectZisiBuilder({
 }) {
   const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 
-  // @ts-expect-error(serhalp) -- We seem to be incorrectly using this function, but it seems to work... Investigate.
+  // @ts-expect-error FIXME: `readPackageUp` takes an options object, so it ignores this path and searches from the cwd
   const packageJson = await readPackageUp(func.mainFile)
   const hasTypeModule = packageJson?.packageJson.type === 'module'
 
