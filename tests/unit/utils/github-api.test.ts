@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { createGitHubClient, GitHubApiError } from '../../../src/utils/github-api.js'
+import { formatErrorMessage } from '../../../src/utils/init/utils.js'
 
 const mockFetch = (status: number, body: unknown) => {
   const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
@@ -83,5 +84,30 @@ describe('createGitHubClient', () => {
     expect((error as GitHubApiError).status).toBe(500)
     expect((error as GitHubApiError).message).toBe('GitHub API request failed')
     expect((error as GitHubApiError).errors).toEqual([])
+  })
+
+  test('prints a non-JSON error body once', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('<html>Bad Gateway</html>', { status: 502 }))
+
+    const error = await createGitHubClient('abc123')
+      .getRepo({ owner: 'o', repo: 'r' })
+      .catch((error_: unknown) => error_)
+
+    expect((error as GitHubApiError).message).toBe('<html>Bad Gateway</html>')
+    expect((error as GitHubApiError).json).toBeUndefined()
+    const formatted = formatErrorMessage({ message: 'Failed', error })
+    expect(formatted.split('Bad Gateway')).toHaveLength(2)
+  })
+
+  test('surfaces the underlying cause of a network failure', async () => {
+    const cause = new Error('getaddrinfo ENOTFOUND api.github.com')
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('fetch failed', { cause }))
+
+    const error = await createGitHubClient('abc123')
+      .getAuthenticatedUser()
+      .catch((error_: unknown) => error_)
+
+    expect((error as Error).message).toBe('getaddrinfo ENOTFOUND api.github.com')
+    expect(((error as Error).cause as Error).message).toBe('fetch failed')
   })
 })

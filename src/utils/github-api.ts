@@ -37,8 +37,8 @@ interface GitHubErrorBody {
 
 export class GitHubApiError extends Error {
   status: number
-  // Raw parsed body, consumed by `formatErrorMessage`.
-  json: unknown
+  // Only set for object bodies: `formatErrorMessage` appends it, which would repeat a plain-text body.
+  json: GitHubErrorBody | undefined
   errors: GitHubErrorDetail[]
 
   constructor(status: number, body: unknown) {
@@ -46,7 +46,7 @@ export class GitHubApiError extends Error {
     super(parsed?.message ?? (typeof body === 'string' && body.length > 0 ? body : `GitHub API request failed`))
     this.name = 'GitHubApiError'
     this.status = status
-    this.json = body
+    this.json = parsed
     this.errors = Array.isArray(parsed?.errors) ? parsed.errors : []
   }
 
@@ -59,9 +59,21 @@ export const isGitHubApiError = (error: unknown): error is GitHubApiError => err
 
 const GITHUB_API_URL = 'https://api.github.com'
 
+const fetchWithReadableErrors = async (url: string, init: RequestInit): Promise<Response> => {
+  try {
+    return await fetch(url, init)
+  } catch (error) {
+    // undici reports every network failure as "fetch failed"; the actionable reason (DNS, TLS, proxy) is on `cause`.
+    if (error instanceof Error && error.cause instanceof Error) {
+      throw new Error(error.cause.message, { cause: error })
+    }
+    throw error
+  }
+}
+
 export const createGitHubClient = (token: string) => {
   const request = async <T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> => {
-    const response = await fetch(`${GITHUB_API_URL}${path}`, {
+    const response = await fetchWithReadableErrors(`${GITHUB_API_URL}${path}`, {
       method,
       headers: {
         Accept: 'application/vnd.github+json',
