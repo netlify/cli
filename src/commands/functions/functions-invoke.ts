@@ -153,7 +153,7 @@ export const functionsInvoke = async (
   let headers: Record<string, string> = {}
   let body: Record<string, unknown> = {}
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+  // @ts-expect-error FIXME: `find` can return `undefined`
   if (functionObj.schedule) {
     headers = {
       'user-agent': CLOCKWORK_USERAGENT,

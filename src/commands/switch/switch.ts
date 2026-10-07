@@ -45,10 +45,10 @@ export const switchCommand = async (options: SwitchOptionValues, command: BaseCo
     const selectedAccount = Object.entries(availableUsersChoices).find(
       ([, availableUsersChoice]) => availableUsersChoice === accountSwitchChoice,
     )
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+    // @ts-expect-error FIXME: `find` can return `undefined`
     command.netlify.globalConfig.set('userId', selectedAccount[0])
     log('')
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+    // @ts-expect-error FIXME: `find` can return `undefined`
     log(`You're now using ${chalk.bold(selectedAccount[1])}.`)
   }
 }

@@ -25,23 +25,17 @@
     "@typescript-eslint/no-unnecessary-type-parameters": {
       "count": 1
     },
-    "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 1
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 4
+      "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 17
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 5
+      "count": 4
     }
   },
   "src/commands/build/index.ts": {
@@ -341,7 +335,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 9
+      "count": 2
     },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 1

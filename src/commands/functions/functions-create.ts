@@ -153,8 +153,7 @@ const formatRegistryArrayForInquirer = async function (
       .map(async ({ name }) => {
         try {
           const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
-          // @ts-expect-error TS(7036) FIXME: Dynamic import's specifier must be of type 'string... Remove this comment to see the full error message
-          const template = (await import(pathToFileURL(templatePath))) as { default?: FunctionTemplateMetadata }
+          const template = (await import(pathToFileURL(templatePath).href)) as { default?: FunctionTemplateMetadata }
           return template.default
         } catch {
           // noop if import fails we don't break the whole inquirer
