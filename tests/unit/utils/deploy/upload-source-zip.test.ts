@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 
-import type { ExecaReturnValue } from 'execa'
+import type { ExecaChildProcess } from 'execa'
 import type { Response } from 'node-fetch'
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 
@@ -33,6 +33,9 @@ vi.mock('os', () => ({
   platform: vi.fn().mockReturnValue('darwin'),
 }))
 
+// The code under test only awaits execa's result, so mocks skip the child process API.
+const asExecaChildProcess = (result: unknown) => result as ExecaChildProcess<Buffer>
+
 describe('uploadSourceZip', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -59,10 +62,7 @@ describe('uploadSourceZip', () => {
       statusText: 'OK',
     } as unknown as Response)
 
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.resolve({} as ExecaReturnValue)
-    })
+    vi.mocked(mockExeca.default).mockImplementation(() => asExecaChildProcess(Promise.resolve({})))
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
     vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
@@ -122,10 +122,7 @@ describe('uploadSourceZip', () => {
       statusText: 'Forbidden',
     } as unknown as Response)
 
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.resolve({} as ExecaReturnValue)
-    })
+    vi.mocked(mockExeca.default).mockImplementation(() => asExecaChildProcess(Promise.resolve({})))
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
     vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
@@ -172,10 +169,7 @@ describe('uploadSourceZip', () => {
       statusText: 'OK',
     } as unknown as Response)
 
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.resolve({} as ExecaReturnValue)
-    })
+    vi.mocked(mockExeca.default).mockImplementation(() => asExecaChildProcess(Promise.resolve({})))
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
     vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
@@ -237,10 +231,9 @@ describe('uploadSourceZip', () => {
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
     // Mock execFile to simulate failure
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.reject(new Error('zip command failed'))
-    })
+    vi.mocked(mockExeca.default).mockImplementation(() =>
+      asExecaChildProcess(Promise.reject(new Error('zip command failed'))),
+    )
 
     vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
     vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
@@ -281,10 +274,7 @@ describe('uploadSourceZip', () => {
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
     // Mock successful zip creation but failed upload
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return Promise.resolve({} as ExecaReturnValue)
-    })
+    vi.mocked(mockExeca.default).mockImplementation(() => asExecaChildProcess(Promise.resolve({})))
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
     vi.mocked(mockFetch.default).mockResolvedValue({
@@ -332,10 +322,7 @@ describe('uploadSourceZip', () => {
       json: vi.fn().mockResolvedValue({ url: 'https://test-source-zip-url.com' }),
     } as unknown as import('node-fetch').Response)
 
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return {} as ExecaReturnValue
-    })
+    vi.mocked(mockExeca.default).mockImplementation(() => asExecaChildProcess({}))
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
     vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
@@ -371,10 +358,7 @@ describe('uploadSourceZip', () => {
       statusText: 'OK',
     } as unknown as Response)
 
-    // @ts-expect-error(ndhoule): getting the type on this fairly challenging
-    vi.mocked(mockExeca.default).mockImplementation((..._args) => {
-      return {} as ExecaReturnValue
-    })
+    vi.mocked(mockExeca.default).mockImplementation(() => asExecaChildProcess({}))
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
     vi.mocked(mockFs.mkdir).mockResolvedValue(undefined)

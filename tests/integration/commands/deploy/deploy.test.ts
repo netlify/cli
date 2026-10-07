@@ -962,7 +962,7 @@ describe.concurrent('deploy command', () => {
                 const { mkdir, writeFile } = require('node:fs/promises') as typeof import('node:fs/promises')
 
                 const generatedFunctionsDir = 'new_functions'
-                // @ts-expect-error
+                // @ts-expect-error FIXME(@netlify/build): `functions.directory` is missing from `NetlifyConfig`
                 netlifyConfig.functions.directory = generatedFunctionsDir
 
                 await mkdir(generatedFunctionsDir)

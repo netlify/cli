@@ -216,7 +216,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     },
   }
   const cleanedParams: Partial<Omit<typeof params, 'body'>> & { body: Partial<typeof params.body> } =
-    // @ts-expect-error FIXME(clean-deep): typings declare an ES `export default` but the package is CommonJS
+    // @ts-expect-error FIXME(clean-deep): typings declare `export default` for a CommonJS `module.exports =` function
     cleanDeep(params)
   // cleanDeep deeply strips keys with empty strings, but empty strings are valid environment
   // variable values--a user can use an empty string to e.g. unset a variable only for a deploy.

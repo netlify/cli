@@ -18,7 +18,11 @@ const PAGE_SIZE = 100
 /**
  * Get a valid GitHub token
  */
-export const getGitHubToken = async ({ globalConfig }: { globalConfig: GlobalConfigStore }): Promise<string> => {
+export const getGitHubToken = async ({
+  globalConfig,
+}: {
+  globalConfig: Pick<GlobalConfigStore, 'get' | 'set'>
+}): Promise<string> => {
   const userId: string = globalConfig.get('userId')
 
   const githubToken: Token | undefined = globalConfig.get(`users.${userId}.auth.github`)

@@ -23,6 +23,9 @@ import { normalize } from '../../utils/snapshots.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+// Edge function handlers are serialized and run in Deno.
+declare const Deno: { env: { toObject(): Record<string, string> } }
+
 const JWT_EXPIRY = 1_893_456_000
 const getToken = async ({
   jwtRolePath = 'app_metadata.authorization.roles',
@@ -1211,9 +1214,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         })
         .withEdgeFunction({
           handler: async () => {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'Deno'.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            const fromDenoGlobal = Deno.env.toObject() as Record<string, string>
+            const fromDenoGlobal = Deno.env.toObject()
             const fromNetlifyGlobal = Netlify.env.toObject()
 
             return new Response(JSON.stringify({ fromDenoGlobal, fromNetlifyGlobal }))

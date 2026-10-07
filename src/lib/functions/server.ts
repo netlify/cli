@@ -83,7 +83,7 @@ const hasBody = (req: Request) =>
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
-export const createHandler = function (options: GetFunctionsServerOptions): RequestHandler {
+export const createHandler = function (options: Omit<GetFunctionsServerOptions, 'siteUrl'>): RequestHandler {
   const { functionsRegistry } = options
 
   return async function handler(request, response) {
