@@ -56,7 +56,7 @@ export const tryLoadDotEnvFiles = async ({
         }
       } catch (error) {
         return {
-          // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+          // @ts-expect-error FIXME: assumes the caught value is an `Error`
           warning: `Failed reading env variables from file: ${filepath}: ${error.message}`,
         }
       }

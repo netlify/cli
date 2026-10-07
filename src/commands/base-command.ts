@@ -426,11 +426,11 @@ export default class BaseCommand extends Command {
       }
 
       // Aliases
-
-      // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
-      if (command._aliases.length !== 0) {
-        // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
-        const aliases = command._aliases.map((alias) => formatItem(`${parentCommand.name()} ${alias}`, null, true))
+      if (command.aliases().length !== 0) {
+        const aliases = command
+          .aliases()
+          // @ts-expect-error FIXME: throws for a non-root command without a parent
+          .map((alias) => formatItem(`${parentCommand.name()} ${alias}`, undefined, true))
         output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
       }
 
@@ -865,7 +865,7 @@ export default class BaseCommand extends Command {
         featureFlags: this.featureFlags,
       })
     } catch (error_) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+      // @ts-expect-error FIXME: assumes the caught value is an `Error`
       const isUserError = error_.customErrorInfo !== undefined && error_.customErrorInfo.type === 'resolveConfig'
 
       // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
@@ -883,7 +883,7 @@ export default class BaseCommand extends Command {
         return this.getConfig({ ...opts, offline: true })
       }
 
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+      // @ts-expect-error FIXME: assumes the caught value is an `Error`
       const message = isUserError ? error_.message : error_.stack
       return logAndThrowError(message)
     }

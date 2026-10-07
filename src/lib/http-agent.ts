@@ -78,7 +78,7 @@ export const tryGetAgent = async ({
     )
   } catch (error) {
     // unknown error
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    // @ts-expect-error FIXME: assumes the caught value is an `Error`
     return { error: `${httpProxy} is not available.`, message: error.message }
   }
 
@@ -94,7 +94,7 @@ export const tryGetAgent = async ({
     try {
       certificate = await readFile(certificateFile)
     } catch (error) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+      // @ts-expect-error FIXME: assumes the caught value is an `Error`
       response = { warning: `Could not read certificate file '${certificateFile}'.`, message: error.message }
     }
   }

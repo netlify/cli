@@ -118,7 +118,7 @@ const setInEnvelope = async ({
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    // @ts-expect-error FIXME: assumes the caught value is an `Error`
     throw error_.json ? error_.json.msg : error_
   }
 

@@ -46,7 +46,7 @@ const importDotEnv = async ({
     // @ts-expect-error FIXME(@netlify/api): `createEnvVars` body `scopes` rejects `post_processing`, which Envelope returns and accepts
     await api.createEnvVars({ accountId, siteId, body })
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    // @ts-expect-error FIXME: assumes the caught value is an `Error`
     throw error.json ? error.json.msg : error
   }
 
@@ -73,7 +73,7 @@ export const envImport = async (fileName: string, options: EnvImportOptionValues
     const envFileContents = await readFile(fileName, 'utf-8')
     importedEnv = dotenv.parse(envFileContents)
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    // @ts-expect-error FIXME: assumes the caught value is an `Error`
     log(error.message)
     exit(1)
   }

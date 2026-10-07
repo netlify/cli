@@ -58,7 +58,7 @@ const cloneEnvVars = async ({
     // @ts-expect-error FIXME(@netlify/api): `createEnvVars` body `scopes` rejects `post_processing`, which Envelope returns and accepts
     await api.createEnvVars({ accountId, siteId, body: envelopeFrom })
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    // @ts-expect-error FIXME: assumes the caught value is an `Error`
     throw error.json ? error.json.msg : error
   }
   return true
