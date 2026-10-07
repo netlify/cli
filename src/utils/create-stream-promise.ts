@@ -16,9 +16,16 @@ const createStreamPromise = function (
     let dataLength = 0
 
     let timeoutId: NodeJS.Timeout | null = null
+    const clearTimer = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+        timeoutId = null
+      }
+    }
     if (timeoutSeconds != null && Number.isFinite(timeoutSeconds)) {
       timeoutId = setTimeout(() => {
         data = null
+        clearTimer()
         reject(new Error('Request timed out waiting for body'))
       }, timeoutSeconds * SEC_TO_MILLISEC)
     }
@@ -31,6 +38,7 @@ const createStreamPromise = function (
       dataLength += chunk.length
       if (dataLength > bytesLimit) {
         data = null
+        clearTimer()
         reject(new Error('Stream body too big'))
       } else {
         data.push(chunk)
@@ -40,16 +48,21 @@ const createStreamPromise = function (
     stream.on('error', function onError(error) {
       data = null
       reject(error)
-      if (timeoutId) {
-        clearTimeout(timeoutId)
+      clearTimer()
+    })
+    stream.on('close', () => {
+      if (data) {
+        data = null
+        clearTimer()
+        reject(new Error('Stream closed before body completed'))
       }
     })
     stream.on('end', function onEnd() {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
+      clearTimer()
       if (data) {
-        resolve(Buffer.concat(data))
+        const body = Buffer.concat(data)
+        data = null
+        resolve(body)
       }
     })
   })
