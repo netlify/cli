@@ -727,7 +727,9 @@ const describeSync = ({ directory, actions }: SkillsSyncResult): string => {
     return `Netlify skills in ${location} are up to date${parts.length > 0 ? ` (${parts.join(', ')})` : ''}.`
   }
   if (changed === 0) {
-    return `Could not sync Netlify skills in ${location} (${parts.join(', ')}).`
+    return summary.current + summary.kept > 0
+      ? `Some Netlify skills in ${location} could not be synced (${parts.join(', ')}).`
+      : `Could not sync Netlify skills in ${location} (${parts.join(', ')}).`
   }
   const verb = changed === summary.added && summary.failed === 0 ? 'Installed' : 'Synced'
   return `${verb} Netlify skills in ${location} (${parts.join(', ')}).`
