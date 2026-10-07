@@ -1,5 +1,5 @@
 import { NetlifyAPI } from '@netlify/api'
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import { log, logAndThrowError, logJson } from '../../utils/command-helpers.js'
 import { storeToken } from '../base-command.js'

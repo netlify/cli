@@ -1,5 +1,5 @@
 import { chalk } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 export const createApiCommand = (program: BaseCommand) =>
   program

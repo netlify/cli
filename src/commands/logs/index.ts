@@ -1,7 +1,7 @@
 import { Argument, Option } from 'commander'
 
 import { chalk, logAndThrowError, netlifyCommand } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 import { CLI_LOG_LEVEL_CHOICES_STRING } from './log-levels.js'
 import type { LogsOptionValues } from './option_values.js'

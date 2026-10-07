@@ -1,7 +1,7 @@
 import { CommanderError } from 'commander'
 
 import { injectForceFlagIfScripted } from './scripted-commands.js'
-import { BaseCommand } from '../commands/index.js'
+import type { BaseCommand } from '../commands/index.js'
 import { CI_FORCED_COMMANDS } from '../commands/main.js'
 import { USAGE_ERROR_CODES } from './command-error-handler.js'
 import { exit } from './command-helpers.js'

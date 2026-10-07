@@ -1,9 +1,9 @@
 import { getStore, type GetStoreOptions } from '@netlify/blobs'
 import AsciiTable from 'ascii-table'
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
   directories?: boolean

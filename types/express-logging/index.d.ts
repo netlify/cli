@@ -1,5 +1,5 @@
 declare module 'express-logging' {
-  import { RequestHandler } from 'express'
+  import type { RequestHandler } from 'express'
 
   interface LoggerOptions {
     blacklist?: string[]

@@ -19,7 +19,7 @@ import {
   warn,
   type NormalizedCachedConfigConfig,
 } from '../../utils/command-helpers.js'
-import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
+import type { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
 import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.js'
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../log.js'

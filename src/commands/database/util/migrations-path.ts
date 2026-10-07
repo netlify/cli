@@ -1,6 +1,6 @@
 import { join } from 'path'
 
-import BaseCommand from '../../base-command.js'
+import type BaseCommand from '../../base-command.js'
 
 // Default on-disk location for migration files, relative to the project root.
 // Can be overridden by setting `db.migrations.path` in `netlify.toml`.

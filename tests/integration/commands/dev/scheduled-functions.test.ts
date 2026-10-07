@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import fetch from 'node-fetch'
 import { pause } from '../../utils/pause.js'
 

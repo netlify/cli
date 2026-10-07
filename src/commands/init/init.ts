@@ -1,4 +1,4 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 

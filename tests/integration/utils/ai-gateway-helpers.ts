@@ -1,4 +1,4 @@
-import { TestContext } from 'vitest'
+import type { TestContext } from 'vitest'
 
 export const createAIGatewayTestData = () => {
   const siteInfo = {

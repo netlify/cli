@@ -9,7 +9,7 @@ const CACHE_TTL = 8.64e7
 // 10 seconds
 const REQUEST_TIMEOUT = 1e4
 
-export { Geolocation }
+export type { Geolocation }
 
 interface State {
   get(key: string): unknown
