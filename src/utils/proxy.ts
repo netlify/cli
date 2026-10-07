@@ -40,6 +40,7 @@ import { fileExistsAsync, isFileAsync } from '../lib/fs.js'
 import { getFormHandler } from '../lib/functions/form-submissions-handler.js'
 import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
+import { normalizeBackslash } from '../lib/path.js'
 
 import {
   NETLIFYDEVLOG,
@@ -150,7 +151,7 @@ const getStatic = async function (pathname: string, publicFolder: string) {
     return false
   }
 
-  return `/${path.relative(publicFolder, file)}`
+  return `/${normalizeBackslash(path.relative(publicFolder, file))}`
 }
 
 const isEndpointExists = async function (endpoint: string, origin: string) {
