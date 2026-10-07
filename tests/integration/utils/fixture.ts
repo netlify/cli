@@ -99,13 +99,10 @@ export class Fixture {
     args: string[],
     { execOptions = {}, offline = true, parseJson = false }: CallCliOptions = {},
   ): Promise<Record<string, unknown> | string> {
-    let cliOptions: NodeOptions = execOptions
-    if (this.options.apiUrl) {
-      cliOptions = getCLIOptions({ apiUrl: this.options.apiUrl, env: execOptions.env })
+    const cliOptions: NodeOptions = {
+      ...(this.options.apiUrl ? getCLIOptions({ apiUrl: this.options.apiUrl, env: execOptions.env }) : execOptions),
+      cwd: this.directory,
     }
-
-    // @ts-expect-error: Intentionally ignoring read-only property annotation
-    cliOptions.cwd = this.directory
 
     if (offline) {
       args.push('--offline')

@@ -20,11 +20,10 @@ vi.mock('../../../../src/utils/gh-auth.js', () => ({
 
 describe('getGitHubToken', () => {
   // mocked configstore
-  let globalConfig: GlobalConfigStore
+  let globalConfig: Pick<GlobalConfigStore, 'get' | 'set'>
 
   beforeEach(() => {
     const values = new Map<string, unknown>()
-    // @ts-expect-error FIXME(ndhoule): mock is not full, make it more realistic
     globalConfig = {
       get: (key) => values.get(key),
       set: (key, value) => {

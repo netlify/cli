@@ -2,7 +2,8 @@ import { expect, test, vi } from 'vitest'
 import type { ExecaReturnValue } from 'execa'
 
 import { runFunctionsProxy } from '../../../../../../src/lib/functions/local-proxy.js'
-import { invokeFunction } from '../../../../../../src/lib/functions/runtimes/go/index.js'
+import * as goRuntime from '../../../../../../src/lib/functions/runtimes/go/index.js'
+import { createNetlifyFunction } from '../../fixtures.js'
 
 vi.mock('../../../../../../src/lib/functions/local-proxy.js', () => ({ runFunctionsProxy: vi.fn() }))
 
@@ -17,7 +18,9 @@ test.each([
     { stdout: JSON.stringify({ [prop]: expected }) } as ExecaReturnValue,
   )
 
-  // @ts-expect-error TS(2740) FIXME: Type '{ mainFile: string; buildData: { binaryPath:... Remove this comment to see the full error message
-  const match = await invokeFunction({ func: { mainFile: '', buildData: { binaryPath: 'foo' } } })
+  const func = createNetlifyFunction({ runtime: goRuntime })
+  func.buildData = { binaryPath: 'foo' }
+
+  const match = await goRuntime.invokeFunction({ context: {}, environment: {}, event: {}, func, timeout: 0 })
   expect(match[prop]).toEqual(expected)
 })

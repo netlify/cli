@@ -64,8 +64,7 @@ test('should parse redirect rules from netlify.toml', async (t) => {
       })
       .build()
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ configPath: string; }' is not ... Remove this comment to see the full error message
-    const redirects = await parseRedirects({ configPath: `${builder.directory}/netlify.toml` })
+    const redirects = await parseRedirects({ configPath: `${builder.directory}/netlify.toml`, redirectsFiles: [] })
     const expected = [
       {
         ...BASE_REDIRECT,

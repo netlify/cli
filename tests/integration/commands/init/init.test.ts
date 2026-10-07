@@ -103,7 +103,7 @@ const assertNetlifyToml = async (
   // assert netlify.toml was created with user inputs
   const netlifyToml: unknown = toml.parse(await readFile(path.join(tomlDir, '/netlify.toml'), 'utf8'))
   t.expect(netlifyToml).toEqual(
-    // @ts-expect-error(ndhoule): Don't know what's wrong with this typedef
+    // @ts-expect-error FIXME(clean-deep): typings declare `export default` for a CommonJS `module.exports =` function
     cleanDeep({
       build: { command, functions, publish },
     }),

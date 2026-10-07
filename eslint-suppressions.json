@@ -815,9 +815,6 @@
     }
   },
   "tests/integration/commands/deploy/deploy.test.ts": {
-    "@typescript-eslint/ban-ts-comment": {
-      "count": 1
-    },
     "@typescript-eslint/no-non-null-assertion": {
       "count": 63
     },

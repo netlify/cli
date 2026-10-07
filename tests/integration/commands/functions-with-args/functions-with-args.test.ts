@@ -848,17 +848,13 @@ describe.concurrent('serving functions', () => {
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
           const {
-            // @ts-expect-error TS(2339) FIXME: Property 'httpMethod' does not exist on type '{}'.
             httpMethod,
-            // @ts-expect-error TS(2339) FIXME: Property 'path' does not exist on type '{}'.
             path: thePath,
-            // @ts-expect-error TS(2339) FIXME: Property 'rawQuery' does not exist on type '{}'.
             rawQuery,
-            // @ts-expect-error TS(2339) FIXME: Property 'rawUrl' does not exist on type '{}'.
             rawUrl,
-          } = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello?net=lify&jam=stack`).then(
+          } = (await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello?net=lify&jam=stack`).then(
             (res) => res.json(),
-          )
+          )) as Record<string, unknown>
 
           t.expect(httpMethod).toEqual('GET')
           t.expect(thePath).toEqual('/.netlify/functions/hello')
