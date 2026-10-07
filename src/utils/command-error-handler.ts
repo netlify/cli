@@ -1,4 +1,4 @@
-import { CommanderError, type HelpContext } from 'commander'
+import type { CommanderError, HelpContext } from 'commander'
 
 import { log } from './command-helpers.js'
 import { isInteractive } from './scripted-commands.js'

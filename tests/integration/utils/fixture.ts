@@ -6,8 +6,8 @@ import type { NodeOptions } from 'execa'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
 import { callCli } from './call-cli.js'
-import { DevServer, startDevServer } from './dev-server.js'
-import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
+import { type DevServer, startDevServer } from './dev-server.js'
+import { type MockApi, type Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
 import { SiteBuilder } from './site-builder.js'
 import { temporaryDirectory } from '../../../src/utils/temporary-file.js'
 

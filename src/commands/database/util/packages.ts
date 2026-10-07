@@ -1,5 +1,5 @@
 import { log } from '../../../utils/command-helpers.js'
-import BaseCommand from '../../base-command.js'
+import type BaseCommand from '../../base-command.js'
 import { spawnAsync } from './spawn-async.js'
 
 export type PkgManagerName = 'npm' | 'yarn' | 'pnpm' | 'bun'

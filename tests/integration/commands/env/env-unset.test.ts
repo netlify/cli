@@ -4,7 +4,7 @@ import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { chalk, log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../.././../../src/utils/prompts/prompt-messages.js'
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 
 import { routes } from './api-routes.js'

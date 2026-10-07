@@ -7,7 +7,7 @@ import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph }
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import { watchDebounced } from '@netlify/dev-utils'
 
-import BaseCommand from '../../commands/base-command.js'
+import type BaseCommand from '../../commands/base-command.js'
 import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,

@@ -1,4 +1,4 @@
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 export const createClaimCommand = (program: BaseCommand) =>
   program

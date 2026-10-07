@@ -1,12 +1,12 @@
 import { readFile } from 'fs/promises'
 
 import AsciiTable from 'ascii-table'
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import dotenv from 'dotenv'
 
 import { exit, log, logJson } from '../../utils/command-helpers.js'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { getSiteInfo } from './utils.js'
 
 /**

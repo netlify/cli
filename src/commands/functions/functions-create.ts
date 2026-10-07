@@ -7,7 +7,7 @@ import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
 
 import { confirm, input, search, select, Separator } from '@inquirer/prompts'
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import fetch from 'node-fetch'
@@ -16,7 +16,7 @@ import { createSpinner } from 'nanospinner'
 import { fileExistsAsync } from '../../lib/fs.js'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
 import {
-  APIError,
+  type APIError,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
@@ -28,7 +28,7 @@ import { copyTemplateDir } from '../../utils/copy-template-dir/copy-template-dir
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 const require = createRequire(import.meta.url)
 

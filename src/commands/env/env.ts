@@ -1,8 +1,8 @@
-import { OptionValues, Option } from 'commander'
+import { type OptionValues, Option } from 'commander'
 import terminalLink from 'terminal-link'
 
 import { normalizeContext } from '../../utils/env/index.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 const env = (_options: OptionValues, command: BaseCommand) => {
   command.help()
