@@ -56,10 +56,14 @@ describe('help formatting without a TTY', () => {
   })
 
   test('noHelpOptions exposes noBaseOptions and hides the OPTIONS section', () => {
-    const program = new BaseCommand('netlify')
+    const program = new BaseCommand('netlify').option('--debug', 'Print debugging information')
 
     expect(program.noBaseOptions).toBe(false)
+    expect(stripAnsi(program.helpInformation())).toMatch(/^OPTIONS$/m)
+
     program.noHelpOptions()
+
     expect(program.noBaseOptions).toBe(true)
+    expect(stripAnsi(program.helpInformation())).not.toMatch(/^OPTIONS$/m)
   })
 })

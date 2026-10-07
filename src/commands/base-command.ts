@@ -10,15 +10,13 @@ import { resolveConfig } from '@netlify/config'
 import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 import { search } from '@inquirer/prompts'
-import { Command, CommanderError, Help, Option, type OptionValues } from 'commander'
+import { Command, CommanderError, type Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
 import { findUp } from 'find-up'
 import { deepMerge, pick } from '../utils/object-utilities.js'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
-  NETLIFY_CYAN,
-  USER_AGENT,
   chalk,
   logAndThrowError,
   logJson,
@@ -28,9 +26,7 @@ import {
   log,
   version,
   normalizeConfig,
-  padLeft,
   pollForToken,
-  sortOptions,
   warn,
   logError,
 } from '../utils/command-helpers.js'
@@ -43,6 +39,7 @@ import { buildAuthorizeUrl } from '../utils/login-url.js'
 import openBrowser from '../utils/open-browser.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
+import { NetlifyHelp } from './help.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
 import type { MinimalAccount } from '../utils/types.js'
@@ -57,15 +54,6 @@ type Analytics = {
 export const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
 const NANO_SECS_TO_MSECS = 1e6
-/** The fallback width for the help terminal */
-const FALLBACK_HELP_CMD_WIDTH = 80
-
-const HELP_$ = NETLIFY_CYAN('$')
-/** indent on commands or description on the help page */
-const HELP_INDENT_WIDTH = 2
-/** separator width between term and description */
-const HELP_SEPARATOR_WIDTH = 5
-
 /**
  * A list of commands where we don't have to perform the workspace selection at.
  * Those commands work with the system or are not writing any config files that need to be
@@ -102,9 +90,6 @@ const getScrubbedOptions = (command: BaseCommand): Record<string, { source: Opti
     }),
     {},
   )
-
-/** Formats a help list correctly with the correct indent */
-const formatHelpList = (textArray: string[]) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
 
 /** Get the duration between a start time and the current time */
 const getDuration = (startTime: bigint) => {
@@ -317,130 +302,8 @@ export default class BaseCommand extends Command {
     return this
   }
 
-  /** Overrides the help output of commander with custom styling */
   createHelp(): Help {
-    const help = super.createHelp()
-
-    help.commandUsage = (command) => {
-      const term =
-        this.name() === 'netlify'
-          ? `${HELP_$} ${command.name()} [COMMAND]`
-          : `${HELP_$} ${command.parent?.name()} ${command.name()} ${command.usage()}`
-
-      return padLeft(term, HELP_INDENT_WIDTH)
-    }
-
-    const getCommands = (command: BaseCommand) => {
-      const parentCommand = this.name() === 'netlify' ? command : command.parent
-      return (
-        parentCommand?.commands
-          .filter((cmd) => {
-            if ((cmd as any)._hidden) return false
-            // the root command
-            if (this.name() === 'netlify') {
-              // don't include subcommands on the main page
-              return !cmd.name().includes(':')
-            }
-            return cmd.name().startsWith(`${command.name()}:`)
-          })
-          .sort((a, b) => a.name().localeCompare(b.name())) || []
-      )
-    }
-
-    help.longestSubcommandTermLength = (command: BaseCommand): number =>
-      getCommands(command).reduce((max, cmd) => Math.max(max, cmd.name().length), 0)
-
-    /** override the longestOptionTermLength to react on hide options flag */
-    help.longestOptionTermLength = (command: BaseCommand, helper: Help): number =>
-      (command.noBaseOptions === false &&
-        helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
-      0
-
-    help.formatHelp = (command: BaseCommand, helper: Help): string => {
-      const parentCommand = this.name() === 'netlify' ? command : command.parent
-      const termWidth = helper.padWidth(command, helper)
-      const helpWidth = helper.helpWidth || FALLBACK_HELP_CMD_WIDTH
-      // formats a term correctly
-      const formatItem = (term: string, description?: string, isCommand = false): string => {
-        const bang = isCommand ? `${HELP_$} ` : ''
-
-        if (description) {
-          const pad = Math.max(termWidth + HELP_SEPARATOR_WIDTH - (isCommand ? 2 : 0), term.length + 2)
-          const fullText = `${bang}${term.padEnd(pad)}${chalk.grey(description)}`
-          return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad + (isCommand ? 2 : 0))
-        }
-
-        return `${bang}${term}`
-      }
-
-      let output: string[] = []
-
-      // Description
-      const [topDescription, ...commandDescription] = (helper.commandDescription(command) || '').split('\n')
-      if (topDescription.length !== 0) {
-        output = [...output, topDescription, '']
-      }
-
-      // on the parent help command the version should be displayed
-      if (this.name() === 'netlify') {
-        output = [...output, chalk.bold('VERSION'), formatHelpList([formatItem(USER_AGENT)]), '']
-      }
-
-      // Usage
-      output = [...output, chalk.bold('USAGE'), helper.commandUsage(command), '']
-
-      // Arguments
-      const argumentList = helper
-        .visibleArguments(command)
-        .map((argument) => formatItem(helper.argumentTerm(argument), helper.argumentDescription(argument)))
-      if (argumentList.length !== 0) {
-        output = [...output, chalk.bold('ARGUMENTS'), formatHelpList(argumentList), '']
-      }
-
-      if (command.#noBaseOptions === false) {
-        // Options
-        const optionList = helper
-          .visibleOptions(command)
-          .sort(sortOptions)
-          .map((option) => formatItem(helper.optionTerm(option), helper.optionDescription(option)))
-        if (optionList.length !== 0) {
-          output = [...output, chalk.bold('OPTIONS'), formatHelpList(optionList), '']
-        }
-      }
-
-      // Description
-      if (commandDescription.length !== 0) {
-        output = [...output, chalk.bold('DESCRIPTION'), formatHelpList(commandDescription), '']
-      }
-
-      // Aliases
-
-      // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
-      if (command._aliases.length !== 0) {
-        // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
-        const aliases = command._aliases.map((alias) => formatItem(`${parentCommand.name()} ${alias}`, null, true))
-        output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
-      }
-
-      if (command.examples.length !== 0) {
-        output = [
-          ...output,
-          chalk.bold('EXAMPLES'),
-          formatHelpList(command.examples.map((example) => `${HELP_$} ${example}`)),
-          '',
-        ]
-      }
-
-      const commandList = getCommands(command).map((cmd) =>
-        formatItem(cmd.name(), helper.subcommandDescription(cmd).split('\n')[0], true),
-      )
-      if (commandList.length !== 0) {
-        output = [...output, chalk.bold('COMMANDS'), formatHelpList(commandList), '']
-      }
-
-      return [...output, ''].join('\n')
-    }
-    return help
+    return Object.assign(new NetlifyHelp(), this.configureHelp())
   }
 
   /** Will be called on the end of an action to track the metrics */
