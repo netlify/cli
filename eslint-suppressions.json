@@ -35,9 +35,6 @@
     "@typescript-eslint/no-floating-promises": {
       "count": 1
     },
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
-      "count": 2
-    },
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 5
     },
@@ -158,9 +155,6 @@
     }
   },
   "src/commands/env/env-clone.ts": {
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 2
     },
@@ -223,9 +217,6 @@
     }
   },
   "src/commands/env/env-set.ts": {
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
-      "count": 1
-    },
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
     },
@@ -253,9 +244,6 @@
   },
   "src/commands/env/env-unset.ts": {
     "@typescript-eslint/no-dynamic-delete": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
       "count": 1
     },
     "@typescript-eslint/no-unsafe-argument": {
@@ -310,9 +298,6 @@
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 4
-    },
-    "@typescript-eslint/prefer-optional-chain": {
-      "count": 1
     },
     "@typescript-eslint/restrict-plus-operands": {
       "count": 6
@@ -513,9 +498,6 @@
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 2
     },
-    "@typescript-eslint/prefer-optional-chain": {
-      "count": 1
-    },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
     }
@@ -533,9 +515,6 @@
   "src/commands/unlink/unlink.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 3
-    },
-    "@typescript-eslint/prefer-optional-chain": {
-      "count": 1
     }
   },
   "src/commands/watch/watch.ts": {
@@ -667,9 +646,6 @@
   "src/lib/exec-fetcher.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
-    },
-    "@typescript-eslint/prefer-regexp-exec": {
-      "count": 1
     }
   },
   "src/lib/extensions.ts": {
@@ -773,9 +749,6 @@
     }
   },
   "src/recipes/ai-context/context.ts": {
-    "@typescript-eslint/prefer-regexp-exec": {
-      "count": 2
-    },
     "no-empty": {
       "count": 1
     }
@@ -1069,9 +1042,6 @@
     },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
-    },
-    "@typescript-eslint/prefer-optional-chain": {
-      "count": 1
     }
   },
   "src/utils/execa.ts": {
@@ -1132,9 +1102,6 @@
       "count": 3
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    },
-    "@typescript-eslint/prefer-optional-chain": {
       "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
@@ -1245,9 +1212,6 @@
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 10
-    },
-    "@typescript-eslint/prefer-optional-chain": {
-      "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 23
@@ -1483,9 +1447,6 @@
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 7
     },
-    "@typescript-eslint/prefer-regexp-exec": {
-      "count": 9
-    },
     "@typescript-eslint/require-await": {
       "count": 22
     },
@@ -1501,9 +1462,6 @@
       "count": 2
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 1
-    },
-    "@typescript-eslint/prefer-regexp-exec": {
       "count": 1
     },
     "@typescript-eslint/require-await": {

@@ -31,7 +31,7 @@ const getRepoData = async ({
       findUp('.git', { cwd: workingDir, type: 'directory' }),
     ])
 
-    if (!gitDirectory || !gitConfig || !gitConfig.remote || Object.keys(gitConfig.remote).length === 0) {
+    if (!gitDirectory || !gitConfig?.remote || Object.keys(gitConfig.remote).length === 0) {
       throw new Error('No Git remote found')
     }
 
