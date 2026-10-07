@@ -5,6 +5,7 @@ import type { HandlerEvent } from '@netlify/functions'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
+import type { CachedConfig } from '../../../../src/lib/build.js'
 import { withDevServer } from '../../utils/dev-server.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
@@ -315,25 +316,17 @@ describe.concurrent('commands/responses.dev', () => {
           name: 'injector',
           plugin: {
             onPreDev: async ({ netlifyConfig }) => {
-              // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              netlifyConfig.dev = {
-                // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-                ...netlifyConfig.dev,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              // FIXME(@netlify/build): `dev` is missing from `NetlifyConfig`
+              const config: typeof netlifyConfig & { dev?: Partial<NonNullable<CachedConfig['config']['dev']>> } =
+                netlifyConfig
+              config.dev = {
+                ...config.dev,
                 processing: {
-                  // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-                  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                  ...netlifyConfig.dev?.processing,
-                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                  ...config.dev?.processing,
                   html: {
-                    // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    ...netlifyConfig.dev?.processing?.html,
+                    ...config.dev?.processing?.html,
                     injections: [
-                      // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                      ...(netlifyConfig.dev?.processing?.html?.injections ?? []),
+                      ...(config.dev?.processing?.html?.injections ?? []),
                       {
                         location: 'before_closing_head_tag',
                         html: '<script type="text/javascript" src="https://www.example.com"></script>',
@@ -377,25 +370,17 @@ describe.concurrent('commands/responses.dev', () => {
           name: 'injector',
           plugin: {
             onPreDev: async ({ netlifyConfig }) => {
-              // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              netlifyConfig.dev = {
-                // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-                ...netlifyConfig.dev,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              // FIXME(@netlify/build): `dev` is missing from `NetlifyConfig`
+              const config: typeof netlifyConfig & { dev?: Partial<NonNullable<CachedConfig['config']['dev']>> } =
+                netlifyConfig
+              config.dev = {
+                ...config.dev,
                 processing: {
-                  // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-                  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                  ...netlifyConfig.dev?.processing,
-                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                  ...config.dev?.processing,
                   html: {
-                    // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    ...netlifyConfig.dev?.processing?.html,
+                    ...config.dev?.processing?.html,
                     injections: [
-                      // @ts-expect-error(ndhoule): NetlifyConfig.dev is untyped
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                      ...(netlifyConfig.dev?.processing?.html?.injections ?? []),
+                      ...(config.dev?.processing?.html?.injections ?? []),
                       {
                         location: 'before_closing_body_tag',
                         html: '<script type="text/javascript" src="https://www.example.com"></script>',

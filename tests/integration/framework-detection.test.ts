@@ -504,7 +504,7 @@ describe.concurrent('frameworks/framework-detection', () => {
               const { mkdir, writeFile } = require('node:fs/promises') as typeof import('node:fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
-              // @ts-expect-error FIXME(ndhoule): Unsure if this is a legitimate error or bad types
+              // @ts-expect-error FIXME(@netlify/build): `functions.directory` is missing from `NetlifyConfig`
               netlifyConfig.functions.directory = generatedFunctionsDir
 
               netlifyConfig.redirects.push({

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { USER_AGENT, getRequestUserAgent, normalizeConfig } from '../../../src/utils/command-helpers.js'
+import { createConfig } from '../../integration/utils/config.js'
 
 describe('getRequestUserAgent', () => {
   test('appends only the agent name, without its version or source', () => {
@@ -14,16 +15,15 @@ describe('getRequestUserAgent', () => {
 
 describe('normalizeConfig', () => {
   test('should remove publish and publishOrigin property if publishOrigin is "default"', () => {
-    const config = { build: { publish: 'a', publishOrigin: 'default' } }
+    const config = createConfig({ build: { publish: 'a', publishOrigin: 'default' } })
+    const { publish, publishOrigin, ...build } = config.build
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ build: { publish: string; publ... Remove this comment to see the full error message
-    expect(normalizeConfig(config)).toEqual({ build: {} })
+    expect(normalizeConfig(config)).toEqual({ ...config, build })
   })
 
   test('should return same config object if publishOrigin is not "default"', () => {
-    const config = { build: { publish: 'a', publishOrigin: 'b' } }
+    const config = createConfig({ build: { publish: 'a', publishOrigin: 'b' } })
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ build: { publish: string; publ... Remove this comment to see the full error message
     expect(normalizeConfig(config)).toBe(config)
   })
 })

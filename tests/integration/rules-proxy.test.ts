@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.js'
 
 import fetch from 'node-fetch'
+import { createConfig } from './utils/config.js'
 import { createSiteBuilder, type SiteBuilder } from './utils/site-builder.js'
 
 describe('rules-proxy', () => {
@@ -21,8 +22,7 @@ describe('rules-proxy', () => {
     await builder.build()
 
     const rewriter = await createRewriter({
-      // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'NormalizedCac... Remove this comment to see the full error message
-      config: {},
+      config: createConfig(),
       distDir: builder.directory,
       projectDir: builder.directory,
       jwtSecret: '',

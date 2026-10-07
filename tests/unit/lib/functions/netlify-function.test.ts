@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest'
 
-import NetlifyFunction from '../../../../src/lib/functions/netlify-function.js'
+import * as jsRuntime from '../../../../src/lib/functions/runtimes/js/index.js'
+
+import { createNetlifyFunction } from './fixtures.js'
 
 test('should return the correct function url for a NetlifyFunction object', () => {
   const port = 7331
@@ -8,11 +10,10 @@ test('should return the correct function url for a NetlifyFunction object', () =
 
   const functionUrl = `http://localhost:${port.toString()}/.netlify/functions/${functionName}`
 
-  const ntlFunction = new NetlifyFunction({
+  const ntlFunction = createNetlifyFunction({
     name: functionName,
+    runtime: jsRuntime,
     settings: { functionsPort: port },
-    // @ts-expect-error TS(2741) FIXME: Property ''*'' is missing in type '{ "test-functio... Remove this comment to see the full error message
-    config: { functions: { [functionName]: {} } },
   })
 
   expect(ntlFunction.url).toBe(functionUrl)

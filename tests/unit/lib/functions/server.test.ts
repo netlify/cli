@@ -9,9 +9,10 @@ import express from 'express'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
-import { FunctionsRegistry } from '../../../../src/lib/functions/registry.js'
 import { createHandler } from '../../../../src/lib/functions/server.js'
-import { getFrameworksAPIPaths } from '../../../../src/utils/frameworks-api.js'
+import { createConfig } from '../../../integration/utils/config.js'
+
+import { createFunctionsRegistry } from './fixtures.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -29,22 +30,19 @@ describe('createHandler', () => {
     const mainFile = join(functionsDirectory, 'hello.js')
     await writeFile(mainFile, `exports.handler = async (event) => ({ statusCode: 200, body: event.rawUrl })`)
 
-    const functionsRegistry = new FunctionsRegistry({
-      projectRoot,
-      // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'NormalizedCac... Remove this comment to see the full error message
-      config: {},
-      timeouts: { syncFunctions: 1, backgroundFunctions: 1 },
-      settings: { functionsPort: 8888 },
-      frameworksAPIPaths: getFrameworksAPIPaths(projectRoot),
-    })
+    const functionsRegistry = createFunctionsRegistry({ projectRoot })
     await functionsRegistry.scan([functionsDirectory])
     const app = express()
 
-    // TODO(serhalp): Lazy test type. Create a config factory and use it here.
     app.all(
       '{*splat}',
-      // @ts-expect-error TS(2741) FIXME: Property 'processing' is missing in type '{}' but ... Remove this comment to see the full error message
-      createHandler({ functionsRegistry, config: { dev: {} }, geo: 'mock', state: new LocalState(projectRoot) }),
+      createHandler({
+        functionsRegistry,
+        config: createConfig(),
+        geolocationMode: 'mock',
+        offline: false,
+        state: new LocalState(projectRoot),
+      }),
     )
 
     return await new Promise((resolve) => {

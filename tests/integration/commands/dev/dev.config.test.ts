@@ -170,15 +170,13 @@ describe.concurrent('commands/dev/config', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const resp = await fetch(server.url)
-        // @ts-expect-error TS(2339) FIXME: Property 'NETLIFY_BLOBS_CONTEXT' does not exist on... Remove this comment to see the full error message
-        const { NETLIFY_BLOBS_CONTEXT, NETLIFY_CLI_VERSION } = await resp.json()
+        const { NETLIFY_BLOBS_CONTEXT, NETLIFY_CLI_VERSION } = (await resp.json()) as Record<string, unknown>
 
         t.expect(NETLIFY_BLOBS_CONTEXT).toBeTypeOf('string')
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { deployID, edgeURL, siteID, token, uncachedEdgeURL } = JSON.parse(
           Buffer.from(NETLIFY_BLOBS_CONTEXT as string, 'base64').toString(),
-        )
+        ) as Record<string, unknown>
 
         t.expect(deployID).toBe('0')
         t.expect(edgeURL).toMatch(/^http:\/\/localhost:/)

@@ -281,7 +281,7 @@ export const handler = async function () {
             }),
         })
         .withEdgeFunction({
-          // @ts-expect-error Types on EdgeFunction are incorrect
+          // @ts-expect-error FIXME(@netlify/edge-functions): an async handler can't sometimes return nothing
           handler: async (req, { next }) => {
             if (req.url.includes('?ef=true')) {
               const res = await next()

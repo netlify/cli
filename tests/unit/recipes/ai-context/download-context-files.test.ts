@@ -1,26 +1,22 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
 import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest'
 import { resolve } from 'node:path'
 import type { ConsumerConfig } from '../../../../src/recipes/ai-context/context.js'
 import type { RunRecipeOptions } from '../../../../src/commands/recipes/recipes.js'
 
-// Mock fs module
-vi.mock('node:fs', () => {
-  return {
-    promises: {
-      mkdir: vi.fn().mockResolvedValue(undefined),
-      writeFile: vi.fn().mockResolvedValue(undefined),
-      stat: vi.fn().mockImplementation(() => {
-        const err = new Error('File not found') as NodeJS.ErrnoException
-        err.code = 'ENOENT'
-        throw err
-      }),
-      readFile: vi.fn(),
-      rm: vi.fn().mockResolvedValue(undefined),
-    },
-  }
-})
+// Typed with the subset of the `fs` API the code under test uses
+const fsMock = vi.hoisted(() => ({
+  mkdir: vi.fn().mockResolvedValue(undefined),
+  writeFile: vi.fn<(path: string, content: string) => Promise<void>>().mockResolvedValue(undefined),
+  stat: vi.fn<(path: string) => Promise<{ isFile: () => boolean }>>().mockImplementation(() => {
+    const err = new Error('File not found') as NodeJS.ErrnoException
+    err.code = 'ENOENT'
+    throw err
+  }),
+  readFile: vi.fn<(path: string, encoding: string) => Promise<string>>(),
+  rm: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('node:fs', () => ({ promises: fsMock }))
 
 // Set up global fetch mock
 const mockFetch = vi.fn()
@@ -118,10 +114,8 @@ describe('downloadAndWriteContextFiles', () => {
   test('handles existing files with same version', async () => {
     // Mock existing file with same version
     //
-    // @ts-expect-error mocking is not 100% consistent with full API and types for
-    fs.stat.mockResolvedValue({ isFile: () => true })
-    // @ts-expect-error mocking is not 100% consistent with full API and types for
-    fs.readFile.mockResolvedValue(mockProviderContent)
+    fsMock.stat.mockResolvedValue({ isFile: () => true })
+    fsMock.readFile.mockResolvedValue(mockProviderContent)
 
     // Execute the actual function
     await expect(downloadAndWriteContextFiles(mockConsumer, mockRunOptions)).resolves.toBe(false)
@@ -141,10 +135,8 @@ describe('downloadAndWriteContextFiles', () => {
     // Mock existing file with different version
     const existingContent =
       '<ProviderContext version="0.9" provider="Netlify">Old content<ProviderContextOverrides>Custom overrides</ProviderContextOverrides></ProviderContext>'
-    // @ts-expect-error mocking is not 100% consistent with full API and types for
-    fs.stat.mockResolvedValue({ isFile: () => true })
-    // @ts-expect-error mocking is not 100% consistent with full API and types for
-    fs.readFile.mockResolvedValue(existingContent)
+    fsMock.stat.mockResolvedValue({ isFile: () => true })
+    fsMock.readFile.mockResolvedValue(existingContent)
 
     // Execute the actual function
     await downloadAndWriteContextFiles(mockConsumer, mockRunOptions)
@@ -175,12 +167,11 @@ describe('downloadAndWriteContextFiles', () => {
     await downloadAndWriteContextFiles(consumerWithLimit, mockRunOptions)
 
     // Verify content was truncated
-    const writeFileCalls = vi.mocked(fs.writeFile).mock.calls
+    const writeFileCalls = fsMock.writeFile.mock.calls
     expect(writeFileCalls.length).toBeGreaterThan(0)
 
     // Check that all written content is truncated
     writeFileCalls.forEach((call) => {
-      // @ts-expect-error mocking is not 100% consistent with full API and types for
       expect(call[1].length).toBeLessThanOrEqual(100)
     })
   })
@@ -208,8 +199,7 @@ describe('downloadAndWriteContextFiles', () => {
 
   test('rejects when a context file cannot be downloaded', async () => {
     // Mock fetch to return not ok
-    // @ts-expect-error mocking is not 100% consistent with full API and types for
-    fetch.mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: false,
     })
 
@@ -221,8 +211,7 @@ describe('downloadAndWriteContextFiles', () => {
 
   test('rejects when the CLI is older than the minimum version', async () => {
     // Set higher minimum CLI version
-    // @ts-expect-error mocking is not 100% consistent with full API and types for
-    fetch.mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: true,
       text: () => Promise.resolve(mockProviderContent),
       headers: {

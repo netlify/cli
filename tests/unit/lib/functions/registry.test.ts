@@ -6,7 +6,9 @@ import { watchDebounced } from '@netlify/dev-utils'
 import { describe, expect, test, vi } from 'vitest'
 
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.js'
-import { getFrameworksAPIPaths } from '../../../../src/utils/frameworks-api.js'
+import { createConfig } from '../../../integration/utils/config.js'
+
+import { createFunctionsRegistry } from './fixtures.js'
 
 const duplicateFunctions = [
   {
@@ -47,16 +49,11 @@ vi.mock('@netlify/dev-utils', async () => {
 
 test('registry should only pass functions config to zip-it-and-ship-it', async (t) => {
   const projectRoot = '/projectRoot'
-  const frameworksAPIPaths = getFrameworksAPIPaths(projectRoot)
-  const functionsRegistry = new FunctionsRegistry({
-    frameworksAPIPaths,
-    projectRoot,
-    config: {
-      functions: { '*': {} },
-      // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'Plugin'.
-      plugins: ['test'],
-    },
+  const config = createConfig({
+    functions: { '*': {} },
+    plugins: [{ package: 'test' }],
   })
+  const functionsRegistry = createFunctionsRegistry({ projectRoot, config })
   const prepareDirectoryStub = vi.spyOn(FunctionsRegistry, 'prepareDirectory').mockImplementation(async () => {})
   const setupDirectoryWatcherStub = vi
     .spyOn(functionsRegistry, 'setupDirectoryWatcher')
@@ -70,17 +67,13 @@ test('registry should only pass functions config to zip-it-and-ship-it', async (
     prepareDirectoryStub.mockRestore()
   })
 
-  await functionsRegistry.scan([
-    // @ts-expect-error FIXME(ndhoule): We should not be touching this private member in tests
-    functionsRegistry.projectRoot,
-  ])
+  await functionsRegistry.scan([projectRoot])
 
   expect(listFunctionsStub).toHaveBeenCalledOnce()
   expect(listFunctionsStub).toHaveBeenCalledWith(
     expect.anything(),
     expect.objectContaining({
-      // @ts-expect-error FIXME(ndhoule): We should not be touching this private member in tests
-      config: functionsRegistry.config.functions,
+      config: config.functions,
     }),
   )
 })
@@ -99,16 +92,7 @@ describe('the registry handles duplicate functions based on extension precedence
       const file = join(functionsDirectory, func.filename)
       await writeFile(file, func.content)
     }
-    const functionsRegistry = new FunctionsRegistry({
-      projectRoot,
-      // @ts-expect-error: Not mocking full config interface
-      config: {},
-      timeouts: { syncFunctions: 1, backgroundFunctions: 1 },
-      settings: {
-        functionsPort: 8888,
-      },
-      frameworksAPIPaths: getFrameworksAPIPaths(projectRoot),
-    })
+    const functionsRegistry = createFunctionsRegistry({ projectRoot })
     const prepareDirectoryStub = vi.spyOn(FunctionsRegistry, 'prepareDirectory').mockImplementation(async () => {})
     const setupDirectoryWatcherStub = vi
       .spyOn(functionsRegistry, 'setupDirectoryWatcher')
@@ -120,19 +104,13 @@ describe('the registry handles duplicate functions based on extension precedence
     })
 
     await functionsRegistry.scan([functionsDirectory])
-    // @ts-expect-error FIXME(ndhoule): We should not be touching this private member in tests
-    const { functions } = functionsRegistry
-
-    expect(functions.get('hello')).toHaveProperty('runtime.name', 'js')
-    expect(functions.get('hello2')).toHaveProperty('runtime.name', 'go')
+    expect(functionsRegistry.get('hello')).toHaveProperty('runtime.name', 'js')
+    expect(functionsRegistry.get('hello2')).toHaveProperty('runtime.name', 'go')
   })
 })
 
 test('should add included_files to watcher', async () => {
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ frameworksAPIPaths: Record<"co... Remove this comment to see the full error message
-  const registry = new FunctionsRegistry({
-    frameworksAPIPaths: getFrameworksAPIPaths('/project-root'),
-  })
+  const registry = createFunctionsRegistry({ projectRoot: '/project-root' })
   const func = {
     name: '',
     config: { functions: { '*': { included_files: ['include/*', '!include/a.txt'] } } },

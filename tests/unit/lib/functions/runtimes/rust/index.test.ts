@@ -1,7 +1,9 @@
 import { expect, test, vi } from 'vitest'
+import type { ExecaReturnValue } from 'execa'
 
 import { runFunctionsProxy } from '../../../../../../src/lib/functions/local-proxy.js'
-import { invokeFunction } from '../../../../../../src/lib/functions/runtimes/rust/index.js'
+import * as rustRuntime from '../../../../../../src/lib/functions/runtimes/rust/index.js'
+import { createNetlifyFunction } from '../../fixtures.js'
 
 vi.mock('../../../../../../src/lib/functions/local-proxy.js', () => ({ runFunctionsProxy: vi.fn() }))
 
@@ -12,11 +14,13 @@ test.each([
   ['statusCode', 200] as const,
 ])('should return %s', async (prop, expected) => {
   vi.mocked(runFunctionsProxy).mockResolvedValue(
-    // @ts-expect-error(ndhoule): Intentionally not mocking entire execa API surface
-    { stdout: JSON.stringify({ [prop]: expected }) },
+    // This mock doesn't implement the full execa return value API, just the part put under test
+    { stdout: JSON.stringify({ [prop]: expected }) } as ExecaReturnValue,
   )
 
-  // @ts-expect-error TS(2740) FIXME: Type '{ mainFile: string; buildData: { binaryPath:... Remove this comment to see the full error message
-  const match = await invokeFunction({ func: { mainFile: '', buildData: { binaryPath: 'foo' } } })
+  const func = createNetlifyFunction({ runtime: rustRuntime })
+  func.buildData = { binaryPath: 'foo' }
+
+  const match = await rustRuntime.invokeFunction({ context: {}, environment: {}, event: {}, func, timeout: 0 })
   expect(match[prop]).toEqual(expected)
 })

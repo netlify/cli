@@ -3,6 +3,7 @@ import { resolve } from 'path'
 import { describe, expect, it as baseIt, vi } from 'vitest'
 
 import { headersForPath, parseHeaders } from '../../../src/utils/headers.js'
+import { createConfig } from '../../integration/utils/config.js'
 import { createSiteBuilder, type SiteBuilder } from '../../integration/utils/site-builder.js'
 
 vi.mock('../../../src/utils/command-helpers.js', async () => ({
@@ -47,9 +48,7 @@ const headers = [
 
 const parseHeadersFile = async function (context: { builder: { directory: string } }, fixtureName: string) {
   const normalizedHeadersFile = resolve(context.builder.directory, fixtureName)
-  // TODO(serhalp): Lazy test type. Create a factory and use it here.
-  // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'NormalizedCac... Remove this comment to see the full error message
-  return await parseHeaders({ config: {}, headersFiles: [normalizedHeadersFile] })
+  return await parseHeaders({ config: createConfig(), headersFiles: [normalizedHeadersFile] })
 }
 
 // Ignore added properties like `forRegExp`
