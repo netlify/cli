@@ -43,7 +43,6 @@ export const generateInspectSettings = (
 
 export const startProxyServer = async ({
   accountId,
-  addonsUrls,
   aiGatewayContext,
   api,
   blobsContext,
@@ -69,7 +68,6 @@ export const startProxyServer = async ({
   deployEnvironment,
 }: {
   accountId: string | undefined
-  addonsUrls: $TSFixMe
   aiGatewayContext?: AIGatewayContext | null
   api?: NetlifyOptions['api']
   blobsContext?: BlobsContextWithEdgeAccess
@@ -96,7 +94,6 @@ export const startProxyServer = async ({
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   const url = await startProxy({
-    addonsUrls,
     aiGatewayContext,
     blobsContext,
     command,

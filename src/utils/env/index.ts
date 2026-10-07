@@ -289,7 +289,6 @@ export const getEnvelopeEnv = async ({
 
   const generalEnv = filterEnvBySource(env, 'general')
   const internalEnv = filterEnvBySource(env, 'internal')
-  const addonsEnv = filterEnvBySource(env, 'addons')
   const configFileEnv = filterEnvBySource(env, 'configFile')
 
   // filter out configFile env vars if a non-configFile scope is passed
@@ -299,7 +298,6 @@ export const getEnvelopeEnv = async ({
   return {
     ...generalEnv,
     ...accountEnv,
-    ...(includeConfigEnvVars ? addonsEnv : {}),
     ...siteEnv,
     ...(includeConfigEnvVars ? configFileEnv : {}),
     ...internalEnv,

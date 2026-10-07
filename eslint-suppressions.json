@@ -266,12 +266,6 @@
     }
   },
   "src/commands/functions/functions-create.ts": {
-    "@typescript-eslint/await-thenable": {
-      "count": 1
-    },
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 1
-    },
     "@typescript-eslint/no-floating-promises": {
       "count": 1
     },
@@ -285,13 +279,13 @@
       "count": 36
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 64
+      "count": 38
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 11
+      "count": 8
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 59
+      "count": 47
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 11
@@ -303,7 +297,7 @@
       "count": 6
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 29
+      "count": 24
     },
     "n/no-process-exit": {
       "count": 2
@@ -809,20 +803,6 @@
       "count": 2
     }
   },
-  "src/utils/addons/prepare.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unsafe-call": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 3
-    }
-  },
   "src/utils/agent-detection.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
@@ -1004,25 +984,25 @@
   },
   "src/utils/dev.ts": {
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 5
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 15
+      "count": 9
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 4
+      "count": 1
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 16
+      "count": 7
     },
     "@typescript-eslint/no-unsafe-return": {
-      "count": 5
+      "count": 2
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 2
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 6
+      "count": 4
     }
   },
   "src/utils/dot-env.ts": {
@@ -1193,16 +1173,16 @@
       "count": 7
     },
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 38
+      "count": 32
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 69
+      "count": 61
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 28
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 98
+      "count": 96
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 13
