@@ -124,6 +124,14 @@ export default tseslint.config(
     },
   },
 
+  {
+    files: ['src/lib/completion/script.ts'],
+    rules: {
+      // tabtab runs this file directly, so the shebang is intentional
+      'n/hashbang': 'off',
+    },
+  },
+
   // Tests
   {
     files: ['**/*.test.?(c|m)[jt]s?(x)'],

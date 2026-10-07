@@ -585,9 +585,6 @@
     },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 1
-    },
-    "n/hashbang": {
-      "count": 1
     }
   },
   "src/lib/edge-functions/editor-helper.ts": {
