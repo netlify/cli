@@ -152,7 +152,7 @@
     "@bugsnag/js": "^8.6.0",
     "@eslint/compat": "^1.4.1",
     "@eslint/js": "^9.36.0",
-    "@netlify/functions": "^6.0.0",
+    "@netlify/functions": "^6.0.2",
     "@netlify/types": "^3.2.0",
     "@sindresorhus/slugify": "^3.0.0",
     "@tsconfig/node22": "22.0.5",
