@@ -146,7 +146,7 @@ function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessa
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-const getStatic = async function (pathname: string, publicFolder: string) {
+export const getStatic = async function (pathname: string, publicFolder: string) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
   )
@@ -156,7 +156,7 @@ const getStatic = async function (pathname: string, publicFolder: string) {
     return false
   }
 
-  return `/${path.relative(publicFolder, file)}`
+  return `/${path.relative(publicFolder, file).split(path.sep).join('/')}`
 }
 
 const isEndpointExists = async function (endpoint: string, origin: string) {
