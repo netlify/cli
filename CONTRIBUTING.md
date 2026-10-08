@@ -74,6 +74,11 @@ npm run format
 npm run lint:fix
 ```
 
+Pre-existing lint violations are tracked in `eslint-suppressions.json` using ESLint's
+[bulk suppressions](https://eslint.org/docs/latest/use/suppressions). When you fix a suppressed violation, run
+`npx eslint --prune-suppressions` to remove the stale entry (ESLint fails until you do). Please don't add new
+suppressions.
+
 To run the CLI locally:
 
 ```bash

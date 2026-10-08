@@ -38,7 +38,7 @@ const cloneEnvVars = async ({ api, force, siteFrom, siteTo }): Promise<boolean> 
   // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
   const envVarsToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
 
-  if (envVarsToDelete.length !== 0 && Boolean(force) === false) {
+  if (envVarsToDelete.length !== 0 && !force) {
     await promptEnvCloneOverwrite(siteTo.id, envVarsToDelete)
   }
   // delete marked env vars in parallel

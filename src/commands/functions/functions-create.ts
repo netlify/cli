@@ -565,7 +565,7 @@ const TEMPLATE_PERMISSIONS = 0o777
 const createFunctionAddon = async function ({ addonName, addons, api, siteData, siteId }) {
   try {
     const addon = getCurrentAddon({ addons, addonName })
-    if (addon && addon.id) {
+    if (addon?.id) {
       log(`The "${addonName} add-on" already exists for ${siteData.name}`)
       return false
     }

@@ -372,7 +372,7 @@ export const translateFromEnvelopeToMongo = (
     .sort((a, b) => (a.key.toLowerCase() < b.key.toLowerCase() ? -1 : 1))
     .reduce((acc, cur) => {
       const envVar = cur.values.find((val) => [context, 'all'].includes((val.context_parameter ?? '') || val.context))
-      if (envVar && envVar.value) {
+      if (envVar?.value) {
         return {
           ...acc,
           [cur.key]: envVar.value,
