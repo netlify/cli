@@ -613,10 +613,21 @@ export const syncSkills = async ({
           break
         }
         const priorDir = path.join(directory, record.name)
-        if (!currentPresent && (await isSameEntry(priorDir, path.join(directory, record.currentName)))) {
-          await fs.rename(priorDir, path.join(directory, record.currentName))
-          installed.add(record.currentName)
+        const currentDir = path.join(directory, record.currentName)
+        if (!currentPresent && (await isSameEntry(priorDir, currentDir))) {
+          await fs.rename(priorDir, currentDir)
           act(record.name, 'renamed', `-> ${record.currentName}`)
+          if (
+            (await hashIfPossible(currentDir, skill)) !== skill.tree_hash &&
+            (await install(skill, { force: reset }))
+          ) {
+            if (record.modified) {
+              act(record.currentName, 'reset', `edited copy replaced with ${skill.version ?? 'latest'}`)
+            } else {
+              act(record.currentName, 'updated', `-> ${skill.version ?? 'latest'}`)
+            }
+          }
+          installed.add(record.currentName)
           break
         }
         if (!currentPresent && !(await install(skill))) {
@@ -715,7 +726,12 @@ const describeSync = ({ directory, actions }: SkillsSyncResult): string => {
   if (changed + summary.failed === 0) {
     return `Netlify skills in ${location} are up to date${parts.length > 0 ? ` (${parts.join(', ')})` : ''}.`
   }
-  const verb = changed === summary.added ? 'Installed' : 'Synced'
+  if (changed === 0) {
+    return summary.current + summary.kept > 0
+      ? `Some Netlify skills in ${location} could not be synced (${parts.join(', ')}).`
+      : `Could not sync Netlify skills in ${location} (${parts.join(', ')}).`
+  }
+  const verb = changed === summary.added && summary.failed === 0 ? 'Installed' : 'Synced'
   return `${verb} Netlify skills in ${location} (${parts.join(', ')}).`
 }
 
