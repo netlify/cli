@@ -15,7 +15,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@netlify/functions": "^6.0.0",
+    "@netlify/functions": "^6.0.2",
     "@types/node": "^22.0.0",
     "typescript": "^4.5.5"
   }
