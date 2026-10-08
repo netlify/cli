@@ -150,7 +150,7 @@ const getStatic = async function (pathname: string, publicFolder: string) {
     return false
   }
 
-  return `/${path.relative(publicFolder, file)}`
+  return `/${path.relative(publicFolder, file).split(path.sep).join('/')}`
 }
 
 const isEndpointExists = async function (endpoint: string, origin: string) {
