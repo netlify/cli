@@ -6,7 +6,7 @@ import path, { dirname, join, relative } from 'path'
 import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
 
-import { confirm, input, search, select, Separator } from '@inquirer/prompts'
+import { input, search, select, Separator } from '@inquirer/prompts'
 import { OptionValues } from 'commander'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
@@ -14,9 +14,7 @@ import fetch from 'node-fetch'
 import { createSpinner } from 'nanospinner'
 
 import { fileExistsAsync } from '../../lib/fs.js'
-import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
 import {
-  APIError,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
@@ -406,10 +404,9 @@ const downloadFromURL = async function (command, options, argumentName, function
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.mjs')
   if (await fileExistsAsync(fnTemplateFile)) {
     const {
-      default: { addons = [], onComplete },
+      default: { onComplete },
     } = await import(pathToFileURL(fnTemplateFile).href)
 
-    await installAddons(command, addons, path.resolve(fnFolder))
     await handleOnComplete({ command, onComplete })
     // delete
     await unlink(fnTemplateFile)
@@ -504,7 +501,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
-    const { addons = [], lang, name: templateName, onComplete } = chosenTemplate
+    const { lang, name: templateName, onComplete } = chosenTemplate
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
@@ -551,7 +548,6 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       await registerEFInToml(name, command.netlify)
     }
 
-    await installAddons(command, addons, path.resolve(functionPath))
     await handleOnComplete({ command, onComplete })
 
     log()
@@ -560,26 +556,6 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 }
 
 const TEMPLATE_PERMISSIONS = 0o777
-
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonName' implicitly has an 'any... Remove this comment to see the full error message
-const createFunctionAddon = async function ({ addonName, addons, api, siteData, siteId }) {
-  try {
-    const addon = getCurrentAddon({ addons, addonName })
-    if (addon?.id) {
-      log(`The "${addonName} add-on" already exists for ${siteData.name}`)
-      return false
-    }
-    await api.createServiceInstance({
-      siteId,
-      addon: addonName,
-      body: { config: {} },
-    })
-    log(`Add-on "${addonName}" created for ${siteData.name}`)
-    return true
-  } catch (error_) {
-    return logAndThrowError((error_ as APIError).message)
-  }
-}
 
 /**
  *
@@ -600,81 +576,6 @@ const handleOnComplete = async ({ command, onComplete }) => {
     injectEnvVariables(env)
     await onComplete.call(command)
   }
-}
-/**
- *
- * @param {object} config
- * @param {*} config.addonCreated
- * @param {*} config.addonDidInstall
- * @param {import('../base-command.js').default} config.command
- * @param {string} config.fnPath
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonCreated' implicitly has an '... Remove this comment to see the full error message
-const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, fnPath }) => {
-  const { config } = command.netlify
-
-  if (!addonCreated || !addonDidInstall) {
-    return
-  }
-
-  const confirmPostInstall = await confirm({
-    message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-    default: false,
-  })
-
-  if (!confirmPostInstall) {
-    return
-  }
-
-  await injectEnvVariables({
-    devConfig: { ...config.dev },
-    env: command.netlify.cachedConfig.env,
-    site: command.netlify.site,
-  })
-  addonDidInstall(fnPath)
-}
-
-/**
- *
- * @param {import('../base-command.js').default} command
- * @param {*} functionAddons
- * @param {*} fnPath
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const installAddons = async function (command, functionAddons, fnPath) {
-  if (functionAddons.length === 0) {
-    return
-  }
-
-  const { api, site } = command.netlify
-  const siteId = site.id
-  if (!siteId) {
-    log('No project id found, please run inside a project directory or `netlify link`')
-    return false
-  }
-  log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
-
-  const [siteData, siteAddons] = await Promise.all([getSiteData({ api, siteId }), getAddons({ api, siteId })])
-
-  // @ts-expect-error TS(7031) FIXME: Binding element 'addonDidInstall' implicitly has a... Remove this comment to see the full error message
-  const arr = functionAddons.map(async ({ addonDidInstall, addonName }) => {
-    log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
-    try {
-      const addonCreated = await createFunctionAddon({
-        api,
-        addons: siteAddons,
-        siteId,
-        addonName,
-        siteData,
-      })
-
-      await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
-    } catch (error_) {
-      return logAndThrowError(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
-    }
-  })
-  return Promise.all(arr)
 }
 
 /**

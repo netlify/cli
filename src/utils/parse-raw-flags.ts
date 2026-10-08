@@ -4,7 +4,7 @@
 //
 
 // Usage:
-// const { flags, raw } = this.parse(addonsCreateCommand)
+// const { flags, raw } = this.parse(someCommand)
 // // flags = {}
 // const rawFlags = parseRawFlags(raw)
 // // rawFlags = {stuff: yay!}
