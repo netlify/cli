@@ -352,7 +352,7 @@ export default class BaseCommand extends Command {
 
     /** override the longestOptionTermLength to react on hide options flag */
     help.longestOptionTermLength = (command: BaseCommand, helper: Help): number =>
-      (command.noBaseOptions === false &&
+      (!command.noBaseOptions &&
         helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
       0
 
@@ -397,7 +397,7 @@ export default class BaseCommand extends Command {
         output = [...output, chalk.bold('ARGUMENTS'), formatHelpList(argumentList), '']
       }
 
-      if (command.#noBaseOptions === false) {
+      if (!command.#noBaseOptions) {
         // Options
         const optionList = helper
           .visibleOptions(command)
