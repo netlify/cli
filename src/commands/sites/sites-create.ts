@@ -7,7 +7,7 @@ import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../.
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
-import { resolveTeamForNonInteractive } from '../../utils/team.js'
+import { requireTeams, resolveTeamForNonInteractive } from '../../utils/team.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import { MAX_SITE_NAME_LENGTH } from '../../utils/validation.js'
@@ -41,9 +41,11 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       accountSlug = team.slug
       log(`Using team: ${team.name}`)
     } else {
+      // select prompts crash when choices is empty
+      const teams = requireTeams(accounts)
       accountSlug = await select({
         message: 'Team:',
-        choices: accounts.map((account) => ({
+        choices: teams.map((account) => ({
           value: account.slug,
           name: account.name,
         })),
