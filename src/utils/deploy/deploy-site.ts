@@ -50,7 +50,6 @@ const buildStatsString = (possibleParts: (string | false | undefined)[]) => {
 }
 
 export interface DeploySiteOptions {
-  assetType?: 'file' | undefined
   branch?: string
   concurrentHash?: number
   concurrentUpload?: number
@@ -83,7 +82,6 @@ export const deploySite = async (
   siteId: string,
   dir: string,
   {
-    assetType,
     branch,
     concurrentHash = DEFAULT_CONCURRENT_HASH,
     concurrentUpload = DEFAULT_CONCURRENT_UPLOAD,
@@ -127,7 +125,6 @@ export const deploySite = async (
     { edgeFunctions, edgeFnShaMap },
   ] = await Promise.all([
     hashFiles({
-      assetType,
       concurrentHash,
       directories: [dir, edgeFunctionsDistPath, deployConfigPath, dbMigrationsDistPath].filter((d): d is string =>
         Boolean(d),

@@ -7,7 +7,6 @@ import { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor }
 import type { StatusCallback } from './status-cb.js'
 
 const hashFiles = async ({
-  assetType = 'file',
   concurrentHash,
   directories,
   filter,
@@ -15,20 +14,17 @@ const hashFiles = async ({
   normalizer,
   statusCb,
 }: {
-  assetType?: 'file' | undefined
   concurrentHash: number
   directories: string[]
-  filter: ((filename: string) => boolean) | undefined
+  filter: (filename: string) => boolean
   hashAlgorithm?: string | undefined
   normalizer?: (file: File) => File
   statusCb: StatusCallback
 }): Promise<{ files: Record<string, string>; filesShaMap: Record<string, File[]> }> => {
-  if (!filter) throw new Error('Missing filter function option')
-
   const fileStream = walker(directories, { filter })
   const fileFilter = fileFilterCtor()
   const hasher = hasherCtor({ concurrentHash, hashAlgorithm })
-  const fileNormalizer = fileNormalizerCtor({ assetType, normalizer })
+  const fileNormalizer = fileNormalizerCtor({ normalizer })
 
   // Written to by manifestCollector
   // normalizedPath: hash (wanted by deploy API)
