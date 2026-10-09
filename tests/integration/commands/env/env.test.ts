@@ -442,19 +442,22 @@ describe('commands/env', () => {
       })
     })
 
-    test('should exit if the folder is not linked to a project, and --from is not provided', async (t) => {
+    test('should exit non-zero if the folder is not linked to a project, and --from is not provided', async (t) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
 
-        const cliResponse = (await callCli(['env:clone', '--to', 'site_id_a', '--force'], {
+        const error = (await callCli(['env:clone', '--to', 'site_id_a', '--force'], {
           cwd: builder.directory,
           extendEnv: false,
           env: {
             PATH: process.env.PATH,
           },
-        })) as string
+        }).catch((error_: unknown) => error_)) as { exitCode: number; message: string }
 
-        t.expect(normalize(cliResponse)).toMatchSnapshot()
+        t.expect(error.exitCode).toBe(1)
+        t.expect(error.message).toContain(
+          'Please include the source project ID as the `--from` option, or run `netlify link`',
+        )
       })
     })
 
