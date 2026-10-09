@@ -76,6 +76,16 @@ const buildClientContext = function (headers: IncomingHttpHeaders) {
   }
 }
 
+const IPV4_IN_ADDRESS = /\d{1,3}(?:\.\d{1,3}){3}/
+
+const getClientIP = (forwardedFor: string, remoteAddress = ''): string => {
+  const address = (forwardedFor || remoteAddress).split(',').at(-1)?.trim() ?? ''
+
+  // A hop may carry a port (`1.2.3.4:5678`) or an IPv4-mapped IPv6 prefix (`::ffff:127.0.0.1`),
+  // neither of which is a valid address on its own.
+  return IPV4_IN_ADDRESS.exec(address)?.[0] ?? address
+}
+
 const hasBody = (req: Request) =>
   // copied from is-type package
   (req.header('transfer-encoding') !== undefined || !Number.isNaN(Number(req.header('content-length')))) &&
@@ -130,12 +140,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
     }
 
-    let remoteAddress = request.header('x-forwarded-for') || request.connection.remoteAddress || ''
-    remoteAddress =
-      remoteAddress
-        .split(remoteAddress.includes('.') ? ':' : ',')
-        .pop()
-        ?.trim() ?? ''
+    const remoteAddress = getClientIP(request.header('x-forwarded-for') ?? '', request.connection.remoteAddress)
 
     const requestPath = request.header('x-netlify-original-pathname') ?? request.path
     delete request.headers['x-netlify-original-pathname']
