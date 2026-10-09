@@ -1,11 +1,11 @@
 import type { NetlifyAPI } from '@netlify/api'
-import { OptionValues } from 'commander'
 
 import { chalk, log, logAndThrowError, netlifyCommand } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 
 import {
   createColorAssigner,
+  DEPLOY_ID_RE,
   formatJsonLine,
   formatLogLine,
   parseTimeValue,
@@ -15,10 +15,13 @@ import {
 } from './log-api.js'
 import type { LogEntry } from './log-api.js'
 import { LOG_LEVELS_LIST, CLI_LOG_LEVEL_CHOICES_STRING } from './log-levels.js'
+import type { LogsOptionValues } from './option_values.js'
 import {
   fetchDeployHistoricalLogs,
   findCurrentBuildingDeploy,
+  findLatestFinishedDeploy,
   findLatestReadyDeploy,
+  isDeployFinished,
   streamDeploy,
 } from './sources/deploy.js'
 import { fetchEdgeFunctionHistoricalLogs, streamEdgeFunctions } from './sources/edge-functions.js'
@@ -33,6 +36,7 @@ import {
 type Source = 'functions' | 'edge-functions' | 'deploy'
 const VALID_SOURCES: Source[] = ['functions', 'edge-functions', 'deploy']
 const DEFAULT_SINCE = '10m'
+const DEPLOY_STREAM_IDLE_CLOSE_MS = 3_000
 
 const parseSources = (rawSources: string[]): Source[] => {
   const sources: Source[] = []
@@ -121,7 +125,7 @@ const printEntry = (
   }
 }
 
-export const logsCommand = async (options: OptionValues, command: BaseCommand) => {
+export const logsCommand = async (options: LogsOptionValues, command: BaseCommand) => {
   const client = command.netlify.api
   const { site, siteInfo } = command.netlify
   const siteId = site.id
@@ -130,7 +134,7 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     return logAndThrowError('You must link a project before viewing logs.')
   }
 
-  const levelFlags = options.level as string[] | undefined
+  const levelFlags = options.level
   if (levelFlags && !levelFlags.every((level) => LOG_LEVELS_LIST.includes(level))) {
     return logAndThrowError(`Invalid log level. Choices are: ${CLI_LOG_LEVEL_CHOICES_STRING.toString()}`)
   }
@@ -143,9 +147,9 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
   }
 
   let sources: Source[]
-  const rawSources = options.source as string[] | undefined
-  const functionNames = (options.function as string[] | undefined) ?? []
-  const edgeFunctionNames = (options.edgeFunction as string[] | undefined) ?? []
+  const rawSources = options.source
+  const functionNames = options.function ?? []
+  const edgeFunctionNames = options.edgeFunction ?? []
 
   if (rawSources) {
     try {
@@ -167,16 +171,28 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
   }
 
   let deployId: string | undefined
-  if (options.url) {
+  let deployTargeted = false
+  if (options.deployId) {
+    const explicitDeployId = options.deployId.trim()
+    if (!DEPLOY_ID_RE.test(explicitDeployId)) {
+      return logAndThrowError(`Invalid --deploy-id value: ${explicitDeployId}. Expected a deploy ID.`)
+    }
+    if (options.url) {
+      return logAndThrowError('--deploy-id cannot be used together with --url.')
+    }
+    deployId = explicitDeployId
+    deployTargeted = true
+  } else if (options.url) {
     try {
-      deployId = await resolveDeployIdFromUrl(options.url as string, client, siteId, siteInfo)
+      deployId = await resolveDeployIdFromUrl(options.url, client, siteId, siteInfo)
+      deployTargeted = deployId !== undefined
     } catch (error) {
       const message = (error as Error).message
       if (message.includes("doesn't seem to match") && siteInfo.name) {
         const parts = [
           netlifyCommand(),
           'logs',
-          ...(options.since ? [`--since ${options.since as string}`] : []),
+          ...(options.since ? [`--since ${options.since}`] : []),
           `--url https://${siteInfo.name}.netlify.app`,
         ].join(' ')
         return logAndThrowError(`${message}\nTry running ${chalk.cyan(parts)}`)
@@ -192,9 +208,9 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
       return logAndThrowError('--until requires --since to also be set.')
     }
     try {
-      const fromValue = (options.since as string | undefined) ?? DEFAULT_SINCE
+      const fromValue = options.since ?? DEFAULT_SINCE
       const from = parseTimeValue(fromValue, now)
-      const to = options.until ? parseTimeValue(options.until as string, now) : now
+      const to = options.until ? parseTimeValue(options.until, now) : now
       if (from >= to) {
         return logAndThrowError('--since must be earlier than --until.')
       }
@@ -218,23 +234,22 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     }
 
     if (!deployId) {
-      const latestId = await findLatestReadyDeploy(client, siteId)
+      const latestId = sources.includes('deploy')
+        ? await findLatestFinishedDeploy(client, siteId)
+        : await findLatestReadyDeploy(client, siteId)
       if (latestId) {
         deployId = latestId
       }
     }
   }
 
-  const apiBase = client.basePath
-
-  const sinceValue = (options.since as string | undefined) ?? DEFAULT_SINCE
-  const untilValue = options.until as string | undefined
+  const sinceValue = options.since ?? DEFAULT_SINCE
+  const untilValue = options.until
 
   if (historicalRange) {
     await runHistoricalMode({
       sources,
       client,
-      apiBase,
       siteId,
       accessToken: client.accessToken,
       deployId,
@@ -259,6 +274,7 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
     siteId,
     accessToken: client.accessToken,
     deployId,
+    deployTargeted,
     functionNames,
     edgeFunctionNames,
     levelsToPrint,
@@ -269,7 +285,6 @@ export const logsCommand = async (options: OptionValues, command: BaseCommand) =
 const runHistoricalMode = async ({
   sources,
   client,
-  apiBase,
   siteId,
   accessToken,
   deployId,
@@ -283,7 +298,6 @@ const runHistoricalMode = async ({
 }: {
   sources: Source[]
   client: NetlifyAPI
-  apiBase: string
   siteId: string
   accessToken: string | null | undefined
   deployId?: string
@@ -299,7 +313,7 @@ const runHistoricalMode = async ({
 
   if (sources.includes('deploy') && deployId) {
     const deployEntries = await fetchDeployHistoricalLogs({
-      apiBase,
+      siteId,
       accessToken,
       deployId,
       from,
@@ -354,12 +368,13 @@ const runHistoricalMode = async ({
   }
 }
 
-const runFollowMode = async ({
+export const runFollowMode = async ({
   sources,
   client,
   siteId,
   accessToken,
   deployId,
+  deployTargeted,
   functionNames,
   edgeFunctionNames,
   levelsToPrint,
@@ -370,6 +385,7 @@ const runFollowMode = async ({
   siteId: string
   accessToken: string | null | undefined
   deployId?: string
+  deployTargeted: boolean
   functionNames: string[]
   edgeFunctionNames: string[]
   levelsToPrint: string[]
@@ -382,14 +398,24 @@ const runFollowMode = async ({
     printEntry(entry, levelsToPrint, json, assignColor(key))
   }
 
-  if (sources.includes('deploy') && deployId) {
-    const buildingDeployId = await findCurrentBuildingDeploy(client, siteId)
-    if (buildingDeployId) {
-      streamDeploy(siteId, buildingDeployId, accessToken, onEntry, () => {
-        if (!json) {
-          log(chalk.dim('Deploy stream closed.'))
-        }
-      })
+  if (sources.includes('deploy')) {
+    const deployStreamId = deployTargeted ? deployId : await findCurrentBuildingDeploy(client, siteId)
+    if (deployStreamId) {
+      const finished = deployTargeted
+        ? await isDeployFinished(client, siteId, deployStreamId).catch(() => false)
+        : false
+      streamDeploy(
+        siteId,
+        deployStreamId,
+        accessToken,
+        onEntry,
+        () => {
+          if (!json) {
+            log(chalk.dim('Deploy stream closed.'))
+          }
+        },
+        { closeWhenIdleMs: finished ? DEPLOY_STREAM_IDLE_CLOSE_MS : undefined },
+      )
     }
   }
 

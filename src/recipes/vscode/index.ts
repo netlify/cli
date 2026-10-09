@@ -2,7 +2,7 @@ import { join } from 'path'
 
 import { DenoBridge } from '@netlify/edge-bundler'
 import execa from 'execa'
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
 
@@ -17,9 +17,7 @@ const getPrompt = ({ fileExists, path }) => {
     ? `There is a VS Code settings file at ${formattedPath}. Can we update it?`
     : `A new VS Code settings file will be created at ${formattedPath}`
 
-  return inquirer.prompt({
-    type: 'confirm',
-    name: 'confirm',
+  return confirm({
     message,
     default: true,
   })
@@ -55,9 +53,7 @@ const getDenoVSCodeExt = async (repositoryRoot) => {
 const getDenoExtPrompt = () => {
   const message = 'The Deno VS Code extension is recommended. Would you like to install it now?'
 
-  return inquirer.prompt({
-    type: 'confirm',
-    name: 'confirm',
+  return confirm({
     message,
     default: true,
   })
@@ -81,15 +77,15 @@ export const run = async ({ config, repositoryRoot }) => {
   const edgeFunctionsPath = getEdgeFunctionsPath({ config, repositoryRoot })
   const { fileExists, settings: existingSettings } = await getSettings(settingsPath)
   const settings = applySettings(existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot })
-  const { confirm } = await getPrompt({ fileExists, path: settingsPath })
+  const confirmed = await getPrompt({ fileExists, path: settingsPath })
 
-  if (!confirm) {
+  if (!confirmed) {
     return
   }
 
   try {
     if (!(await hasDenoVSCodeExt(repositoryRoot))) {
-      const { confirm: denoExtConfirm } = await getDenoExtPrompt()
+      const denoExtConfirm = await getDenoExtPrompt()
       if (denoExtConfirm) {
         getDenoVSCodeExt(repositoryRoot)
       }

@@ -4,6 +4,7 @@ import BaseCommand from '../base-command.js'
 import type { MigrationNewOptions } from './db-migration-new.js'
 import type { MigrationPullOptions } from './db-migration-pull.js'
 import type { MigrationsResetOptions } from './db-migrations-reset.js'
+import type { ResetOptions } from './db-reset.js'
 import type { DatabaseStatusOptions } from './db-status.js'
 
 export const createDatabaseCommand = (program: BaseCommand) => {
@@ -72,11 +73,13 @@ export const createDatabaseCommand = (program: BaseCommand) => {
   dbCommand
     .command('reset')
     .description('Reset the local development database, removing all data and tables')
+    .option('--force', 'Skip the confirmation prompt shown when the local database has to be deleted', false)
     .option('--json', 'Output result as JSON')
-    .action(async (options: { json?: boolean }, command: BaseCommand) => {
+    .action(async (options: ResetOptions, command: BaseCommand) => {
       const { reset } = await import('./db-reset.js')
       await reset(options, command)
     })
+    .addExamples(['netlify database reset', 'netlify database reset --force'])
 
   const migrationsCommand = dbCommand.command('migrations').description('Manage database migrations')
 

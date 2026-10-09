@@ -214,8 +214,8 @@ export const runBuild = async (
   options: RunBuildOptions,
 ): Promise<{
   exitCode: number
-  newConfig: NetlifyConfig
-  configMutations: Record<string, string>
+  newConfig?: NetlifyConfig
+  configMutations?: Awaited<ReturnType<typeof build>>['configMutations']
   logs?: Logs
 }> => {
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build

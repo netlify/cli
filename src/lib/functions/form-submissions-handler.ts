@@ -78,7 +78,8 @@ export const createFormSubmissionHandler = function ({
     const originalUrl = new URL(req.url, 'http://localhost')
     req.url = `/.netlify/functions/${handlerName}${originalUrl.search}`
 
-    const ct = parseContentType(req)
+    // A missing header parses to an empty type and takes the unsupported-type branch below.
+    const ct = parseContentType(req.headers['content-type'] ?? '')
     let fields = {}
     let files = {}
     if (ct.type.endsWith('/x-www-form-urlencoded')) {

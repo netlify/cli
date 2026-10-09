@@ -137,9 +137,17 @@ netlify database reset
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Skip the confirmation prompt shown when the local database has to be deleted
 - `json` (*boolean*) - Output result as JSON
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify database reset
+netlify database reset --force
+```
 
 ---
 ## `database migrations`

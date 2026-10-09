@@ -15,12 +15,31 @@ import {
 import { isInteractive } from '../../utils/scripted-commands.js'
 import type BaseCommand from '../base-command.js'
 
+// TODO: centralize these in a shared error-code dictionary alongside the exit codes.
+export const STATUS_ERROR_CODES = {
+  NOT_LOGGED_IN: 'NOT_LOGGED_IN',
+  NOT_LINKED: 'NOT_LINKED',
+} as const
+
 export const status = async (options: OptionValues, command: BaseCommand) => {
   const { accounts, api, globalConfig, site, siteInfo } = command.netlify
   const currentUserId = globalConfig.get('userId') as string | undefined
   const [accessToken] = await getToken()
 
   if (!accessToken) {
+    if (options.json) {
+      logJson({
+        loggedIn: false,
+        linked: false,
+        account: null,
+        siteData: null,
+        error: {
+          code: STATUS_ERROR_CODES.NOT_LOGGED_IN,
+          fix: 'netlify login or NETLIFY_AUTH_TOKEN',
+        },
+      })
+      return exit(1)
+    }
     log(`Not logged in. Please log in to see project status.`)
     log()
     if (!isInteractive()) {
@@ -43,6 +62,18 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     user = await api.getCurrentUser()
   } catch (error_) {
     if ((error_ as APIError).status === 401) {
+      if (options.json) {
+        logJson({
+          loggedIn: false,
+          linked: false,
+          account: null,
+          siteData: null,
+          error: {
+            code: STATUS_ERROR_CODES.NOT_LOGGED_IN,
+            fix: 'netlify login or NETLIFY_AUTH_TOKEN',
+          },
+        })
+      }
       return logAndThrowError(
         'Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.',
       )
@@ -70,6 +101,18 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   log(prettyjson.render(cleanAccountData))
 
   if (!siteId) {
+    if (options.json) {
+      logJson({
+        loggedIn: true,
+        linked: false,
+        account: cleanAccountData,
+        siteData: null,
+        error: {
+          code: STATUS_ERROR_CODES.NOT_LINKED,
+          fix: 'netlify link',
+        },
+      })
+    }
     warn('Did you run `netlify link` yet?')
     return logAndThrowError(`You don't appear to be in a folder that is linked to a project`)
   }
@@ -85,6 +128,9 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
         'site-url': siteInfo.ssl_url || siteInfo.url,
         'site-id': siteInfo.id,
       },
+      loggedIn: true,
+      linked: true,
+      error: null,
     })
   }
 

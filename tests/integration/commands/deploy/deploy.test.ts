@@ -515,12 +515,12 @@ describe.concurrent('deploy command', () => {
         const output: string = await callCli(['deploy'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder }))
 
         t.expect(output).toContain('Netlify Build completed in')
-        const [, deployIdPreBuild] = output.match(/DEPLOY_ID_PREBUILD: (\w+)/) ?? []
-        const [, deployURLPreBuild] = output.match(/DEPLOY_URL_PREBUILD: (.+)/) ?? []
-        const [, skewProtectionTokenPreBuild] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: (.+)/) ?? []
-        const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
-        const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
-        const [, skewProtectionToken] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN: (.+)/) ?? []
+        const [, deployIdPreBuild] = /DEPLOY_ID_PREBUILD: (\w+)/.exec(output) ?? []
+        const [, deployURLPreBuild] = /DEPLOY_URL_PREBUILD: (.+)/.exec(output) ?? []
+        const [, skewProtectionTokenPreBuild] = /NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: (.+)/.exec(output) ?? []
+        const [, deployId] = /DEPLOY_ID: (\w+)/.exec(output) ?? []
+        const [, deployURL] = /DEPLOY_URL: (.+)/.exec(output) ?? []
+        const [, skewProtectionToken] = /NETLIFY_SKEW_PROTECTION_TOKEN: (.+)/.exec(output) ?? []
 
         t.expect(deployIdPreBuild).toBeTruthy()
         t.expect(deployIdPreBuild).toEqual('deploy_id')
@@ -571,8 +571,8 @@ describe.concurrent('deploy command', () => {
         t.expect(output).toMatch(/--build.+is now the default and can safely be omitted./)
 
         t.expect(output).toContain('Netlify Build completed in')
-        const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
-        const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
+        const [, deployId] = /DEPLOY_ID: (\w+)/.exec(output) ?? []
+        const [, deployURL] = /DEPLOY_URL: (.+)/.exec(output) ?? []
 
         t.expect(deployId).toEqual('deploy_id')
         t.expect(deployURL).toContain('https://deploy_id--')
@@ -599,7 +599,7 @@ describe.concurrent('deploy command', () => {
 
         const output: string = await callCli(['deploy', '--json'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder }))
 
-        expect(() => JSON.parse(output)).not.toThrowError()
+        expect(() => JSON.parse(output)).not.toThrow()
       })
     })
   })
@@ -805,7 +805,7 @@ describe.concurrent('deploy command', () => {
         })
 
         // stdout should still be valid JSON
-        expect(() => JSON.parse(stdout)).not.toThrowError()
+        expect(() => JSON.parse(stdout)).not.toThrow()
 
         // stderr should contain the build output with line breaks preserved
         expect(stderr).toContain('Build stdout line 1')
@@ -1471,7 +1471,7 @@ describe.concurrent('deploy command', () => {
           getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         )
 
-        const [, branch] = output.match(/TEST_BRANCH: (.+)/) ?? []
+        const [, branch] = /TEST_BRANCH: (.+)/.exec(output) ?? []
         expect(branch).toBe('custom-alias')
 
         const createDeployRequest = mockApi.requests.find(
@@ -1531,6 +1531,80 @@ describe.concurrent('deploy command', () => {
         )
         expect(createDeployRequest).toBeDefined()
         expect((createDeployRequest!.body as Record<string, unknown>).deploy_source).toBe('agent_runner')
+      })
+    })
+  })
+
+  test('should forward agent runner ids from the environment in create deploy request', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({
+            apiUrl: mockApi.apiUrl,
+            builder,
+            env: {
+              NETLIFY_DEPLOY_SOURCE: 'agent_runner',
+              NETLIFY_AGENT_RUNNER_ID: 'runner-123',
+              NETLIFY_AGENT_RUNNER_SESSION_ID: 'session-456',
+            },
+          }),
+        ).then(parseDeploy)
+
+        const createDeployRequest = mockApi.requests.find(
+          (req) => req.method === 'POST' && req.path === '/api/v1/sites/site_id/deploys',
+        )
+        expect(createDeployRequest).toBeDefined()
+        expect(createDeployRequest!.body as Record<string, unknown>).toMatchObject({
+          deploy_source: 'agent_runner',
+          agent_runner_id: 'runner-123',
+          agent_runner_session_id: 'session-456',
+        })
+      })
+    })
+  })
+
+  test('should forward agent runner ids in create deploy request when building', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>test</h1>',
+          })
+          .withNetlifyToml({ config: { build: { publish: 'public' } } })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json'],
+          getCLIOptions({
+            apiUrl: mockApi.apiUrl,
+            builder,
+            env: {
+              NETLIFY_DEPLOY_SOURCE: 'agent_runner',
+              NETLIFY_AGENT_RUNNER_ID: 'runner-123',
+              NETLIFY_AGENT_RUNNER_SESSION_ID: 'session-456',
+            },
+          }),
+        ).then(parseDeploy)
+
+        const createDeployRequest = mockApi.requests.find(
+          (req) => req.method === 'POST' && req.path === '/api/v1/sites/site_id/deploys',
+        )
+        expect(createDeployRequest).toBeDefined()
+        expect(createDeployRequest!.body as Record<string, unknown>).toMatchObject({
+          deploy_source: 'agent_runner',
+          agent_runner_id: 'runner-123',
+          agent_runner_session_id: 'session-456',
+        })
       })
     })
   })
@@ -1733,5 +1807,89 @@ describe.concurrent('deploy command', () => {
         expect(tanstackBody!.framework_version).toBe('1.120.0')
       })
     })
+  })
+
+  describe('deploy-scoped environment variables', () => {
+    const withDeployedEnv = async (
+      t: Parameters<typeof withSiteBuilder<void>>[0],
+      args: string[],
+      assert: (deployState: DeployRouteState) => void,
+    ) => {
+      await withMockDeploy(async (mockApi, deployState) => {
+        await withSiteBuilder(t, async (builder) => {
+          builder.withContentFile({ path: 'public/index.html', content: '<h1>env vars</h1>' })
+          await builder.build()
+
+          await callCli(
+            ['deploy', '--json', '--no-build', '--dir', 'public', ...args],
+            getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+          ).then(parseDeploy)
+
+          assert(deployState)
+        })
+      })
+    }
+
+    test('preserves empty-string variable values', async (t) => {
+      await withDeployedEnv(t, ['--env', 'EMPTY='], (deployState) => {
+        expect(deployState.getDeployBody()!.environment).toEqual([
+          { key: 'EMPTY', value: '', is_secret: false, scopes: ['functions'] },
+        ])
+      })
+    })
+
+    test('sends --env and --secret-env on the update-deploy API call', async (t) => {
+      await withDeployedEnv(
+        t,
+        ['--env', 'NODE_ENV=production', '--env', 'API_URL=https://example.com/?a=b', '--secret-env', 'TOKEN=hunter2'],
+        (deployState) => {
+          expect(deployState.getDeployBody()!.environment).toEqual([
+            { key: 'NODE_ENV', value: 'production', is_secret: false, scopes: ['functions'] },
+            { key: 'API_URL', value: 'https://example.com/?a=b', is_secret: false, scopes: ['functions'] },
+            { key: 'TOKEN', value: 'hunter2', is_secret: true, scopes: ['functions'] },
+          ])
+        },
+      )
+    })
+
+    test('does not send environment on the create-deploy request', async (t) => {
+      await withDeployedEnv(t, ['--env', 'NODE_ENV=production'], (deployState) => {
+        expect(deployState.getCreateDeployBody()).not.toBeNull()
+        expect(deployState.getCreateDeployBody()!.environment).toBeUndefined()
+      })
+    })
+
+    test('omits environment entirely when neither flag is used', async (t) => {
+      await withDeployedEnv(t, [], (deployState) => {
+        expect(deployState.getDeployBody()!.environment).toBeUndefined()
+      })
+    })
+
+    for (const { name, args, message } of [
+      { name: 'a value without a separator', args: ['--env', 'NODE_ENV'], message: 'Expected KEY=VALUE' },
+      { name: 'a reserved key', args: ['--env', 'SITE_ID=abc'], message: 'is a reserved key name' },
+      { name: 'a malformed key', args: ['--env', '2FA=on'], message: 'must start with a letter' },
+      {
+        name: 'a duplicate key',
+        args: ['--env', 'A=1', '--secret-env', 'A=2'],
+        message: 'was specified more than once',
+      },
+    ]) {
+      test(`rejects ${name}`, async (t) => {
+        await withMockDeploy(async (mockApi) => {
+          await withSiteBuilder(t, async (builder) => {
+            builder.withContentFile({ path: 'public/index.html', content: '<h1>env vars</h1>' })
+            await builder.build()
+
+            await expect(
+              callCli(
+                ['deploy', '--no-build', '--dir', 'public', ...args],
+                getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+              ),
+            ).rejects.toHaveProperty('stderr', expect.stringContaining(message))
+          })
+        })
+      })
+    }
   })
 })

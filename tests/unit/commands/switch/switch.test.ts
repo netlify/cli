@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-const { logMessages, mockPrompt, mockLogin } = vi.hoisted(() => ({
+const { logMessages, mockSelect, mockLogin } = vi.hoisted(() => ({
   logMessages: [] as string[],
-  mockPrompt: vi.fn(),
+  mockSelect: vi.fn(),
   mockLogin: vi.fn(),
 }))
 
-vi.mock('inquirer', () => ({
-  default: { prompt: mockPrompt },
+vi.mock('@inquirer/prompts', () => ({
+  select: mockSelect,
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -54,42 +54,42 @@ describe('switchCommand', () => {
 
     expect(mockSet).toHaveBeenCalledWith('userId', 'user-1')
     expect(logMessages.some((m) => m.includes('Alice'))).toBe(true)
-    expect(mockPrompt).not.toHaveBeenCalled()
+    expect(mockSelect).not.toHaveBeenCalled()
   })
 
   test('--email falls through to prompt when no match is found', async () => {
     const { command } = createCommand()
-    mockPrompt.mockResolvedValueOnce({ accountSwitchChoice: 'Bob (bob@corp.com)' })
+    mockSelect.mockResolvedValueOnce('Bob (bob@corp.com)')
 
     await switchCommand({ email: 'nobody@example.com' }, command)
 
     expect(logMessages.some((m) => m.includes('No account found matching'))).toBe(true)
-    expect(mockPrompt).toHaveBeenCalled()
+    expect(mockSelect).toHaveBeenCalled()
   })
 
   test('--email does not match partial email strings', async () => {
     const { command } = createCommand()
-    mockPrompt.mockResolvedValueOnce({ accountSwitchChoice: 'Bob (bob@corp.com)' })
+    mockSelect.mockResolvedValueOnce('Bob (bob@corp.com)')
 
     await switchCommand({ email: 'bob@corp' }, command)
 
     expect(logMessages.some((m) => m.includes('No account found matching'))).toBe(true)
-    expect(mockPrompt).toHaveBeenCalled()
+    expect(mockSelect).toHaveBeenCalled()
   })
 
   test('without --email shows interactive prompt', async () => {
     const { command, mockSet } = createCommand()
-    mockPrompt.mockResolvedValueOnce({ accountSwitchChoice: 'Alice (alice@example.com)' })
+    mockSelect.mockResolvedValueOnce('Alice (alice@example.com)')
 
     await switchCommand({}, command)
 
-    expect(mockPrompt).toHaveBeenCalled()
+    expect(mockSelect).toHaveBeenCalled()
     expect(mockSet).toHaveBeenCalledWith('userId', 'user-1')
   })
 
   test('selecting login new triggers login flow', async () => {
     const { command } = createCommand()
-    mockPrompt.mockResolvedValueOnce({ accountSwitchChoice: 'I would like to login to a new account' })
+    mockSelect.mockResolvedValueOnce('I would like to login to a new account')
 
     await switchCommand({}, command)
 

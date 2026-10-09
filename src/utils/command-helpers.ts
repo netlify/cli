@@ -12,6 +12,7 @@ import terminalLink from 'terminal-link'
 
 import { startSpinner } from '../lib/spinner.js'
 
+import { getDrivingAgent } from './agent-detection.js'
 import getCLIPackageJson from './get-cli-package-json.js'
 import { reportError } from './telemetry/report-error.js'
 import type { TokenLocation } from './types.js'
@@ -53,6 +54,11 @@ const { name, version: packageVersion } = await getCLIPackageJson()
 
 export const version = packageVersion
 export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
+
+export const getRequestUserAgent = (env: NodeJS.ProcessEnv = process.env): string => {
+  const agent = getDrivingAgent(env)
+  return agent ? `${USER_AGENT} agent/${agent.name}` : USER_AGENT
+}
 
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--http-proxy', '--http-proxy-certificate-filename'])

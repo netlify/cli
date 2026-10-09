@@ -1,10 +1,11 @@
 import { rm } from 'fs/promises'
 
+import type { NetlifyAPI } from '@netlify/api'
 import { getVersion as getNetlifyBuildVersion } from '@netlify/build'
+import type { Config as FunctionsConfig } from '@netlify/zip-it-and-ship-it'
 import cleanDeep from 'clean-deep'
 
-import BaseCommand from '../../commands/base-command.js'
-import { type $TSFixMe } from '../../commands/types.js'
+import type BaseCommand from '../../commands/base-command.js'
 import { warn } from '../command-helpers.js'
 
 import {
@@ -26,52 +27,81 @@ import {
   isEdgeFunctionFile,
 } from './process-files.js'
 import uploadFiles from './upload-files.js'
-import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
-import type { DeployEvent } from './status-cb.js'
+import { type Deploy, getUploadList, pluralize, waitForDeploy, waitForDiff } from './util.js'
+import type { File } from './file.js'
+import type { DeployEvent, StatusCallback } from './status-cb.js'
+import type { DeployConfig } from './types.js'
+import type { DeployEnvironmentVariable } from '../env/deploy-env-vars.js'
 import { temporaryDirectory } from '../temporary-file.js'
 
 export type { DeployEvent }
 
+// FIXME(@netlify/api): every `deploy` field is optional, even those always set once a deploy is diffed
+type DiffedDeploy = Deploy & Required<Pick<Deploy, 'id' | 'required'>>
+
 const buildStatsString = (possibleParts: (string | false | undefined)[]) => {
   const parts = possibleParts.filter(Boolean)
-  const message = parts.slice(0, -1).join(', ')
 
-  return parts.length > 1 ? `${message} and ${parts[parts.length - 1]}` : message
+  if (parts.length < 2) {
+    return parts.join('')
+  }
+
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+}
+
+export interface DeploySiteOptions {
+  assetType?: 'file' | undefined
+  branch?: string
+  concurrentHash?: number
+  concurrentUpload?: number
+  /** The site configuration, uploaded as the deploy's `netlify.toml` */
+  config: DeployConfig
+  deployId: string
+  deployTimeout?: number
+  draft?: boolean
+  environment?: DeployEnvironmentVariable[]
+  filter: (filename: string) => boolean
+  fnDir?: string[]
+  functionsConfig?: FunctionsConfig | undefined
+  hashAlgorithm?: string
+  manifestPath?: string | undefined
+  maxRetry?: number
+  packagePath?: string | undefined
+  serverEnabled?: boolean
+  serverManifestPath?: string | undefined
+  siteRoot?: string | undefined
+  skipFunctionsCache?: boolean | undefined
+  statusCb?: StatusCallback
+  syncFileLimit?: number
+  tmpDir?: string
+  workingDir: string
 }
 
 export const deploySite = async (
   command: BaseCommand,
-  api: $TSFixMe,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'siteId' implicitly has an 'any' type.
-  siteId,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'dir' implicitly has an 'any' type.
-  dir,
+  api: NetlifyAPI,
+  siteId: string,
+  dir: string,
   {
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     assetType,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     branch,
     concurrentHash = DEFAULT_CONCURRENT_HASH,
     concurrentUpload = DEFAULT_CONCURRENT_UPLOAD,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     config,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     deployId,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
+    environment,
     filter,
     fnDir = [],
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     functionsConfig,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     hashAlgorithm,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     manifestPath,
     maxRetry = DEFAULT_MAX_RETRY,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
+    packagePath,
+    serverEnabled,
+    serverManifestPath,
     siteRoot,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     skipFunctionsCache,
     statusCb = () => {
       /* default to noop */
@@ -79,22 +109,11 @@ export const deploySite = async (
     syncFileLimit = DEFAULT_SYNC_LIMIT,
     tmpDir = temporaryDirectory(),
     workingDir,
-  }: {
-    concurrentHash?: number
-    concurrentUpload?: number
-    deployTimeout?: number
-    draft?: boolean
-    maxRetry?: number
-    statusCb?: (status: DeployEvent) => void
-    syncFileLimit?: number
-    tmpDir?: string
-    fnDir?: string[]
-    workingDir: string
-  },
+  }: DeploySiteOptions,
 ) => {
   statusCb({
     type: 'hashing',
-    msg: `Hashing files...`,
+    msg: `Preparing deploy...`,
     phase: 'start',
   })
 
@@ -103,14 +122,16 @@ export const deploySite = async (
   const dbMigrationsDistPath = await getDbMigrationsDistPathIfExists(workingDir)
   const [
     { files: staticFiles, filesShaMap: staticShaMap },
-    { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules },
+    { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules, server, serverShaMap },
     configFile,
     { edgeFunctions, edgeFnShaMap },
   ] = await Promise.all([
     hashFiles({
       assetType,
       concurrentHash,
-      directories: [dir, edgeFunctionsDistPath, deployConfigPath, dbMigrationsDistPath].filter(Boolean),
+      directories: [dir, edgeFunctionsDistPath, deployConfigPath, dbMigrationsDistPath].filter((d): d is string =>
+        Boolean(d),
+      ),
       filter,
       hashAlgorithm,
       normalizer: deployFileNormalizer.bind(null, workingDir),
@@ -123,6 +144,9 @@ export const deploySite = async (
       hashAlgorithm,
       statusCb,
       manifestPath,
+      packagePath,
+      serverEnabled,
+      serverManifestPath,
       skipFunctionsCache,
       rootDir: siteRoot,
     }),
@@ -131,31 +155,30 @@ export const deploySite = async (
   ])
 
   const files = { ...staticFiles, [configFile.normalizedPath]: configFile.hash }
-  const filesShaMap = { ...staticShaMap, [configFile.hash]: [configFile] }
+  const filesShaMap: Record<string, (File | typeof configFile)[]> = { ...staticShaMap, [configFile.hash]: [configFile] }
 
   const edgeFunctionsCount = Object.keys(files).filter(isEdgeFunctionFile).length
   const filesCount = Object.keys(files).length - edgeFunctionsCount
   const functionsCount = Object.keys(functions).length
   const stats = buildStatsString([
-    filesCount > 0 && `${filesCount} files`,
-    functionsCount > 0 && `${functionsCount} functions`,
-    edgeFunctionsCount > 0 && 'edge functions',
+    filesCount > 0 && pluralize(filesCount, 'file'),
+    functionsCount > 0 && pluralize(functionsCount, 'function'),
+    edgeFunctionsCount > 0 && pluralize(edgeFunctionsCount, 'edge function'),
+    server && 'a server',
   ])
 
   statusCb({
     type: 'hashing',
-    msg: `Finished hashing ${stats}`,
+    msg: `Deploying ${stats}`,
     phase: 'stop',
   })
 
-  if (filesCount === 0 && functionsCount === 0) {
-    throw new Error('No files or functions to deploy')
+  if (filesCount === 0 && functionsCount === 0 && edgeFunctionsCount === 0 && !server) {
+    throw new Error('Nothing to deploy')
   }
 
   if (functionsWithNativeModules.length !== 0) {
-    const functionsWithNativeModulesMessage = functionsWithNativeModules
-      .map(({ name }: { name: string }) => `- ${name}`)
-      .join('\n')
+    const functionsWithNativeModulesMessage = functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')
     warn(`Modules with native dependencies\n
     ${functionsWithNativeModulesMessage}
 
@@ -170,21 +193,21 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   statusCb({
     type: 'create-deploy',
-    msg: 'CDN diffing files...',
+    msg: 'Checking what needs to be uploaded...',
     phase: 'start',
   })
 
   const packageFrameworks = command.project.frameworks.get(command.workspacePackage ?? '')
   const primaryFramework = packageFrameworks?.[0]
 
-  // @ts-expect-error TS(2349) This expression is not callable
-  const deployParams = cleanDeep({
+  const params = {
     siteId,
     deploy_id: deployId,
     body: {
       files,
       functions,
       edge_functions: edgeFunctions,
+      server,
       function_schedules: functionSchedules,
       functions_config: fnConfig,
       async: Object.keys(files).length > syncFileLimit,
@@ -194,25 +217,49 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
       framework_version: primaryFramework?.detected.package?.version?.toString() ?? 'unknown',
       build_version: getNetlifyBuildVersion(),
     },
-  })
-  let deploy = await api.updateSiteDeploy(deployParams)
+  }
+  const cleanedParams: Partial<Omit<typeof params, 'body'>> & { body: Partial<typeof params.body> } =
+    // @ts-expect-error FIXME(clean-deep): typings declare an ES `export default` but the package is CommonJS
+    cleanDeep(params)
+  // cleanDeep deeply strips keys with empty strings, but empty strings are valid environment
+  // variable values--a user can use an empty string to e.g. unset a variable only for a deploy.
+  // This would result in payloads with a missing `value` key, which the API would reject.
+  const deployParams = environment?.length
+    ? { ...cleanedParams, body: { ...cleanedParams.body, environment } }
+    : cleanedParams
+  // FIXME(@netlify/api): `id` and `required` are optional on the updated deploy
+  let deploy = (await api.updateSiteDeploy(
+    // @ts-expect-error FIXME(@netlify/api): `functions_config` rejects zip-it-and-ship-it's `BuildData`, route `methods` and `traffic_rules` strings
+    deployParams,
+  )) as DiffedDeploy
 
-  if (deployParams.body.async) deploy = await waitForDiff(api, deploy.id, siteId, deployTimeout)
+  if (deployParams.body.async) deploy = (await waitForDiff(api, deploy.id, siteId, deployTimeout)) as DiffedDeploy
 
-  const { required: requiredFiles, required_functions: requiredFns, required_edge_functions: requiredEdgeFns } = deploy
+  const {
+    required: requiredFiles,
+    required_functions: requiredFns,
+    required_edge_functions: requiredEdgeFns,
+    required_server: requiredServer,
+  } = deploy
+
+  const newStats = buildStatsString([
+    requiredFiles.length > 0 && pluralize(requiredFiles.length, 'file'),
+    requiredFns != null && requiredFns.length > 0 && pluralize(requiredFns.length, 'function'),
+    requiredEdgeFns != null && requiredEdgeFns.length > 0 && pluralize(requiredEdgeFns.length, 'edge function'),
+    (requiredServer?.length ?? 0) > 0 && 'a server',
+  ])
 
   statusCb({
     type: 'create-deploy',
-    msg: `CDN requesting ${requiredFiles.length} files${
-      Array.isArray(requiredFns) ? ` and ${requiredFns.length} functions` : ''
-    }${Array.isArray(requiredEdgeFns) ? ` and ${requiredEdgeFns.length} edge functions` : ''}`,
+    msg: newStats ? `Found ${newStats} to upload` : 'Everything is uploaded',
     phase: 'stop',
   })
 
   const filesUploadList = getUploadList(requiredFiles, filesShaMap)
   const functionsUploadList = getUploadList(requiredFns, fnShaMap)
   const edgeFunctionsUploadList = getUploadList(requiredEdgeFns, edgeFnShaMap)
-  const uploadList = [...filesUploadList, ...functionsUploadList, ...edgeFunctionsUploadList]
+  const serverUploadList = getUploadList(requiredServer, serverShaMap)
+  const uploadList = [...filesUploadList, ...functionsUploadList, ...edgeFunctionsUploadList, ...serverUploadList]
 
   await uploadFiles(api, deployId, uploadList, { concurrentUpload, statusCb, maxRetry })
 
@@ -221,7 +268,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     msg: 'Waiting for deploy to go live...',
     phase: 'start',
   })
-  deploy = await waitForDeploy(api, deployId, siteId, deployTimeout)
+  const readyDeploy = await waitForDeploy(api, deployId, siteId, deployTimeout)
 
   statusCb({
     type: 'wait-for-deploy',
@@ -231,10 +278,9 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   await rm(tmpDir, { force: true, recursive: true })
 
-  const deployManifest = {
+  return {
     deployId,
-    deploy,
+    deploy: readyDeploy,
     uploadList,
   }
-  return deployManifest
 }

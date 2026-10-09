@@ -20,6 +20,10 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .description(`Deletes an object with a given key, if it exists, from a Netlify Blobs store`)
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
+    .option(
+      '--region <region>',
+      "The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used",
+    )
     .alias('blob:delete')
     .hook('preAction', requiresSiteInfo)
     .action(async (storeName: string, key: string, _options: OptionValues, command: BaseCommand) => {
@@ -35,6 +39,10 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
     .option('-O, --output <path>', 'Defines the filesystem path where the blob data should be persisted')
+    .option(
+      '--region <region>',
+      "The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used",
+    )
     .alias('blob:get')
     .hook('preAction', requiresSiteInfo)
     .action(async (storeName: string, key: string, options: OptionValues, command: BaseCommand) => {
@@ -55,6 +63,10 @@ export const createBlobsCommand = (program: BaseCommand) => {
       `A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned`,
     )
     .option('--json', 'Output list contents as JSON')
+    .option(
+      '--region <region>',
+      "The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used",
+    )
     .alias('blob:list')
     .hook('preAction', requiresSiteInfo)
     .action(async (storeName: string, options: OptionValues, command: BaseCommand) => {
@@ -71,6 +83,10 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .argument('<key>', 'Object key')
     .argument('[value...]', 'Object value')
     .option('-i, --input <path>', 'Defines the filesystem path where the blob data should be read from')
+    .option(
+      '--region <region>',
+      "The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used",
+    )
     .alias('blob:set')
     .hook('preAction', requiresSiteInfo)
 
@@ -98,6 +114,7 @@ For more information about Netlify Blobs, see ${terminalLink(docsUrl, docsUrl, {
       'netlify blobs:delete my-store my-key',
       'netlify blobs:list my-store',
       'netlify blobs:list my-store --json',
+      'netlify blobs:list my-store --region eu-central-1',
     ])
     .action(blobs)
 }

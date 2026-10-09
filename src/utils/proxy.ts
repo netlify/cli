@@ -13,20 +13,20 @@ import url from 'url'
 import util from 'util'
 import zlib from 'zlib'
 
-import { renderFunctionErrorPage } from '@netlify/dev-utils'
+import { FileWatcher, fromWebResponse, mockLocation, renderFunctionErrorPage } from '@netlify/dev-utils'
 import { ImageHandler } from '@netlify/images'
+import { ServerHandler } from '@netlify/server-dev'
+
+import { runBeforeProcessExit } from './shell.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
-import contentType from 'content-type'
-import cookie from 'cookie'
-import { getProperty } from 'dot-prop'
+import type { MatchResult } from '@netlify/redirect-matcher'
+import { parse as parseContentType } from 'content-type'
 import generateETag from 'etag'
 import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
-import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
 import { throttle } from './object-utilities.js'
-import type { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 
 import type { BaseCommand } from '../commands/index.js'
@@ -55,7 +55,7 @@ import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHead
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
-import type { Request, Rewriter, ServerSettings } from './types.js'
+import type { Request, Rewriter, ServerSettings, SiteInfo } from './types.js'
 
 const gunzip = util.promisify(zlib.gunzip)
 const gzip = util.promisify(zlib.gzip)
@@ -140,12 +140,6 @@ function isFunction(functionsPort: boolean | number | undefined, url: string) {
   return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
 
-function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessage) {
-  const matches = req.url?.match(/^\/.netlify\/([^/]+)(\/.*)/)
-  const addonUrl = matches && addonsUrls[matches[1]]
-  return addonUrl ? `${addonUrl}${matches[2]}` : null
-}
-
 const getStatic = async function (pathname: string, publicFolder: string) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
@@ -156,7 +150,7 @@ const getStatic = async function (pathname: string, publicFolder: string) {
     return false
   }
 
-  return `/${path.relative(publicFolder, file)}`
+  return `/${path.relative(publicFolder, file).split(path.sep).join('/')}`
 }
 
 const isEndpointExists = async function (endpoint: string, origin: string) {
@@ -169,8 +163,8 @@ const isEndpointExists = async function (endpoint: string, origin: string) {
   }
 }
 
-const isExternal = function (match: Match): boolean {
-  return 'to' in match && /^https?:\/\//.exec(match.to) != null
+const isExternal = function (match: MatchResult): match is Extract<MatchResult, { type: 'match' }> {
+  return match.type === 'match' && /^https?:\/\//.exec(match.to) != null
 }
 
 const stripOrigin = function ({ hash, pathname, search }: URL): string {
@@ -197,15 +191,7 @@ const proxyToExternalUrl = function ({
   void handler(req, res, () => {})
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonUrl' implicitly has an 'any'... Remove this comment to see the full error message
-const handleAddonUrl = function ({ addonUrl, req, res }) {
-  const dest = new URL(addonUrl)
-  const destURL = stripOrigin(dest)
-
-  proxyToExternalUrl({ req, res, dest, destURL })
-}
-
-const isRedirect = function (match: Match | { status?: number | undefined }): boolean {
+const isRedirect = function (match: MatchResult | { status?: number | undefined }): boolean {
   return 'status' in match && match.status != null && match.status >= 300 && match.status <= 400
 }
 
@@ -267,14 +253,14 @@ const serveRedirect = async function ({
   res,
   siteInfo,
 }: {
-  match: Match | null
+  match: MatchResult | null
 } & Record<string, $TSFixMe>) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
   options.match = null
 
-  if (match.force404) {
+  if (match.type === 'forcedNotFound') {
     res.writeHead(404)
     res.end(await render404(options.publicFolder))
     return
@@ -286,8 +272,9 @@ const serveRedirect = async function ({
     })
   }
 
-  if (match.signingSecret) {
-    const signingSecretVar = env[match.signingSecret]
+  const signingSecretName = match.signer?.jwtSecret
+  if (signingSecretName) {
+    const signingSecretVar = env[signingSecretName]
 
     if (signingSecretVar) {
       req.headers['x-nf-sign'] = signRedirect({
@@ -299,7 +286,7 @@ const serveRedirect = async function ({
     } else {
       log(
         NETLIFYDEVWARN,
-        `Could not sign redirect because environment variable ${chalk.yellow(match.signingSecret)} is not set`,
+        `Could not sign redirect because environment variable ${chalk.yellow(signingSecretName)} is not set`,
       )
     }
   }
@@ -308,57 +295,7 @@ const serveRedirect = async function ({
     return proxy.web(req, res, { target: options.functionsServer })
   }
 
-  const urlForAddons = getAddonUrl(options.addonsUrls, req)
-  if (urlForAddons) {
-    handleAddonUrl({ req, res, addonUrl: urlForAddons })
-    return
-  }
-
   const originalURL = req.url
-  if (match.exceptions && match.exceptions.JWT) {
-    // Some values of JWT can start with :, so, make sure to normalize them
-    const expectedRoles = new Set(
-      match.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
-    )
-
-    const cookieValues = cookie.parse(req.headers.cookie || '')
-    const token = cookieValues.nf_jwt
-
-    // Serve not found by default
-    req.url = '/.netlify/non-existent-path'
-
-    if (token) {
-      let jwtValue = {}
-      try {
-        jwtValue = jwtDecode(token) || {}
-      } catch (error) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', error.message)
-        res.writeHead(400)
-        res.end('Invalid JWT provided. Please see logs for more info.')
-        return
-      }
-
-      // @ts-expect-error TS(2339) FIXME: Property 'exp' does not exist on type '{}'.
-      if ((jwtValue.exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
-        console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
-      } else {
-        const presentedRoles = getProperty(jwtValue, options.jwtRolePath) || []
-        if (!Array.isArray(presentedRoles)) {
-          console.warn(NETLIFYDEVWARN, `Invalid roles value provided in JWT ${options.jwtRolePath}`, presentedRoles)
-          res.writeHead(400)
-          res.end('Invalid JWT provided. Please see logs for more info.')
-          return
-        }
-
-        // Restore the URL if everything is correct
-        if (presentedRoles.some((pr) => expectedRoles.has(pr))) {
-          req.url = originalURL
-        }
-      }
-    }
-  }
-
   const reqUrl = reqToURL(req, req.url)
   const isHiddenProxy =
     match.proxyHeaders &&
@@ -422,7 +359,7 @@ const serveRedirect = async function ({
       return
     }
 
-    const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+    const ct = parseContentType(req.headers['content-type'] ?? '').type
     if (
       req.method === 'POST' &&
       !isInternal(req.url) &&
@@ -463,12 +400,6 @@ const serveRedirect = async function ({
     if (isImageRequest(req)) {
       return imageProxy(req, res)
     }
-    const addonUrl = getAddonUrl(options.addonsUrls, req)
-    if (addonUrl) {
-      handleAddonUrl({ req, res, addonUrl })
-      return
-    }
-
     return proxy.web(req, res, { ...options, status: statusValue })
   }
 
@@ -484,8 +415,6 @@ const reqToURL = function (req, pathname) {
     }`,
   )
 }
-
-const MILLISEC_TO_SEC = 1e3
 
 const initializeProxy = async function ({
   config,
@@ -635,7 +564,7 @@ const initializeProxy = async function ({
       // The request has failed but we might still have a matching redirect
       // rule (without `force`) that should kick in. This is how we mimic the
       // file shadowing behavior from the CDN.
-      if (options && options.match) {
+      if (options?.match) {
         return serveRedirect({
           // We don't want to match functions at this point because any redirects
           // to functions will have already been processed, so we don't supply a
@@ -796,7 +725,6 @@ const initializeProxy = async function ({
 
 const onRequest = async (
   {
-    addonsUrls,
     api,
     edgeFunctionsProxy,
     env,
@@ -805,12 +733,15 @@ const onRequest = async (
     imageProxy,
     proxy,
     rewriter,
+    serverHandler,
     settings,
     siteInfo,
-  }: { rewriter: Rewriter; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy } & Record<
-    string,
-    $TSFixMe
-  >,
+  }: {
+    rewriter: Rewriter
+    settings: ServerSettings
+    edgeFunctionsProxy?: EdgeFunctionsProxy
+    serverHandler?: ServerHandler
+  } & Record<string, $TSFixMe>,
   req: Request,
   res: ServerResponse,
 ) => {
@@ -848,16 +779,51 @@ const onRequest = async (
     return proxy.web(req, res, { headers, target: functionsServer })
   }
 
-  const addonUrl = getAddonUrl(addonsUrls, req)
-  if (addonUrl) {
-    handleAddonUrl({ req, res, addonUrl })
-    return
+  if (serverHandler) {
+    try {
+      const requestURL = reqToURL(req, req.url)
+      const serverMatch = await serverHandler.match(new Request(requestURL))
+
+      if (serverMatch) {
+        const staticFile = await getStatic(decodeURIComponent(requestURL.pathname), settings.dist ?? '')
+
+        if (!staticFile) {
+          const headers = new Headers()
+
+          for (let index = 0; index < req.rawHeaders.length; index += 2) {
+            headers.append(req.rawHeaders[index], req.rawHeaders[index + 1])
+          }
+
+          const response = await serverMatch.handle(
+            new Request(requestURL, {
+              body: req.originalBody,
+              headers,
+              method: req.method,
+            }),
+          )
+
+          await fromWebResponse(response, res)
+
+          return
+        }
+      }
+    } catch (error) {
+      // The response may have failed mid-stream, in which case the head is
+      // out and the only remaining option is dropping the connection.
+      if (res.headersSent) {
+        res.destroy()
+      } else {
+        res.writeHead(500)
+        res.end(error instanceof Error ? error.message : 'Failed to serve request from Netlify Server')
+      }
+
+      return
+    }
   }
 
   const match = await rewriter(req)
   const options = {
     match,
-    addonsUrls,
     target: `http://${
       settings.frameworkHost && isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost
     }:${settings.frameworkPort}`,
@@ -901,7 +867,7 @@ const onRequest = async (
   const hasFormSubmissionHandler: boolean =
     functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
 
-  const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+  const ct = parseContentType(req.headers['content-type'] ?? '').type
   if (
     hasFormSubmissionHandler &&
     functionsServer &&
@@ -926,7 +892,6 @@ type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy
 
 export const startProxy = async function ({
   accountId,
-  addonsUrls,
   aiGatewayContext,
   api,
   blobsContext,
@@ -956,6 +921,7 @@ export const startProxy = async function ({
   disableEdgeFunctions: boolean
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   aiGatewayContext?: AIGatewayContext | null
+  siteInfo?: SiteInfo
   watchIgnore: string[]
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 } & Record<string, $TSFixMe>) {
@@ -999,6 +965,31 @@ export const startProxy = async function ({
     logger: { log, warn, error: logError },
     imagesConfig: config.images,
   })
+
+  const serverEntryEnabled =
+    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' || Boolean(siteInfo?.feature_flags?.netlify_build_server_entry)
+
+  let serverHandler: ServerHandler | undefined
+
+  if (serverEntryEnabled) {
+    const serverFileWatcher = new FileWatcher()
+
+    serverHandler = new ServerHandler({
+      accountID: siteInfo?.account_id,
+      fileWatcher: serverFileWatcher,
+      geolocation: mockLocation,
+      logger: { log, warn, error: logError },
+      projectRoot: projectDir,
+      siteID: siteInfo?.id,
+    })
+
+    const handlerToStop = serverHandler
+
+    runBeforeProcessExit(async () => {
+      await handlerToStop.stop()
+      await serverFileWatcher.close()
+    })
+  }
   const imageProxy = initializeImageProxy({
     settings,
     imageHandler,
@@ -1029,8 +1020,8 @@ export const startProxy = async function ({
   const onRequestWithOptions = onRequest.bind(undefined, {
     proxy,
     rewriter,
+    serverHandler,
     settings,
-    addonsUrls,
     functionsRegistry,
     functionsServer,
     edgeFunctionsProxy,
@@ -1043,8 +1034,27 @@ export const startProxy = async function ({
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
   const onUpgrade = async function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
+    if (serverHandler) {
+      let handled = false
+
+      try {
+        handled = await serverHandler.handleUpgrade(req, socket, head)
+      } catch (error) {
+        logError(
+          `Failed to hand over upgrade request to server: ${error instanceof Error ? error.message : String(error)}`,
+        )
+        socket.destroy()
+
+        return
+      }
+
+      if (handled) {
+        return
+      }
+    }
+
     const match = await rewriter(req)
-    if (match && !match.force404 && isExternal(match)) {
+    if (match && isExternal(match)) {
       const reqUrl = reqToURL(req, req.url)
       const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
       const destURL = stripOrigin(dest)

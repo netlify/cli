@@ -16,15 +16,17 @@
     "start": "npm run dev"
   },
   "dependencies": {
-    "@astrojs/starlight": "0.39.3",
-    "@bugsnag/js": "8.9.0",
-    "astro": "6.4.6",
+    "@astrojs/markdown-remark": "7.2.4",
+    "@astrojs/starlight": "0.41.10",
+    "@bugsnag/js": "8.10.0",
+    "astro": "7.2.9",
     "markdown-magic": "2.6.1",
-    "sharp": "0.34.5",
+    "sharp": "0.35.5",
     "strip-ansi": "7.2.0"
   },
   "devDependencies": {
-    "@netlify/functions": "5.3.0",
-    "tsx": "4.22.4"
-  }
+    "@netlify/functions": "6.0.0",
+    "tsx": "4.23.13"
+  },
+  "packageManager": "npm@11.19.1+sha512.cedb312b1b7f92421a02cfb68b4194e88f8346651dacd6acc5364a25ef5309d4a32b19616a1ff8aff865e7280c0fa5c0835a99f5cd93368991e2a80ec9da75d2"
 }
