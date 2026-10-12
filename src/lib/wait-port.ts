@@ -4,12 +4,10 @@ export const waitPort = async (
   port: number,
   host: string,
   timeout: number,
-  maxRetries?: number,
 ): Promise<{ open: boolean; ipVersion?: 4 | 6 }> => {
   const startTime = Date.now()
-  const retries = maxRetries ?? Math.ceil(timeout / 2000)
 
-  for (let attempt = 0; attempt < retries; attempt++) {
+  for (let attempt = 0; ; attempt++) {
     if (Date.now() - startTime > timeout) {
       return { open: false }
     }
@@ -52,6 +50,4 @@ export const waitPort = async (
       continue
     }
   }
-
-  return { open: false }
 }

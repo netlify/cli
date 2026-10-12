@@ -61,7 +61,6 @@ export const startFrameworkServer = async function ({
         settings.frameworkPort!,
         'localhost',
         FRAMEWORK_PORT_TIMEOUT_MS,
-        20,
       )
 
       const timerId = setTimeout(() => {
