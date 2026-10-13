@@ -451,6 +451,28 @@ describe.concurrent('command/dev', () => {
     })
   })
 
+  test('should respond with 500 when handling a request fails and not crash dev server', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder.withContentFile({
+        path: 'index.html',
+        content: '<html>index</html>',
+      })
+
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await fetch(`${server.url}/%E0%A4%A`)
+
+        t.expect(response.status).toBe(500)
+
+        const indexResponse = await fetch(server.url)
+
+        t.expect(indexResponse.status).toBe(200)
+        t.expect(await indexResponse.text()).toEqual('<html>index</html>')
+      })
+    })
+  })
+
   test('should return .html file when file and folder have the same name', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder

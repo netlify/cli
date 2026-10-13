@@ -42,6 +42,7 @@ import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 
 import {
+  NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   type NormalizedCachedConfigConfig,
@@ -723,29 +724,16 @@ const initializeProxy = async function ({
   return handlers
 }
 
-const getRequestBodyErrorStatus = (error: unknown) => {
-  if (error instanceof StreamBodyTooBigError) {
-    return 413
-  }
-
-  if (error instanceof StreamTimeoutError) {
-    return 408
-  }
-}
-
 const rejectRequestBody = (req: Request, res: ServerResponse, error: unknown) => {
-  const status = getRequestBodyErrorStatus(error)
-
-  if (status === undefined) {
+  if (!(error instanceof StreamBodyTooBigError || error instanceof StreamTimeoutError)) {
     res.destroy()
     return
   }
 
-  log(
-    NETLIFYDEVWARN,
-    `Responded to ${req.method ?? ''} ${req.url ?? ''} with ${status.toString()}: ${(error as Error).message}`,
-  )
-  res.writeHead(status, { Connection: 'close' })
+  const status = error instanceof StreamBodyTooBigError ? 413 : 408
+
+  log(NETLIFYDEVWARN, `Responded to ${req.method ?? ''} ${req.url ?? ''} with ${status.toString()}: ${error.message}`)
+  res.writeHead(status)
   res.end(http.STATUS_CODES[status])
 }
 
@@ -1065,7 +1053,7 @@ export const startProxy = async function ({
   }
   const onRequestWithOptions = (req: Request, res: ServerResponse) => {
     onRequest(requestOptions, req, res).catch((error: unknown) => {
-      logError(`Failed to handle request: ${error instanceof Error ? error.message : String(error)}`)
+      console.error(`${NETLIFYDEVERR} Failed to handle request to ${req.url ?? ''}`, error)
 
       if (res.headersSent) {
         res.destroy()

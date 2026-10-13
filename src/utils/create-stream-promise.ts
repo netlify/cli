@@ -9,12 +9,14 @@ const DEFAULT_BYTES_LIMIT = 6e6
 export class StreamBodyTooBigError extends Error {
   constructor() {
     super('Stream body too big')
+    this.name = 'StreamBodyTooBigError'
   }
 }
 
 export class StreamTimeoutError extends Error {
   constructor() {
     super('Request timed out waiting for body')
+    this.name = 'StreamTimeoutError'
   }
 }
 
