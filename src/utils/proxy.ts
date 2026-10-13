@@ -1053,7 +1053,7 @@ export const startProxy = async function ({
   }
   const onRequestWithOptions = (req: Request, res: ServerResponse) => {
     onRequest(requestOptions, req, res).catch((error: unknown) => {
-      console.error(`${NETLIFYDEVERR} Failed to handle request to ${req.url ?? ''}`, error)
+      console.error(NETLIFYDEVERR, 'Failed to handle request to', req.url, error)
 
       if (res.headersSent) {
         res.destroy()
