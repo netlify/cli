@@ -486,6 +486,7 @@ const initializeProxy = async function ({
 
     if (res instanceof http.ServerResponse && res.headersSent) {
       if (!res.writableEnded) {
+        log(NETLIFYDEVWARN, `Could not finish proxying ${req.url ?? ''}: ${err.message}`)
         res.destroy()
       }
 
