@@ -426,6 +426,31 @@ describe.concurrent('command/dev', () => {
     })
   })
 
+  test('should respond with 413 to a request body over the size limit and not crash dev server', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder.withContentFile({
+        path: 'index.html',
+        content: '<html>index</html>',
+      })
+
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await fetch(`${server.url}/upload`, {
+          method: 'POST',
+          body: Buffer.alloc(6_100_000),
+        })
+
+        t.expect(response.status).toBe(413)
+
+        const indexResponse = await fetch(server.url)
+
+        t.expect(indexResponse.status).toBe(200)
+        t.expect(await indexResponse.text()).toEqual('<html>index</html>')
+      })
+    })
+  })
+
   test('should return .html file when file and folder have the same name', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder

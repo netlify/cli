@@ -50,7 +50,7 @@ import {
   logError,
   warn,
 } from './command-helpers.js'
-import createStreamPromise from './create-stream-promise.js'
+import createStreamPromise, { StreamBodyTooBigError, StreamTimeoutError } from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
@@ -723,6 +723,32 @@ const initializeProxy = async function ({
   return handlers
 }
 
+const getRequestBodyErrorStatus = (error: unknown) => {
+  if (error instanceof StreamBodyTooBigError) {
+    return 413
+  }
+
+  if (error instanceof StreamTimeoutError) {
+    return 408
+  }
+}
+
+const rejectRequestBody = (req: Request, res: ServerResponse, error: unknown) => {
+  const status = getRequestBodyErrorStatus(error)
+
+  if (status === undefined) {
+    res.destroy()
+    return
+  }
+
+  log(
+    NETLIFYDEVWARN,
+    `Responded to ${req.method ?? ''} ${req.url ?? ''} with ${status.toString()}: ${(error as Error).message}`,
+  )
+  res.writeHead(status, { Connection: 'close' })
+  res.end(http.STATUS_CODES[status])
+}
+
 const onRequest = async (
   {
     api,
@@ -745,8 +771,15 @@ const onRequest = async (
   req: Request,
   res: ServerResponse,
 ) => {
-  req.originalBody =
-    req.method && ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, BYTES_LIMIT)
+  try {
+    req.originalBody =
+      req.method && ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
+        ? null
+        : await createStreamPromise(req, REQUEST_BODY_TIMEOUT_SECONDS)
+  } catch (error) {
+    rejectRequestBody(req, res, error)
+    return
+  }
 
   if (isImageRequest(req)) {
     return imageProxy(req, res)
@@ -1017,7 +1050,7 @@ export const startProxy = async function ({
     projectDir,
   })
 
-  const onRequestWithOptions = onRequest.bind(undefined, {
+  const requestOptions = {
     proxy,
     rewriter,
     serverHandler,
@@ -1029,7 +1062,19 @@ export const startProxy = async function ({
     siteInfo,
     env,
     api,
-  })
+  }
+  const onRequestWithOptions = (req: Request, res: ServerResponse) => {
+    onRequest(requestOptions, req, res).catch((error: unknown) => {
+      logError(`Failed to handle request: ${error instanceof Error ? error.message : String(error)}`)
+
+      if (res.headersSent) {
+        res.destroy()
+      } else {
+        res.writeHead(500)
+        res.end('Could not proxy request.')
+      }
+    })
+  }
   const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
@@ -1087,4 +1132,4 @@ export const startProxy = async function ({
   return getProxyUrl(settings)
 }
 
-const BYTES_LIMIT = 30
+const REQUEST_BODY_TIMEOUT_SECONDS = 30

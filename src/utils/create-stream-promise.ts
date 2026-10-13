@@ -6,6 +6,18 @@ const SEC_TO_MILLISEC = 1e3
 // 6 MiB
 const DEFAULT_BYTES_LIMIT = 6e6
 
+export class StreamBodyTooBigError extends Error {
+  constructor() {
+    super('Stream body too big')
+  }
+}
+
+export class StreamTimeoutError extends Error {
+  constructor() {
+    super('Request timed out waiting for body')
+  }
+}
+
 const createStreamPromise = function (
   stream: Readable,
   timeoutSeconds: number,
@@ -19,7 +31,7 @@ const createStreamPromise = function (
     if (timeoutSeconds != null && Number.isFinite(timeoutSeconds)) {
       timeoutId = setTimeout(() => {
         data = null
-        reject(new Error('Request timed out waiting for body'))
+        reject(new StreamTimeoutError())
       }, timeoutSeconds * SEC_TO_MILLISEC)
     }
 
@@ -31,7 +43,7 @@ const createStreamPromise = function (
       dataLength += chunk.length
       if (dataLength > bytesLimit) {
         data = null
-        reject(new Error('Stream body too big'))
+        reject(new StreamBodyTooBigError())
       } else {
         data.push(chunk)
       }
