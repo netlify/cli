@@ -484,6 +484,14 @@ const initializeProxy = async function ({
       }
     }
 
+    if (res instanceof http.ServerResponse && res.headersSent) {
+      if (!res.writableEnded) {
+        res.destroy()
+      }
+
+      return
+    }
+
     if (res instanceof http.ServerResponse) {
       res.writeHead(500, {
         'Content-Type': 'text/plain',
