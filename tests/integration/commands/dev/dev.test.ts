@@ -441,26 +441,28 @@ describe.concurrent('command/dev', () => {
       await events.once(frameworkServer, 'listening')
       await builder.build()
 
-      await withDevServer(
-        { cwd: builder.directory, command: 'node', framework: '#custom', targetPort, skipWaitPort: true },
-        async (server) => {
-          const response = await fetch(server.url)
+      try {
+        await withDevServer(
+          { cwd: builder.directory, command: 'node', framework: '#custom', targetPort, skipWaitPort: true },
+          async (server) => {
+            const response = await fetch(server.url)
 
-          t.expect(response.status).toBe(200)
-          await t.expect(response.text()).rejects.toThrow()
+            t.expect(response.status).toBe(200)
+            await t.expect(response.text()).rejects.toThrow()
 
-          await pause(500)
+            await pause(500)
 
-          t.expect(server.error).not.toContain('Netlify CLI has terminated unexpectedly')
+            t.expect(server.error).not.toContain('Netlify CLI has terminated unexpectedly')
 
-          const nextResponse = await fetch(server.url)
+            const nextResponse = await fetch(server.url)
 
-          t.expect(nextResponse.status).toBe(200)
-          await t.expect(nextResponse.text()).rejects.toThrow()
-        },
-      )
-
-      frameworkServer.close()
+            t.expect(nextResponse.status).toBe(200)
+            await t.expect(nextResponse.text()).rejects.toThrow()
+          },
+        )
+      } finally {
+        frameworkServer.close()
+      }
     })
   })
 
