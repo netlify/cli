@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer'
 import { promises as fs } from 'fs'
 import type { IncomingHttpHeaders } from 'http'
+import { isIP } from 'net'
 import path from 'path'
 
 import type { GeneratedFunction } from '@netlify/build'
@@ -76,15 +77,20 @@ const buildClientContext = function (headers: IncomingHttpHeaders) {
   }
 }
 
-const IPV4_IN_ADDRESS = /\d{1,3}(?:\.\d{1,3}){3}/
+// A hop may carry a port (`1.2.3.4:5678`, `[2001:db8::1]:5678`) or an IPv4-mapped IPv6 prefix
+// (`::ffff:127.0.0.1`). Strip only those forms, then require the whole remainder to be an address.
+const toIP = (hop: string): string => {
+  const address = hop
+    .trim()
+    .replace(/^\[([^\]]+)\](?::\d+)?$/, '$1')
+    .replace(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/, '$1')
+    .replace(/^::ffff:(?=\d{1,3}(?:\.\d{1,3}){3}$)/i, '')
 
-const getClientIP = (forwardedFor: string, remoteAddress = ''): string => {
-  const address = (forwardedFor || remoteAddress).split(',').at(-1)?.trim() ?? ''
-
-  // A hop may carry a port (`1.2.3.4:5678`) or an IPv4-mapped IPv6 prefix (`::ffff:127.0.0.1`),
-  // neither of which is a valid address on its own.
-  return IPV4_IN_ADDRESS.exec(address)?.[0] ?? address
+  return isIP(address) === 0 ? '' : address
 }
+
+const getClientIP = (forwardedFor: string, remoteAddress = ''): string =>
+  toIP(forwardedFor.split(',').at(-1) ?? '') || toIP(remoteAddress)
 
 const hasBody = (req: Request) =>
   // copied from is-type package
