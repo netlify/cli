@@ -233,14 +233,8 @@ The CLI also recognizes markers that agent products set on their own, such as `A
 
 A program that runs `netlify login` on a user’s behalf can set `NETLIFY_LOGIN_SOURCE` so a sign-up is credited to it rather than to the CLI. The only recognized value is `mcp`, which the Netlify MCP server sets. Any other value is ignored and the login URL keeps `utm_source=cli`.
 
-### Telemetry
+## Telemetry
 
-When telemetry is enabled, each CLI telemetry event includes the detected agent:
+The CLI sends usage telemetry and error reports to `cli.netlify.com`. Usage telemetry covers which commands run, their flags with sensitive values masked, the CLI and Node.js versions, the detected framework and package manager, the AI agent running the CLI, and the CI platform.
 
-- `agent`: the recognized name, or `other`
-- `agent_source`: the name of the environment variable that identified the agent
-- `agent_version`: the version, when the agent provides one
-- `agent_markers`: every detected agent name, when markers from more than one agent are present
-- `agent_other_value`: the sanitized value, when `agent` is `other`
-
-No agent fields are sent when no agent is detected. To disable telemetry, run `netlify --telemetry-disable`, or set `NETLIFY_TELEMETRY_DISABLED=1` or `DO_NOT_TRACK=1`. The environment variables also disable error reporting, and are the most reliable option in CI, where the setting saved by `--telemetry-disable` may not persist between runs.
+To disable telemetry, run `netlify --telemetry-disable`, or set `NETLIFY_TELEMETRY_DISABLED=1` or `DO_NOT_TRACK=1`. The environment variables also disable error reporting, and are the most reliable option in CI, where the setting saved by `--telemetry-disable` may not persist between runs.
