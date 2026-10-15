@@ -57,6 +57,22 @@ afterEach(() => {
 })
 
 describe('track', () => {
+  test.each(['NETLIFY_TELEMETRY_DISABLED', 'DO_NOT_TRACK'])('does not track when %s is set', async (key) => {
+    vi.stubEnv(key, '1')
+
+    await track('command', { command: 'status' })
+
+    expect(execa).not.toHaveBeenCalled()
+  })
+
+  test.each(['', '0', 'false'])('tracks when NETLIFY_TELEMETRY_DISABLED is %j', async (value) => {
+    vi.stubEnv('NETLIFY_TELEMETRY_DISABLED', value)
+
+    await track('command', { command: 'status' })
+
+    expect(execa).toHaveBeenCalledOnce()
+  })
+
   test('adds the driving agent alongside the existing properties', async () => {
     vi.stubEnv('AI_AGENT', 'claude-code')
 

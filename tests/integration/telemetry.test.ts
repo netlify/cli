@@ -12,7 +12,7 @@ import { withSiteBuilder } from './utils/site-builder.js'
 
 const pkg = createRequire(import.meta.url)('../../package.json') as { name: string; version: string }
 
-const getCLIOptions = (apiUrl: string): Options => ({
+const getCLIOptions = (apiUrl: string, env: Record<string, string> = {}): Options => ({
   env: {
     NETLIFY_TEST_TRACK_URL: `${apiUrl}/track`,
     NETLIFY_TEST_IDENTIFY_URL: `${apiUrl}/identify`,
@@ -21,6 +21,7 @@ const getCLIOptions = (apiUrl: string): Options => ({
     PATH: _env.PATH,
     HOME: _env.HOME,
     APPDATA: _env.APPDATA,
+    ...env,
   },
   extendEnv: false,
 })
@@ -46,6 +47,11 @@ await withMockApi(routes, () => {
     expect(requests[0].body).toHaveProperty('event', 'cli:user_telemetryEnabled')
     expect(requests[0].body).toHaveProperty('anonymousId', expect.any(String))
     expect(requests[0].body).toHaveProperty('properties', { cliVersion: pkg.version, nodejsVersion })
+  })
+
+  test<MockApiTestContext>('should not track when NETLIFY_TELEMETRY_DISABLED is set', async ({ apiUrl, requests }) => {
+    await callCli(['api', 'listSites'], getCLIOptions(apiUrl, { NETLIFY_TELEMETRY_DISABLED: '1' }))
+    expect(requests.find(({ path }) => path === '/api/v1/track')).toBeUndefined()
   })
 
   test<MockApiTestContext>('should send netlify-cli/<version> user-agent', async ({ apiUrl, requests }) => {

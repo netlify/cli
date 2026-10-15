@@ -8,7 +8,7 @@ import { isCI } from 'ci-info'
 import { getDrivingAgent } from '../agent-detection.js'
 import execa from '../execa.js'
 
-import { isTelemetryDisabled, cliVersion } from './utils.js'
+import { isTelemetryDisabled, isTelemetryDisabledByEnv, cliVersion } from './utils.js'
 import isValidEventName from './validation.js'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
@@ -67,7 +67,7 @@ export async function track(
   eventName: string,
   payload: { status?: string; duration?: number; [key: string]: unknown } = {},
 ) {
-  if (isCI) {
+  if (isCI || isTelemetryDisabledByEnv()) {
     return
   }
 
@@ -104,7 +104,7 @@ export async function track(
 }
 
 export async function identify(payload: { name?: string; email?: string; userId?: string }) {
-  if (isCI) {
+  if (isCI || isTelemetryDisabledByEnv()) {
     return
   }
 
