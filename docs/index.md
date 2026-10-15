@@ -243,4 +243,4 @@ When telemetry is enabled, each CLI telemetry event includes the detected agent:
 - `agent_markers`: every detected agent name, when markers from more than one agent are present
 - `agent_other_value`: the sanitized value, when `agent` is `other`
 
-No agent fields are sent when no agent is detected. Telemetry isn't sent in CI, or at all after you run `netlify --telemetry-disable`.
+No agent fields are sent when no agent is detected. Telemetry isn't sent in CI. To disable it elsewhere, run `netlify --telemetry-disable`, or set `NETLIFY_TELEMETRY_DISABLED=1` or `DO_NOT_TRACK=1`. The environment variables also disable error reporting.

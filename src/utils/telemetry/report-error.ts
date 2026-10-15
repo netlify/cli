@@ -8,7 +8,7 @@ import { isCI } from 'ci-info'
 
 import execa from '../execa.js'
 
-import { cliVersion } from './utils.js'
+import { cliVersion, isTelemetryDisabledByEnv } from './utils.js'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
@@ -28,7 +28,7 @@ export const setCommandForErrorReporting = (command?: string): void => {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'error' implicitly has an 'any' type.
 export const reportError = async function (error, config = {}) {
-  if (isCI) {
+  if (isCI || isTelemetryDisabledByEnv()) {
     return
   }
   // convert a NotifiableError to an error class
