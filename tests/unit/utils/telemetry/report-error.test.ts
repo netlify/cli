@@ -25,6 +25,8 @@ const getReportedPayload = (): ReportedData => {
 beforeEach(() => {
   vi.clearAllMocks()
   setCommandForErrorReporting()
+  vi.stubEnv('NETLIFY_TELEMETRY_DISABLED', undefined)
+  vi.stubEnv('DO_NOT_TRACK', undefined)
 })
 
 afterEach(() => {

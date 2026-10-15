@@ -50,6 +50,8 @@ const getTrackedAgentProperties = () =>
 beforeEach(() => {
   vi.clearAllMocks()
   AGENT_ENV_KEYS.forEach((key) => vi.stubEnv(key, undefined))
+  vi.stubEnv('NETLIFY_TELEMETRY_DISABLED', undefined)
+  vi.stubEnv('DO_NOT_TRACK', undefined)
 })
 
 afterEach(() => {
