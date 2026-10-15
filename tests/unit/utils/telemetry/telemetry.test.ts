@@ -4,8 +4,6 @@ import { track } from '../../../../src/utils/telemetry/telemetry.js'
 import { cliVersion } from '../../../../src/utils/telemetry/utils.js'
 import execa from '../../../../src/utils/execa.js'
 
-vi.mock('ci-info', () => ({ isCI: false }))
-
 vi.mock('@netlify/dev-utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@netlify/dev-utils')>()),
   getGlobalConfigStore: vi.fn(() =>
@@ -59,6 +57,14 @@ afterEach(() => {
 })
 
 describe('track', () => {
+  test('tracks in CI', async () => {
+    vi.stubEnv('CI', 'true')
+
+    await track('command', { command: 'status' })
+
+    expect(execa).toHaveBeenCalledOnce()
+  })
+
   test.each(['NETLIFY_TELEMETRY_DISABLED', 'DO_NOT_TRACK'])('does not track when %s is set', async (key) => {
     vi.stubEnv(key, '1')
 

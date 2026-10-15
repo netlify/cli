@@ -3,8 +3,6 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { reportError, setCommandForErrorReporting } from '../../../../src/utils/telemetry/report-error.js'
 import execa from '../../../../src/utils/execa.js'
 
-vi.mock('ci-info', () => ({ isCI: false }))
-
 vi.mock('@netlify/dev-utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@netlify/dev-utils')>()),
   getGlobalConfigStore: vi.fn(() => Promise.resolve({ get: () => 'test-user-1' })),
@@ -34,6 +32,14 @@ afterEach(() => {
 })
 
 describe('reportError', () => {
+  test('reports in CI', async () => {
+    vi.stubEnv('CI', 'true')
+
+    await reportError(new Error('boom'), { severity: 'error' })
+
+    expect(execa).toHaveBeenCalledOnce()
+  })
+
   test.each(['NETLIFY_TELEMETRY_DISABLED', 'DO_NOT_TRACK'])('does not report when %s is set', async (key) => {
     vi.stubEnv(key, '1')
 

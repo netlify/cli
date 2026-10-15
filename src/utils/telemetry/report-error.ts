@@ -4,7 +4,6 @@ import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
 
 import { getGlobalConfigStore } from '@netlify/dev-utils'
-import { isCI } from 'ci-info'
 
 import execa from '../execa.js'
 
@@ -28,7 +27,7 @@ export const setCommandForErrorReporting = (command?: string): void => {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'error' implicitly has an 'any' type.
 export const reportError = async function (error, config = {}) {
-  if (isCI || isTelemetryDisabledByEnv()) {
+  if (isTelemetryDisabledByEnv()) {
     return
   }
   // convert a NotifiableError to an error class
