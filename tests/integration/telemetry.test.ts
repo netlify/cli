@@ -1,16 +1,20 @@
+import { mkdtemp } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { env as _env, version as nodejsVersion } from 'process'
 
 import type { Options } from 'execa'
-import execa from 'execa'
 import { expect, test } from 'vitest'
 
 import { callCli } from './utils/call-cli.js'
-import { cliPath } from './utils/cli-path.js'
 import { MockApiTestContext, withMockApi } from './utils/mock-api-vitest.js'
 import { withSiteBuilder } from './utils/site-builder.js'
 
 const pkg = createRequire(import.meta.url)('../../package.json') as { name: string; version: string }
+
+// The global config lives under the home dir, and these tests toggle `telemetryDisabled` in it.
+const homeDir = await mkdtemp(join(tmpdir(), 'netlify-cli-telemetry-test-'))
 
 const getCLIOptions = (apiUrl: string, env: Record<string, string> = {}): Options => ({
   env: {
@@ -18,9 +22,10 @@ const getCLIOptions = (apiUrl: string, env: Record<string, string> = {}): Option
     NETLIFY_TEST_IDENTIFY_URL: `${apiUrl}/identify`,
     NETLIFY_TEST_TELEMETRY_WAIT: 'true',
     NETLIFY_API_URL: apiUrl,
+    NETLIFY_AUTH_TOKEN: 'fake-token',
     PATH: _env.PATH,
-    HOME: _env.HOME,
-    APPDATA: _env.APPDATA,
+    HOME: homeDir,
+    APPDATA: homeDir,
     ...env,
   },
   extendEnv: false,
@@ -51,7 +56,21 @@ await withMockApi(routes, () => {
 
   test<MockApiTestContext>('should track in CI', async ({ apiUrl, requests }) => {
     await callCli(['api', 'listSites'], getCLIOptions(apiUrl, { CI: 'true' }))
-    expect(requests.find(({ path }) => path === '/api/v1/track')).toBeDefined()
+    const request = requests.find(({ path }) => path === '/api/v1/track')
+    expect(request).toBeDefined()
+    expect(request?.body).not.toHaveProperty('properties.ci_vendor')
+  })
+
+  test<MockApiTestContext>('should send the CI vendor and pull request status', async ({ apiUrl, requests }) => {
+    await callCli(
+      ['api', 'listSites'],
+      getCLIOptions(apiUrl, { GITHUB_ACTIONS: 'true', GITHUB_EVENT_NAME: 'pull_request' }),
+    )
+    const request = requests.find(({ path }) => path === '/api/v1/track')
+    expect(request?.body).toHaveProperty(
+      'properties',
+      expect.objectContaining({ ci_vendor: 'GITHUB_ACTIONS', ci_is_pr: true }),
+    )
   })
 
   test<MockApiTestContext>('should not track when NETLIFY_TELEMETRY_DISABLED is set', async ({ apiUrl, requests }) => {
@@ -121,10 +140,7 @@ await withMockApi(routes, () => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withPackageJson({ packageJson: { dependencies: { next: '^12.13.0' } } }).build()
 
-      await execa(cliPath, ['api', 'listSites'], {
-        cwd: builder.directory,
-        ...getCLIOptions(t.apiUrl),
-      })
+      await callCli(['api', 'listSites'], { cwd: builder.directory, ...getCLIOptions(t.apiUrl) })
 
       const request = t.requests.find(({ path }) => path === '/api/v1/track')
       expect(request).toBeDefined()

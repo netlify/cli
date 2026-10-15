@@ -4,6 +4,10 @@ import { track } from '../../../../src/utils/telemetry/telemetry.js'
 import { cliVersion } from '../../../../src/utils/telemetry/utils.js'
 import execa from '../../../../src/utils/execa.js'
 
+// ci-info reads the environment at import time, so it can't be driven with `vi.stubEnv`.
+const ciInfo = vi.hoisted(() => ({ isCI: false, id: null as string | null, isPR: null as boolean | null }))
+vi.mock('ci-info', () => ciInfo)
+
 vi.mock('@netlify/dev-utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@netlify/dev-utils')>()),
   getGlobalConfigStore: vi.fn(() =>
@@ -47,6 +51,7 @@ const getTrackedAgentProperties = () =>
 
 beforeEach(() => {
   vi.clearAllMocks()
+  Object.assign(ciInfo, { isCI: false, id: null, isPR: null })
   AGENT_ENV_KEYS.forEach((key) => vi.stubEnv(key, undefined))
   vi.stubEnv('NETLIFY_TELEMETRY_DISABLED', undefined)
   vi.stubEnv('DO_NOT_TRACK', undefined)
@@ -58,11 +63,28 @@ afterEach(() => {
 
 describe('track', () => {
   test('tracks in CI', async () => {
-    vi.stubEnv('CI', 'true')
+    Object.assign(ciInfo, { isCI: true })
 
     await track('command', { command: 'status' })
 
     expect(execa).toHaveBeenCalledOnce()
+  })
+
+  test('adds the CI vendor and pull request status', async () => {
+    Object.assign(ciInfo, { isCI: true, id: 'GITHUB_ACTIONS', isPR: true })
+
+    await track('command', { command: 'status' })
+
+    expect(getTrackedProperties()).toMatchObject({ ci_vendor: 'GITHUB_ACTIONS', ci_is_pr: true })
+  })
+
+  test('omits the CI vendor when CI is detected only generically', async () => {
+    Object.assign(ciInfo, { isCI: true })
+
+    await track('command', { command: 'status' })
+
+    expect(getTrackedProperties()).not.toHaveProperty('ci_vendor')
+    expect(getTrackedProperties()).not.toHaveProperty('ci_is_pr')
   })
 
   test.each(['NETLIFY_TELEMETRY_DISABLED', 'DO_NOT_TRACK'])('does not track when %s is set', async (key) => {

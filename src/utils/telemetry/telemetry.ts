@@ -3,6 +3,7 @@ import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
 
 import { getGlobalConfigStore } from '@netlify/dev-utils'
+import { id as ciVendor, isPR } from 'ci-info'
 
 import { getDrivingAgent } from '../agent-detection.js'
 import execa from '../execa.js'
@@ -59,6 +60,11 @@ const getAgentProperties = () => {
   }
 }
 
+const getCIProperties = () => ({
+  ci_vendor: ciVendor ?? undefined,
+  ci_is_pr: isPR ?? undefined,
+})
+
 /**
  * Tracks a custom event with the provided payload
  */
@@ -96,7 +102,7 @@ export async function track(
     anonymousId: cliId,
     duration,
     status,
-    properties: { ...properties, nodejsVersion, cliVersion, ...getAgentProperties() },
+    properties: { ...properties, nodejsVersion, cliVersion, ...getAgentProperties(), ...getCIProperties() },
   }
 
   return send('track', defaultData)
