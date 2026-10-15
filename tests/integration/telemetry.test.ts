@@ -49,6 +49,11 @@ await withMockApi(routes, () => {
     expect(requests[0].body).toHaveProperty('properties', { cliVersion: pkg.version, nodejsVersion })
   })
 
+  test<MockApiTestContext>('should track in CI', async ({ apiUrl, requests }) => {
+    await callCli(['api', 'listSites'], getCLIOptions(apiUrl, { CI: 'true' }))
+    expect(requests.find(({ path }) => path === '/api/v1/track')).toBeDefined()
+  })
+
   test<MockApiTestContext>('should not track when NETLIFY_TELEMETRY_DISABLED is set', async ({ apiUrl, requests }) => {
     await callCli(['api', 'listSites'], getCLIOptions(apiUrl, { NETLIFY_TELEMETRY_DISABLED: '1' }))
     expect(requests.find(({ path }) => path === '/api/v1/track')).toBeUndefined()

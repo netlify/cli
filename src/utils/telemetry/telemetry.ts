@@ -3,7 +3,6 @@ import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
 
 import { getGlobalConfigStore } from '@netlify/dev-utils'
-import { isCI } from 'ci-info'
 
 import { getDrivingAgent } from '../agent-detection.js'
 import execa from '../execa.js'
@@ -67,7 +66,7 @@ export async function track(
   eventName: string,
   payload: { status?: string; duration?: number; [key: string]: unknown } = {},
 ) {
-  if (isCI || isTelemetryDisabledByEnv()) {
+  if (isTelemetryDisabledByEnv()) {
     return
   }
 
@@ -104,7 +103,7 @@ export async function track(
 }
 
 export async function identify(payload: { name?: string; email?: string; userId?: string }) {
-  if (isCI || isTelemetryDisabledByEnv()) {
+  if (isTelemetryDisabledByEnv()) {
     return
   }
 
