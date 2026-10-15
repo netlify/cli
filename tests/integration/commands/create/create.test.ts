@@ -48,7 +48,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -84,7 +84,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -119,7 +119,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -147,7 +147,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -206,7 +206,7 @@ describe('create command', () => {
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
         {
-          path: 'agent_runners',
+          path: 'sites/new_site_id/agent_runners',
           method: 'POST' as const,
           status: 500,
           response: { error: 'Agent service unavailable' },
@@ -265,7 +265,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -303,7 +303,7 @@ describe('create command', () => {
           ],
         },
         { path: 'team-alpha/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -334,7 +334,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -433,7 +433,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -457,7 +457,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -489,7 +489,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -513,7 +513,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -536,7 +536,7 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'sites/new_site_id/agent_runners', method: 'POST' as const, response: mockAgentRunner },
       ]
 
       await withSiteBuilder(t, async (builder) => {

@@ -81,12 +81,8 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
   const createSpinner = startSpinner({ text: 'Creating agent task...' })
 
   try {
-    // Create the agent runner using the same API format as the React UI
-    const createParams = new URLSearchParams()
-    createParams.set('site_id', site.id ?? '')
-
     const response = await fetch(
-      `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/agent_runners?${createParams.toString()}`,
+      `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/sites/${site.id ?? ''}/agent_runners`,
       {
         method: 'POST',
         headers: {

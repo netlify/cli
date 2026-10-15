@@ -344,10 +344,9 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   try {
     // TODO: Replace with api.createAgentRunner() once @netlify/open-api supports body params and the mode field
     const agentRunnerUrl = new URL(
-      `/api/v1/agent_runners`,
+      `/api/v1/sites/${site.id}/agent_runners`,
       `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}`,
     )
-    agentRunnerUrl.searchParams.set('site_id', site.id)
 
     const response = await fetch(agentRunnerUrl, {
       method: 'POST',
