@@ -30,7 +30,7 @@ describe('agents:create command', () => {
     const routes = [
       ...baseRoutes,
       {
-        path: 'sites/site_id/agent_runners',
+        path: 'agent_runners',
         method: 'POST' as const,
         response: mockAgentRunner,
       },
@@ -58,7 +58,7 @@ describe('agents:create command', () => {
     const routes = [
       ...baseRoutes,
       {
-        path: 'sites/site_id/agent_runners',
+        path: 'agent_runners',
         method: 'POST' as const,
         response: mockAgentRunner,
       },
@@ -87,7 +87,7 @@ describe('agents:create command', () => {
     const routes = [
       ...baseRoutes,
       {
-        path: 'sites/site_id/agent_runners',
+        path: 'agent_runners',
         method: 'POST' as const,
         response: mockAgentRunner,
         validateRequest: (request: { body: string }) => {
@@ -153,7 +153,7 @@ describe('agents:create command', () => {
     const routes = [
       ...baseRoutes,
       {
-        path: 'sites/site_id/agent_runners',
+        path: 'agent_runners',
         method: 'POST' as const,
         status: 401,
         response: { error: 'Unauthorized' },
@@ -196,7 +196,7 @@ describe('agents:create command', () => {
       { path: 'user', response: { name: 'test user' } },
       { path: 'accounts', response: [{ slug: 'test-account' }] },
       {
-        path: 'sites/zip_site_id/agent_runners',
+        path: 'agent_runners',
         method: 'POST' as const,
         response: mockAgentRunnerNoRepo,
         // Verify that no branch is sent in the request
@@ -231,7 +231,7 @@ describe('agents:create command', () => {
     const routes = [
       ...baseRoutes,
       {
-        path: 'sites/site_id/agent_runners',
+        path: 'agent_runners',
         method: 'POST' as const,
         response: mockAgentRunner,
         // Verify that branch is sent in the request
@@ -267,7 +267,7 @@ describe('agents:create command', () => {
     const routes = [
       ...baseRoutes,
       {
-        path: 'sites/site_id/agent_runners',
+        path: 'agent_runners',
         method: 'POST' as const,
         response: { ...mockAgentRunner, branch: 'develop' },
         validateRequest: (request: { body: string }) => {
