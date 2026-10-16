@@ -2,6 +2,8 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    // Spawned CLI processes inherit this, so test runs never send real telemetry or error reports.
+    env: { NETLIFY_TELEMETRY_DISABLED: 'true' },
     include: ['tests/**/*.test.js', 'tests/**/*.test.ts'],
     testTimeout: 90_000,
     hookTimeout: 90_000,
