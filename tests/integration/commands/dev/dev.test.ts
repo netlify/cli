@@ -451,7 +451,7 @@ describe.concurrent('command/dev', () => {
     })
   })
 
-  test('should respond with 500 when handling a request fails and not crash dev server', async (t) => {
+  test('should respond with 500 and log the error instead of crashing when the request URL cannot be decoded', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder.withContentFile({
         path: 'index.html',
@@ -469,6 +469,8 @@ describe.concurrent('command/dev', () => {
 
         t.expect(indexResponse.status).toBe(200)
         t.expect(await indexResponse.text()).toEqual('<html>index</html>')
+        t.expect(server.error).toContain('Failed to handle request to /%E0%A4%A')
+        t.expect(server.error).toContain('URIError: URI malformed')
       })
     })
   })
