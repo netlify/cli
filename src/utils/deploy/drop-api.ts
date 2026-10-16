@@ -79,10 +79,6 @@ export const createDropDeploy = async (
   return (await response.json()) as DropDeployInfo
 }
 
-interface UploadError extends Error {
-  status?: number
-}
-
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
 export const uploadDropFile = async (
   { apiBase, userAgent }: DropApiOptions,
@@ -91,27 +87,32 @@ export const uploadDropFile = async (
   body: fs.ReadStream | Buffer,
   token: string,
 ): Promise<void> => {
-  // Node.js fetch needs `duplex: 'half'` for streaming bodies which isn't in standard RequestInit
-  /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
   const normalizedFilePath = filePath.startsWith('/') ? filePath : `/${filePath}`
-  const response: Response = await fetch(`${apiBase}/deploys/${deployId}/files${encodeURI(normalizedFilePath)}`, {
+  const response = await fetch(`${apiBase}/deploys/${deployId}/files${encodeURI(normalizedFilePath)}`, {
     method: 'PUT',
     headers: makeHeaders(userAgent, {
       'Content-Type': 'application/octet-stream',
       Authorization: `Bearer ${token}`,
     }),
-    body: body as any,
+    body,
+    // Node.js fetch requires this for streaming bodies
     duplex: 'half',
-  } as any)
-  /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
+  })
 
   if (!response.ok) {
-    const error: UploadError = new Error(
+    const error: DropApiError = new Error(
       `Failed to upload file ${filePath}: ${String(response.status)} ${response.statusText}`,
     )
     error.status = response.status
     throw error
   }
+}
+
+interface DropSiteDeploy {
+  state?: string
+  error_message?: string
+  ssl_url?: string
+  url?: string
 }
 
 // TODO: Migrate to @netlify/api when Drop endpoints are in the OpenAPI spec.
@@ -120,8 +121,8 @@ export const waitForDropDeploy = async (
   siteId: string,
   deployId: string,
   timeout: number = DEFAULT_DEPLOY_TIMEOUT,
-): Promise<Record<string, unknown>> => {
-  let deploy: Record<string, unknown> | undefined
+): Promise<DropSiteDeploy> => {
+  let deploy: DropSiteDeploy | undefined
 
   const checkDeploy = async (): Promise<boolean> => {
     const response = await fetch(`${apiBase}/sites/${siteId}/deploys/${deployId}`, {
@@ -132,13 +133,14 @@ export const waitForDropDeploy = async (
       return false
     }
 
-    const data = (await response.json()) as Record<string, unknown>
+    const data = (await response.json()) as DropSiteDeploy
     if (data.state === 'ready') {
       deploy = data
       return true
     }
     if (data.state === 'error') {
-      throw new Error((data.error_message as string) || `Deploy ${deployId} had an error`)
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty error message falls back to the generic one
+      throw new Error(data.error_message || `Deploy ${deployId} had an error`)
     }
     return false
   }
@@ -216,14 +218,14 @@ export const uploadDropFiles = async (
       phase: 'progress',
     })
 
-    let lastError: UploadError | undefined
+    let lastError: DropApiError | undefined
     for (let attempt = 0; attempt <= maxRetry; attempt++) {
       try {
         const body = fs.createReadStream(fileObj.filepath)
         await uploadDropFile(apiOptions, deployId, fileObj.normalizedPath, body, token)
         return
       } catch (error) {
-        lastError = error as UploadError
+        lastError = error as DropApiError
         if (lastError.status === 400 || lastError.status === 422) {
           throw error
         }

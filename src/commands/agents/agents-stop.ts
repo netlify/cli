@@ -62,9 +62,9 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
     const stopSpinnerInstance = startSpinner({ text: 'Stopping agent task...' })
 
     const response = await fetch(
-      `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/agent_runners/${id}`,
+      `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/agent_runners/${id}/stop`,
       {
-        method: 'DELETE',
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${api.accessToken ?? ''}`,
           'User-Agent': apiOpts.userAgent,

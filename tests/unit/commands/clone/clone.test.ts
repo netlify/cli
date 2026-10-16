@@ -85,7 +85,10 @@ describe('clone command', () => {
     beforeEach(() => {
       vi.clearAllMocks()
       mockLink.mockResolvedValue(undefined)
-      MockLocalState.mockImplementation((cwd: string) => ({ cwd }))
+      // vitest 4 constructs mocks called with `new`, so the implementation cannot be an arrow function.
+      MockLocalState.mockImplementation(function (cwd: string) {
+        return { cwd }
+      })
     })
 
     it('re-resolves repositoryRoot and state for the cloned directory before linking, instead of the pre-clone one', async () => {

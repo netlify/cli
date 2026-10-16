@@ -20,7 +20,7 @@ import { ServerHandler } from '@netlify/server-dev'
 import { runBeforeProcessExit } from './shell.js'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import type { MatchResult } from '@netlify/redirect-matcher'
-import contentType from 'content-type'
+import { parse as parseContentType } from 'content-type'
 import generateETag from 'etag'
 import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
@@ -140,12 +140,6 @@ function isFunction(functionsPort: boolean | number | undefined, url: string) {
   return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
 
-function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessage) {
-  const matches = req.url?.match(/^\/.netlify\/([^/]+)(\/.*)/)
-  const addonUrl = matches && addonsUrls[matches[1]]
-  return addonUrl ? `${addonUrl}${matches[2]}` : null
-}
-
 const getStatic = async function (pathname: string, publicFolder: string) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
@@ -156,7 +150,7 @@ const getStatic = async function (pathname: string, publicFolder: string) {
     return false
   }
 
-  return `/${path.relative(publicFolder, file)}`
+  return `/${path.relative(publicFolder, file).split(path.sep).join('/')}`
 }
 
 const isEndpointExists = async function (endpoint: string, origin: string) {
@@ -195,14 +189,6 @@ const proxyToExternalUrl = function ({
     ...(Buffer.isBuffer(req.originalBody) && { buffer: Readable.from(req.originalBody) }),
   })
   void handler(req, res, () => {})
-}
-
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonUrl' implicitly has an 'any'... Remove this comment to see the full error message
-const handleAddonUrl = function ({ addonUrl, req, res }) {
-  const dest = new URL(addonUrl)
-  const destURL = stripOrigin(dest)
-
-  proxyToExternalUrl({ req, res, dest, destURL })
 }
 
 const isRedirect = function (match: MatchResult | { status?: number | undefined }): boolean {
@@ -309,12 +295,6 @@ const serveRedirect = async function ({
     return proxy.web(req, res, { target: options.functionsServer })
   }
 
-  const urlForAddons = getAddonUrl(options.addonsUrls, req)
-  if (urlForAddons) {
-    handleAddonUrl({ req, res, addonUrl: urlForAddons })
-    return
-  }
-
   const originalURL = req.url
   const reqUrl = reqToURL(req, req.url)
   const isHiddenProxy =
@@ -379,7 +359,7 @@ const serveRedirect = async function ({
       return
     }
 
-    const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+    const ct = parseContentType(req.headers['content-type'] ?? '').type
     if (
       req.method === 'POST' &&
       !isInternal(req.url) &&
@@ -420,12 +400,6 @@ const serveRedirect = async function ({
     if (isImageRequest(req)) {
       return imageProxy(req, res)
     }
-    const addonUrl = getAddonUrl(options.addonsUrls, req)
-    if (addonUrl) {
-      handleAddonUrl({ req, res, addonUrl })
-      return
-    }
-
     return proxy.web(req, res, { ...options, status: statusValue })
   }
 
@@ -590,7 +564,7 @@ const initializeProxy = async function ({
       // The request has failed but we might still have a matching redirect
       // rule (without `force`) that should kick in. This is how we mimic the
       // file shadowing behavior from the CDN.
-      if (options && options.match) {
+      if (options?.match) {
         return serveRedirect({
           // We don't want to match functions at this point because any redirects
           // to functions will have already been processed, so we don't supply a
@@ -751,7 +725,6 @@ const initializeProxy = async function ({
 
 const onRequest = async (
   {
-    addonsUrls,
     api,
     edgeFunctionsProxy,
     env,
@@ -806,12 +779,6 @@ const onRequest = async (
     return proxy.web(req, res, { headers, target: functionsServer })
   }
 
-  const addonUrl = getAddonUrl(addonsUrls, req)
-  if (addonUrl) {
-    handleAddonUrl({ req, res, addonUrl })
-    return
-  }
-
   if (serverHandler) {
     try {
       const requestURL = reqToURL(req, req.url)
@@ -857,7 +824,6 @@ const onRequest = async (
   const match = await rewriter(req)
   const options = {
     match,
-    addonsUrls,
     target: `http://${
       settings.frameworkHost && isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost
     }:${settings.frameworkPort}`,
@@ -901,7 +867,7 @@ const onRequest = async (
   const hasFormSubmissionHandler: boolean =
     functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
 
-  const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+  const ct = parseContentType(req.headers['content-type'] ?? '').type
   if (
     hasFormSubmissionHandler &&
     functionsServer &&
@@ -926,7 +892,6 @@ type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy
 
 export const startProxy = async function ({
   accountId,
-  addonsUrls,
   aiGatewayContext,
   api,
   blobsContext,
@@ -1057,7 +1022,6 @@ export const startProxy = async function ({
     rewriter,
     serverHandler,
     settings,
-    addonsUrls,
     functionsRegistry,
     functionsServer,
     edgeFunctionsProxy,

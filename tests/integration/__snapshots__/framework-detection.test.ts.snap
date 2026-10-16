@@ -108,7 +108,7 @@ exports[`frameworks/framework-detection > should prompt when multiple frameworks
   [Gatsby] 'npm run develop'
 > [Create React App] 'npm run start'
 
-↑↓ navigate • ⏎ select[4A[39G[4B[2K[1A[2K[1A[2K[1A[2K[1A[2K[G✔ Multiple possible dev commands found Create React App-npm run start[70G
+↑↓ navigate • ⏎ select[4A[39G[4B[2K[1A[2K[1A[2K[1A[2K[1A[2K[G√ Multiple possible dev commands found Create React App-npm run start[70G
 [G[?25h
 Update your netlify.toml to avoid this selection prompt next time:
 
