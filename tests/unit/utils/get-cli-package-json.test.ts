@@ -1,8 +1,4 @@
-import { readFile } from 'fs/promises'
-
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-
-import getCLIPackageJson from '../../../src/utils/get-cli-package-json.js'
 
 vi.mock('fs/promises', async (importActual: () => Promise<typeof import('fs/promises')>) => {
   const fs = await importActual()
@@ -14,9 +10,14 @@ vi.mock('fs/promises', async (importActual: () => Promise<typeof import('fs/prom
 })
 
 describe('getCLIPackageJson', () => {
-  beforeEach(() => {
-    // Reevaluate modules when imported in order to avoid issues with singleton pattern in getPackageJson
+  let getCLIPackageJson: typeof import('../../../src/utils/get-cli-package-json.js').default
+  let readFile: typeof import('fs/promises').readFile
+
+  beforeEach(async () => {
+    // Reevaluate modules (and the mock factory) to avoid the singleton cache in getPackageJson leaking between tests
     vi.resetModules()
+    ;({ readFile } = await import('fs/promises'))
+    ;({ default: getCLIPackageJson } = await import('../../../src/utils/get-cli-package-json.js'))
   })
 
   test('should return the package.json of netlify-cli', async () => {
