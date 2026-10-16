@@ -389,7 +389,6 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
       if (
         variable.sources.includes('ui') ||
         variable.sources.includes('account') ||
-        variable.sources.includes('addons') ||
         variable.sources.includes('internal') ||
         variable.sources.some((source) => source.startsWith('.env'))
       ) {

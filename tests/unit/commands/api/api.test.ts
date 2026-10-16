@@ -28,7 +28,7 @@ describe('apiCommand --data parsing', () => {
   })
 
   test('rejects key=value input with an error naming --data', async () => {
-    await expect(runApi('site_id=123')).rejects.toThrowError(/--data/)
+    await expect(runApi('site_id=123')).rejects.toThrow(/--data/)
     expect(getSite).not.toHaveBeenCalled()
   })
 

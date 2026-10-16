@@ -1,5 +1,5 @@
 import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import { select } from '@inquirer/prompts'
 
 import { log, chalk } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
@@ -53,9 +53,7 @@ export const logsBuild = async (_options: OptionValues, command: BaseCommand) =>
 
   let [deploy] = deploys
   if (deploys.length > 1) {
-    const { result } = await inquirer.prompt({
-      name: 'result',
-      type: 'list',
+    const result = await select({
       message: `Select a deploy\n\n${chalk.yellow('*')} indicates a deploy created by you`,
       choices: deploys.map((dep: any) => ({
         name: getName({ deploy: dep, userId }),

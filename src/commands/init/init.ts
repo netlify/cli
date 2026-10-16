@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 
 import { chalk, exit, log, netlifyCommand } from '../../utils/command-helpers.js'
@@ -11,6 +11,7 @@ import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { LocalState, SiteInfo } from '../../utils/types.js'
+import { setupAgentSkills } from '../../utils/init/agent-skills.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
 import { type InitExitCode, LINKED_EXISTING_SITE_EXIT_CODE, LINKED_NEW_SITE_EXIT_CODE } from './constants.js'
 
@@ -59,13 +60,9 @@ const createNewSiteAndExit = async ({
   persistState({ state, siteInfo })
 
   if (!disableLinking) {
-    const { shouldConfigureBuild } = await inquirer.prompt<{ shouldConfigureBuild: boolean }>([
-      {
-        type: 'confirm',
-        name: 'shouldConfigureBuild',
-        message: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
-      },
-    ])
+    const shouldConfigureBuild = await confirm({
+      message: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
+    })
     if (shouldConfigureBuild) {
       const {
         cachedConfig: { configPath },
@@ -154,14 +151,10 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   const NEW_SITE_NO_GIT = 'Yes, create and deploy project manually'
   const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
-  const { noGitRemoteChoice } = await inquirer.prompt<{ noGitRemoteChoice: typeof NEW_SITE_NO_GIT | typeof NO_ABORT }>([
-    {
-      type: 'list',
-      name: 'noGitRemoteChoice',
-      message: 'Do you want to create a Netlify project without a git repository?',
-      choices: [NEW_SITE_NO_GIT, NO_ABORT],
-    },
-  ])
+  const noGitRemoteChoice = await select({
+    message: 'Do you want to create a Netlify project without a git repository?',
+    choices: [NEW_SITE_NO_GIT, NO_ABORT],
+  })
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
     // TODO(ndhoule): Shove a custom error message in here
@@ -179,15 +172,10 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
 
   const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
-  // TODO(serhalp): inquirer should infer the choice type here, but doesn't. Fix.
-  const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
-    {
-      type: 'list',
-      name: 'initChoice',
-      message: 'What would you like to do?',
-      choices: initializeOpts,
-    },
-  ])
+  const initChoice = await select({
+    message: 'What would you like to do?',
+    choices: initializeOpts,
+  })
 
   // create site or search for one
   if (initChoice === NEW_SITE) {
@@ -223,14 +211,38 @@ type InitExitMessageCustomizer = (code: InitExitCode, defaultMessage: string) =>
 type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
+  setupAgentSkills?: boolean | undefined
+  resetContext?: boolean | undefined
+}
+
+const installAgentSkills = async (command: BaseCommand, reset: boolean): Promise<void> => {
+  log()
+  const result = await setupAgentSkills({ workingDir: command.netlify.repositoryRoot, reset })
+  await track('sites_agentSkillsSetup', {
+    installed: result.installed,
+    directories: result.directories,
+    skillsVersion: result.skillsVersion,
+    resetContext: reset,
+    ...result.summary,
+  })
 }
 
 export const init = async (
   options: OptionValues,
   command: BaseCommand,
-  { customizeExitMessage, exitAfterConfiguringRepo = false }: InitExtraOptions = {},
+  {
+    customizeExitMessage,
+    exitAfterConfiguringRepo = false,
+    setupAgentSkills: shouldSetupAgentSkills = false,
+    resetContext = false,
+  }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
-  command.setAnalyticsPayload({ manual: options.manual, force: options.force })
+  command.setAnalyticsPayload({
+    manual: options.manual,
+    force: options.force,
+    skipAgentSetup: options.skipAgentSetup,
+    resetContext: options.resetContext,
+  })
 
   const { repositoryRoot, state } = command.netlify
   const { siteInfo: existingSiteInfo } = command.netlify
@@ -240,6 +252,10 @@ export const init = async (
 
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
+
+  if (shouldSetupAgentSkills) {
+    await installAgentSkills(command, resetContext)
+  }
 
   const repoUrl = getRepoUrl(existingSiteInfo)
   if (repoUrl && !options.force) {

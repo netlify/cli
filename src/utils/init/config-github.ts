@@ -1,8 +1,8 @@
 import type { NetlifyAPI } from '@netlify/api'
-import { Octokit } from '@octokit/rest'
 
 import { chalk, logAndThrowError, log } from '../command-helpers.js'
 import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'
+import { requestGitHub, type GitHubRepo, type GitHubUser, type GitHubWebhook } from '../github-api.js'
 import type { GlobalConfigStore } from '../types.js'
 import type { BaseCommand } from '../../commands/index.js'
 
@@ -25,11 +25,8 @@ export const getGitHubToken = async ({ globalConfig }: { globalConfig: GlobalCon
 
   if (githubToken?.user && githubToken.token) {
     try {
-      const octokit = getGitHubClient(githubToken.token)
-      const { status } = await octokit.rest.users.getAuthenticated()
-      if (status < 400) {
-        return githubToken.token
-      }
+      await requestGitHub<GitHubUser>(githubToken.token, 'GET', '/user')
+      return githubToken.token
     } catch {
       log(chalk.yellow('Token is expired or invalid!'))
       log('Generating a new Github token...')
@@ -41,31 +38,26 @@ export const getGitHubToken = async ({ globalConfig }: { globalConfig: GlobalCon
   return newToken.token
 }
 
-const getGitHubClient = (token: string): Octokit =>
-  new Octokit({
-    auth: `token ${token}`,
-  })
-
 const addDeployKey = async ({
   api,
-  octokit,
   repoName,
   repoOwner,
+  token,
 }: {
   api: NetlifyAPI
-  octokit: Octokit
   repoName: string
   repoOwner: string
+  token: string
 }) => {
   log('Adding deploy key to repository...')
   const key = await createDeployKey({ api })
   try {
-    await octokit.repos.createDeployKey({
-      title: 'Netlify Deploy Key',
-      key: key.public_key ?? '',
-      owner: repoOwner,
-      repo: repoName,
-      read_only: true,
+    await requestGitHub(token, 'POST', `/repos/${repoOwner}/${repoName}/keys`, {
+      body: {
+        title: 'Netlify Deploy Key',
+        key: key.public_key ?? '',
+        read_only: true,
+      },
     })
     log('Deploy key added!')
     return key
@@ -81,20 +73,16 @@ const addDeployKey = async ({
 }
 
 const getGitHubRepo = async ({
-  octokit,
   repoName,
   repoOwner,
+  token,
 }: {
-  octokit: Octokit
   repoName: string
   repoOwner: string
+  token: string
 }) => {
   try {
-    const { data } = await octokit.repos.get({
-      owner: repoOwner,
-      repo: repoName,
-    })
-    return data
+    return await requestGitHub<GitHubRepo>(token, 'GET', `/repos/${repoOwner}/${repoName}`)
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed retrieving GitHub repository information', error })
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
@@ -106,15 +94,18 @@ const getGitHubRepo = async ({
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployHook' implicitly has an 'an... Remove this comment to see the full error message
-const hookExists = async ({ deployHook, octokit, repoName, repoOwner }) => {
+interface DeployHookOptions {
+  deployHook: string | undefined
+  repoName: string
+  repoOwner: string
+  token: string
+}
+
+const hookExists = async ({ deployHook, repoName, repoOwner, token }: DeployHookOptions) => {
   try {
-    const { data: hooks } = await octokit.repos.listWebhooks({
-      owner: repoOwner,
-      repo: repoName,
-      per_page: PAGE_SIZE,
+    const hooks = await requestGitHub<GitHubWebhook[]>(token, 'GET', `/repos/${repoOwner}/${repoName}/hooks`, {
+      query: { per_page: PAGE_SIZE },
     })
-    // @ts-expect-error TS(7006) FIXME: Parameter 'hook' implicitly has an 'any' type.
     const exists = hooks.some((hook) => hook.config.url === deployHook)
     return exists
   } catch {
@@ -123,21 +114,20 @@ const hookExists = async ({ deployHook, octokit, repoName, repoOwner }) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployHook' implicitly has an 'an... Remove this comment to see the full error message
-const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
-  const exists = await hookExists({ deployHook, octokit, repoOwner, repoName })
+const addDeployHook = async ({ deployHook, repoName, repoOwner, token }: DeployHookOptions) => {
+  const exists = await hookExists({ deployHook, repoOwner, repoName, token })
   if (!exists) {
     try {
-      await octokit.repos.createWebhook({
-        owner: repoOwner,
-        repo: repoName,
-        name: 'web',
-        config: {
-          url: deployHook,
-          content_type: 'json',
+      await requestGitHub(token, 'POST', `/repos/${repoOwner}/${repoName}/hooks`, {
+        body: {
+          name: 'web',
+          config: {
+            url: deployHook,
+            content_type: 'json',
+          },
+          events: ['push', 'pull_request', 'delete'],
+          active: true,
         },
-        events: ['push', 'pull_request', 'delete'],
-        active: true,
       })
     } catch (error) {
       // Ignore exists error if the list doesn't return all installed hooks
@@ -241,10 +231,9 @@ export const configGithub = async ({
 
   log()
 
-  const octokit = getGitHubClient(token)
   const [deployKey, githubRepo] = await Promise.all([
-    addDeployKey({ api, octokit, repoOwner, repoName }),
-    getGitHubRepo({ octokit, repoOwner, repoName }),
+    addDeployKey({ api, repoOwner, repoName, token }),
+    getGitHubRepo({ repoOwner, repoName, token }),
   ])
 
   const repo = {
@@ -267,7 +256,7 @@ export const configGithub = async ({
     configPlugins: config.plugins ?? [],
     pluginsToInstall,
   })
-  await addDeployHook({ deployHook: updatedSite.deploy_hook, octokit, repoOwner, repoName })
+  await addDeployHook({ deployHook: updatedSite.deploy_hook, repoOwner, repoName, token })
   log()
   await addNotificationHooks({ siteId, api, token })
 }

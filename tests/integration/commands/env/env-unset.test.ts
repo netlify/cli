@@ -9,7 +9,9 @@ import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingProm
 
 import { routes } from './api-routes.js'
 import { runMockProgram } from '../../utils/mock-program.js'
-import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
+import { mockConfirm, spyOnConfirm } from '../../utils/inquirer-mock-prompt.js'
+
+vi.mock('@inquirer/prompts')
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -112,13 +114,11 @@ describe('env:unset command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = mockPrompt({ confirm: true })
+          const promptSpy = mockConfirm(true)
 
           await runMockProgram(['', '', 'env:unset', existingVar])
 
           expect(promptSpy).toHaveBeenCalledWith({
-            type: 'confirm',
-            name: 'confirm',
             message: expect.stringContaining(overwriteConfirmation),
             default: false,
           })
@@ -133,7 +133,7 @@ describe('env:unset command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'env:unset', existingVar, '--force'])
 
@@ -149,7 +149,7 @@ describe('env:unset command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = mockPrompt({ confirm: false })
+          const promptSpy = mockConfirm(false)
 
           try {
             await runMockProgram(['', '', 'env:unset', existingVar])
@@ -171,7 +171,7 @@ describe('env:unset command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'env:unset', 'NEW_ENV_VAR'])
 
@@ -191,7 +191,7 @@ describe('env:unset command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'env:unset', existingVar])
           expect(promptSpy).not.toHaveBeenCalled()
@@ -208,7 +208,7 @@ describe('env:unset command', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'env:unset', existingVar])
           expect(promptSpy).not.toHaveBeenCalled()

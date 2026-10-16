@@ -68,15 +68,13 @@ export const fetchFunctionHistoricalLogs = async ({
     functions.map(async (fn) => {
       const baseUrl = buildFunctionLogsUrl({ siteId, branch: fn.branch, functionName: fn.n })
       const entries = await fetchHistoricalLogs({ baseUrl, accessToken, from, to, deployId })
-      return entries.map(
-        (entry): LogEntry => ({
-          source: 'function',
-          name: fn.n,
-          ts: entry.ts,
-          level: entry.level || 'INFO',
-          message: entry.message,
-        }),
-      )
+      return entries.map((entry): LogEntry => ({
+        source: 'function',
+        name: fn.n,
+        ts: entry.ts,
+        level: entry.level || 'INFO',
+        message: entry.message,
+      }))
     }),
   )
   return results.flat()

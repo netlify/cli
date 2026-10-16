@@ -138,7 +138,7 @@ test('Uploads a Netlify Server addressed by its digest, and retries it', async (
       filepath: 'server.tgz',
       normalizedPath: 'server',
       hash: codeSha,
-    } as unknown as UploadFile,
+    },
   ]
 
   await uploadFiles(mockApi, deployId, files, { concurrentUpload: 1, maxRetry: 3, statusCb: () => {} })

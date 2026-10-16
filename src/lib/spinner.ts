@@ -39,7 +39,15 @@ export const startSpinner = ({ text }: { text: string }): Spinner => {
 /**
  * Stops the spinner with the following text
  */
-export const stopSpinner = ({ error, spinner, text }: { error?: boolean; spinner: Spinner; text?: string }) => {
+export const stopSpinner = ({
+  error,
+  spinner,
+  text,
+}: {
+  error?: boolean
+  spinner: Spinner | undefined
+  text?: string
+}) => {
   if (!spinner) {
     return
   }

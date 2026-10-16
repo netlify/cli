@@ -1,7 +1,7 @@
 import type { Settings } from '@netlify/build-info'
+import { search } from '@inquirer/prompts'
 import { isCI } from 'ci-info'
 import fuzzy from 'fuzzy'
-import inquirer from 'inquirer'
 
 import type BaseCommand from '../commands/base-command.js'
 import { chalk, log } from './command-helpers.js'
@@ -96,12 +96,9 @@ export const detectFrameworkSettings = async (
 
     // multiple matching detectors, make the user choose
     const scriptInquirerOptions = formatSettingsArrForInquirer(settings, type)
-    const { chosenSettings } = await inquirer.prompt<{ chosenSettings: Settings }>({
-      name: 'chosenSettings',
+    const chosenSettings = await search({
       message: `Multiple possible ${type} commands found`,
-      // @ts-expect-error is not known by the types as it uses the autocomplete plugin
-      type: 'autocomplete',
-      source(_: string, input = '') {
+      source(input = '') {
         if (!input) return scriptInquirerOptions
         // only show filtered results
         return filterSettings(scriptInquirerOptions, input)

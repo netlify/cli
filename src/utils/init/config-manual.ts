@@ -1,4 +1,4 @@
-import inquirer from 'inquirer'
+import { confirm, input } from '@inquirer/prompts'
 
 import { exit, log } from '../command-helpers.js'
 import type BaseCommand from '../../commands/base-command.js'
@@ -15,14 +15,7 @@ const addDeployKey = async (deployKey: DeployKey) => {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   log(`\n${deployKey.public_key}\n\n`)
 
-  const { sshKeyAdded } = (await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'sshKeyAdded',
-      message: 'Continue?',
-      default: true,
-    },
-  ])) as { sshKeyAdded: boolean }
+  const sshKeyAdded = await confirm({ message: 'Continue?', default: true })
 
   if (!sshKeyAdded) {
     return exit()
@@ -30,17 +23,11 @@ const addDeployKey = async (deployKey: DeployKey) => {
 }
 
 const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string> => {
-  const { repoPath } = await inquirer.prompt<{ repoPath: string }>([
-    {
-      type: 'input',
-      name: 'repoPath',
-      message: 'The SSH URL of the remote git repo:',
-      default: repoData.url,
-      validate: (url: string) => (SSH_URL_REGEXP.test(url) ? true : 'The URL provided does not use the SSH protocol'),
-    },
-  ])
-
-  return repoPath
+  return await input({
+    message: 'The SSH URL of the remote git repo:',
+    default: repoData.url,
+    validate: (url: string) => (SSH_URL_REGEXP.test(url) ? true : 'The URL provided does not use the SSH protocol'),
+  })
 }
 
 const addDeployHook = async (deployHook: string | undefined): Promise<boolean> => {
@@ -48,16 +35,7 @@ const addDeployHook = async (deployHook: string | undefined): Promise<boolean> =
   // FIXME(serhalp): Handle nullish `deployHook` by throwing user-facing error or fixing upstream type.
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   log(`\n${deployHook}\n\n`)
-  const { deployHookAdded } = await inquirer.prompt<{ deployHookAdded: boolean }>([
-    {
-      type: 'confirm',
-      name: 'deployHookAdded',
-      message: 'Continue?',
-      default: true,
-    },
-  ])
-
-  return deployHookAdded
+  return await confirm({ message: 'Continue?', default: true })
 }
 
 const isSupportedProvider = (provider: string | null): provider is 'github' | 'gitlab' =>

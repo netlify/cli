@@ -6,6 +6,7 @@ const baseNormalizers: Normalizer[] = [
   { pattern: /\\/gu, value: '/' },
   { pattern: /\r\n/gu, value: '\n' },
   { pattern: /❯/gu, value: '>' },
+  { pattern: /✔/gu, value: '√' },
   { pattern: /»/gu, value: '›' },
   // normalize exit code from different OSes
   { pattern: /code \d+/, value: 'code *' },
