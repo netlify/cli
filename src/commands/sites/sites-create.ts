@@ -41,7 +41,6 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       accountSlug = team.slug
       log(`Using team: ${team.name}`)
     } else {
-      // select prompts crash when choices is empty
       const teams = requireTeams(accounts)
       accountSlug = await select({
         message: 'Team:',
