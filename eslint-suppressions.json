@@ -866,7 +866,7 @@
   },
   "src/utils/deploy/util.ts": {
     "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
       "count": 1
