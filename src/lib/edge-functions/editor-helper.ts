@@ -1,6 +1,6 @@
 import { env, stdin, stdout } from 'process'
 
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 
 import { runRecipe } from '../../commands/recipes/recipes.js'
 
@@ -25,14 +25,12 @@ export const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, re
   state.set(STATE_PROMPT_PROPERTY, true)
 
   const message = 'Would you like to configure VS Code to use Edge Functions?'
-  const { confirm } = await inquirer.prompt({
-    type: 'confirm',
-    name: 'confirm',
+  const confirmed = await confirm({
     message,
     default: true,
   })
 
-  if (!confirm) {
+  if (!confirmed) {
     log(
       `${NETLIFYDEVLOG} You can start this configuration manually by running ${chalk.magenta.bold(
         'netlify recipes vscode',

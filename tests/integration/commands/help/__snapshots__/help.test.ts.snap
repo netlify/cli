@@ -74,3 +74,62 @@ EXAMPLES
 COMMANDS
   $ completion:install   Generates completion script for your preferred shell"
 `;
+
+exports[`help command > netlify help database lists nested subcommands 1`] = `
+"Provision a production ready Postgres database with a single command
+
+USAGE
+  $ netlify database [options] [command]
+
+OPTIONS
+  --filter <app>          For monorepos, specify the name of the application to
+                          run the command in
+  -h, --help              display help for command
+  --debug                 Print debugging information
+  --auth <token>          Netlify auth token - can be used to run this command
+                          without logging in
+
+ALIASES
+  $ netlify db
+
+EXAMPLES
+  $ netlify database status
+  $ netlify database migrations apply
+  $ netlify database migrations pull
+  $ netlify database migrations new
+  $ netlify database reset
+
+COMMANDS
+  $ database connect      Connect to the database
+  $ database init         Interactive setup: install the package, scaffold a
+                          starter migration, and verify the database
+  $ database migrations   Manage database migrations
+  $ database reset        Reset the local development database, removing all
+                          data and tables
+  $ database status       Check the status of the database, including applied
+                          and pending migrations"
+`;
+
+exports[`help command > netlify help database migrations lists nested subcommands 1`] = `
+"Manage database migrations
+
+USAGE
+  $ database migrations [options] [command]
+
+OPTIONS
+  --filter <app>                For monorepos, specify the name of the
+                                application to run the command in
+  -h, --help                    display help for command
+  --debug                       Print debugging information
+  --auth <token>                Netlify auth token - can be used to run this
+                                command without logging in
+
+COMMANDS
+  $ database migrations apply   Apply database migrations to the local
+                                development database
+  $ database migrations new     Create a new migration
+  $ database migrations pull    Pull migrations and overwrite local migration
+                                files
+  $ database migrations reset   Delete local migration files that have not been
+                                applied yet"
+`;

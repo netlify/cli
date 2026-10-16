@@ -515,12 +515,12 @@ describe.concurrent('deploy command', () => {
         const output: string = await callCli(['deploy'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder }))
 
         t.expect(output).toContain('Netlify Build completed in')
-        const [, deployIdPreBuild] = output.match(/DEPLOY_ID_PREBUILD: (\w+)/) ?? []
-        const [, deployURLPreBuild] = output.match(/DEPLOY_URL_PREBUILD: (.+)/) ?? []
-        const [, skewProtectionTokenPreBuild] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: (.+)/) ?? []
-        const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
-        const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
-        const [, skewProtectionToken] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN: (.+)/) ?? []
+        const [, deployIdPreBuild] = /DEPLOY_ID_PREBUILD: (\w+)/.exec(output) ?? []
+        const [, deployURLPreBuild] = /DEPLOY_URL_PREBUILD: (.+)/.exec(output) ?? []
+        const [, skewProtectionTokenPreBuild] = /NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: (.+)/.exec(output) ?? []
+        const [, deployId] = /DEPLOY_ID: (\w+)/.exec(output) ?? []
+        const [, deployURL] = /DEPLOY_URL: (.+)/.exec(output) ?? []
+        const [, skewProtectionToken] = /NETLIFY_SKEW_PROTECTION_TOKEN: (.+)/.exec(output) ?? []
 
         t.expect(deployIdPreBuild).toBeTruthy()
         t.expect(deployIdPreBuild).toEqual('deploy_id')
@@ -571,8 +571,8 @@ describe.concurrent('deploy command', () => {
         t.expect(output).toMatch(/--build.+is now the default and can safely be omitted./)
 
         t.expect(output).toContain('Netlify Build completed in')
-        const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
-        const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
+        const [, deployId] = /DEPLOY_ID: (\w+)/.exec(output) ?? []
+        const [, deployURL] = /DEPLOY_URL: (.+)/.exec(output) ?? []
 
         t.expect(deployId).toEqual('deploy_id')
         t.expect(deployURL).toContain('https://deploy_id--')
@@ -599,7 +599,7 @@ describe.concurrent('deploy command', () => {
 
         const output: string = await callCli(['deploy', '--json'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder }))
 
-        expect(() => JSON.parse(output)).not.toThrowError()
+        expect(() => JSON.parse(output)).not.toThrow()
       })
     })
   })
@@ -805,7 +805,7 @@ describe.concurrent('deploy command', () => {
         })
 
         // stdout should still be valid JSON
-        expect(() => JSON.parse(stdout)).not.toThrowError()
+        expect(() => JSON.parse(stdout)).not.toThrow()
 
         // stderr should contain the build output with line breaks preserved
         expect(stderr).toContain('Build stdout line 1')
@@ -1471,7 +1471,7 @@ describe.concurrent('deploy command', () => {
           getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         )
 
-        const [, branch] = output.match(/TEST_BRANCH: (.+)/) ?? []
+        const [, branch] = /TEST_BRANCH: (.+)/.exec(output) ?? []
         expect(branch).toBe('custom-alias')
 
         const createDeployRequest = mockApi.requests.find(

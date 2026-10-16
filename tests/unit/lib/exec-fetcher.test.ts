@@ -72,7 +72,7 @@ describe('fetchLatestVersion', () => {
     processPlatformSpy.mockReturnValue('win32')
     vi.mocked(fetch).mockResolvedValue(new Response('Not Found', { status: 404 }))
 
-    await expect(fetchLatestVersion({ ...FETCH_ARGS, extension: 'zip' })).rejects.toThrowError(
+    await expect(fetchLatestVersion({ ...FETCH_ARGS, extension: 'zip' })).rejects.toThrow(
       /The operating system windows with the CPU architecture amd64 is currently not supported!/,
     )
   })
@@ -80,7 +80,7 @@ describe('fetchLatestVersion', () => {
   test('throws the HTTP status on non-404 download errors', async () => {
     vi.mocked(fetch).mockResolvedValue(new Response('Internal Server Error', { status: 500 }))
 
-    await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrowError(/Download failed: 500/)
+    await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrow(/Download failed: 500/)
   })
 
   test('includes the platform and arch in the 404 error for linux-x64', async () => {
@@ -88,7 +88,7 @@ describe('fetchLatestVersion', () => {
     processPlatformSpy.mockReturnValue('linux')
     vi.mocked(fetch).mockResolvedValue(new Response('Not Found', { status: 404 }))
 
-    await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrowError(
+    await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrow(
       /The operating system linux with the CPU architecture amd64 is currently not supported!/,
     )
   })
@@ -98,7 +98,7 @@ describe('fetchLatestVersion', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ tag_name: 'v2.0.0' })))
       .mockResolvedValueOnce(new Response('Not Found', { status: 404 }))
 
-    await expect(fetchLatestVersion({ ...FETCH_ARGS, latestVersion: undefined })).rejects.toThrowError()
+    await expect(fetchLatestVersion({ ...FETCH_ARGS, latestVersion: undefined })).rejects.toThrow()
 
     expect(vi.mocked(fetch)).toHaveBeenCalledWith(
       'https://api.github.com/repos/netlify/traffic-mesh-agent/releases/latest',
@@ -113,7 +113,7 @@ describe('fetchLatestVersion', () => {
   test('throws when the GitHub releases API returns an error', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 403 }))
 
-    await expect(fetchLatestVersion({ ...FETCH_ARGS, latestVersion: undefined })).rejects.toThrowError(
+    await expect(fetchLatestVersion({ ...FETCH_ARGS, latestVersion: undefined })).rejects.toThrow(
       /Failed to fetch latest release.*403/,
     )
   })
@@ -144,7 +144,7 @@ describe('fetchLatestVersion', () => {
 
     vi.mocked(fetch).mockResolvedValue(new Response('error', { status: 500 }))
 
-    await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrowError()
+    await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrow()
 
     expect(vi.mocked(fetch)).toHaveBeenCalledWith(
       expect.any(String),

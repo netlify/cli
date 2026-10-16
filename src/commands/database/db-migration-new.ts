@@ -1,7 +1,7 @@
 import { readdir, mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
-import inquirer from 'inquirer'
+import { input, select } from '@inquirer/prompts'
 
 import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -91,15 +91,10 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
 
   if (!description) {
     if (isInteractive()) {
-      const answers = await inquirer.prompt<{ description: string }>([
-        {
-          type: 'input',
-          name: 'description',
-          message: 'What is the purpose of this migration?',
-          validate: (input: string) => (input.trim().length > 0 ? true : 'Description cannot be empty'),
-        },
-      ])
-      description = answers.description
+      description = await input({
+        message: 'What is the purpose of this migration?',
+        validate: (value: string) => (value.trim().length > 0 ? true : 'Description cannot be empty'),
+      })
     } else {
       throw new Error(
         `--description <description> argument is required when not running interactively. Provide a description of the migration (e.g. --description "add users table").`,
@@ -111,19 +106,14 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
     const defaultScheme = detectedScheme ?? 'timestamp'
 
     if (isInteractive()) {
-      const answers = await inquirer.prompt<{ scheme: NumberingScheme }>([
-        {
-          type: 'list',
-          name: 'scheme',
-          message: 'Numbering scheme:',
-          choices: [
-            { name: 'Timestamp (e.g. 20260312143000) [Recommended]', value: 'timestamp' },
-            { name: 'Sequential (e.g. 0001, 0002, ...)', value: 'sequential' },
-          ],
-          default: defaultScheme,
-        },
-      ])
-      scheme = answers.scheme
+      scheme = await select<NumberingScheme>({
+        message: 'Numbering scheme:',
+        choices: [
+          { name: 'Timestamp (e.g. 20260312143000) [Recommended]', value: 'timestamp' },
+          { name: 'Sequential (e.g. 0001, 0002, ...)', value: 'sequential' },
+        ],
+        default: defaultScheme,
+      })
     } else {
       scheme = defaultScheme
     }

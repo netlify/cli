@@ -118,7 +118,7 @@ describe('blobs:* commands', () => {
         fixture.callCli(['blobs:get', 'my-store', 'my-key'], {
           offline: false,
         }),
-      ).rejects.toThrowError('Error: Blob my-key does not exist in store my-store')
+      ).rejects.toThrow('Error: Blob my-key does not exist in store my-store')
     })
 
     test<FixtureTestContext>('should send the region to the API when one is given', async ({ fixture }) => {
@@ -149,7 +149,7 @@ describe('blobs:* commands', () => {
         fixture.callCli(['blobs:list', 'my-store', '--region', 'mars-north-1', '--json'], {
           offline: false,
         }),
-      ).rejects.toThrowError('not a supported Netlify Blobs region')
+      ).rejects.toThrow('not a supported Netlify Blobs region')
     })
   })
 })

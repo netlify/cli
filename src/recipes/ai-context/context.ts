@@ -123,7 +123,7 @@ export const parseContextFile = (contents: string) => {
     contents,
   }
 
-  const providerContext = contents.match(PROVIDER_CONTEXT_REGEX)
+  const providerContext = PROVIDER_CONTEXT_REGEX.exec(contents)
 
   if (providerContext) {
     const [, attributes, innerContents] = providerContext
@@ -148,7 +148,7 @@ export const parseContextFile = (contents: string) => {
     }
   }
 
-  const contextOverrides = contents.match(PROVIDER_CONTEXT_OVERRIDES_REGEX)
+  const contextOverrides = PROVIDER_CONTEXT_OVERRIDES_REGEX.exec(contents)
 
   if (contextOverrides) {
     const [overrideContents, , innerContents] = contextOverrides

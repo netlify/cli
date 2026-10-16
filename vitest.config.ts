@@ -2,6 +2,8 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    // Spawned CLI processes inherit this, so test runs never send real telemetry or error reports.
+    env: { NETLIFY_TELEMETRY_DISABLED: 'true' },
     include: ['tests/**/*.test.js', 'tests/**/*.test.ts'],
     testTimeout: 90_000,
     hookTimeout: 90_000,
@@ -17,14 +19,12 @@ export default defineConfig({
     snapshotFormat: {
       escapeString: true,
     },
-    // Pin to vitest@1 behavior: https://vitest.dev/guide/migration.html#default-pool-is-forks.
+    // Vitest 2 made `forks` the default pool; stay on a single thread, one file at a time, as
+    // vitest 1 did. File isolation stays on: vitest 4's `isolate: false` shares module mocks
+    // between files.
     // TODO(serhalp) Remove this and fix hanging `next-app-without-config` fixture on Windows.
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
+    maxWorkers: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
