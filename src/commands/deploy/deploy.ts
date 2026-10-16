@@ -41,6 +41,7 @@ import {
 import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
 import { getDeploySourceFields } from '../../utils/deploy/deploy-source.js'
+import { getDeployUrls } from '../../utils/deploy/deploy-urls.js'
 import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { mergeDeployEnvVars } from '../../utils/env/deploy-env-vars.js'
@@ -726,27 +727,11 @@ const runDeploy = async ({
     return reportDeployError({ error: error as DeployError, failAndExit: logAndThrowError })
   }
 
-  const siteUrl = results.deploy.ssl_url || results.deploy.url
-  const deployUrl = results.deploy.deploy_ssl_url || results.deploy.deploy_url
-  const logsUrl = `${results.deploy.admin_url}/deploys/${results.deploy.id}`
-
-  let functionLogsUrl = `${results.deploy.admin_url}/logs/functions`
-  let edgeFunctionLogsUrl = `${results.deploy.admin_url}/logs/edge-functions`
-
-  if (!deployToProduction) {
-    functionLogsUrl += `?scope=deploy:${deployId}`
-    edgeFunctionLogsUrl += `?scope=deployid:${deployId}`
-  }
-
   return {
     siteId: results.deploy.site_id,
     siteName: results.deploy.name,
     deployId: results.deployId,
-    siteUrl,
-    deployUrl,
-    logsUrl,
-    functionLogsUrl,
-    edgeFunctionLogsUrl,
+    ...getDeployUrls(results.deploy, { deployToProduction }),
     sourceZipFileName: uploadSourceZipResult?.sourceZipFileName,
   }
 }
