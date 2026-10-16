@@ -23,11 +23,11 @@ const team = (overrides: Partial<MinimalAccount> = {}): MinimalAccount => ({
 
 describe('requireTeams', () => {
   test('throws when the account list is empty', () => {
-    expect(() => requireTeams([])).toThrowError(/No teams available/)
+    expect(() => requireTeams([])).toThrow(/No teams available/)
   })
 
   test('throws when the account list is missing', () => {
-    expect(() => requireTeams(undefined)).toThrowError(/No teams available/)
+    expect(() => requireTeams(undefined)).toThrow(/No teams available/)
   })
 
   test('returns the account list when at least one team exists', () => {
@@ -51,7 +51,7 @@ describe('resolveTeam', () => {
 
 describe('resolveTeamForNonInteractive', () => {
   test('throws when no teams can be selected', () => {
-    expect(() => resolveTeamForNonInteractive([], 'netlify sites:create --account-slug <TEAM_SLUG>')).toThrowError(
+    expect(() => resolveTeamForNonInteractive([], 'netlify sites:create --account-slug <TEAM_SLUG>')).toThrow(
       /No teams available/,
     )
   })

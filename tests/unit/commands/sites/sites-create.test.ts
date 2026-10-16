@@ -39,7 +39,7 @@ const commandWithAccounts = (accounts: unknown[]) =>
 
 describe('sitesCreate', () => {
   test('throws a team error instead of opening an empty list prompt', async () => {
-    await expect(sitesCreate({}, commandWithAccounts([]))).rejects.toThrowError(/No teams available/)
+    await expect(sitesCreate({}, commandWithAccounts([]))).rejects.toThrow(/No teams available/)
     expect(mockSelect).not.toHaveBeenCalled()
   })
 })
