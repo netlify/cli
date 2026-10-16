@@ -34,17 +34,11 @@ export const hasherCtor = ({ concurrentHash, hashAlgorithm }: { concurrentHash?:
 }
 
 // Inject normalized file names into normalizedPath and assetType
-export const fileNormalizerCtor = ({
-  assetType,
-  normalizer: normalizeFunction,
-}: {
-  assetType: 'file'
-  normalizer?: (file: File) => File
-}) => {
+export const fileNormalizerCtor = ({ normalizer: normalizeFunction }: { normalizer?: (file: File) => File }) => {
   return new Transform({
     objectMode: true,
     transform(fileObj: HashedFile, _, callback) {
-      const normalizedFile: File = { ...fileObj, assetType, normalizedPath: normalizePath(fileObj.relname) }
+      const normalizedFile: File = { ...fileObj, assetType: 'file', normalizedPath: normalizePath(fileObj.relname) }
 
       const result = normalizeFunction !== undefined ? normalizeFunction(normalizedFile) : normalizedFile
 
