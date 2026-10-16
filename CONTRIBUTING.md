@@ -15,6 +15,7 @@ promote a positive and inclusive environment.
 
 - [Developing locally](#developing-locally)
   - [Architecture](#architecture)
+  - [Telemetry](#telemetry)
   - [Adding or updating a command](#adding-or-updating-a-command)
   - [Updating our documentation](#updating-our-documentation)
   - [Testing](#testing)
@@ -117,6 +118,29 @@ The CLI is written using the [commander.js](https://github.com/tj/commander.js/)
 A good place to start is reading the base command README and looking at the commands folder.
 
 > If you’d like to learn more on how `netlify dev` works, check [here](./docs/netlify-dev.md)
+
+### Telemetry
+
+Telemetry lives in [`src/utils/telemetry`](src/utils/telemetry). `track()` and `identify()` send events, and
+`reportError()` sends error reports. Each spawns a detached process that posts to `cli.netlify.com`, which forwards to
+the CLI telemetry service.
+
+Every `track()` event includes these properties, which callers can't override:
+
+- `cliVersion` and `nodejsVersion`
+- `agent`: the recognized agent name, or `other`
+- `agent_source`: the environment variable that identified the agent
+- `agent_version`: the version, when the agent provides one
+- `agent_markers`: every detected agent name, when markers from more than one agent are present
+- `agent_other_value`: the sanitized value, when `agent` is `other`
+- `ci_vendor`: the [`ci-info`](https://github.com/watson/ci-info) id of the CI platform, such as `GITHUB_ACTIONS`
+- `ci_is_pr`: whether the CI run is for a pull request, on platforms that expose it
+
+Properties with no value are omitted. The `cli:command` event sent after each command also includes `command`, `opts`
+(with sensitive values masked), `args`, `frameworks`, `buildSystem`, `packageManager`, and `monorepo`.
+
+The test suites set `NETLIFY_TELEMETRY_DISABLED` in their Vitest config, so tests never send real telemetry. Tests that
+spawn the CLI with `extendEnv: false` must pass it explicitly.
 
 ### Adding or updating a command
 

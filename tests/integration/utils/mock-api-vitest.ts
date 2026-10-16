@@ -141,6 +141,8 @@ const getEnvironmentVariables = ({ apiUrl }: { apiUrl?: string }) => ({
   NETLIFY_AUTH_TOKEN: 'fake-token',
   NETLIFY_SITE_ID: 'site_id',
   NETLIFY_API_URL: apiUrl,
+  // Repeated from the vitest config for callers that pass `extendEnv: false`
+  NETLIFY_TELEMETRY_DISABLED: 'true',
 })
 
 export const getCLIOptions = ({
