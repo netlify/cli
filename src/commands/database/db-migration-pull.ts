@@ -1,7 +1,7 @@
 import { rm, mkdir, writeFile } from 'fs/promises'
 import { dirname, resolve, isAbsolute } from 'path'
 
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 
 import { log, logJson } from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
@@ -148,16 +148,12 @@ export const migrationPull = async (options: MigrationPullOptions, command: Base
   })
 
   if (!force) {
-    const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([
-      {
-        type: 'confirm',
-        name: 'confirmed',
-        message: `This will overwrite all local migrations in ${migrationsDirectory} with ${String(
-          migrations.length,
-        )} migration${migrations.length === 1 ? '' : 's'} from ${branch}. Continue?`,
-        default: false,
-      },
-    ])
+    const confirmed = await confirm({
+      message: `This will overwrite all local migrations in ${migrationsDirectory} with ${String(
+        migrations.length,
+      )} migration${migrations.length === 1 ? '' : 's'} from ${branch}. Continue?`,
+      default: false,
+    })
 
     if (!confirmed) {
       log('Pull cancelled.')

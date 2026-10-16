@@ -6,17 +6,15 @@ import path, { dirname, join, relative } from 'path'
 import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
 
+import { input, search, select, Separator } from '@inquirer/prompts'
 import { OptionValues } from 'commander'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
-import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 import { createSpinner } from 'nanospinner'
 
 import { fileExistsAsync } from '../../lib/fs.js'
-import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
 import {
-  APIError,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
@@ -82,18 +80,12 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
     return argumentName
   }
 
-  const { name } = await inquirer.prompt([
-    {
-      name: 'name',
-      message: 'Name your function:',
-      default: defaultName,
-      type: 'input',
-      validate: (val) => isValidFunctionName(val),
-      // make sure it is not undefined and is a valid filename.
-      // this has some nuance i have ignored, eg crossenv and i18n concerns
-    },
-  ])
-  return name
+  return await input({
+    message: 'Name your function:',
+    default: defaultName,
+    // this has some nuance i have ignored, eg crossenv and i18n concerns
+    validate: (val) => isValidFunctionName(val),
+  })
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'registry' implicitly has an 'any' type.
@@ -178,7 +170,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
 // @ts-expect-error TS(7031) FIXME: Binding element 'languageFromFlag' implicitly has ... Remove this comment to see the full error message
 const pickTemplate = async function ({ language: languageFromFlag, template: templateFromFlag }, funcType) {
   const specialCommands = [
-    new inquirer.Separator(),
+    new Separator(),
     {
       name: `Clone template from GitHub URL`,
       value: 'url',
@@ -189,7 +181,7 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
       value: 'report',
       short: 'gh-report',
     },
-    new inquirer.Separator(),
+    new Separator(),
   ]
 
   let language = languageFromFlag
@@ -200,14 +192,10 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
         ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
         : languages.filter(Boolean)
 
-    const { language: languageFromPrompt } = await inquirer.prompt({
+    language = await select({
       choices: langs,
       message: 'Select the language of your function',
-      name: 'language',
-      type: 'list',
     })
-
-    language = languageFromPrompt
   }
 
   let templatesForLanguage
@@ -230,12 +218,9 @@ const pickTemplate = async function ({ language: languageFromFlag, template: tem
     return match.value
   }
 
-  const { chosenTemplate } = await inquirer.prompt({
-    name: 'chosenTemplate',
+  const chosenTemplate = await search({
     message: 'Pick a template',
-    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-    type: 'autocomplete',
-    source(_answersSoFar: unknown, input: string | undefined) {
+    source(input: string | undefined) {
       // if Edge Functions template, don't show url option
       // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Separator... Remove this comment to see the full error message
       const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
@@ -259,19 +244,14 @@ const DEFAULT_PRIORITY = 999
 
 const selectTypeOfFunc = async (): Promise<'edge' | 'serverless'> => {
   const functionTypes = [
-    { name: 'Edge function (Deno)', value: 'edge' },
-    { name: 'Serverless function (Node)', value: 'serverless' },
+    { name: 'Edge function (Deno)', value: 'edge' as const },
+    { name: 'Serverless function (Node)', value: 'serverless' as const },
   ]
 
-  const { functionType } = await inquirer.prompt([
-    {
-      name: 'functionType',
-      message: "Select the type of function you'd like to create",
-      type: 'list',
-      choices: functionTypes,
-    },
-  ])
-  return functionType
+  return await select({
+    message: "Select the type of function you'd like to create",
+    choices: functionTypes,
+  })
 }
 
 /**
@@ -322,14 +302,10 @@ const promptFunctionsDirectory = async (command) => {
     )
   }
 
-  const { functionsDir } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'functionsDir',
-      message: 'Enter the path, relative to your project, where your functions should live:',
-      default: 'netlify/functions',
-    },
-  ])
+  const functionsDir = await input({
+    message: 'Enter the path, relative to your project, where your functions should live:',
+    default: 'netlify/functions',
+  })
 
   try {
     log(`${NETLIFYDEVLOG} updating project settings with ${chalk.magenta.inverse(functionsDir)}`)
@@ -428,10 +404,9 @@ const downloadFromURL = async function (command, options, argumentName, function
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.mjs')
   if (await fileExistsAsync(fnTemplateFile)) {
     const {
-      default: { addons = [], onComplete },
+      default: { onComplete },
     } = await import(pathToFileURL(fnTemplateFile).href)
 
-    await installAddons(command, addons, path.resolve(fnFolder))
     await handleOnComplete({ command, onComplete })
     // delete
     await unlink(fnTemplateFile)
@@ -513,16 +488,10 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, funcType)
   if (chosenTemplate === 'url') {
-    const { chosenUrl } = await inquirer.prompt([
-      {
-        name: 'chosenUrl',
-        message: 'URL to clone: ',
-        type: 'input',
-        validate: (/** @type {string} */ val) => Boolean(validateRepoURL(val)),
-        // make sure it is not undefined and is a valid filename.
-        // this has some nuance i have ignored, eg crossenv and i18n concerns
-      },
-    ])
+    const chosenUrl = await input({
+      message: 'URL to clone: ',
+      validate: (val) => Boolean(validateRepoURL(val)),
+    })
     options.url = chosenUrl.trim()
     try {
       await downloadFromURL(command, options, argumentName, functionsDir)
@@ -532,7 +501,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
-    const { addons = [], lang, name: templateName, onComplete } = chosenTemplate
+    const { lang, name: templateName, onComplete } = chosenTemplate
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
@@ -579,7 +548,6 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       await registerEFInToml(name, command.netlify)
     }
 
-    await installAddons(command, addons, path.resolve(functionPath))
     await handleOnComplete({ command, onComplete })
 
     log()
@@ -588,26 +556,6 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 }
 
 const TEMPLATE_PERMISSIONS = 0o777
-
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonName' implicitly has an 'any... Remove this comment to see the full error message
-const createFunctionAddon = async function ({ addonName, addons, api, siteData, siteId }) {
-  try {
-    const addon = getCurrentAddon({ addons, addonName })
-    if (addon && addon.id) {
-      log(`The "${addonName} add-on" already exists for ${siteData.name}`)
-      return false
-    }
-    await api.createServiceInstance({
-      siteId,
-      addon: addonName,
-      body: { config: {} },
-    })
-    log(`Add-on "${addonName}" created for ${siteData.name}`)
-    return true
-  } catch (error_) {
-    return logAndThrowError((error_ as APIError).message)
-  }
-}
 
 /**
  *
@@ -629,85 +577,6 @@ const handleOnComplete = async ({ command, onComplete }) => {
     await onComplete.call(command)
   }
 }
-/**
- *
- * @param {object} config
- * @param {*} config.addonCreated
- * @param {*} config.addonDidInstall
- * @param {import('../base-command.js').default} config.command
- * @param {string} config.fnPath
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonCreated' implicitly has an '... Remove this comment to see the full error message
-const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, fnPath }) => {
-  const { config } = command.netlify
-
-  if (!addonCreated || !addonDidInstall) {
-    return
-  }
-
-  const { confirmPostInstall } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'confirmPostInstall',
-      message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-      default: false,
-    },
-  ])
-
-  if (!confirmPostInstall) {
-    return
-  }
-
-  await injectEnvVariables({
-    devConfig: { ...config.dev },
-    env: command.netlify.cachedConfig.env,
-    site: command.netlify.site,
-  })
-  addonDidInstall(fnPath)
-}
-
-/**
- *
- * @param {import('../base-command.js').default} command
- * @param {*} functionAddons
- * @param {*} fnPath
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const installAddons = async function (command, functionAddons, fnPath) {
-  if (functionAddons.length === 0) {
-    return
-  }
-
-  const { api, site } = command.netlify
-  const siteId = site.id
-  if (!siteId) {
-    log('No project id found, please run inside a project directory or `netlify link`')
-    return false
-  }
-  log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
-
-  const [siteData, siteAddons] = await Promise.all([getSiteData({ api, siteId }), getAddons({ api, siteId })])
-
-  // @ts-expect-error TS(7031) FIXME: Binding element 'addonDidInstall' implicitly has a... Remove this comment to see the full error message
-  const arr = functionAddons.map(async ({ addonDidInstall, addonName }) => {
-    log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
-    try {
-      const addonCreated = await createFunctionAddon({
-        api,
-        addons: siteAddons,
-        siteId,
-        addonName,
-        siteData,
-      })
-
-      await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
-    } catch (error_) {
-      return logAndThrowError(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
-    }
-  })
-  return Promise.all(arr)
-}
 
 /**
  *
@@ -721,20 +590,15 @@ const registerEFInToml = async (funcName, options) => {
     log(`${NETLIFYDEVLOG} \`${relConfigFilePath}\` file does not exist yet. Creating it...`)
   }
 
-  let { funcPath } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'funcPath',
-      message: `What route do you want your edge function to be invoked on?`,
-      default: '/test',
-      validate: (val) => Boolean(val),
-      // Make sure route isn't undefined and is valid
-      // Todo: add more validation?
-    },
-  ])
+  let funcPath = await input({
+    message: `What route do you want your edge function to be invoked on?`,
+    default: '/test',
+    // Todo: add more validation?
+    validate: (val) => Boolean(val),
+  })
 
   // Make sure path begins with a '/'
-  if (funcPath[0] !== '/') {
+  if (!funcPath.startsWith('/')) {
     funcPath = `/${funcPath}`
   }
 

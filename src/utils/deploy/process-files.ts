@@ -59,6 +59,7 @@ const getDirectoryIfExists = async (directoryPath: string) => {
   } catch {
     // no-op
   }
+  return undefined
 }
 
 export const isEdgeFunctionFile = (filePath: string) => filePath.startsWith(`${PUBLIC_URL_PATH}/`)

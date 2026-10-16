@@ -4,7 +4,7 @@ import path from 'path'
 import type { NetlifyAPI } from '@netlify/api'
 import type { Settings } from '@netlify/build-info'
 import cleanDeep from 'clean-deep'
-import inquirer from 'inquirer'
+import { confirm, input } from '@inquirer/prompts'
 
 import type BaseCommand from '../../commands/base-command.js'
 import { fileExistsAsync } from '../../lib/fs.js'
@@ -62,40 +62,6 @@ const normalizeSettings = (settings: Partial<Settings>, config: NormalizedCached
   }
 }
 
-const getPromptInputs = ({
-  defaultBaseDir,
-  defaultBuildCmd,
-  defaultBuildDir,
-}: {
-  defaultBaseDir: string
-  defaultBuildCmd?: string | undefined
-  defaultBuildDir?: string | undefined
-}) => {
-  const inputs = [
-    defaultBaseDir !== '' && {
-      type: 'input',
-      name: 'baseDir',
-      message: 'Base directory `(blank for current dir):',
-      default: defaultBaseDir,
-    },
-    {
-      type: 'input',
-      name: 'buildCmd',
-      message: 'Your build command (hugo build/yarn run build/etc):',
-      filter: (val: string) => (val === '' ? '# no build command' : val),
-      default: defaultBuildCmd,
-    },
-    {
-      type: 'input',
-      name: 'buildDir',
-      message: 'Directory to deploy (blank for current dir):',
-      default: defaultBuildDir,
-    },
-  ].filter(Boolean)
-
-  return inputs.filter(Boolean)
-}
-
 export const getBuildSettings = async ({
   command,
   config,
@@ -120,17 +86,16 @@ export const getBuildSettings = async ({
     log()
   }
 
-  const { baseDir, buildCmd, buildDir } = await inquirer.prompt<{
-    baseDir?: string | undefined
-    buildCmd: string
-    buildDir: string
-  }>(
-    getPromptInputs({
-      defaultBaseDir,
-      defaultBuildCmd,
-      defaultBuildDir,
-    }),
-  )
+  const baseDir =
+    defaultBaseDir === ''
+      ? undefined
+      : await input({ message: 'Base directory `(blank for current dir):', default: defaultBaseDir })
+  const buildCmdInput = await input({
+    message: 'Your build command (hugo build/yarn run build/etc):',
+    default: defaultBuildCmd,
+  })
+  const buildCmd = buildCmdInput === '' ? '# no build command' : buildCmdInput
+  const buildDir = await input({ message: 'Directory to deploy (blank for current dir):', default: defaultBuildDir })
 
   const pluginsToInstall = recommendedPlugins.map((plugin) => ({ package: plugin }))
   const normalizedBaseDir = baseDir ? normalizeBackslash(baseDir) : undefined
@@ -198,14 +163,10 @@ export const saveNetlifyToml = async ({
     return
   }
 
-  const { makeNetlifyTOML } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'makeNetlifyTOML',
-      message: 'No netlify.toml detected. Would you like to create one with these build settings?',
-      default: true,
-    },
-  ])
+  const makeNetlifyTOML = await confirm({
+    message: 'No netlify.toml detected. Would you like to create one with these build settings?',
+    default: true,
+  })
   if (makeNetlifyTOML) {
     try {
       await writeFile(

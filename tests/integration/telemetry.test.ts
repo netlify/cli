@@ -1,26 +1,32 @@
+import { mkdtemp } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { env as _env, version as nodejsVersion } from 'process'
 
 import type { Options } from 'execa'
-import execa from 'execa'
 import { expect, test } from 'vitest'
 
 import { callCli } from './utils/call-cli.js'
-import { cliPath } from './utils/cli-path.js'
 import { MockApiTestContext, withMockApi } from './utils/mock-api-vitest.js'
 import { withSiteBuilder } from './utils/site-builder.js'
 
 const pkg = createRequire(import.meta.url)('../../package.json') as { name: string; version: string }
 
-const getCLIOptions = (apiUrl: string): Options => ({
+// The global config lives under the home dir, and these tests toggle `telemetryDisabled` in it.
+const homeDir = await mkdtemp(join(tmpdir(), 'netlify-cli-telemetry-test-'))
+
+const getCLIOptions = (apiUrl: string, env: Record<string, string> = {}): Options => ({
   env: {
     NETLIFY_TEST_TRACK_URL: `${apiUrl}/track`,
     NETLIFY_TEST_IDENTIFY_URL: `${apiUrl}/identify`,
     NETLIFY_TEST_TELEMETRY_WAIT: 'true',
     NETLIFY_API_URL: apiUrl,
+    NETLIFY_AUTH_TOKEN: 'fake-token',
     PATH: _env.PATH,
-    HOME: _env.HOME,
-    APPDATA: _env.APPDATA,
+    HOME: homeDir,
+    APPDATA: homeDir,
+    ...env,
   },
   extendEnv: false,
 })
@@ -46,6 +52,30 @@ await withMockApi(routes, () => {
     expect(requests[0].body).toHaveProperty('event', 'cli:user_telemetryEnabled')
     expect(requests[0].body).toHaveProperty('anonymousId', expect.any(String))
     expect(requests[0].body).toHaveProperty('properties', { cliVersion: pkg.version, nodejsVersion })
+  })
+
+  test<MockApiTestContext>('should track in CI', async ({ apiUrl, requests }) => {
+    await callCli(['api', 'listSites'], getCLIOptions(apiUrl, { CI: 'true' }))
+    const request = requests.find(({ path }) => path === '/api/v1/track')
+    expect(request).toBeDefined()
+    expect(request?.body).not.toHaveProperty('properties.ci_vendor')
+  })
+
+  test<MockApiTestContext>('should send the CI vendor and pull request status', async ({ apiUrl, requests }) => {
+    await callCli(
+      ['api', 'listSites'],
+      getCLIOptions(apiUrl, { GITHUB_ACTIONS: 'true', GITHUB_EVENT_NAME: 'pull_request' }),
+    )
+    const request = requests.find(({ path }) => path === '/api/v1/track')
+    expect(request?.body).toHaveProperty(
+      'properties',
+      expect.objectContaining({ ci_vendor: 'GITHUB_ACTIONS', ci_is_pr: true }),
+    )
+  })
+
+  test<MockApiTestContext>('should not track when NETLIFY_TELEMETRY_DISABLED is set', async ({ apiUrl, requests }) => {
+    await callCli(['api', 'listSites'], getCLIOptions(apiUrl, { NETLIFY_TELEMETRY_DISABLED: '1' }))
+    expect(requests.find(({ path }) => path === '/api/v1/track')).toBeUndefined()
   })
 
   test<MockApiTestContext>('should send netlify-cli/<version> user-agent', async ({ apiUrl, requests }) => {
@@ -83,7 +113,7 @@ await withMockApi(routes, () => {
   })
 
   test<MockApiTestContext>('should send invoked command on failure', async ({ apiUrl, requests }) => {
-    await expect(callCli(['dev:exec', 'exit 1'], getCLIOptions(apiUrl))).rejects.toThrowError()
+    await expect(callCli(['dev:exec', 'exit 1'], getCLIOptions(apiUrl))).rejects.toThrow()
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
 
@@ -110,10 +140,7 @@ await withMockApi(routes, () => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withPackageJson({ packageJson: { dependencies: { next: '^12.13.0' } } }).build()
 
-      await execa(cliPath, ['api', 'listSites'], {
-        cwd: builder.directory,
-        ...getCLIOptions(t.apiUrl),
-      })
+      await callCli(['api', 'listSites'], { cwd: builder.directory, ...getCLIOptions(t.apiUrl) })
 
       const request = t.requests.find(({ path }) => path === '/api/v1/track')
       expect(request).toBeDefined()
@@ -136,7 +163,7 @@ await withMockApi(routes, () => {
   }) => {
     await expect(
       callCli(['blobs:get', '--filter', 'web', '-O', './output_dir', 'my-store', 'my-key'], getCLIOptions(apiUrl)),
-    ).rejects.toThrowError(/You don't appear to be in a folder that is linked to a project/)
+    ).rejects.toThrow(/You don't appear to be in a folder that is linked to a project/)
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
 

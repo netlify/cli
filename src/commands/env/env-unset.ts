@@ -27,7 +27,7 @@ const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
     return env
   }
 
-  if (Boolean(force) === false) {
+  if (!force) {
     await promptOverwriteEnvVariable(key)
   }
 

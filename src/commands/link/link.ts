@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 
-import inquirer from 'inquirer'
+import { input, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 import type { NetlifyAPI } from '@netlify/api'
 
@@ -65,19 +65,13 @@ To search for projects:
 
   spinner.warn({ text: `Found ${matchingSites.length} projects connected to ${repoUrl}` })
 
-  const { selectedSite } = await inquirer.prompt<{
-    selectedSite: SiteInfo | undefined
-  }>([
-    {
-      type: 'list',
-      name: 'selectedSite',
-      message: 'Which project do you want to link?',
-      choices: matchingSites.map((matchingSite) => ({
-        name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
-        value: matchingSite,
-      })),
-    },
-  ])
+  const selectedSite = await select<SiteInfo | undefined>({
+    message: 'Which project do you want to link?',
+    choices: matchingSites.map((matchingSite) => ({
+      name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
+      value: matchingSite,
+    })),
+  })
 
   if (!selectedSite) {
     return logAndThrowError('No project selected')
@@ -109,14 +103,10 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
   log()
   log(`${chalk.cyanBright(`${netlifyCommand()} link`)} will connect this folder to a project on Netlify`)
   log()
-  const { linkType } = await inquirer.prompt<{ linkType: string | undefined }>([
-    {
-      type: 'list',
-      name: 'linkType',
-      message: 'How do you want to link this folder to a project?',
-      choices: linkChoices,
-    },
-  ])
+  const linkType = await select<string | undefined>({
+    message: 'How do you want to link this folder to a project?',
+    choices: linkChoices,
+  })
 
   let kind
   switch (linkType) {
@@ -130,13 +120,9 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
     }
     case SITE_NAME_PROMPT: {
       kind = 'byName'
-      const { searchTerm } = await inquirer.prompt<{ searchTerm: string }>([
-        {
-          type: 'input',
-          name: 'searchTerm',
-          message: 'Enter the project name (or just part of it):',
-        },
-      ])
+      const searchTerm = await input({
+        message: 'Enter the project name (or just part of it):',
+      })
       log(`Looking for projects with names containing '${searchTerm}'...`)
       log()
 
@@ -169,17 +155,10 @@ To create a new project:
 
       if (matchingSites.length > 1) {
         log(`Found ${matchingSites.length} matching projects!`)
-        const { selectedSite } = await inquirer.prompt<{
-          selectedSite: SiteInfo | undefined
-        }>([
-          {
-            type: 'list',
-            name: 'selectedSite',
-            message: 'Which project do you want to link?',
-            paginated: true,
-            choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
-          },
-        ])
+        const selectedSite = await select<SiteInfo | undefined>({
+          message: 'Which project do you want to link?',
+          choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
+        })
         if (!selectedSite) {
           return logAndThrowError('No project selected')
         }
@@ -210,15 +189,10 @@ To create a new project:
         )
       }
 
-      const { selectedSite } = await inquirer.prompt<{ selectedSite: SiteInfo | undefined }>([
-        {
-          type: 'list',
-          name: 'selectedSite',
-          message: 'Which project do you want to link?',
-          paginated: true,
-          choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
-        },
-      ])
+      const selectedSite = await select<SiteInfo | undefined>({
+        message: 'Which project do you want to link?',
+        choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
+      })
       if (!selectedSite) {
         return logAndThrowError('No project selected')
       }
@@ -227,13 +201,9 @@ To create a new project:
     }
     case SITE_ID_PROMPT: {
       kind = 'bySiteId'
-      const { siteId } = await inquirer.prompt<{ siteId: string }>([
-        {
-          type: 'input',
-          name: 'siteId',
-          message: 'What is the project ID?',
-        },
-      ])
+      const siteId = await input({
+        message: 'What is the project ID?',
+      })
 
       try {
         site = await api.getSite({ siteId })

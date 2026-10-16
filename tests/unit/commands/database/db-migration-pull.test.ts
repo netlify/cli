@@ -24,9 +24,7 @@ vi.mock('fs/promises', async (importOriginal) => {
   }
 })
 
-vi.mock('inquirer', () => ({
-  default: { prompt: vi.fn() },
-}))
+vi.mock('@inquirer/prompts')
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -47,7 +45,7 @@ vi.stubGlobal('fetch', mockFetch)
 
 import { resolve } from 'path'
 
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 import { migrationPull } from '../../../../src/commands/database/db-migration-pull.js'
 
 interface SampleMigration {
@@ -148,7 +146,7 @@ describe('migrationPull', () => {
 
   test('fetches migrations from the correct API endpoint', async () => {
     mockFetchResponse(sampleMigrations)
-    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
+    vi.mocked(confirm).mockResolvedValueOnce(true)
 
     await migrationPull({}, createMockCommand())
 
@@ -250,11 +248,11 @@ describe('migrationPull', () => {
 
   test('prompts for confirmation before overwriting', async () => {
     mockFetchResponse(sampleMigrations)
-    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: false })
+    vi.mocked(confirm).mockResolvedValueOnce(false)
 
     await migrationPull({}, createMockCommand())
 
-    expect(inquirer.prompt).toHaveBeenCalledTimes(1)
+    expect(confirm).toHaveBeenCalledOnce()
     expect(mockRm).not.toHaveBeenCalled()
     expect(logMessages).toContain('Pull cancelled.')
   })
@@ -264,13 +262,13 @@ describe('migrationPull', () => {
 
     await migrationPull({ force: true }, createMockCommand())
 
-    expect(inquirer.prompt).not.toHaveBeenCalled()
+    expect(confirm).not.toHaveBeenCalled()
     expect(mockRm).toHaveBeenCalled()
   })
 
   test('removes existing migrations directory and writes fetched migrations', async () => {
     mockFetchResponse(sampleMigrations)
-    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
+    vi.mocked(confirm).mockResolvedValueOnce(true)
 
     const migrationsPath = '/project/netlify/database/migrations'
     const resolved = resolve(migrationsPath)
@@ -295,7 +293,7 @@ describe('migrationPull', () => {
 
   test('logs pulled migration names', async () => {
     mockFetchResponse(sampleMigrations)
-    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
+    vi.mocked(confirm).mockResolvedValueOnce(true)
 
     await migrationPull({}, createMockCommand())
 

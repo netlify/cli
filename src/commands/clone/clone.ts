@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 
 import { LocalState } from '@netlify/dev-utils'
-import inquirer from 'inquirer'
+import { input } from '@inquirer/prompts'
 
 import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js'
 import { chalk, logAndThrowError, log, getToken, netlifyCommand, type APIError } from '../../utils/command-helpers.js'
@@ -26,16 +26,10 @@ const isNetlifyGitServiceUrl = (repoUrl: string): boolean => {
 }
 
 const getTargetDir = async (defaultDir: string): Promise<string> => {
-  const { selectedDir } = await inquirer.prompt<{ selectedDir: string }>([
-    {
-      type: 'input',
-      name: 'selectedDir',
-      message: 'Where should we clone the repository?',
-      default: defaultDir,
-    },
-  ])
-
-  return selectedDir
+  return await input({
+    message: 'Where should we clone the repository?',
+    default: defaultDir,
+  })
 }
 
 const cloneRepo = async (repoUrl: string, targetDir: string, debug: boolean): Promise<void> => {

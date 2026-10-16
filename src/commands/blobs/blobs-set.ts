@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
-import { getStore } from '@netlify/blobs'
+import { getStore, type GetStoreOptions } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, isNodeError, log } from '../../utils/command-helpers.js'
@@ -11,6 +11,7 @@ import BaseCommand from '../base-command.js'
 interface Options extends OptionValues {
   input?: string
   force?: string | boolean
+  region?: GetStoreOptions['region']
 }
 
 export const blobsSet = async (
@@ -25,6 +26,7 @@ export const blobsSet = async (
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
+    region: options.region,
     siteID: siteInfo.id,
     token: api.accessToken ?? '',
   })

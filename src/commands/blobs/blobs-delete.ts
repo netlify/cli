@@ -1,4 +1,4 @@
-import { getStore } from '@netlify/blobs'
+import { getStore, type GetStoreOptions } from '@netlify/blobs'
 
 import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
 import { promptBlobDelete } from '../../utils/prompts/blob-delete-prompts.js'
@@ -13,6 +13,7 @@ export const blobsDelete = async (storeName: string, key: string, _options: Reco
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
+    region: _options.region as GetStoreOptions['region'],
     siteID: siteInfo.id ?? '',
     token: api.accessToken ?? '',
   })

@@ -39,6 +39,7 @@ netlify blobs:set my-store my-key --input ./some-file.txt
 netlify blobs:delete my-store my-key
 netlify blobs:list my-store
 netlify blobs:list my-store --json
+netlify blobs:list my-store --region eu-central-1
 ```
 
 ---
@@ -61,6 +62,7 @@ netlify blobs:delete
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Bypasses prompts & Force the command to run.
+- `region` (*string*) - The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
@@ -84,6 +86,7 @@ netlify blobs:get
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `output` (*string*) - Defines the filesystem path where the blob data should be persisted
+- `region` (*string*) - The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
@@ -110,6 +113,7 @@ netlify blobs:list
 - `prefix` (*string*) - A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `region` (*string*) - The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used
 
 ---
 ## `blobs:set`
@@ -133,6 +137,7 @@ netlify blobs:set
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `input` (*string*) - Defines the filesystem path where the blob data should be read from
+- `region` (*string*) - The region where the store data is held, such as 'eu-central-1'; when omitted, the default region is used
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 

@@ -256,7 +256,7 @@ describe.concurrent('functions:create command', async () => {
 
         handleQuestions(childProcess, createFunctionQuestions)
 
-        await expect(childProcess).rejects.toThrowError('Invalid language: coffeescript')
+        await expect(childProcess).rejects.toThrow('Invalid language: coffeescript')
 
         expect(await fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.mjs`)).toBe(false)
       })
@@ -288,7 +288,7 @@ describe.concurrent('functions:create command', async () => {
           },
         ])
 
-        await expect(childProcess).rejects.toThrowError('Invalid function name')
+        await expect(childProcess).rejects.toThrow('Invalid function name')
 
         expect(existsSync(join(builder.directory, '..', 'evil'))).toBe(false)
       })
@@ -320,7 +320,7 @@ describe.concurrent('functions:create command', async () => {
           },
         ])
 
-        await expect(childProcess).rejects.toThrowError('Invalid function name')
+        await expect(childProcess).rejects.toThrow('Invalid function name')
       })
     })
   })
@@ -348,7 +348,7 @@ describe.concurrent('functions:create command', async () => {
           },
         ])
 
-        await expect(childProcess).rejects.toThrowError('Invalid function name')
+        await expect(childProcess).rejects.toThrow('Invalid function name')
 
         expect(existsSync(join(builder.directory, '..', 'evil'))).toBe(false)
       })

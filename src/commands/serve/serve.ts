@@ -58,7 +58,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   env = await getDotEnvVariables({ devConfig, env, site })
 
-  const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
+  const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
     offline: options.offline,
     api,
@@ -190,7 +190,6 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
   const url = await startProxyServer({
-    addonsUrls,
     blobsContext: runtimeBlobsContext,
     command,
     config: mergedConfig,
