@@ -334,6 +334,8 @@ export default class BaseCommand extends Command {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
       return (
         parentCommand?.commands
+          // subcommands nested with `.command()` rather than named `parent:child`, e.g. `database connect`
+          .concat(this.name() === 'netlify' ? [] : command.commands)
           .filter((cmd) => {
             if ((cmd as any)._hidden) return false
             // the root command
@@ -341,14 +343,18 @@ export default class BaseCommand extends Command {
               // don't include subcommands on the main page
               return !cmd.name().includes(':')
             }
-            return cmd.name().startsWith(`${command.name()}:`)
+            return cmd.name().startsWith(`${command.name()}:`) || cmd.parent === command
           })
           .sort((a, b) => a.name().localeCompare(b.name())) || []
       )
     }
 
+    /** nested subcommands are shown by their full path, e.g. `database migrations apply` */
+    const getCommandTerm = (cmd: Command): string =>
+      cmd.parent && cmd.parent.name() !== 'netlify' ? `${getCommandTerm(cmd.parent)} ${cmd.name()}` : cmd.name()
+
     help.longestSubcommandTermLength = (command: BaseCommand): number =>
-      getCommands(command).reduce((max, cmd) => Math.max(max, cmd.name().length), 0)
+      getCommands(command).reduce((max, cmd) => Math.max(max, getCommandTerm(cmd).length), 0)
 
     /** override the longestOptionTermLength to react on hide options flag */
     help.longestOptionTermLength = (command: BaseCommand, helper: Help): number =>
@@ -432,7 +438,7 @@ export default class BaseCommand extends Command {
       }
 
       const commandList = getCommands(command).map((cmd) =>
-        formatItem(cmd.name(), helper.subcommandDescription(cmd).split('\n')[0], true),
+        formatItem(getCommandTerm(cmd), helper.subcommandDescription(cmd).split('\n')[0], true),
       )
       if (commandList.length !== 0) {
         output = [...output, chalk.bold('COMMANDS'), formatHelpList(commandList), '']

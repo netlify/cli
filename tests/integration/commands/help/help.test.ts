@@ -13,4 +13,14 @@ describe('help command', () => {
     const cliResponse = (await callCli(['help', 'completion'])) as string
     expect(normalize(cliResponse)).toMatchSnapshot()
   })
+
+  test('netlify help database lists nested subcommands', async () => {
+    const cliResponse = (await callCli(['help', 'database'])) as string
+    expect(normalize(cliResponse)).toMatchSnapshot()
+  })
+
+  test('netlify help database migrations lists nested subcommands', async () => {
+    const cliResponse = (await callCli(['database', 'migrations', '--help'])) as string
+    expect(normalize(cliResponse)).toMatchSnapshot()
+  })
 })

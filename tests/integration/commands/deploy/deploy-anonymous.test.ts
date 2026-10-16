@@ -28,6 +28,7 @@ const getUnauthenticatedCLIOptions = ({
     APPDATA: builder.directory,
     NETLIFY_API_URL: apiUrl,
     NETLIFY_AUTH_TOKEN: '',
+    NETLIFY_TELEMETRY_DISABLED: 'true',
     NETLIFY_SITE_ID: '',
     ...env,
   },
