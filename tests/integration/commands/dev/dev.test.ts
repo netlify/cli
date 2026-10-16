@@ -448,16 +448,17 @@ describe.concurrent('command/dev', () => {
             const response = await fetch(server.url)
 
             t.expect(response.status).toBe(200)
-            await t.expect(response.text()).rejects.toThrow()
+            await t.expect(response.text()).rejects.toThrow('Premature close')
 
             await pause(500)
 
             t.expect(server.error).not.toContain('Netlify CLI has terminated unexpectedly')
+            t.expect(server.output).toContain('Could not finish proxying /')
 
             const nextResponse = await fetch(server.url)
 
             t.expect(nextResponse.status).toBe(200)
-            await t.expect(nextResponse.text()).rejects.toThrow()
+            await t.expect(nextResponse.text()).rejects.toThrow('Premature close')
           },
         )
       } finally {
