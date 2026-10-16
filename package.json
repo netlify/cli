@@ -78,7 +78,7 @@
     "ansi-to-html": "^0.7.2",
     "ascii-table": "^0.0.9",
     "backoff": "^2.5.0",
-    "boxen": "^8.0.1",
+    "boxen": "^9.0.0",
     "chalk": "^6.0.0",
     "chokidar": "^5.0.0",
     "ci-info": "^4.4.0",
