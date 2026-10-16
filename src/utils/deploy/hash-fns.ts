@@ -314,9 +314,7 @@ const hashFns = async (
       }),
       {},
     )
-  const functionSchedules = functionZips
-    .map(({ name, schedule }) => schedule && { name, cron: schedule })
-    .filter((schedule): schedule is { name: string; cron: string } => schedule !== '' && schedule !== undefined)
+  const functionSchedules = functionZips.flatMap(({ name, schedule }) => (schedule ? [{ name, cron: schedule }] : []))
   const functionsWithNativeModules = functionZips.filter(
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )

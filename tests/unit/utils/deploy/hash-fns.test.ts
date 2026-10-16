@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.js'
@@ -72,6 +72,43 @@ test('Populates build_data.bootstrapVersion for v2 functions on direct-zip path'
     expect(helloConfig.build_data?.runtimeAPIVersion).toBe(2)
     expect(helloConfig.build_data?.bootstrapVersion).toEqual(expect.any(String))
     expect(helloConfig.build_data?.bootstrapVersion).not.toBe('')
+  })
+})
+
+test('Only sends schedules for functions from the functions cache that have one', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const zipFor = async (name: string) => {
+      const zipPath = path.join(builder.directory, `${name}.zip`)
+      await fs.writeFile(zipPath, name)
+      return zipPath
+    }
+    const functions = [
+      { name: 'scheduled', schedule: '@daily' },
+      { name: 'null-schedule', schedule: null },
+      { name: 'empty-schedule', schedule: '' },
+      { name: 'no-schedule' },
+    ]
+    const manifestPath = path.join(builder.directory, 'manifest.json')
+    await fs.writeFile(
+      manifestPath,
+      JSON.stringify({
+        functions: await Promise.all(
+          functions.map(async (func) => ({ ...func, path: await zipFor(func.name), runtime: 'js' })),
+        ),
+        timestamp: Date.now(),
+      }),
+    )
+
+    const { functionSchedules } = await hashFns(new BaseCommand(), [path.join(builder.directory, 'functions')], {
+      tmpDir: temporaryDirectory(),
+      concurrentHash: DEFAULT_CONCURRENT_HASH,
+      manifestPath,
+      statusCb: vi.fn(),
+    })
+
+    expect(functionSchedules).toEqual([{ name: 'scheduled', cron: '@daily' }])
   })
 })
 
