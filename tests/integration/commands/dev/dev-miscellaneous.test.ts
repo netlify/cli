@@ -191,7 +191,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         await fetch(`${url}/.netlify/functions/hello-background`)
 
         const output = outputBuffer.toString()
-        const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)?.[1] ?? '""')
+        const context = JSON.parse(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/.exec(output)?.[1] ?? '""')
         t.expect(context).toHaveProperty('clientContext', {})
         t.expect(context).toHaveProperty('identity', null)
       })
