@@ -4,6 +4,27 @@ import { resolveDeployIdFromUrl } from '../../../../src/commands/logs/log-api.js
 
 describe('resolveDeployIdFromUrl', () => {
   it.each([
+    { url: 'https://example.com', siteInfo: { name: 'my-site', custom_domain: 'example.com' } },
+    { url: 'https://docs.example.com', siteInfo: { name: 'my-site', custom_domain: 'docs.example.com' } },
+    { url: 'https://alias.example.com', siteInfo: { name: 'my-site', domain_aliases: ['alias.example.com'] } },
+    {
+      url: 'https://nested.alias.example.com',
+      siteInfo: { name: 'my-site', domain_aliases: ['nested.alias.example.com'] },
+    },
+    { url: 'https://ALIAS.example.com/path', siteInfo: { name: 'my--site', domain_aliases: ['ALIAS.example.com'] } },
+    { url: 'https://alias.example.com', siteInfo: { domain_aliases: ['alias.example.com'] } },
+    { url: 'http://example.com', siteInfo: { name: 'my-site', url: 'http://example.com' } },
+    { url: 'https://secure.example.com', siteInfo: { name: 'my-site', ssl_url: 'https://secure.example.com' } },
+  ])('uses configured production domain $url without a branch lookup', async ({ url, siteInfo }) => {
+    const listSiteDeploys = vi.fn()
+
+    await expect(
+      resolveDeployIdFromUrl(url, { listSiteDeploys } as never, 'site-id', siteInfo),
+    ).resolves.toBeUndefined()
+    expect(listSiteDeploys).not.toHaveBeenCalled()
+  })
+
+  it.each([
     { site: 'my-site', branch: 'staging' },
     { site: 'my-site', branch: 'feature--logs' },
     { site: 'my--site', branch: 'staging' },
