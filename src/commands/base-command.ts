@@ -39,6 +39,7 @@ import { EXIT_CODES } from '../utils/exit-codes.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
+import { getLocalApiTestOpts } from '../utils/local-api-test-opts.js'
 import { buildAuthorizeUrl } from '../utils/login-url.js'
 import openBrowser from '../utils/open-browser.js'
 import { isInteractive } from '../utils/scripted-commands.js'
@@ -845,6 +846,7 @@ export default class BaseCommand extends Command {
         host: host,
         pathPrefix: pathPrefix,
         scheme: scheme,
+        testOpts: getLocalApiTestOpts({ host, scheme }),
         offline: offline ?? flags.offline,
         siteFeatureFlagPrefix: 'cli',
         featureFlags: this.featureFlags,
