@@ -11,7 +11,7 @@ import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { LocalState, SiteInfo } from '../../utils/types.js'
-import { findAgentSetupBlocker } from '../../utils/init/agent-location.js'
+import { findSkillsSetupBlocker } from '../../utils/init/agent-location.js'
 import { setupAgentMcp } from '../../utils/init/agent-mcp.js'
 import { setupAgentSkills } from '../../utils/init/agent-skills.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
@@ -244,14 +244,15 @@ const setUpAgents = async (
   }
   const { repositoryRoot } = command.netlify
   log()
-  const blocker = await findAgentSetupBlocker(repositoryRoot)
-  if (blocker) {
-    log(`Skipped setting up AI agents: ${blocker}.`)
-    await track('sites_agentSetupSkipped', { skills, mcp })
-    return
-  }
   if (skills) {
-    await installAgentSkills(repositoryRoot, reset)
+    const blocker = await findSkillsSetupBlocker(repositoryRoot)
+    if (blocker) {
+      log(`Skipped installing Netlify skills: ${blocker}.`)
+      log(`  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} from your project folder to install them there.`)
+      await track('sites_agentSkillsSkipped', {})
+    } else {
+      await installAgentSkills(repositoryRoot, reset)
+    }
   }
   if (mcp) {
     await addAgentMcp(repositoryRoot, resetMcp)
