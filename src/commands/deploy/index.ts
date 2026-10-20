@@ -9,6 +9,17 @@ import BaseCommand from '../base-command.js'
 import { chalk, logAndThrowError, warn } from '../../utils/command-helpers.js'
 import type { DeployOptionValues } from './option_values.js'
 
+const BUILD_RELATED_OPTIONS = [
+  'build',
+  'context',
+  'dir',
+  'env',
+  'functions',
+  'secretEnv',
+  'skipFunctionsCache',
+  'uploadSourceZip',
+]
+
 export const createDeployCommand = (program: BaseCommand) =>
   program
     .command('deploy')
@@ -58,6 +69,12 @@ For detailed configuration options, see the Netlify documentation.`,
       new Option('--trigger', 'Trigger a new build of your project on Netlify without uploading local files').conflicts(
         'build',
       ),
+    )
+    .addOption(
+      new Option(
+        '--remote',
+        'Build and deploy on Netlify from your project source, instead of building locally. Netlify builds your checked-out commit, which must already be pushed to the git provider your project is connected to.',
+      ).conflicts([...BUILD_RELATED_OPTIONS, 'alias', 'allowAnonymous', 'branch', 'createSite', 'siteName', 'trigger']),
     )
     .addOption(
       new Option('--build', 'Do not use - this is now the default. Will be removed in future versions.')
@@ -120,6 +137,8 @@ For detailed configuration options, see the Netlify documentation.`,
       'netlify deploy --message "A message with an $ENV_VAR"',
       'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
       'netlify deploy --trigger',
+      'netlify deploy --remote # Build a draft on Netlify from your checked-out commit',
+      'netlify deploy --remote --prod',
       'netlify deploy --context deploy-preview',
       'netlify deploy --env "NODE_ENV=production" --env "API_URL=https://api.example.com"',
       'netlify deploy --env "NODE_ENV=production" --secret-env "DATABASE_PASSWORD=$DB_PASSWORD"',

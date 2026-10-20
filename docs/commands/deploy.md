@@ -44,6 +44,7 @@ netlify deploy
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `prod` (*boolean*) - Deploy to production
+- `remote` (*boolean*) - Build and deploy on Netlify from your project source, instead of building locally. Netlify builds your checked-out commit, which must already be pushed to the git provider your project is connected to.
 - `secret-env` (*string*) - Set a secret environment variable for this deploy only. Applies to deployed functions only. The value is masked in the Netlify UI and API. Can be specified multiple times.
 - `site` (*string*) - A project name or ID to deploy to
 - `site-name` (*string*) - Name for a new site. Implies --create-site if the site does not already exist.
@@ -64,6 +65,8 @@ netlify deploy --prod-if-unlocked
 netlify deploy --message "A message with an $ENV_VAR"
 netlify deploy --auth $NETLIFY_AUTH_TOKEN
 netlify deploy --trigger
+netlify deploy --remote # Build a draft on Netlify from your checked-out commit
+netlify deploy --remote --prod
 netlify deploy --context deploy-preview
 netlify deploy --env "NODE_ENV=production" --env "API_URL=https://api.example.com"
 netlify deploy --env "NODE_ENV=production" --secret-env "DATABASE_PASSWORD=$DB_PASSWORD"
