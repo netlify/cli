@@ -141,7 +141,9 @@ const isExecutableFile = async (target: string): Promise<boolean> => {
 }
 
 const findOnPath = async (binary: string, env: NodeJS.ProcessEnv): Promise<string | undefined> => {
-  const extensions = process.platform === 'win32' ? (env.PATHEXT ?? '.EXE;.CMD;.BAT').split(';') : ['']
+  const pathExtensions = (env.PATHEXT ?? '').split(';').filter(Boolean)
+  const extensions =
+    process.platform === 'win32' ? (pathExtensions.length > 0 ? pathExtensions : ['.EXE', '.CMD', '.BAT']) : ['']
   const candidates = (env.PATH ?? '')
     .split(path.delimiter)
     .filter((directory) => path.isAbsolute(directory))
@@ -190,13 +192,9 @@ const shellQuote = (arg: string): string => {
 const formatCommand = (binary: string, args: string[]): string =>
   chalk.cyanBright.bold([binary, ...args].map(shellQuote).join(' '))
 
-const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
-  value instanceof Error && Object.hasOwn(value, 'code')
-
 const runNative = async (executable: string, args: string[], cwd: string) => {
   const result = await execa(executable, args, { cwd, reject: false, stdin: 'ignore', timeout: NATIVE_TIMEOUT_MS })
   return {
-    missingBinary: isErrnoException(result) && result.code === 'ENOENT',
     exitCode: result.exitCode,
     output: [result.stderr, result.stdout].filter(Boolean).join('\n').trim(),
     timedOut: result.timedOut,
@@ -236,10 +234,10 @@ const reportExisting = (agent: NativeAgent, { found, output }: Existing): AgentM
     log(`${agent.label} already has the Netlify MCP server.`)
     return 'present'
   }
-  const where = output.includes(LEGACY_MCP_HOST) ? `the old host, ${LEGACY_MCP_HOST}` : 'a different URL'
-  log(
-    `${agent.label} has a ${chalk.cyan(NETLIFY_MCP_SERVER_NAME)} MCP server pointing at ${where}, so it was left unchanged.`,
-  )
+  const which = output.includes(LEGACY_MCP_HOST)
+    ? `pointing at the old host, ${LEGACY_MCP_HOST}`
+    : `that is not Netlify's hosted server`
+  log(`${agent.label} has a ${chalk.cyan(NETLIFY_MCP_SERVER_NAME)} MCP server ${which}, so it was left unchanged.`)
   if (agent.native.remove) {
     log(
       `  To switch to ${chalk.underline(NETLIFY_MCP_URL)}, run ${formatCommand(agent.binary, agent.native.remove)} then ${formatCommand(agent.binary, agent.native.add)}`,
@@ -285,15 +283,15 @@ const addNatively = async (agent: NativeAgent, env: NodeJS.ProcessEnv, workingDi
   }
 
   const added = await runNative(executable, native.add, workingDir)
-  if (added.missingBinary) {
-    return 'printed'
-  }
   if (added.exitCode !== 0) {
     warn(`Could not add the Netlify MCP server to ${label}: ${describeFailure(added)}`)
     log(`  Add it yourself with ${formatCommand(binary, native.add)}`)
     return 'failed'
   }
   log(`Added the Netlify MCP server to ${label} for your user. Nothing was written to the repository.`)
+  if (!native.lookup) {
+    log(`  ${label} can't be checked first, so this replaced any ${chalk.cyan(NETLIFY_MCP_SERVER_NAME)} server it had.`)
+  }
   if (native.remove) {
     log(`  Remove it with ${formatCommand(binary, native.remove)}`)
   }
@@ -328,7 +326,7 @@ const saveChoices = (
   for (const agent of offered) {
     if (!chosen.includes(agent)) {
       store.set(savedChoiceKey(agent), { url: NETLIFY_MCP_URL, choice: 'declined' } satisfies SavedChoice)
-    } else if (statuses[agent.id] !== 'failed') {
+    } else if (statuses[agent.id] !== 'failed' && statuses[agent.id] !== 'kept') {
       store.set(savedChoiceKey(agent), { url: NETLIFY_MCP_URL, choice: 'accepted' } satisfies SavedChoice)
     }
   }

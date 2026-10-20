@@ -396,6 +396,17 @@ describe('setupAgentMcp', () => {
       expect(saved.get('agentMcpSetup.codex')).toEqual({ url: NETLIFY_MCP_URL, choice: 'declined' })
     })
 
+    test('does not save a yes when the agent kept a different netlify server, so it is offered again', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(legacyServer())
+      await run({}, { interactive: true, choose: chooseIds('claude-code') })
+      const choose = chooseIds()
+
+      await run({}, { interactive: true, choose })
+
+      expect(offeredIds(choose)).toEqual(['claude-code'])
+    })
+
     test('an agent-driven run does not save anything', async () => {
       await install('claude')
       execaMock.mockResolvedValueOnce(missingServer())
