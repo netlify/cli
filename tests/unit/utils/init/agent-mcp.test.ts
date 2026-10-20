@@ -68,8 +68,9 @@ describe('setupAgentMcp', () => {
 
   const install = async (...binaries: string[]) => {
     for (const binary of binaries) {
-      await writeFile(join(bin, binary), '')
-      await chmod(join(bin, binary), 0o755)
+      const file = join(bin, process.platform === 'win32' ? `${binary}.cmd` : binary)
+      await writeFile(file, '')
+      await chmod(file, 0o755)
     }
   }
 
