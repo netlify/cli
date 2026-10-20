@@ -814,7 +814,9 @@ describe.concurrent('commands/init', () => {
         NETLIFY_SITE_ID: 'site_id',
         NETLIFY_AUTH_TOKEN: 'fake-token',
         NETLIFY_SKILLS_HOST: skillsHost,
-        ...(claudeBin ? { PATH: `${claudeBin}${path.delimiter}${process.env.PATH ?? ''}` } : {}),
+        ...(claudeBin
+          ? { PATH: `${claudeBin}${path.delimiter}${process.env.PATH ?? ''}`, NETLIFY_AGENT: 'claude-code' }
+          : {}),
       }
       const mcpFlags = claudeBin ? [] : ['--skip-mcp-setup']
       const childProcess = execa(cliPath, ['init', '--manual', ...mcpFlags, ...flags], { cwd, env })
@@ -855,7 +857,7 @@ describe.concurrent('commands/init', () => {
   })
 
   test.skipIf(process.platform === 'win32')(
-    'netlify init adds the Netlify MCP server to Claude Code once and respects --skip-mcp-setup',
+    'netlify init adds the Netlify MCP server to the agent running it once and respects --skip-mcp-setup',
     async (t) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.withGit().build()
@@ -892,7 +894,7 @@ describe.concurrent('commands/init', () => {
             const calls = (await readFile(callsFile, 'utf8')).trim().split('\n')
             t.expect(calls.map((call) => call.split(' ').slice(1).join(' '))).toEqual([
               'mcp get netlify',
-              'mcp add --transport http --scope local netlify https://mcp.netlify.com/mcp',
+              'mcp add --transport http --scope user netlify https://mcp.netlify.com/mcp',
               'mcp get netlify',
             ])
           })

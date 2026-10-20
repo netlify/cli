@@ -23,10 +23,10 @@ netlify init
 - `git-remote-name` (*string*) - Name of Git remote to use. e.g. "origin"
 - `manual` (*boolean*) - Manually configure a git remote for CI
 - `reset-context` (*boolean*) - Replace locally edited Netlify skills with the latest release, and migrate or delete edited copies under renamed or deprecated names
+- `skip-mcp-setup` (*boolean*) - Skip adding the Netlify MCP server to your AI coding agents
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `skip-agent-setup` (*boolean*) - Skip installing Netlify skills and adding the Netlify MCP server for AI coding agents
-- `skip-mcp-setup` (*boolean*) - Skip adding the Netlify MCP server to your AI coding agents
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

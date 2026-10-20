@@ -230,8 +230,8 @@ const installAgentSkills = async (workingDir: string, reset: boolean): Promise<v
 }
 
 const addAgentMcp = async (workingDir: string): Promise<void> => {
-  const { claudeCode } = await setupAgentMcp({ workingDir })
-  await track('sites_agentMcpSetup', { claudeCode })
+  const { selection, agents, failed = false } = await setupAgentMcp({ workingDir })
+  await track('sites_agentMcpSetup', { selection, agents, failed })
 }
 
 const setUpAgents = async (
