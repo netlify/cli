@@ -17,6 +17,10 @@ export const createInitCommand = (program: BaseCommand) =>
     )
     .option('--skip-mcp-setup', 'Skip adding the Netlify MCP server to your AI coding agents')
     .option(
+      '--reset-mcp-setup',
+      'Forget your saved Netlify MCP server choices and ask which AI coding agents to set up',
+    )
+    .option(
       '--reset-context',
       'Replace locally edited Netlify skills with the latest release, and migrate or delete edited copies under renamed or deprecated names',
     )
@@ -31,6 +35,7 @@ For more information about getting started with Netlify CLI, see ${terminalLink(
       await init(options, command, {
         setupAgentSkills: !options.skipAgentSetup,
         setupAgentMcp: !options.skipAgentSetup && !options.skipMcpSetup,
+        resetMcpSetup: Boolean(options.resetMcpSetup),
         resetContext: Boolean(options.resetContext),
       })
     })

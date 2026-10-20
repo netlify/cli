@@ -2,9 +2,10 @@ import { constants as fsConstants, promises as fs } from 'node:fs'
 import path from 'node:path'
 
 import { checkbox } from '@inquirer/prompts'
+import { getGlobalConfigStore } from '@netlify/dev-utils'
 
 import { type CanonicalAgentName, getDrivingAgent } from '../agent-detection.js'
-import { chalk, log, warn } from '../command-helpers.js'
+import { chalk, log, netlifyCommand, warn } from '../command-helpers.js'
 import execa from '../execa.js'
 import { isInteractive } from '../scripted-commands.js'
 
@@ -97,7 +98,7 @@ export const MCP_AGENTS: McpAgent[] = [
 ]
 
 export type AgentMcpStatus = 'added' | 'present' | 'printed' | 'failed'
-export type AgentSelection = 'driving' | 'prompt' | 'none'
+export type AgentSelection = 'driving' | 'prompt' | 'saved' | 'none'
 
 export interface AgentMcpSetupSummary {
   selection: AgentSelection
@@ -243,17 +244,63 @@ const addNatively = async (
 const hasNativeSetup = (agent: McpAgent): agent is McpAgent & { binary: string; native: NativeSetup } =>
   agent.binary !== undefined && agent.native !== undefined
 
+export interface McpChoiceStore {
+  get(key: string): unknown
+  set(key: string, value: unknown): void
+}
+
+interface SavedChoice {
+  url: string
+  choice: 'accepted' | 'declined'
+}
+
+const SAVED_CHOICES_KEY = 'agentMcpSetup'
+
+const savedChoiceKey = (agent: McpAgent): string => `${SAVED_CHOICES_KEY}.${agent.id}`
+
+const hasSavedChoice = (store: McpChoiceStore, agent: McpAgent): boolean =>
+  (store.get(savedChoiceKey(agent)) as SavedChoice | undefined)?.url === NETLIFY_MCP_URL
+
+const saveChoices = (
+  store: McpChoiceStore,
+  offered: McpAgent[],
+  chosen: McpAgent[],
+  statuses: Record<string, AgentMcpStatus>,
+): void => {
+  for (const agent of offered) {
+    if (!chosen.includes(agent)) {
+      store.set(savedChoiceKey(agent), { url: NETLIFY_MCP_URL, choice: 'declined' } satisfies SavedChoice)
+    } else if (statuses[agent.id] !== 'failed') {
+      store.set(savedChoiceKey(agent), { url: NETLIFY_MCP_URL, choice: 'accepted' } satisfies SavedChoice)
+    }
+  }
+}
+
+const loadGlobalStore = async (): Promise<McpChoiceStore> => await getGlobalConfigStore()
+
+const resetHint = (): string =>
+  `Run ${chalk.cyanBright.bold(`${netlifyCommand()} init --reset-mcp-setup`)} to choose again.`
+
+type Selected =
+  | { selection: 'driving'; agents: McpAgent[] }
+  | { selection: 'prompt'; agents: McpAgent[]; offered: McpAgent[]; store: McpChoiceStore }
+  | { selection: 'saved' | 'none'; agents: [] }
+
 const selectAgents = async ({
   workingDir,
   env,
   interactive,
   choose,
+  reset,
+  store,
 }: {
   workingDir: string
   env: NodeJS.ProcessEnv
   interactive: boolean
   choose: ChooseAgents
-}): Promise<{ selection: AgentSelection; agents: McpAgent[] }> => {
+  reset: boolean
+  store: () => Promise<McpChoiceStore>
+}): Promise<Selected> => {
   const drivingAgent = getDrivingAgent(env)
   if (drivingAgent) {
     const agent = MCP_AGENTS.find(({ drivenBy }) => drivenBy?.includes(drivingAgent.name))
@@ -266,7 +313,17 @@ const selectAgents = async ({
   if (candidates.length === 0) {
     return { selection: 'none', agents: [] }
   }
-  return { selection: 'prompt', agents: await choose(candidates) }
+  const choices = await store()
+  const undecided = reset ? candidates : candidates.filter(({ agent }) => !hasSavedChoice(choices, agent))
+  if (undecided.length === 0) {
+    return { selection: 'saved', agents: [] }
+  }
+  return {
+    selection: 'prompt',
+    agents: await choose(undecided),
+    offered: undecided.map(({ agent }) => agent),
+    store: choices,
+  }
 }
 
 export const setupAgentMcp = async ({
@@ -274,16 +331,25 @@ export const setupAgentMcp = async ({
   env = process.env,
   interactive = isInteractive(),
   choose = chooseWithPrompt,
+  reset = false,
+  store = loadGlobalStore,
 }: {
   workingDir: string
   env?: NodeJS.ProcessEnv
   interactive?: boolean
   choose?: ChooseAgents
+  reset?: boolean
+  store?: () => Promise<McpChoiceStore>
 }): Promise<AgentMcpSetupSummary> => {
   const summary: AgentMcpSetupSummary = { selection: 'none', agents: {} }
   try {
-    const { selection, agents } = await selectAgents({ workingDir, env, interactive, choose })
+    const selected = await selectAgents({ workingDir, env, interactive, choose, reset, store })
+    const { selection, agents } = selected
     summary.selection = selection
+    if (selection === 'saved') {
+      log(`Using your saved choices for the Netlify MCP server. ${resetHint()}`)
+      return summary
+    }
     if (selection === 'none') {
       log(`To add the Netlify MCP server to your AI agents, run ${chalk.cyanBright.bold(addMcpCommand([]))}`)
       return summary
@@ -300,6 +366,10 @@ export const setupAgentMcp = async ({
     if (toPrint.length > 0) {
       const labels = toPrint.map(({ label }) => label).join(', ')
       log(`To add the Netlify MCP server to ${labels}, run ${chalk.cyanBright.bold(addMcpCommand(toPrint))}`)
+    }
+    if (selected.selection === 'prompt') {
+      saveChoices(selected.store, selected.offered, agents, summary.agents)
+      log(`Your choices are saved for next time. ${resetHint()}`)
     }
   } catch (error) {
     if (error instanceof Error && error.name === 'ExitPromptError') {

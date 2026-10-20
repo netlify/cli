@@ -216,6 +216,7 @@ type InitExtraOptions = {
   setupAgentSkills?: boolean | undefined
   setupAgentMcp?: boolean | undefined
   resetContext?: boolean | undefined
+  resetMcpSetup?: boolean | undefined
 }
 
 const installAgentSkills = async (workingDir: string, reset: boolean): Promise<void> => {
@@ -229,14 +230,14 @@ const installAgentSkills = async (workingDir: string, reset: boolean): Promise<v
   })
 }
 
-const addAgentMcp = async (workingDir: string): Promise<void> => {
-  const { selection, agents, failed = false } = await setupAgentMcp({ workingDir })
-  await track('sites_agentMcpSetup', { selection, agents, failed })
+const addAgentMcp = async (workingDir: string, reset: boolean): Promise<void> => {
+  const { selection, agents, failed = false } = await setupAgentMcp({ workingDir, reset })
+  await track('sites_agentMcpSetup', { selection, agents, failed, resetMcpSetup: reset })
 }
 
 const setUpAgents = async (
   command: BaseCommand,
-  { skills, mcp, reset }: { skills: boolean; mcp: boolean; reset: boolean },
+  { skills, mcp, reset, resetMcp }: { skills: boolean; mcp: boolean; reset: boolean; resetMcp: boolean },
 ): Promise<void> => {
   if (!skills && !mcp) {
     return
@@ -253,7 +254,7 @@ const setUpAgents = async (
     await installAgentSkills(repositoryRoot, reset)
   }
   if (mcp) {
-    await addAgentMcp(repositoryRoot)
+    await addAgentMcp(repositoryRoot, resetMcp)
   }
 }
 
@@ -266,6 +267,7 @@ export const init = async (
     setupAgentSkills: shouldSetupAgentSkills = false,
     setupAgentMcp: shouldSetupAgentMcp = false,
     resetContext = false,
+    resetMcpSetup = false,
   }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
   command.setAnalyticsPayload({
@@ -274,6 +276,7 @@ export const init = async (
     skipAgentSetup: options.skipAgentSetup,
     skipMcpSetup: options.skipMcpSetup,
     resetContext: options.resetContext,
+    resetMcpSetup: options.resetMcpSetup,
   })
 
   const { repositoryRoot, state } = command.netlify
@@ -285,7 +288,12 @@ export const init = async (
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
-  await setUpAgents(command, { skills: shouldSetupAgentSkills, mcp: shouldSetupAgentMcp, reset: resetContext })
+  await setUpAgents(command, {
+    skills: shouldSetupAgentSkills,
+    mcp: shouldSetupAgentMcp,
+    reset: resetContext,
+    resetMcp: resetMcpSetup,
+  })
 
   const repoUrl = getRepoUrl(existingSiteInfo)
   if (repoUrl && !options.force) {

@@ -9,6 +9,7 @@ import execa from '../../../../src/utils/execa.js'
 import {
   type AgentCandidate,
   type ChooseAgents,
+  type McpChoiceStore,
   NETLIFY_MCP_URL,
   findCandidates,
   setupAgentMcp,
@@ -49,6 +50,7 @@ describe('setupAgentMcp', () => {
   let root: string
   let project: string
   let bin: string
+  let saved: Map<string, unknown>
 
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'netlify-agent-mcp-'))
@@ -56,6 +58,7 @@ describe('setupAgentMcp', () => {
     bin = join(root, 'bin')
     await mkdir(project)
     await mkdir(bin)
+    saved = new Map()
   })
 
   afterEach(async () => {
@@ -70,13 +73,29 @@ describe('setupAgentMcp', () => {
     }
   }
 
-  const run = (env: NodeJS.ProcessEnv, options: { interactive?: boolean; choose?: ChooseAgents } = {}) =>
+  const store = (): Promise<McpChoiceStore> =>
+    Promise.resolve({ get: (key) => saved.get(key), set: (key, value) => saved.set(key, value) })
+
+  const run = (
+    env: NodeJS.ProcessEnv,
+    options: { interactive?: boolean; choose?: ChooseAgents; reset?: boolean } = {},
+  ) =>
     setupAgentMcp({
       workingDir: project,
       env: { PATH: bin, ...env },
       interactive: options.interactive ?? false,
       choose: options.choose ?? neverChoose,
+      reset: options.reset ?? false,
+      store,
     })
+
+  const chooseIds = (...ids: string[]) =>
+    vi.fn<ChooseAgents>((candidates) =>
+      Promise.resolve(candidates.map(({ agent }) => agent).filter(({ id }) => ids.includes(id))),
+    )
+
+  const offeredIds = (choose: ReturnType<typeof chooseIds>, call = 0) =>
+    choose.mock.calls[call][0].map(({ agent }) => agent.id)
 
   describe('when an agent runs init', () => {
     test('adds the server to that agent at user scope, without a prompt', async () => {
@@ -239,6 +258,74 @@ describe('setupAgentMcp', () => {
 
       expect(neverChoose).not.toHaveBeenCalled()
       expect(execaMock).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('saved choices', () => {
+    test('remembers both a yes and a no, so the next run does not prompt', async () => {
+      await install('claude', 'codex')
+      execaMock.mockResolvedValueOnce(missingServer()).mockResolvedValueOnce(exited(0))
+      const choose = chooseIds('claude-code')
+
+      await run({}, { interactive: true, choose })
+      expect(offeredIds(choose)).toEqual(['claude-code', 'codex'])
+      expect(logged()).toContain('init --reset-mcp-setup')
+
+      await expect(run({}, { interactive: true })).resolves.toEqual({ selection: 'saved', agents: {} })
+      expect(neverChoose).not.toHaveBeenCalled()
+      expect(execaMock).toHaveBeenCalledTimes(2)
+      expect(logged()).toContain('Using your saved choices')
+    })
+
+    test('asks only about an agent installed since the last run', async () => {
+      await install('codex')
+      await run({}, { interactive: true, choose: chooseIds() })
+      await install('opencode')
+      const choose = chooseIds()
+
+      await run({}, { interactive: true, choose })
+
+      expect(offeredIds(choose)).toEqual(['opencode'])
+    })
+
+    test('--reset-mcp-setup asks about every agent again', async () => {
+      await install('codex')
+      await run({}, { interactive: true, choose: chooseIds() })
+      const choose = chooseIds()
+
+      await run({}, { interactive: true, choose, reset: true })
+
+      expect(offeredIds(choose)).toEqual(['codex'])
+    })
+
+    test('does not save a yes whose add failed, so it is offered again', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(missingServer()).mockResolvedValueOnce(exited(1, 'boom'))
+      await run({}, { interactive: true, choose: chooseIds('claude-code') })
+      const choose = chooseIds()
+
+      await run({}, { interactive: true, choose })
+
+      expect(offeredIds(choose)).toEqual(['claude-code'])
+    })
+
+    test('offers an agent again when its saved choice was for a different server URL', async () => {
+      await install('codex')
+      saved.set('agentMcpSetup.codex', { url: 'https://netlify-mcp.netlify.app/mcp', choice: 'declined' })
+      const choose = chooseIds()
+
+      await run({}, { interactive: true, choose })
+
+      expect(offeredIds(choose)).toEqual(['codex'])
+      expect(saved.get('agentMcpSetup.codex')).toEqual({ url: NETLIFY_MCP_URL, choice: 'declined' })
+    })
+
+    test('leaves saved choices alone when an agent runs init', async () => {
+      execaMock.mockResolvedValueOnce(exited(0))
+
+      await run({ NETLIFY_AGENT: 'claude-code' })
+
+      expect(saved.size).toBe(0)
     })
   })
 
