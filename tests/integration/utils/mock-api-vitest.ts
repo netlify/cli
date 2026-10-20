@@ -84,6 +84,18 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     )
   })
 
+  app.get('/site/:siteId/integrations/safe', function onRequest(req, res) {
+    addRequest(requests, req)
+    res.status(200)
+    res.json([])
+  })
+
+  app.get('/team/:accountId/integrations/installations/meta/:siteId', function onRequest(req, res) {
+    addRequest(requests, req)
+    res.status(200)
+    res.json([])
+  })
+
   app.all('{*splat}', function onRequest(req, res) {
     addRequest(requests, req)
     if (!silent) {
