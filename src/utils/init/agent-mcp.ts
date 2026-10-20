@@ -97,7 +97,7 @@ export const MCP_AGENTS: McpAgent[] = [
   { id: 'cline', label: 'Cline', drivenBy: ['cline'], projectMarkers: ['.clinerules'] },
 ]
 
-export type AgentMcpStatus = 'added' | 'present' | 'printed' | 'failed'
+export type AgentMcpStatus = 'added' | 'present' | 'kept' | 'printed' | 'declined' | 'failed'
 export type AgentSelection = 'driving' | 'prompt' | 'saved' | 'none'
 
 export interface AgentMcpSetupSummary {
@@ -140,15 +140,14 @@ const isExecutableFile = async (target: string): Promise<boolean> => {
   }
 }
 
-const isOnPath = async (binary: string, env: NodeJS.ProcessEnv): Promise<boolean> => {
+const findOnPath = async (binary: string, env: NodeJS.ProcessEnv): Promise<string | undefined> => {
   const extensions = process.platform === 'win32' ? (env.PATHEXT ?? '.EXE;.CMD;.BAT').split(';') : ['']
-  const directories = (env.PATH ?? '').split(path.delimiter).filter(Boolean)
-  const found = await Promise.all(
-    directories.flatMap((directory) =>
-      extensions.map((extension) => isExecutableFile(path.join(directory, binary + extension))),
-    ),
-  )
-  return found.includes(true)
+  const candidates = (env.PATH ?? '')
+    .split(path.delimiter)
+    .filter((directory) => path.isAbsolute(directory))
+    .flatMap((directory) => extensions.map((extension) => path.join(directory, binary + extension)))
+  const executable = await Promise.all(candidates.map(isExecutableFile))
+  return candidates.find((_, index) => executable[index])
 }
 
 const hasProjectMarker = async (agent: McpAgent, workingDir: string): Promise<boolean> => {
@@ -164,7 +163,7 @@ export const findCandidates = async (workingDir: string, env: NodeJS.ProcessEnv)
   const candidates: AgentCandidate[] = []
   for (const agent of MCP_AGENTS) {
     const detected = Boolean(agent.inTerminal?.(env)) || (await hasProjectMarker(agent, workingDir))
-    if (detected || (agent.binary !== undefined && (await isOnPath(agent.binary, env)))) {
+    if (detected || (agent.binary !== undefined && (await findOnPath(agent.binary, env)) !== undefined)) {
       candidates.push({ agent, detected })
     }
   }
@@ -181,51 +180,111 @@ const addMcpCommand = (agents: McpAgent[]): string =>
     ...agents.flatMap(({ id }) => ['-a', id]),
   ].join(' ')
 
-const shellQuote = (arg: string): string => (/^[\w@%+=:,./-]+$/.test(arg) ? arg : `'${arg.replace(/'/g, `'\\''`)}'`)
+const shellQuote = (arg: string): string => {
+  if (/^[\w@%+=:,./\\-]+$/.test(arg)) {
+    return arg
+  }
+  return process.platform === 'win32' ? `"${arg.replace(/"/g, '\\"')}"` : `'${arg.replace(/'/g, `'\\''`)}'`
+}
 
 const formatCommand = (binary: string, args: string[]): string =>
   chalk.cyanBright.bold([binary, ...args].map(shellQuote).join(' '))
 
-const runNative = async (binary: string, args: string[], cwd: string) => {
-  const result = await execa(binary, args, { cwd, reject: false, timeout: NATIVE_TIMEOUT_MS })
+const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
+  value instanceof Error && Object.hasOwn(value, 'code')
+
+const runNative = async (executable: string, args: string[], cwd: string) => {
+  const result = await execa(executable, args, { cwd, reject: false, stdin: 'ignore', timeout: NATIVE_TIMEOUT_MS })
   return {
-    missingBinary: (result as { code?: string }).code === 'ENOENT',
+    missingBinary: isErrnoException(result) && result.code === 'ENOENT',
     exitCode: result.exitCode,
     output: [result.stderr, result.stdout].filter(Boolean).join('\n').trim(),
     timedOut: result.timedOut,
   }
 }
 
-const describeFailure = ({ timedOut, output, exitCode }: Awaited<ReturnType<typeof runNative>>): string =>
+type NativeRun = Awaited<ReturnType<typeof runNative>>
+
+const describeFailure = ({ timedOut, output, exitCode }: NativeRun): string =>
   timedOut
     ? `timed out after ${(NATIVE_TIMEOUT_MS / 1000).toString()} seconds`
     : output || `exit code ${String(exitCode)}`
 
-const addNatively = async (
-  agent: McpAgent & { binary: string; native: NativeSetup },
+type NativeAgent = McpAgent & { binary: string; native: NativeSetup }
+
+const hasNativeSetup = (agent: McpAgent): agent is NativeAgent =>
+  agent.binary !== undefined && agent.native !== undefined
+
+type Existing = { found: 'ours' | 'other'; output: string }
+type Lookup = Existing | { found: 'none' } | { found: 'unknown'; run: NativeRun }
+
+const lookUp = async (executable: string, lookup: string[], workingDir: string): Promise<Lookup> => {
+  const run = await runNative(executable, lookup, workingDir)
+  if (run.exitCode === 0) {
+    return { found: run.output.includes(NETLIFY_MCP_URL) ? 'ours' : 'other', output: run.output }
+  }
+  if (run.exitCode === 1 && run.output.includes('No MCP server named')) {
+    return { found: 'none' }
+  }
+  return { found: 'unknown', run }
+}
+
+const isExisting = (lookup: Lookup): lookup is Existing => lookup.found === 'ours' || lookup.found === 'other'
+
+const reportExisting = (agent: NativeAgent, { found, output }: Existing): AgentMcpStatus => {
+  if (found === 'ours') {
+    log(`${agent.label} already has the Netlify MCP server.`)
+    return 'present'
+  }
+  const where = output.includes(LEGACY_MCP_HOST) ? `the old host, ${LEGACY_MCP_HOST}` : 'a different URL'
+  log(
+    `${agent.label} has a ${chalk.cyan(NETLIFY_MCP_SERVER_NAME)} MCP server pointing at ${where}, so it was left unchanged.`,
+  )
+  if (agent.native.remove) {
+    log(
+      `  To switch to ${chalk.underline(NETLIFY_MCP_URL)}, run ${formatCommand(agent.binary, agent.native.remove)} then ${formatCommand(agent.binary, agent.native.add)}`,
+    )
+  }
+  return 'kept'
+}
+
+const suggestNatively = async (
+  agent: NativeAgent,
+  env: NodeJS.ProcessEnv,
   workingDir: string,
 ): Promise<AgentMcpStatus> => {
+  const executable = await findOnPath(agent.binary, env)
+  if (executable && agent.native.lookup) {
+    const existing = await lookUp(executable, agent.native.lookup, workingDir)
+    if (isExisting(existing)) {
+      return reportExisting(agent, existing)
+    }
+  }
+  log(
+    `To add the Netlify MCP server to ${agent.label} for your user, run ${formatCommand(agent.binary, agent.native.add)}`,
+  )
+  return 'printed'
+}
+
+const addNatively = async (agent: NativeAgent, env: NodeJS.ProcessEnv, workingDir: string): Promise<AgentMcpStatus> => {
   const { binary, native, label } = agent
+  const executable = await findOnPath(binary, env)
+  if (!executable) {
+    return 'printed'
+  }
   if (native.lookup) {
-    const existing = await runNative(binary, native.lookup, workingDir)
-    if (existing.missingBinary) {
-      return 'printed'
-    }
-    if (existing.exitCode === 0) {
-      log(`${label} already has a ${chalk.cyan(NETLIFY_MCP_SERVER_NAME)} MCP server, so it was left unchanged.`)
-      if (existing.output.includes(LEGACY_MCP_HOST)) {
-        log(`  It points at ${LEGACY_MCP_HOST}. Netlify's MCP server now lives at ${chalk.underline(NETLIFY_MCP_URL)}`)
-      }
-      return 'present'
-    }
-    if (existing.exitCode !== 1 || !existing.output.includes('No MCP server named')) {
-      warn(`Could not check ${label} for an existing Netlify MCP server: ${describeFailure(existing)}`)
+    const existing = await lookUp(executable, native.lookup, workingDir)
+    if (existing.found === 'unknown') {
+      warn(`Could not check ${label} for an existing Netlify MCP server: ${describeFailure(existing.run)}`)
       log(`  Add it yourself with ${formatCommand(binary, native.add)}`)
       return 'failed'
     }
+    if (isExisting(existing)) {
+      return reportExisting(agent, existing)
+    }
   }
 
-  const added = await runNative(binary, native.add, workingDir)
+  const added = await runNative(executable, native.add, workingDir)
   if (added.missingBinary) {
     return 'printed'
   }
@@ -241,9 +300,6 @@ const addNatively = async (
   return 'added'
 }
 
-const hasNativeSetup = (agent: McpAgent): agent is McpAgent & { binary: string; native: NativeSetup } =>
-  agent.binary !== undefined && agent.native !== undefined
-
 export interface McpChoiceStore {
   get(key: string): unknown
   set(key: string, value: unknown): void
@@ -258,8 +314,10 @@ const SAVED_CHOICES_KEY = 'agentMcpSetup'
 
 const savedChoiceKey = (agent: McpAgent): string => `${SAVED_CHOICES_KEY}.${agent.id}`
 
-const hasSavedChoice = (store: McpChoiceStore, agent: McpAgent): boolean =>
-  (store.get(savedChoiceKey(agent)) as SavedChoice | undefined)?.url === NETLIFY_MCP_URL
+const savedChoice = (store: McpChoiceStore, agent: McpAgent): SavedChoice | undefined => {
+  const saved = store.get(savedChoiceKey(agent)) as SavedChoice | undefined
+  return saved?.url === NETLIFY_MCP_URL ? saved : undefined
+}
 
 const saveChoices = (
   store: McpChoiceStore,
@@ -282,7 +340,7 @@ const resetHint = (): string =>
   `Run ${chalk.cyanBright.bold(`${netlifyCommand()} init --reset-mcp-setup`)} to choose again.`
 
 type Selected =
-  | { selection: 'driving'; agents: McpAgent[] }
+  | { selection: 'driving'; agents: [McpAgent]; declined: boolean }
   | { selection: 'prompt'; agents: McpAgent[]; offered: McpAgent[]; store: McpChoiceStore }
   | { selection: 'saved' | 'none'; agents: [] }
 
@@ -304,7 +362,14 @@ const selectAgents = async ({
   const drivingAgent = getDrivingAgent(env)
   if (drivingAgent) {
     const agent = MCP_AGENTS.find(({ drivenBy }) => drivenBy?.includes(drivingAgent.name))
-    return agent ? { selection: 'driving', agents: [agent] } : { selection: 'none', agents: [] }
+    if (!agent) {
+      return { selection: 'none', agents: [] }
+    }
+    const choices = await store()
+    if (reset) {
+      choices.set(savedChoiceKey(agent), undefined)
+    }
+    return { selection: 'driving', agents: [agent], declined: savedChoice(choices, agent)?.choice === 'declined' }
   }
   if (!interactive) {
     return { selection: 'none', agents: [] }
@@ -314,7 +379,7 @@ const selectAgents = async ({
     return { selection: 'none', agents: [] }
   }
   const choices = await store()
-  const undecided = reset ? candidates : candidates.filter(({ agent }) => !hasSavedChoice(choices, agent))
+  const undecided = reset ? candidates : candidates.filter(({ agent }) => !savedChoice(choices, agent))
   if (undecided.length === 0) {
     return { selection: 'saved', agents: [] }
   }
@@ -355,9 +420,25 @@ export const setupAgentMcp = async ({
       return summary
     }
 
+    if (selected.selection === 'driving') {
+      const [agent] = selected.agents
+      if (selected.declined) {
+        log(`You chose not to add the Netlify MCP server to ${agent.label}. ${resetHint()}`)
+        summary.agents[agent.id] = 'declined'
+      } else if (hasNativeSetup(agent)) {
+        summary.agents[agent.id] = await suggestNatively(agent, env, workingDir)
+      } else {
+        log(
+          `To add the Netlify MCP server to ${agent.label} for your user, run ${chalk.cyanBright.bold(addMcpCommand([agent]))}`,
+        )
+        summary.agents[agent.id] = 'printed'
+      }
+      return summary
+    }
+
     const toPrint: McpAgent[] = []
     for (const agent of agents) {
-      const status = hasNativeSetup(agent) ? await addNatively(agent, workingDir) : 'printed'
+      const status = hasNativeSetup(agent) ? await addNatively(agent, env, workingDir) : 'printed'
       summary.agents[agent.id] = status
       if (status === 'printed') {
         toPrint.push(agent)

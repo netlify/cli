@@ -1,6 +1,6 @@
 import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { delimiter, join } from 'node:path'
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
@@ -27,7 +27,8 @@ const execaMock = vi.mocked(execa) as unknown as ReturnType<typeof vi.fn>
 
 const exited = (exitCode: number, stderr = '', stdout = '') => ({ exitCode, stdout, stderr, timedOut: false })
 const missingServer = () => exited(1, 'No MCP server named "netlify"')
-const notInstalled = () => ({ code: 'ENOENT', exitCode: undefined, stdout: '', stderr: '', timedOut: false })
+const ourServer = () => exited(0, '', `netlify:\n  Type: http\n  URL: ${NETLIFY_MCP_URL}`)
+const legacyServer = () => exited(0, '', 'netlify:\n  Type: http\n  URL: https://netlify-mcp.netlify.app/mcp')
 const timedOut = () => ({ exitCode: undefined, stdout: '', stderr: '', timedOut: true })
 
 const CLAUDE_ADD = ['mcp', 'add', '--transport', 'http', '--scope', 'user', 'netlify', NETLIFY_MCP_URL]
@@ -45,6 +46,8 @@ const warned = () =>
     .join('\n')
 
 const neverChoose = vi.fn<ChooseAgents>(() => Promise.reject(new Error('prompt should not open')))
+
+const executableName = (binary: string) => (process.platform === 'win32' ? `${binary}.cmd` : binary)
 
 describe('setupAgentMcp', () => {
   let root: string
@@ -68,22 +71,24 @@ describe('setupAgentMcp', () => {
 
   const install = async (...binaries: string[]) => {
     for (const binary of binaries) {
-      const file = join(bin, process.platform === 'win32' ? `${binary}.cmd` : binary)
+      const file = join(bin, executableName(binary))
       await writeFile(file, '')
       await chmod(file, 0o755)
     }
   }
+
+  const installed = (binary: string) => join(bin, executableName(binary))
 
   const store = (): Promise<McpChoiceStore> =>
     Promise.resolve({ get: (key) => saved.get(key), set: (key, value) => saved.set(key, value) })
 
   const run = (
     env: NodeJS.ProcessEnv,
-    options: { interactive?: boolean; choose?: ChooseAgents; reset?: boolean } = {},
+    options: { interactive?: boolean; choose?: ChooseAgents; reset?: boolean; path?: string } = {},
   ) =>
     setupAgentMcp({
       workingDir: project,
-      env: { PATH: bin, ...env },
+      env: { PATH: options.path ?? bin, ...env },
       interactive: options.interactive ?? false,
       choose: options.choose ?? neverChoose,
       reset: options.reset ?? false,
@@ -99,46 +104,59 @@ describe('setupAgentMcp', () => {
     choose.mock.calls[call][0].map(({ agent }) => agent.id)
 
   describe('when an agent runs init', () => {
-    test('adds the server to that agent at user scope, without a prompt', async () => {
-      execaMock.mockResolvedValueOnce(missingServer()).mockResolvedValueOnce(exited(0))
+    test('prints the add command for that agent and never writes its config', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(missingServer())
 
       await expect(run({ NETLIFY_AGENT: 'claude-code' }, { interactive: true })).resolves.toEqual({
         selection: 'driving',
-        agents: { 'claude-code': 'added' },
+        agents: { 'claude-code': 'printed' },
       })
 
       expect(neverChoose).not.toHaveBeenCalled()
-      expect(execaMock).toHaveBeenNthCalledWith(
-        1,
-        'claude',
+      expect(execaMock).toHaveBeenCalledTimes(1)
+      expect(execaMock).toHaveBeenCalledWith(
+        installed('claude'),
         ['mcp', 'get', 'netlify'],
         expect.objectContaining({ cwd: project, reject: false }),
       )
-      expect(execaMock).toHaveBeenNthCalledWith(2, 'claude', CLAUDE_ADD, expect.objectContaining({ cwd: project }))
-      expect(logged()).toContain('claude mcp remove --scope user netlify')
+      expect(logged()).toContain(`claude ${CLAUDE_ADD.join(' ')}`)
     })
 
-    test('uses the Codex CLI when Codex runs init', async () => {
-      execaMock
-        .mockResolvedValueOnce(exited(1, "Error: No MCP server named 'netlify' found."))
-        .mockResolvedValueOnce(exited(0))
+    test('prints the Codex command when Codex runs init', async () => {
+      await install('codex')
+      execaMock.mockResolvedValueOnce(exited(1, "Error: No MCP server named 'netlify' found."))
 
-      await expect(run({ CODEX_CI: '1' })).resolves.toEqual({ selection: 'driving', agents: { codex: 'added' } })
+      await expect(run({ CODEX_CI: '1' })).resolves.toEqual({ selection: 'driving', agents: { codex: 'printed' } })
 
-      expect(execaMock).toHaveBeenNthCalledWith(2, 'codex', CODEX_ADD, expect.anything())
+      expect(logged()).toContain(`codex ${CODEX_ADD.join(' ')}`)
     })
 
-    test('leaves an existing server alone and points an old-host entry at the new one', async () => {
-      execaMock.mockResolvedValueOnce(exited(0, '', 'URL: https://netlify-mcp.netlify.app/mcp'))
+    test('says nothing needs doing when the server is already there', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(ourServer())
 
       await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toEqual({
         selection: 'driving',
         agents: { 'claude-code': 'present' },
       })
 
+      expect(logged()).toContain('already has the Netlify MCP server')
+      expect(logged()).not.toContain('mcp add')
+    })
+
+    test('reports an existing server on another URL and how to switch, without changing it', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(legacyServer())
+
+      await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toEqual({
+        selection: 'driving',
+        agents: { 'claude-code': 'kept' },
+      })
+
+      expect(logged()).toContain('the old host, netlify-mcp.netlify.app')
+      expect(logged()).toContain('claude mcp remove --scope user netlify')
       expect(execaMock).toHaveBeenCalledTimes(1)
-      expect(logged()).toContain('already has a netlify MCP server')
-      expect(logged()).toContain(`now lives at ${NETLIFY_MCP_URL}`)
     })
 
     test('prints an add-mcp command for an agent without its own add command', async () => {
@@ -151,50 +169,49 @@ describe('setupAgentMcp', () => {
       expect(logged()).toContain(`npx -y add-mcp@2.4.1 ${NETLIFY_MCP_URL} --name netlify -g -a gemini-cli`)
     })
 
-    test('falls back to the add-mcp command when the agent CLI is not on PATH', async () => {
-      execaMock.mockResolvedValueOnce(notInstalled())
-
+    test('prints the command without a lookup when the agent CLI is not on PATH', async () => {
       await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toEqual({
         selection: 'driving',
         agents: { 'claude-code': 'printed' },
       })
 
-      expect(logged()).toContain('-a claude-code')
-      expect(warn).not.toHaveBeenCalled()
-    })
-
-    test('does not add when the lookup fails for a reason other than a missing server', async () => {
-      execaMock.mockResolvedValueOnce(exited(1, 'Failed to connect'))
-
-      await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toEqual({
-        selection: 'driving',
-        agents: { 'claude-code': 'failed' },
-      })
-
-      expect(execaMock).toHaveBeenCalledTimes(1)
-      expect(warned()).toContain('Failed to connect')
+      expect(execaMock).not.toHaveBeenCalled()
       expect(logged()).toContain(`claude ${CLAUDE_ADD.join(' ')}`)
     })
 
-    test('does not add when the lookup times out', async () => {
-      execaMock.mockResolvedValueOnce(timedOut())
+    test('never runs an agent binary from the project folder or a relative PATH entry', async () => {
+      await writeFile(join(project, executableName('claude')), '')
+      await chmod(join(project, executableName('claude')), 0o755)
 
-      await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toMatchObject({
-        agents: { 'claude-code': 'failed' },
-      })
+      await run({ NETLIFY_AGENT: 'claude-code' }, { path: ['.', project.replace(root, '..')].join(delimiter) })
 
-      expect(execaMock).toHaveBeenCalledTimes(1)
-      expect(warned()).toContain('timed out')
+      expect(execaMock).not.toHaveBeenCalled()
     })
 
-    test('reports a failed add with the command to run by hand', async () => {
-      execaMock.mockResolvedValueOnce(missingServer()).mockResolvedValueOnce(exited(1, 'boom'))
+    test('respects a saved no from the prompt', async () => {
+      await install('claude')
+      saved.set('agentMcpSetup.claude-code', { url: NETLIFY_MCP_URL, choice: 'declined' })
 
-      await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toMatchObject({
-        agents: { 'claude-code': 'failed' },
+      await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toEqual({
+        selection: 'driving',
+        agents: { 'claude-code': 'declined' },
       })
 
-      expect(warned()).toContain('boom')
+      expect(execaMock).not.toHaveBeenCalled()
+      expect(logged()).toContain('init --reset-mcp-setup')
+    })
+
+    test('--reset-mcp-setup forgets a saved no for the agent running init', async () => {
+      await install('claude')
+      saved.set('agentMcpSetup.claude-code', { url: NETLIFY_MCP_URL, choice: 'declined' })
+      execaMock.mockResolvedValueOnce(missingServer())
+
+      await expect(run({ NETLIFY_AGENT: 'claude-code' }, { reset: true })).resolves.toEqual({
+        selection: 'driving',
+        agents: { 'claude-code': 'printed' },
+      })
+
+      expect(saved.get('agentMcpSetup.claude-code')).toBeUndefined()
     })
 
     test('prints the generic command for an agent it has no mapping for', async () => {
@@ -225,17 +242,75 @@ describe('setupAgentMcp', () => {
         ['codex', false],
       ])
       expect(execaMock).toHaveBeenCalledWith(
-        'code',
+        installed('code'),
         ['--add-mcp', JSON.stringify({ name: 'netlify', type: 'http', url: NETLIFY_MCP_URL })],
-        expect.anything(),
+        expect.objectContaining({ stdin: 'ignore' }),
       )
       expect(logged()).toContain('-a cursor')
+    })
+
+    test('adds a ticked agent after checking it has no server yet', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(missingServer()).mockResolvedValueOnce(exited(0))
+
+      await expect(run({}, { interactive: true, choose: chooseIds('claude-code') })).resolves.toMatchObject({
+        agents: { 'claude-code': 'added' },
+      })
+
+      expect(execaMock).toHaveBeenNthCalledWith(2, installed('claude'), CLAUDE_ADD, expect.anything())
+      expect(logged()).toContain('claude mcp remove --scope user netlify')
+    })
+
+    test('leaves a ticked agent alone when its server points at another URL', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(legacyServer())
+
+      await expect(run({}, { interactive: true, choose: chooseIds('claude-code') })).resolves.toMatchObject({
+        agents: { 'claude-code': 'kept' },
+      })
+
+      expect(execaMock).toHaveBeenCalledTimes(1)
+    })
+
+    test('does not add when the lookup fails for a reason other than a missing server', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(exited(1, 'Failed to connect'))
+
+      await expect(run({}, { interactive: true, choose: chooseIds('claude-code') })).resolves.toMatchObject({
+        agents: { 'claude-code': 'failed' },
+      })
+
+      expect(execaMock).toHaveBeenCalledTimes(1)
+      expect(warned()).toContain('Failed to connect')
+    })
+
+    test('does not add when the lookup times out', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(timedOut())
+
+      await expect(run({}, { interactive: true, choose: chooseIds('claude-code') })).resolves.toMatchObject({
+        agents: { 'claude-code': 'failed' },
+      })
+
+      expect(warned()).toContain('timed out')
+    })
+
+    test('reports a failed add with the command to run by hand', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(missingServer()).mockResolvedValueOnce(exited(1, 'boom'))
+
+      await expect(run({}, { interactive: true, choose: chooseIds('claude-code') })).resolves.toMatchObject({
+        agents: { 'claude-code': 'failed' },
+      })
+
+      expect(warned()).toContain('boom')
+      expect(logged()).toContain(`claude ${CLAUDE_ADD.join(' ')}`)
     })
 
     test('adds nothing when the person unticks every agent', async () => {
       await install('claude')
 
-      await expect(run({}, { interactive: true, choose: vi.fn(() => Promise.resolve([])) })).resolves.toEqual({
+      await expect(run({}, { interactive: true, choose: chooseIds() })).resolves.toEqual({
         selection: 'prompt',
         agents: {},
       })
@@ -321,8 +396,9 @@ describe('setupAgentMcp', () => {
       expect(saved.get('agentMcpSetup.codex')).toEqual({ url: NETLIFY_MCP_URL, choice: 'declined' })
     })
 
-    test('leaves saved choices alone when an agent runs init', async () => {
-      execaMock.mockResolvedValueOnce(exited(0))
+    test('an agent-driven run does not save anything', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(missingServer())
 
       await run({ NETLIFY_AGENT: 'claude-code' })
 
