@@ -1,6 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { getWebSocket } from '../../../utils/websockets/index.js'
+import { SOCKETEER_URL } from '../../../utils/socketeer.js'
 import { buildFunctionLogsUrl, fetchHistoricalLogs } from '../log-api.js'
 import type { LogEntry } from '../log-api.js'
 
@@ -89,7 +90,7 @@ export const streamFunctions = (
   const sockets: ReturnType<typeof getWebSocket>[] = []
 
   for (const fn of functions) {
-    const ws = getWebSocket('wss://socketeer.services.netlify.com/function/logs')
+    const ws = getWebSocket(`${SOCKETEER_URL}/function/logs`)
     sockets.push(ws)
 
     ws.on('open', () => {
