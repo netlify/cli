@@ -67,9 +67,7 @@ describe.concurrent('v2 api', async () => {
       expect(context).toHaveProperty('ip', expect.stringMatching(/::1|127\.0\.0\.1/))
       expect(context).toHaveProperty('geo.city', 'Mock City')
       expect(context).toHaveProperty('cookies', { foo: 'bar' })
-      // TODO: re-enable once the extensions API is mocked. The real one rejects this test's fake token,
-      // so config resolution falls back to offline and the account is unknown.
-      // expect(context).toHaveProperty('account.id', 'mock-account-id')
+      expect(context).toHaveProperty('account.id', 'mock-account-id')
       expect(context).toHaveProperty('deploy.context', 'dev')
       expect(context).toHaveProperty('deploy.id', '0')
       expect(context).toHaveProperty('deploy.published', false)
