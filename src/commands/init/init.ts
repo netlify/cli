@@ -11,6 +11,8 @@ import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { LocalState, SiteInfo } from '../../utils/types.js'
+import { findAgentSetupBlocker } from '../../utils/init/agent-location.js'
+import { setupAgentMcp } from '../../utils/init/agent-mcp.js'
 import { setupAgentSkills } from '../../utils/init/agent-skills.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
 import { type InitExitCode, LINKED_EXISTING_SITE_EXIT_CODE, LINKED_NEW_SITE_EXIT_CODE } from './constants.js'
@@ -212,12 +214,12 @@ type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
   setupAgentSkills?: boolean | undefined
+  setupAgentMcp?: boolean | undefined
   resetContext?: boolean | undefined
 }
 
-const installAgentSkills = async (command: BaseCommand, reset: boolean): Promise<void> => {
-  log()
-  const result = await setupAgentSkills({ workingDir: command.netlify.repositoryRoot, reset })
+const installAgentSkills = async (workingDir: string, reset: boolean): Promise<void> => {
+  const result = await setupAgentSkills({ workingDir, reset })
   await track('sites_agentSkillsSetup', {
     installed: result.installed,
     directories: result.directories,
@@ -227,6 +229,34 @@ const installAgentSkills = async (command: BaseCommand, reset: boolean): Promise
   })
 }
 
+const addAgentMcp = async (workingDir: string): Promise<void> => {
+  const { claudeCode } = await setupAgentMcp({ workingDir })
+  await track('sites_agentMcpSetup', { claudeCode })
+}
+
+const setUpAgents = async (
+  command: BaseCommand,
+  { skills, mcp, reset }: { skills: boolean; mcp: boolean; reset: boolean },
+): Promise<void> => {
+  if (!skills && !mcp) {
+    return
+  }
+  const { repositoryRoot } = command.netlify
+  log()
+  const blocker = await findAgentSetupBlocker(repositoryRoot)
+  if (blocker) {
+    log(`Skipped setting up AI agents: ${blocker}.`)
+    await track('sites_agentSetupSkipped', { skills, mcp })
+    return
+  }
+  if (skills) {
+    await installAgentSkills(repositoryRoot, reset)
+  }
+  if (mcp) {
+    await addAgentMcp(repositoryRoot)
+  }
+}
+
 export const init = async (
   options: OptionValues,
   command: BaseCommand,
@@ -234,6 +264,7 @@ export const init = async (
     customizeExitMessage,
     exitAfterConfiguringRepo = false,
     setupAgentSkills: shouldSetupAgentSkills = false,
+    setupAgentMcp: shouldSetupAgentMcp = false,
     resetContext = false,
   }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
@@ -241,6 +272,7 @@ export const init = async (
     manual: options.manual,
     force: options.force,
     skipAgentSetup: options.skipAgentSetup,
+    skipMcpSetup: options.skipMcpSetup,
     resetContext: options.resetContext,
   })
 
@@ -253,9 +285,7 @@ export const init = async (
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
-  if (shouldSetupAgentSkills) {
-    await installAgentSkills(command, resetContext)
-  }
+  await setUpAgents(command, { skills: shouldSetupAgentSkills, mcp: shouldSetupAgentMcp, reset: resetContext })
 
   const repoUrl = getRepoUrl(existingSiteInfo)
   if (repoUrl && !options.force) {

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
+import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import path from 'node:path'
@@ -807,15 +807,17 @@ describe.concurrent('commands/init', () => {
     { question: 'Configure the following webhook for your repository', answer: CONFIRM },
   ]
   const initOnLinkedSite =
-    ({ apiUrl, cwd, skillsHost }: { apiUrl: string; cwd: string; skillsHost: string }) =>
+    ({ apiUrl, cwd, skillsHost, claudeBin }: { apiUrl: string; cwd: string; skillsHost: string; claudeBin?: string }) =>
     async (...flags: string[]) => {
       const env = {
         NETLIFY_API_URL: apiUrl,
         NETLIFY_SITE_ID: 'site_id',
         NETLIFY_AUTH_TOKEN: 'fake-token',
         NETLIFY_SKILLS_HOST: skillsHost,
+        ...(claudeBin ? { PATH: `${claudeBin}${path.delimiter}${process.env.PATH ?? ''}` } : {}),
       }
-      const childProcess = execa(cliPath, ['init', '--manual', ...flags], { cwd, env })
+      const mcpFlags = claudeBin ? [] : ['--skip-mcp-setup']
+      const childProcess = execa(cliPath, ['init', '--manual', ...mcpFlags, ...flags], { cwd, env })
       if (process.env.DEBUG_TESTS) {
         childProcess.stdout?.on('data', (data: Buffer) => {
           process.stderr.write(data)
@@ -851,6 +853,53 @@ describe.concurrent('commands/init', () => {
       })
     })
   })
+
+  test.skipIf(process.platform === 'win32')(
+    'netlify init adds the Netlify MCP server to Claude Code once and respects --skip-mcp-setup',
+    async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.withGit().build()
+        const claudeBin = path.join(builder.directory, '.fake-bin')
+        const callsFile = path.join(claudeBin, 'calls.log')
+        const addedMarker = path.join(claudeBin, 'added')
+        await mkdir(claudeBin, { recursive: true })
+        await writeFile(
+          path.join(claudeBin, 'claude'),
+          [
+            '#!/bin/sh',
+            `echo "$PWD $*" >> "${callsFile}"`,
+            `if [ "$2" = "get" ]; then [ -f "${addedMarker}" ] && exit 0; echo "No MCP server named $3" >&2; exit 1; fi`,
+            `if [ "$2" = "add" ]; then touch "${addedMarker}"; exit 0; fi`,
+            'exit 2',
+            '',
+          ].join('\n'),
+        )
+        await chmod(path.join(claudeBin, 'claude'), 0o755)
+
+        await withMockApi(linkedSiteRoutes, async ({ apiUrl }) => {
+          await withSkillsHost(async (skillsHost) => {
+            const runInit = initOnLinkedSite({ apiUrl, cwd: builder.directory, skillsHost: skillsHost.url, claudeBin })
+
+            const first = await runInit()
+            t.expect(first.stdout).toContain('Added the Netlify MCP server to Claude Code')
+
+            const second = await runInit()
+            t.expect(second.stdout).toContain('Claude Code already has a netlify MCP server')
+
+            const skipped = await runInit('--skip-mcp-setup')
+            t.expect(skipped.stdout).not.toContain('MCP server')
+
+            const calls = (await readFile(callsFile, 'utf8')).trim().split('\n')
+            t.expect(calls.map((call) => call.split(' ').slice(1).join(' '))).toEqual([
+              'mcp get netlify',
+              'mcp add --transport http --scope local netlify https://mcp.netlify.com/mcp',
+              'mcp get netlify',
+            ])
+          })
+        })
+      })
+    },
+  )
 
   test('netlify init syncs installed skills: updates stale copies, removes deprecated ones, keeps edits until --reset-context', async (t) => {
     await withSiteBuilder(t, async (builder) => {
