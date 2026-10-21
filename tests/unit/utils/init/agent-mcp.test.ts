@@ -125,8 +125,20 @@ describe('setupAgentMcp', () => {
         expect.objectContaining({ cwd: project, reject: false, stdin: 'ignore' }),
       )
       expect(execaMock).toHaveBeenNthCalledWith(2, installed('claude'), claudeAdd('local'), expect.anything())
+      expect(logged()).toContain("Saved in ~/.claude.json, under this project's path")
       expect(logged()).toContain('claude mcp remove --scope local netlify')
       expect(logged()).toContain('loads the next time you start Claude Code in this folder')
+    })
+
+    test('does not install when the existing-server check fails', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(exited(1, 'boom'))
+
+      await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toMatchObject({
+        agents: { 'claude-code': 'failed' },
+      })
+
+      expect(execaMock).toHaveBeenCalledTimes(1)
     })
 
     test('installs user-wide only when --mcp-scope user is passed', async () => {

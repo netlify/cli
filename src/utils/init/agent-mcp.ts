@@ -22,6 +22,7 @@ export type McpScope = (typeof MCP_SCOPES)[number]
 interface NativeCommands {
   add: string[]
   remove?: string[]
+  savedIn?: string
 }
 
 interface NativeSetup {
@@ -64,8 +65,16 @@ export const MCP_AGENTS: McpAgent[] = [
     native: {
       lookup: 'list',
       scopes: {
-        project: { add: claudeAdd('local'), remove: ['mcp', 'remove', '--scope', 'local', NETLIFY_MCP_SERVER_NAME] },
-        user: { add: claudeAdd('user'), remove: ['mcp', 'remove', '--scope', 'user', NETLIFY_MCP_SERVER_NAME] },
+        project: {
+          add: claudeAdd('local'),
+          remove: ['mcp', 'remove', '--scope', 'local', NETLIFY_MCP_SERVER_NAME],
+          savedIn: "~/.claude.json, under this project's path",
+        },
+        user: {
+          add: claudeAdd('user'),
+          remove: ['mcp', 'remove', '--scope', 'user', NETLIFY_MCP_SERVER_NAME],
+          savedIn: '~/.claude.json',
+        },
       },
     },
   },
@@ -420,7 +429,8 @@ const add = async (
     log(`  Add it yourself with ${formatCommand(agent.binary, commands.add)}`)
     return 'failed'
   }
-  log(`Added the Netlify MCP server to ${agent.label} for ${where(scope)}. Nothing was written to the repository.`)
+  const savedIn = commands.savedIn ? `Saved in ${commands.savedIn}; nothing` : 'Nothing'
+  log(`Added the Netlify MCP server to ${agent.label} for ${where(scope)}. ${savedIn} was written to the repository.`)
   if (!agent.native?.lookup) {
     log(
       `  ${agent.label} can't be checked first, so this replaced any ${chalk.cyan(NETLIFY_MCP_SERVER_NAME)} server it had.`,
