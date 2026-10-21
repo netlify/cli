@@ -10,7 +10,7 @@ import toml from 'toml'
 import { describe, test, type TestContext } from 'vitest'
 
 import { cliPath } from '../../utils/cli-path.js'
-import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
+import { CONFIRM, DOWN, NO, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
@@ -892,6 +892,112 @@ describe.concurrent('commands/init', () => {
           },
         )
       })
+    })
+  })
+
+  const NO_GIT_PROMPT = 'Do you want to create a Netlify project without a git repository?'
+  const manualSiteInfo = {
+    admin_url: 'https://app.netlify.com/projects/test-site-name/overview',
+    ssl_url: 'https://test-site-name.netlify.app/',
+    id: 'site_id',
+    name: 'test-site-name',
+    build_settings: {},
+  }
+  const createWithoutGitQuestions = () => [
+    { question: 'Yes, create and deploy project manually', answer: CONFIRM },
+    { question: 'Team:', answer: CONFIRM },
+    {
+      question: 'Project name (leave blank for a random name; you can change it later)',
+      answer: answerWithValue('test-site-name'),
+    },
+    { question: 'Do you want to configure build settings?', answer: answerWithValue(NO) },
+  ]
+  const noGitRoutes = [
+    { path: 'accounts', response: [{ slug: 'test-account' }] },
+    { path: 'sites', response: [] },
+    { path: 'sites/site_id/service-instances', response: [] },
+    { path: 'sites/site_id', response: manualSiteInfo },
+    { path: 'user', response: { name: 'test user', slug: 'test-user', email: 'user@test.com' } },
+    { path: 'test-account/sites', method: 'POST' as const, response: { id: 'site_id', name: 'test-site-name' } },
+  ]
+  const countSiteCreations = (requests: { method: string; path: string }[]) =>
+    requests.filter(({ method, path: requestPath }) => method === 'POST' && requestPath.endsWith('/test-account/sites'))
+      .length
+  const runInitIn = (cwd: string, apiUrl: string, questions: { question: string; answer: string | string[] }[]) => {
+    const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
+      cwd,
+      env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+      encoding: 'utf8',
+    })
+    handleQuestions(childProcess, questions)
+    return childProcess
+  }
+  const readStateSiteId = async (cwd: string) =>
+    (JSON.parse(await readFile(path.join(cwd, '.netlify', 'state.json'), 'utf8')) as { siteId?: string }).siteId
+
+  test('rerunning netlify init in a folder linked without git does not create another project', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(noGitRoutes, async ({ apiUrl, requests }) => {
+        const first = await runInitIn(builder.directory, apiUrl, createWithoutGitQuestions())
+        t.expect(first.stdout).toContain(NO_GIT_PROMPT)
+        t.expect(countSiteCreations(requests)).toBe(1)
+        await t.expect(readStateSiteId(builder.directory)).resolves.toBe('site_id')
+
+        const second = await runInitIn(builder.directory, apiUrl, createWithoutGitQuestions())
+        t.expect(second.stdout).not.toContain(NO_GIT_PROMPT)
+        t.expect(second.stdout).toContain('This folder is already linked to the Netlify project test-site-name')
+        t.expect(second.stdout).toContain('https://test-site-name.netlify.app/')
+        t.expect(second.stdout).toContain('deploy')
+        t.expect(countSiteCreations(requests)).toBe(1)
+        await t.expect(readStateSiteId(builder.directory)).resolves.toBe('site_id')
+      })
+    })
+  })
+
+  test('netlify init configures the repo when a project linked without git gets a git remote', async (t) => {
+    const routes = [
+      ...noGitRoutes,
+      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
+      { path: 'sites/site_id', method: 'PATCH' as const, response: { deploy_hook: 'deploy_hook' } },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().withStateFile({ siteId: 'site_id' }).build()
+
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
+        const { stdout } = await runInitIn(builder.directory, apiUrl, manualQuestions())
+
+        t.expect(stdout).not.toContain(NO_GIT_PROMPT)
+        t.expect(stdout).not.toContain('already linked')
+        t.expect(countSiteCreations(requests)).toBe(0)
+        const patch = requests.find(
+          ({ method, path: requestPath }) => method === 'PATCH' && requestPath.endsWith('/sites/site_id'),
+        )
+        t.expect(patch?.body).toMatchObject({ repo: { provider: 'github', repo_path: 'owner/repo' } })
+      })
+    })
+  })
+
+  test('netlify init ignores a linked project that no longer exists', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withStateFile({ siteId: 'deleted_site_id' }).build()
+
+      await withMockApi(
+        noGitRoutes,
+        async ({ apiUrl, requests }) => {
+          const { stdout, stderr } = await runInitIn(builder.directory, apiUrl, createWithoutGitQuestions())
+
+          t.expect(`${stdout}${stderr}`).toContain(
+            'The Netlify project deleted_site_id linked to this folder no longer exists',
+          )
+          t.expect(stdout).toContain(NO_GIT_PROMPT)
+          t.expect(countSiteCreations(requests)).toBe(1)
+          await t.expect(readStateSiteId(builder.directory)).resolves.toBe('site_id')
+        },
+        true,
+      )
     })
   })
 })
