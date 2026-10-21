@@ -869,7 +869,7 @@ describe.concurrent('commands/init', () => {
           [
             '#!/bin/sh',
             `echo "$*" >> "${callsFile}"`,
-            `if [ "$2" = "get" ]; then echo "No MCP server named $3" >&2; exit 1; fi`,
+            `if [ "$2" = "list" ]; then echo "No MCP servers configured."; exit 0; fi`,
             'exit 2',
             '',
           ].join('\n'),
@@ -882,6 +882,11 @@ describe.concurrent('commands/init', () => {
 
             const suggested = await runInit()
             t.expect(suggested.stdout).toContain(
+              'claude mcp add --transport http --scope local netlify https://mcp.netlify.com/mcp',
+            )
+
+            const userWide = await runInit('--mcp-scope', 'user')
+            t.expect(userWide.stdout).toContain(
               'claude mcp add --transport http --scope user netlify https://mcp.netlify.com/mcp',
             )
 
@@ -892,7 +897,7 @@ describe.concurrent('commands/init', () => {
             t.expect(skippedAll.stdout).not.toContain('MCP server')
 
             const calls = (await readFile(callsFile, 'utf8')).trim().split('\n')
-            t.expect(calls).toEqual(['mcp get netlify'])
+            t.expect(calls).toEqual(['mcp list', 'mcp list'])
           })
         })
       })

@@ -10,7 +10,7 @@ const realpathOrSelf = async (target: string): Promise<string> => {
   }
 }
 
-export const findSkillsSetupBlocker = async (root: string, home: string = homedir()): Promise<string | undefined> => {
+export const findProjectSetupBlocker = async (root: string, home: string = homedir()): Promise<string | undefined> => {
   const resolvedRoot = await realpathOrSelf(root)
   if (resolvedRoot === (await realpathOrSelf(home))) {
     return 'this is your home directory, where they would apply to every project'

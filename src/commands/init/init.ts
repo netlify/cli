@@ -11,8 +11,8 @@ import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { LocalState, SiteInfo } from '../../utils/types.js'
-import { findSkillsSetupBlocker } from '../../utils/init/agent-location.js'
-import { setupAgentMcp } from '../../utils/init/agent-mcp.js'
+import { findProjectSetupBlocker } from '../../utils/init/agent-location.js'
+import { type McpScope, setupAgentMcp } from '../../utils/init/agent-mcp.js'
 import { setupAgentSkills } from '../../utils/init/agent-skills.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
 import { type InitExitCode, LINKED_EXISTING_SITE_EXIT_CODE, LINKED_NEW_SITE_EXIT_CODE } from './constants.js'
@@ -217,6 +217,7 @@ type InitExtraOptions = {
   setupAgentMcp?: boolean | undefined
   resetContext?: boolean | undefined
   resetMcpSetup?: boolean | undefined
+  mcpScope?: McpScope | undefined
 }
 
 const installAgentSkills = async (workingDir: string, reset: boolean): Promise<void> => {
@@ -230,32 +231,48 @@ const installAgentSkills = async (workingDir: string, reset: boolean): Promise<v
   })
 }
 
-const addAgentMcp = async (workingDir: string, reset: boolean): Promise<void> => {
-  const { selection, agents, failed = false } = await setupAgentMcp({ workingDir, reset })
-  await track('sites_agentMcpSetup', { selection, agents, failed, resetMcpSetup: reset })
+const addAgentMcp = async (command: BaseCommand, reset: boolean, scope: McpScope): Promise<void> => {
+  const { repositoryRoot, state } = command.netlify
+  const {
+    selection,
+    agents,
+    failed = false,
+  } = await setupAgentMcp({
+    workingDir: repositoryRoot,
+    store: state,
+    scope,
+    reset,
+  })
+  await track('sites_agentMcpSetup', { selection, agents, failed, scope, resetMcpSetup: reset })
 }
 
 const setUpAgents = async (
   command: BaseCommand,
-  { skills, mcp, reset, resetMcp }: { skills: boolean; mcp: boolean; reset: boolean; resetMcp: boolean },
+  {
+    skills,
+    mcp,
+    reset,
+    resetMcp,
+    mcpScope,
+  }: { skills: boolean; mcp: boolean; reset: boolean; resetMcp: boolean; mcpScope: McpScope },
 ): Promise<void> => {
   if (!skills && !mcp) {
     return
   }
   const { repositoryRoot } = command.netlify
   log()
+  const blocker = await findProjectSetupBlocker(repositoryRoot)
+  if (blocker) {
+    log(`Skipped setting up Netlify skills and the Netlify MCP server: ${blocker}.`)
+    log(`  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} from your project folder to set them up there.`)
+    await track('sites_agentSetupSkipped', { skills, mcp })
+    return
+  }
   if (skills) {
-    const blocker = await findSkillsSetupBlocker(repositoryRoot)
-    if (blocker) {
-      log(`Skipped installing Netlify skills: ${blocker}.`)
-      log(`  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} from your project folder to install them there.`)
-      await track('sites_agentSkillsSkipped', {})
-    } else {
-      await installAgentSkills(repositoryRoot, reset)
-    }
+    await installAgentSkills(repositoryRoot, reset)
   }
   if (mcp) {
-    await addAgentMcp(repositoryRoot, resetMcp)
+    await addAgentMcp(command, resetMcp, mcpScope)
   }
 }
 
@@ -269,6 +286,7 @@ export const init = async (
     setupAgentMcp: shouldSetupAgentMcp = false,
     resetContext = false,
     resetMcpSetup = false,
+    mcpScope = 'project',
   }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
   command.setAnalyticsPayload({
@@ -278,6 +296,7 @@ export const init = async (
     skipMcpSetup: options.skipMcpSetup,
     resetContext: options.resetContext,
     resetMcpSetup: options.resetMcpSetup,
+    mcpScope,
   })
 
   const { repositoryRoot, state } = command.netlify
@@ -294,6 +313,7 @@ export const init = async (
     mcp: shouldSetupAgentMcp,
     reset: resetContext,
     resetMcp: resetMcpSetup,
+    mcpScope,
   })
 
   const repoUrl = getRepoUrl(existingSiteInfo)

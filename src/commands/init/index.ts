@@ -1,4 +1,4 @@
-import { OptionValues } from 'commander'
+import { Option, OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
 import BaseCommand from '../base-command.js'
@@ -16,6 +16,14 @@ export const createInitCommand = (program: BaseCommand) =>
       'Skip installing Netlify skills and adding the Netlify MCP server for AI coding agents',
     )
     .option('--skip-mcp-setup', 'Skip adding the Netlify MCP server to your AI coding agents')
+    .addOption(
+      new Option(
+        '--mcp-scope <scope>',
+        'Add the Netlify MCP server for this project only, or for your user across all projects',
+      )
+        .choices(['project', 'user'])
+        .default('project'),
+    )
     .option(
       '--reset-mcp-setup',
       'Forget your saved Netlify MCP server choices and ask which AI coding agents to set up',
@@ -36,6 +44,7 @@ For more information about getting started with Netlify CLI, see ${terminalLink(
         setupAgentSkills: !options.skipAgentSetup,
         setupAgentMcp: !options.skipAgentSetup && !options.skipMcpSetup,
         resetMcpSetup: Boolean(options.resetMcpSetup),
+        mcpScope: options.mcpScope === 'user' ? 'user' : 'project',
         resetContext: Boolean(options.resetContext),
       })
     })
