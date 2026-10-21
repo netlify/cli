@@ -184,6 +184,15 @@ describe('setupAgentMcp', () => {
       expect(logged()).not.toContain('mcp add')
     })
 
+    test('reads older claude mcp list output that has no health status', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(listed(`netlify: ${NETLIFY_MCP_URL} (HTTP)`))
+
+      await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toMatchObject({
+        agents: { 'claude-code': 'present' },
+      })
+    })
+
     test('does not treat a URL that only contains the hosted URL as the hosted server', async () => {
       await install('claude')
       execaMock.mockResolvedValueOnce(listed(`evil: https://evil.example/${NETLIFY_MCP_URL} (HTTP) - ✔ Connected`))
@@ -296,6 +305,7 @@ describe('setupAgentMcp', () => {
       expect(execaMock).not.toHaveBeenCalled()
       expect(logged()).toContain(`${ADD_MCP} -y -a vscode`)
       expect(logged()).toContain(join('.vscode', 'mcp.json'))
+      expect(logged()).toContain('Run the command shown for VS Code to finish')
     })
 
     test('runs the agent CLI for user scope', async () => {

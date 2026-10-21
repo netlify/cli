@@ -298,11 +298,12 @@ type Lookup = Existing | { found: 'none' } | { found: 'unknown'; run: NativeRun 
 const listedServers = (stdout: string): { name: string; target: string }[] =>
   stdout.split('\n').flatMap((line) => {
     const separator = line.indexOf(': ')
-    const status = line.lastIndexOf(' - ')
-    if (separator <= 0 || status <= separator) {
+    if (separator <= 0) {
       return []
     }
-    return [{ name: line.slice(0, separator).trim(), target: line.slice(separator + 2, status).trim() }]
+    const status = line.lastIndexOf(' - ')
+    const end = status > separator ? status : line.length
+    return [{ name: line.slice(0, separator).trim(), target: line.slice(separator + 2, end).trim() }]
   })
 
 const lookUp = async (executable: string, kind: 'list' | 'get', workingDir: string): Promise<Lookup> => {
@@ -582,6 +583,12 @@ export const setupAgentMcp = async ({
       summary.agents[agent.id] = await add(agent, scope, env, workingDir)
     }
     saveChoices(store, scope, selected.offered, selected.agents, summary.agents)
+    const toRun = selected.agents.filter(({ id }) => summary.agents[id] === 'printed')
+    if (toRun.length > 0) {
+      log(
+        `Run the command shown for ${toRun.map(({ label }) => label).join(', ')} to finish. You won't be asked about ${toRun.length === 1 ? 'it' : 'them'} again in this project.`,
+      )
+    }
     log(`Your choices are saved for this project. ${resetHint()}`)
   } catch (error) {
     if (error instanceof Error && error.name === 'ExitPromptError') {
