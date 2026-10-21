@@ -393,20 +393,6 @@ const printCommand = (agent: McpAgent, scope: McpScope, lead: string): void => {
   log(restartHint(agent))
 }
 
-const suggest = async (
-  agent: McpAgent,
-  scope: McpScope,
-  env: NodeJS.ProcessEnv,
-  workingDir: string,
-): Promise<AgentMcpStatus> => {
-  const { lookup } = await lookUpExisting(agent, env, workingDir)
-  if (lookup && isExisting(lookup)) {
-    return reportExisting(agent, lookup)
-  }
-  printCommand(agent, scope, `If the user wants the Netlify MCP server in ${agent.label} for ${where(scope)}, run`)
-  return 'printed'
-}
-
 const add = async (
   agent: McpAgent,
   scope: McpScope,
@@ -574,7 +560,7 @@ export const setupAgentMcp = async ({
         log(`You chose not to add the Netlify MCP server to ${agent.label}. ${resetHint()}`)
         summary.agents[agent.id] = 'declined'
       } else {
-        summary.agents[agent.id] = await suggest(agent, scope, env, workingDir)
+        summary.agents[agent.id] = await add(agent, scope, env, workingDir)
       }
       return summary
     }

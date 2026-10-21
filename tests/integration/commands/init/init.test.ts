@@ -857,7 +857,7 @@ describe.concurrent('commands/init', () => {
   })
 
   test.skipIf(process.platform === 'win32')(
-    'netlify init tells the agent running it how to add the Netlify MCP server, and both skip flags silence it',
+    'netlify init adds the Netlify MCP server for the project to the agent running it, and both skip flags silence it',
     async (t) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.withGit().build()
@@ -870,6 +870,7 @@ describe.concurrent('commands/init', () => {
             '#!/bin/sh',
             `echo "$*" >> "${callsFile}"`,
             `if [ "$2" = "list" ]; then echo "No MCP servers configured."; exit 0; fi`,
+            `if [ "$2" = "add" ]; then exit 0; fi`,
             'exit 2',
             '',
           ].join('\n'),
@@ -880,15 +881,11 @@ describe.concurrent('commands/init', () => {
           await withSkillsHost(async (skillsHost) => {
             const runInit = initOnLinkedSite({ apiUrl, cwd: builder.directory, skillsHost: skillsHost.url, claudeBin })
 
-            const suggested = await runInit()
-            t.expect(suggested.stdout).toContain(
-              'claude mcp add --transport http --scope local netlify https://mcp.netlify.com/mcp',
-            )
+            const projectScoped = await runInit()
+            t.expect(projectScoped.stdout).toContain('Added the Netlify MCP server to Claude Code for this project')
 
             const userWide = await runInit('--mcp-scope', 'user')
-            t.expect(userWide.stdout).toContain(
-              'claude mcp add --transport http --scope user netlify https://mcp.netlify.com/mcp',
-            )
+            t.expect(userWide.stdout).toContain('Added the Netlify MCP server to Claude Code for all your projects')
 
             const skippedMcp = await runInit('--skip-mcp-setup')
             t.expect(skippedMcp.stdout).not.toContain('MCP server')
@@ -897,7 +894,12 @@ describe.concurrent('commands/init', () => {
             t.expect(skippedAll.stdout).not.toContain('MCP server')
 
             const calls = (await readFile(callsFile, 'utf8')).trim().split('\n')
-            t.expect(calls).toEqual(['mcp list', 'mcp list'])
+            t.expect(calls).toEqual([
+              'mcp list',
+              'mcp add --transport http --scope local netlify https://mcp.netlify.com/mcp',
+              'mcp list',
+              'mcp add --transport http --scope user netlify https://mcp.netlify.com/mcp',
+            ])
           })
         })
       })
