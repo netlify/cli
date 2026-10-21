@@ -479,7 +479,6 @@ const add = async (
 export interface McpChoiceStore {
   get(key: string): unknown
   set(key: string, value: unknown): void
-  delete(key: string): void
 }
 
 interface SavedChoice {
@@ -545,13 +544,10 @@ const selectAgents = async ({
     if (!agent) {
       return { selection: 'none', agents: [] }
     }
-    if (reset && store.get(savedChoiceKey(agent)) !== undefined) {
-      store.delete(savedChoiceKey(agent))
-    }
     return {
       selection: 'driving',
       agents: [agent],
-      declined: savedChoice(store, agent, scope)?.choice === 'declined',
+      declined: !reset && savedChoice(store, agent, scope)?.choice === 'declined',
     }
   }
   if (!interactive) {

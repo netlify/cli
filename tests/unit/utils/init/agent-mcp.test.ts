@@ -72,7 +72,6 @@ describe('setupAgentMcp', () => {
     store = {
       get: (key) => saved.get(key),
       set: (key, value) => saved.set(key, value),
-      delete: (key) => saved.delete(key),
     }
   })
 
@@ -315,16 +314,17 @@ describe('setupAgentMcp', () => {
       expect(logged()).toContain('init --reset-mcp-setup')
     })
 
-    test('--reset-mcp-setup forgets a saved no for the agent running init', async () => {
+    test('--reset-mcp-setup ignores a saved no for the agent running init without changing it', async () => {
       await install('claude')
-      saved.set('agentMcpSetup.claude-code', { url: NETLIFY_MCP_URL, scope: 'project', choice: 'declined' })
+      const declined = { url: NETLIFY_MCP_URL, scope: 'project', choice: 'declined' }
+      saved.set('agentMcpSetup.claude-code', declined)
       execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
 
       await expect(run({ NETLIFY_AGENT: 'claude-code' }, { reset: true })).resolves.toMatchObject({
         agents: { 'claude-code': 'added' },
       })
 
-      expect(saved.get('agentMcpSetup.claude-code')).toBeUndefined()
+      expect(saved.get('agentMcpSetup.claude-code')).toEqual(declined)
     })
 
     test('prints the generic project command for an agent it has no mapping for', async () => {
@@ -569,16 +569,20 @@ describe('setupAgentMcp', () => {
       await expect(readFile(stateFile(), 'utf8')).rejects.toThrow(/ENOENT/)
     })
 
-    test('--reset-mcp-setup removes a saved no from the state file in an agent run', async () => {
+    test.each([
+      ['the add succeeds', exited(0)],
+      ['the add fails', exited(1, 'boom')],
+    ])('an agent run with --reset-mcp-setup leaves the state file byte for byte when %s', async (_, addResult) => {
       await install('claude')
       const state = new LocalState(project)
       state.set('siteId', 'site_id')
       state.set('agentMcpSetup.claude-code', { url: NETLIFY_MCP_URL, scope: 'project', choice: 'declined' })
-      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
+      const before = await readFile(stateFile(), 'utf8')
+      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(addResult)
 
       await run({ NETLIFY_AGENT: 'claude-code' }, { reset: true, store: new LocalState(project) })
 
-      expect(JSON.parse(await readFile(stateFile(), 'utf8'))).toEqual({ siteId: 'site_id', agentMcpSetup: {} })
+      await expect(readFile(stateFile(), 'utf8')).resolves.toBe(before)
     })
   })
 
