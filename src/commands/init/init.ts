@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 
-import { type APIError, chalk, exit, log, netlifyCommand, warn } from '../../utils/command-helpers.js'
+import { type APIError, chalk, exit, log, logAndThrowError, netlifyCommand, warn } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
@@ -52,6 +52,11 @@ const logLinkedWithoutGitAndExit = ({
   log()
   const defaultExitMessage = `To deploy to this project, run ${chalk.cyanBright.bold(`${netlifyCommand()} deploy`)}.`
   log(customizeExitMessage?.(LINKED_EXISTING_SITE_EXIT_CODE, defaultExitMessage) ?? defaultExitMessage)
+  log(
+    `To link this folder to a different project, run ${chalk.cyanBright.bold(
+      `${netlifyCommand()} unlink`,
+    )}, then ${chalk.cyanBright.bold(`${netlifyCommand()} init`)}.`,
+  )
   return exit()
 }
 
@@ -66,14 +71,24 @@ const getLinkedSiteInfo = async (command: BaseCommand): Promise<SiteInfo | undef
   try {
     return (await api.getSite({ siteId: siteInfo.id })) as unknown as SiteInfo
   } catch (error_) {
-    if ((error_ as APIError).status === 404) {
-      warn(`The Netlify project ${siteInfo.id} linked to this folder no longer exists. Continuing without it.`)
-      if (command.netlify.accounts.length === 0) {
-        await command.refreshAccounts()
-      }
-      return undefined
+    const { status, message } = error_ as APIError
+    const unusableLinkWarnings: Partial<Record<number, string>> = {
+      403: `You don't have access to the Netlify project ${siteInfo.id} linked to this folder. Continuing without it.`,
+      404: `The Netlify project ${siteInfo.id} linked to this folder no longer exists. Continuing without it.`,
     }
-    throw error_
+    const unusableLinkWarning = unusableLinkWarnings[status]
+    if (unusableLinkWarning === undefined) {
+      return logAndThrowError(
+        `Could not load the Netlify project ${siteInfo.id} linked to this folder (${
+          status ? `status ${status.toString()}` : message
+        }). Try again, or run ${chalk.cyanBright.bold(`${netlifyCommand()} unlink`)} to start over.`,
+      )
+    }
+    warn(unusableLinkWarning)
+    if (command.netlify.accounts.length === 0) {
+      await command.refreshAccounts()
+    }
+    return undefined
   }
 }
 

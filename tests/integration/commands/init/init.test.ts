@@ -1000,4 +1000,59 @@ describe.concurrent('commands/init', () => {
       )
     })
   })
+
+  test('netlify init ignores a linked project the user cannot access', async (t) => {
+    const routes = [
+      { path: 'sites/forbidden_site_id', status: 403, response: { message: 'Forbidden' } },
+      ...noGitRoutes,
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withStateFile({ siteId: 'forbidden_site_id' }).build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl, requests }) => {
+          const { stdout, stderr } = await runInitIn(builder.directory, apiUrl, createWithoutGitQuestions())
+
+          t.expect(`${stdout}${stderr}`).toContain(
+            "You don't have access to the Netlify project forbidden_site_id linked to this folder",
+          )
+          t.expect(stdout).toContain(NO_GIT_PROMPT)
+          t.expect(countSiteCreations(requests)).toBe(1)
+          await t.expect(readStateSiteId(builder.directory)).resolves.toBe('site_id')
+        },
+        true,
+      )
+    })
+  })
+
+  test('netlify init stops without creating a project when the linked project cannot be loaded', async (t) => {
+    const routes = [
+      { path: 'sites/unavailable_site_id', status: 500, response: { message: 'Internal Server Error' } },
+      ...noGitRoutes,
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withStateFile({ siteId: 'unavailable_site_id' }).build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl, requests }) => {
+          const result = await runInitIn(builder.directory, apiUrl, createWithoutGitQuestions()).catch(
+            (error: unknown) => error as { exitCode: number; stdout: string; stderr: string },
+          )
+
+          t.expect(result.exitCode).not.toBe(0)
+          t.expect(`${result.stdout}${result.stderr}`).toContain(
+            'Could not load the Netlify project unavailable_site_id linked to this folder (status 500)',
+          )
+          t.expect(result.stdout).not.toContain(NO_GIT_PROMPT)
+          t.expect(countSiteCreations(requests)).toBe(0)
+          await t.expect(readStateSiteId(builder.directory)).resolves.toBe('unavailable_site_id')
+        },
+        true,
+      )
+    })
+  })
 })
