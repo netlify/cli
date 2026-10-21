@@ -263,7 +263,8 @@ const setUpAgents = async (
   log()
   const blocker = await findProjectSetupBlocker(repositoryRoot)
   if (blocker) {
-    log(`Skipped setting up Netlify skills and the Netlify MCP server: ${blocker}.`)
+    const skipped = [skills && 'Netlify skills', mcp && 'the Netlify MCP server'].filter(Boolean).join(' and ')
+    log(`Skipped setting up ${skipped}: ${blocker}.`)
     log(`  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} from your project folder to set them up there.`)
     await track('sites_agentSetupSkipped', { skills, mcp })
     return

@@ -19,6 +19,8 @@ const ADD_MCP_VERSION = '2.4.1'
 export const MCP_SCOPES = ['project', 'user'] as const
 export type McpScope = (typeof MCP_SCOPES)[number]
 
+type LookupKind = 'list' | 'list-json'
+
 interface NativeCommands {
   add: string[]
   remove?: string[]
@@ -26,7 +28,7 @@ interface NativeCommands {
 }
 
 interface NativeSetup {
-  lookup?: 'list' | 'get'
+  lookup?: LookupKind
   scopes: Partial<Record<McpScope, NativeCommands>>
 }
 
@@ -86,7 +88,7 @@ export const MCP_AGENTS: McpAgent[] = [
     projectMarkers: ['.codex'],
     projectFile: path.join('.codex', 'config.toml'),
     native: {
-      lookup: 'get',
+      lookup: 'list-json',
       scopes: {
         user: {
           add: ['mcp', 'add', NETLIFY_MCP_SERVER_NAME, '--url', NETLIFY_MCP_URL],
@@ -155,7 +157,7 @@ export const MCP_AGENTS: McpAgent[] = [
   { id: 'cline', label: 'Cline', drivenBy: ['cline'], projectMarkers: ['.clinerules'] },
 ]
 
-export type AgentMcpStatus = 'added' | 'present' | 'kept' | 'printed' | 'declined' | 'failed'
+export type AgentMcpStatus = 'added' | 'present' | 'kept' | 'printed' | 'unsupported' | 'declined' | 'failed'
 export type AgentSelection = 'driving' | 'prompt' | 'saved' | 'none'
 
 export interface AgentMcpSetupSummary {
@@ -224,9 +226,16 @@ const hasProjectMarker = async (agent: McpAgent, workingDir: string): Promise<bo
   return false
 }
 
-export const findCandidates = async (workingDir: string, env: NodeJS.ProcessEnv): Promise<AgentCandidate[]> => {
+const supportsScope = (agent: McpAgent, scope: McpScope): boolean =>
+  scope === 'user' || agent.projectFile !== undefined || agent.native?.scopes.project !== undefined
+
+export const findCandidates = async (
+  workingDir: string,
+  env: NodeJS.ProcessEnv,
+  scope: McpScope = 'project',
+): Promise<AgentCandidate[]> => {
   const candidates: AgentCandidate[] = []
-  for (const agent of MCP_AGENTS) {
+  for (const agent of MCP_AGENTS.filter((candidate) => supportsScope(candidate, scope))) {
     const detected = Boolean(agent.inTerminal?.(env)) || (await hasProjectMarker(agent, workingDir))
     if (detected || (agent.binary !== undefined && (await findOnPath(agent.binary, env)) !== undefined)) {
       candidates.push({ agent, detected })
@@ -251,6 +260,7 @@ const OUR_URL = new URL(NETLIFY_MCP_URL)
 const isOurUrl = (url: URL): boolean =>
   url.protocol === OUR_URL.protocol &&
   url.hostname.toLowerCase() === OUR_URL.hostname &&
+  url.port === OUR_URL.port &&
   url.pathname.replace(/\/$/, '') === OUR_URL.pathname
 
 const pointsAtNetlify = (target: string): boolean =>
@@ -274,7 +284,7 @@ const formatCommand = (binary: string, args: string[]): string =>
   chalk.cyanBright.bold([binary, ...args].map(shellQuote).join(' '))
 
 const addMcpArgs = (agents: McpAgent[], scope: McpScope): string[] => {
-  const global = scope === 'user' || agents.some((agent) => agent.projectFile === undefined)
+  const global = scope === 'user'
   return [
     '-y',
     `add-mcp@${ADD_MCP_VERSION}`,
@@ -315,28 +325,49 @@ const listedServers = (stdout: string): { name: string; target: string }[] =>
     return [{ name: line.slice(0, separator).trim(), target: line.slice(separator + 2, end).trim() }]
   })
 
-const lookUp = async (executable: string, kind: 'list' | 'get', workingDir: string): Promise<Lookup> => {
-  if (kind === 'list') {
-    const run = await runNative(executable, ['mcp', 'list'], workingDir, LIST_TIMEOUT_MS)
-    if (run.exitCode !== 0) {
-      return { found: 'unknown', run }
+interface CodexServer {
+  name?: unknown
+  transport?: { url?: unknown; command?: unknown; args?: unknown }
+}
+
+const codexServers = (stdout: string): { name: string; target: string }[] | undefined => {
+  try {
+    const parsed: unknown = JSON.parse(stdout)
+    if (!Array.isArray(parsed)) {
+      return undefined
     }
-    const servers = listedServers(run.stdout)
-    const ours = servers.find(({ target }) => urlsIn(target).some(isOurUrl))
-    if (ours) {
-      return { found: 'ours', name: ours.name }
-    }
-    const other = servers.find(({ name, target }) => isNetlifyName(name) || pointsAtNetlify(target))
-    return other ? { found: 'other', name: other.name } : { found: 'none' }
+    return (parsed as CodexServer[]).map(({ name, transport }) => ({
+      name: typeof name === 'string' ? name : '',
+      target: [
+        transport?.url,
+        transport?.command,
+        ...(Array.isArray(transport?.args) ? (transport.args as unknown[]) : []),
+      ]
+        .filter((part): part is string => typeof part === 'string')
+        .join(' '),
+    }))
+  } catch {
+    return undefined
   }
-  const run = await runNative(executable, ['mcp', 'get', NETLIFY_MCP_SERVER_NAME], workingDir)
-  if (run.exitCode === 0) {
-    return { found: urlsIn(run.output).some(isOurUrl) ? 'ours' : 'other', name: NETLIFY_MCP_SERVER_NAME }
+}
+
+const classify = (servers: { name: string; target: string }[]): Lookup => {
+  const ours = servers.find(({ target }) => urlsIn(target).some(isOurUrl))
+  if (ours) {
+    return { found: 'ours', name: ours.name }
   }
-  if (run.exitCode === 1 && run.output.includes('No MCP server named')) {
-    return { found: 'none' }
+  const other = servers.find(({ name, target }) => isNetlifyName(name) || pointsAtNetlify(target))
+  return other ? { found: 'other', name: other.name } : { found: 'none' }
+}
+
+const lookUp = async (executable: string, kind: LookupKind, workingDir: string): Promise<Lookup> => {
+  if (kind === 'list-json') {
+    const run = await runNative(executable, ['mcp', 'list', '--json'], workingDir)
+    const servers = run.exitCode === 0 ? codexServers(run.stdout) : undefined
+    return servers ? classify(servers) : { found: 'unknown', run }
   }
-  return { found: 'unknown', run }
+  const run = await runNative(executable, ['mcp', 'list'], workingDir, LIST_TIMEOUT_MS)
+  return run.exitCode === 0 ? classify(listedServers(run.stdout)) : { found: 'unknown', run }
 }
 
 const isExisting = (lookup: Lookup): lookup is Existing => lookup.found === 'ours' || lookup.found === 'other'
@@ -369,8 +400,8 @@ const lookUpExisting = async (
   return { executable, lookup: await lookUp(executable, kind, workingDir) }
 }
 
-const restartHint = (agent: McpAgent): string =>
-  `  The Netlify MCP server loads the next time you start ${agent.label} in this folder.`
+const restartHint = (agent: McpAgent, scope: McpScope): string =>
+  `  The Netlify MCP server loads the next time you start ${agent.label}${scope === 'project' ? ' in this folder' : ''}.`
 
 const commandFor = (agent: McpAgent, scope: McpScope): string => {
   const native = agent.native?.scopes[scope]
@@ -381,11 +412,12 @@ const commandFor = (agent: McpAgent, scope: McpScope): string => {
 }
 
 const fileNote = (agent: McpAgent, scope: McpScope): string | undefined => {
-  if (agent.native?.scopes[scope]) {
-    return undefined
+  const native = agent.native?.scopes[scope]
+  if (native && !agent.native?.lookup) {
+    return `  Running it replaces any ${chalk.cyan(NETLIFY_MCP_SERVER_NAME)} server ${agent.label} already has.`
   }
-  if (scope === 'project' && agent.projectFile === undefined) {
-    return `  ${agent.label} has no per-project setting, so this adds it for all your projects.`
+  if (native) {
+    return undefined
   }
   if (scope === 'project') {
     return `  This writes ${agent.projectFile ?? ''} in this folder. Commit it only if everyone on the project should get it.`
@@ -399,7 +431,7 @@ const printCommand = (agent: McpAgent, scope: McpScope, lead: string): void => {
   if (note) {
     log(note)
   }
-  log(restartHint(agent))
+  log(restartHint(agent, scope))
 }
 
 const add = async (
@@ -408,6 +440,12 @@ const add = async (
   env: NodeJS.ProcessEnv,
   workingDir: string,
 ): Promise<AgentMcpStatus> => {
+  if (!supportsScope(agent, scope)) {
+    log(
+      `${agent.label} has no per-project MCP setting, so nothing was set up. To add the Netlify MCP server for all your projects, run ${chalk.cyanBright.bold(`${netlifyCommand()} init --mcp-scope user`)}`,
+    )
+    return 'unsupported'
+  }
   const commands = agent.native?.scopes[scope]
   const { executable, lookup } = await lookUpExisting(agent, env, workingDir)
   if (lookup?.found === 'unknown') {
@@ -418,7 +456,7 @@ const add = async (
   if (lookup && isExisting(lookup)) {
     return reportExisting(agent, lookup)
   }
-  if (!commands || !executable || !agent.binary) {
+  if (!commands || !executable || !agent.binary || !agent.native?.lookup) {
     printCommand(agent, scope, `To add the Netlify MCP server to ${agent.label} for ${where(scope)}, run`)
     return 'printed'
   }
@@ -431,21 +469,17 @@ const add = async (
   }
   const savedIn = commands.savedIn ? `Saved in ${commands.savedIn}; nothing` : 'Nothing'
   log(`Added the Netlify MCP server to ${agent.label} for ${where(scope)}. ${savedIn} was written to the repository.`)
-  if (!agent.native?.lookup) {
-    log(
-      `  ${agent.label} can't be checked first, so this replaced any ${chalk.cyan(NETLIFY_MCP_SERVER_NAME)} server it had.`,
-    )
-  }
   if (commands.remove) {
     log(`  Remove it with ${formatCommand(agent.binary, commands.remove)}`)
   }
-  log(restartHint(agent))
+  log(restartHint(agent, scope))
   return 'added'
 }
 
 export interface McpChoiceStore {
   get(key: string): unknown
   set(key: string, value: unknown): void
+  delete(key: string): void
 }
 
 interface SavedChoice {
@@ -511,8 +545,8 @@ const selectAgents = async ({
     if (!agent) {
       return { selection: 'none', agents: [] }
     }
-    if (reset) {
-      store.set(savedChoiceKey(agent), undefined)
+    if (reset && store.get(savedChoiceKey(agent)) !== undefined) {
+      store.delete(savedChoiceKey(agent))
     }
     return {
       selection: 'driving',
@@ -523,7 +557,7 @@ const selectAgents = async ({
   if (!interactive) {
     return { selection: 'none', agents: [] }
   }
-  const candidates = await findCandidates(workingDir, env)
+  const candidates = await findCandidates(workingDir, env, scope)
   if (candidates.length === 0) {
     return { selection: 'none', agents: [] }
   }

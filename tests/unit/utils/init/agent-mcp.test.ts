@@ -1,7 +1,8 @@
-import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { delimiter, join } from 'node:path'
 
+import { LocalState } from '@netlify/dev-utils'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { log, warn } from '../../../../src/utils/command-helpers.js'
@@ -28,6 +29,8 @@ const execaMock = vi.mocked(execa) as unknown as ReturnType<typeof vi.fn>
 const exited = (exitCode: number, stderr = '', stdout = '') => ({ exitCode, stdout, stderr, timedOut: false })
 const listed = (...lines: string[]) => exited(0, '', ['Checking MCP server health…', '', ...lines].join('\n'))
 const timedOut = () => ({ exitCode: undefined, stdout: '', stderr: '', timedOut: true })
+const codexListed = (...servers: { name: string; transport: Record<string, unknown> }[]) =>
+  exited(0, '', JSON.stringify(servers))
 
 const OURS_LINE = `netlify: ${NETLIFY_MCP_URL} (HTTP) - ✔ Connected`
 const LOCAL_LINE = 'netlify: npx -y @netlify/mcp - ✔ Connected'
@@ -66,11 +69,16 @@ describe('setupAgentMcp', () => {
     await mkdir(project)
     await mkdir(bin)
     saved = new Map()
-    store = { get: (key) => saved.get(key), set: (key, value) => saved.set(key, value) }
+    store = {
+      get: (key) => saved.get(key),
+      set: (key, value) => saved.set(key, value),
+      delete: (key) => saved.delete(key),
+    }
   })
 
   afterEach(async () => {
     vi.clearAllMocks()
+    execaMock.mockReset()
     await rm(root, { recursive: true, force: true })
   })
 
@@ -86,11 +94,18 @@ describe('setupAgentMcp', () => {
 
   const run = (
     env: NodeJS.ProcessEnv,
-    options: { interactive?: boolean; choose?: ChooseAgents; reset?: boolean; path?: string; scope?: McpScope } = {},
+    options: {
+      interactive?: boolean
+      choose?: ChooseAgents
+      reset?: boolean
+      path?: string
+      scope?: McpScope
+      store?: McpChoiceStore
+    } = {},
   ) =>
     setupAgentMcp({
       workingDir: project,
-      store,
+      store: options.store ?? store,
       scope: options.scope ?? 'project',
       env: { PATH: options.path ?? bin, ...env },
       interactive: options.interactive ?? false,
@@ -152,10 +167,11 @@ describe('setupAgentMcp', () => {
 
     test('prints a project add-mcp command for Codex, naming the file it writes', async () => {
       await install('codex')
-      execaMock.mockResolvedValueOnce(exited(1, "Error: No MCP server named 'netlify' found."))
+      execaMock.mockResolvedValueOnce(codexListed())
 
       await expect(run({ CODEX_CI: '1' })).resolves.toMatchObject({ agents: { codex: 'printed' } })
 
+      expect(execaMock).toHaveBeenCalledWith(installed('codex'), ['mcp', 'list', '--json'], expect.anything())
       expect(logged()).toContain(`${ADD_MCP} -y -a codex`)
       expect(logged()).not.toContain(' -g')
       expect(logged()).toContain(join('.codex', 'config.toml'))
@@ -163,9 +179,7 @@ describe('setupAgentMcp', () => {
 
     test('runs the Codex CLI when the scope is user', async () => {
       await install('codex')
-      execaMock
-        .mockResolvedValueOnce(exited(1, "Error: No MCP server named 'netlify' found."))
-        .mockResolvedValueOnce(exited(0))
+      execaMock.mockResolvedValueOnce(codexListed()).mockResolvedValueOnce(exited(0))
 
       await expect(run({ CODEX_CI: '1' }, { scope: 'user' })).resolves.toMatchObject({ agents: { codex: 'added' } })
 
@@ -175,6 +189,32 @@ describe('setupAgentMcp', () => {
         ['mcp', 'add', 'netlify', '--url', NETLIFY_MCP_URL],
         expect.anything(),
       )
+      expect(logged()).toContain('loads the next time you start Codex.')
+    })
+
+    test.each([
+      ['the hosted URL under another name', { type: 'streamable_http', url: NETLIFY_MCP_URL }, 'present'],
+      [
+        'the local npx server under another name',
+        { type: 'stdio', command: 'npx', args: ['-y', '@netlify/mcp'] },
+        'kept',
+      ],
+    ])('finds a Codex server with %s', async (_, transport, status) => {
+      await install('codex')
+      execaMock.mockResolvedValueOnce(codexListed({ name: 'netlify-prod', transport }))
+
+      await expect(run({ CODEX_CI: '1' }, { scope: 'user' })).resolves.toMatchObject({ agents: { codex: status } })
+
+      expect(execaMock).toHaveBeenCalledTimes(1)
+    })
+
+    test('treats unreadable Codex output as a failed check and adds nothing', async () => {
+      await install('codex')
+      execaMock.mockResolvedValueOnce(exited(0, '', 'not json'))
+
+      await expect(run({ CODEX_CI: '1' }, { scope: 'user' })).resolves.toMatchObject({ agents: { codex: 'failed' } })
+
+      expect(execaMock).toHaveBeenCalledTimes(1)
     })
 
     test('says nothing needs doing when the hosted server is already set up at any scope', async () => {
@@ -231,11 +271,18 @@ describe('setupAgentMcp', () => {
       expect(logged()).toContain(`${ADD_MCP} -y -a gemini-cli`)
     })
 
-    test('uses a user-wide command for an agent with no per-project setting, and says so', async () => {
-      await run({ CLINE_ACTIVE: 'true' })
+    test('suggests nothing user-wide at project scope for an agent with no per-project setting', async () => {
+      await expect(run({ CLINE_ACTIVE: 'true' })).resolves.toMatchObject({ agents: { cline: 'unsupported' } })
+
+      expect(logged()).toContain('has no per-project MCP setting')
+      expect(logged()).toContain('init --mcp-scope user')
+      expect(logged()).not.toContain(' -g')
+    })
+
+    test('suggests the user-wide command for that agent when the scope is user', async () => {
+      await run({ CLINE_ACTIVE: 'true' }, { scope: 'user' })
 
       expect(logged()).toContain(`${ADD_MCP} -g -y -a cline`)
-      expect(logged()).toContain('has no per-project setting')
     })
 
     test('prints the command without a lookup when the agent CLI is not on PATH', async () => {
@@ -330,20 +377,26 @@ describe('setupAgentMcp', () => {
       expect(logged()).toContain('Run the command shown for VS Code to finish')
     })
 
-    test('runs the agent CLI for user scope', async () => {
+    test('prints instead of running an agent CLI that cannot check for an existing server', async () => {
       await install('code')
-      execaMock.mockResolvedValueOnce(exited(0))
 
       await expect(
         run({ TERM_PROGRAM: 'vscode' }, { interactive: true, choose: chooseIds('vscode'), scope: 'user' }),
-      ).resolves.toMatchObject({ agents: { vscode: 'added' } })
+      ).resolves.toMatchObject({ agents: { vscode: 'printed' } })
 
-      expect(execaMock).toHaveBeenCalledWith(
-        installed('code'),
-        ['--add-mcp', JSON.stringify({ name: 'netlify', type: 'http', url: NETLIFY_MCP_URL })],
-        expect.objectContaining({ stdin: 'ignore' }),
-      )
-      expect(logged()).toContain('replaced any')
+      expect(execaMock).not.toHaveBeenCalled()
+      expect(logged()).toContain('code --add-mcp')
+      expect(logged()).toContain('Running it replaces any')
+    })
+
+    test('leaves agents with no per-project setting out of the project-scope prompt', async () => {
+      await mkdir(join(project, '.windsurf'))
+      await install('windsurf', 'claude')
+      const choose = chooseIds()
+
+      await run({}, { interactive: true, choose })
+
+      expect(offeredIds(choose)).toEqual(['claude-code'])
     })
 
     test('leaves a ticked agent alone when it already has another Netlify server', async () => {
@@ -425,10 +478,7 @@ describe('setupAgentMcp', () => {
   describe('saved choices', () => {
     test('remembers both a yes and a no for this project, so the next run does not prompt', async () => {
       await install('claude', 'codex')
-      execaMock
-        .mockResolvedValueOnce(listed())
-        .mockResolvedValueOnce(exited(0))
-        .mockResolvedValueOnce(exited(1, 'No MCP server named "netlify"'))
+      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
       const choose = chooseIds('claude-code')
 
       await run({}, { interactive: true, choose })
@@ -489,6 +539,46 @@ describe('setupAgentMcp', () => {
       await run({ NETLIFY_AGENT: 'claude-code' })
 
       expect(saved.size).toBe(0)
+    })
+  })
+
+  describe('with the real project state file', () => {
+    const stateFile = () => join(project, '.netlify', 'state.json')
+
+    test('saves a choice nested under agentMcpSetup and reads it back on the next run', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
+
+      await run({}, { interactive: true, choose: chooseIds('claude-code'), store: new LocalState(project) })
+
+      const written = JSON.parse(await readFile(stateFile(), 'utf8')) as Record<string, unknown>
+      expect(written).toEqual({
+        agentMcpSetup: { 'claude-code': { url: NETLIFY_MCP_URL, scope: 'project', choice: 'accepted' } },
+      })
+      await expect(run({}, { interactive: true, store: new LocalState(project) })).resolves.toMatchObject({
+        selection: 'saved',
+      })
+    })
+
+    test('an agent run with --reset-mcp-setup and nothing saved never creates the state file', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
+
+      await run({ NETLIFY_AGENT: 'claude-code' }, { reset: true, store: new LocalState(project) })
+
+      await expect(readFile(stateFile(), 'utf8')).rejects.toThrow(/ENOENT/)
+    })
+
+    test('--reset-mcp-setup removes a saved no from the state file in an agent run', async () => {
+      await install('claude')
+      const state = new LocalState(project)
+      state.set('siteId', 'site_id')
+      state.set('agentMcpSetup.claude-code', { url: NETLIFY_MCP_URL, scope: 'project', choice: 'declined' })
+      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
+
+      await run({ NETLIFY_AGENT: 'claude-code' }, { reset: true, store: new LocalState(project) })
+
+      expect(JSON.parse(await readFile(stateFile(), 'utf8'))).toEqual({ siteId: 'site_id', agentMcpSetup: {} })
     })
   })
 
