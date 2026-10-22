@@ -105,7 +105,7 @@ export const resolveRemoteSource = async ({
   const settings = siteInfo.build_settings
   if (!settings?.repo_url) {
     throw new RemoteBuildError(
-      "This project isn't connected to a git repository, so Netlify can't build it. Connect one in the project's build settings, or run netlify deploy without --remote to build and deploy locally.",
+      "This project isn't connected to a git repository, so Netlify can't build it. Connect one in the project's build settings, or run netlify deploy without --remote to build locally instead.",
     )
   }
   const productionBranch = settings.repo_branch
@@ -133,7 +133,7 @@ export const resolveRemoteSource = async ({
   }
 
   throw new RemoteBuildError(
-    "Remote builds aren't supported yet for projects on Netlify Git. Run netlify deploy without --remote to build and deploy locally.",
+    "Remote builds aren't supported yet for projects on Netlify Git. Run netlify deploy without --remote to build locally instead.",
   )
 }
 
