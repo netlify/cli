@@ -1,6 +1,6 @@
 import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { delimiter, join, relative, resolve } from 'node:path'
+import { delimiter, join, parse, relative, resolve } from 'node:path'
 
 import { LocalState } from '@netlify/dev-utils'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -54,6 +54,8 @@ const warned = () =>
 const neverChoose = vi.fn<ChooseAgents>(() => Promise.reject(new Error('prompt should not open')))
 
 const executableName = (binary: string) => (process.platform === 'win32' ? `${binary}.CMD` : binary)
+
+const tempOnAnotherDrive = parse(tmpdir()).root.toLowerCase() !== parse(resolve()).root.toLowerCase()
 
 describe('setupAgentMcp', () => {
   let root: string
@@ -293,7 +295,7 @@ describe('setupAgentMcp', () => {
       expect(logged()).toContain(`claude ${claudeAdd('local').join(' ')}`)
     })
 
-    test('never runs an agent binary found through a relative PATH entry', async () => {
+    test.skipIf(tempOnAnotherDrive)('never runs an agent binary found through a relative PATH entry', async () => {
       await install('claude')
       const relativeBin = relative(resolve(), bin)
       expect(relativeBin).not.toBe(bin)
@@ -305,14 +307,17 @@ describe('setupAgentMcp', () => {
       expect(execaMock).not.toHaveBeenCalled()
     })
 
-    test('runs the agent binary from the same directory once it is an absolute PATH entry', async () => {
-      await install('claude')
-      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
+    test.skipIf(tempOnAnotherDrive)(
+      'runs the agent binary from the same directory once it is an absolute PATH entry',
+      async () => {
+        await install('claude')
+        execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
 
-      await run({ NETLIFY_AGENT: 'claude-code' }, { path: [relative(resolve(), bin), bin].join(delimiter) })
+        await run({ NETLIFY_AGENT: 'claude-code' }, { path: [relative(resolve(), bin), bin].join(delimiter) })
 
-      expect(execaMock).toHaveBeenNthCalledWith(1, installed('claude'), ['mcp', 'list'], expect.anything())
-    })
+        expect(execaMock).toHaveBeenNthCalledWith(1, installed('claude'), ['mcp', 'list'], expect.anything())
+      },
+    )
 
     test('respects a saved no from the prompt for this project', async () => {
       await install('claude')
