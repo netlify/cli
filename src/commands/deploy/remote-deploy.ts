@@ -167,9 +167,13 @@ export const remoteDeploy = async ({
     if (error instanceof DeployStateError) {
       return logAndThrowError(`Deploy failed: ${error.message}\n\nDeploy logs: ${logsUrl}`)
     }
-    const timeoutHint = error instanceof TimeoutError ? ' To wait longer, pass a larger --timeout (in seconds).' : ''
+    if (error instanceof TimeoutError) {
+      return logAndThrowError(
+        `Timed out after ${String(timeoutMs / 1000)} seconds waiting for the deploy to finish. It may still be running on Netlify; to wait longer, pass a larger --timeout.\n\nDeploy logs: ${logsUrl}`,
+      )
+    }
     return logAndThrowError(
-      `${(error as Error).message}\n\nThe build may still be running on Netlify.${timeoutHint} Deploy logs: ${logsUrl}`,
+      `${(error as Error).message}\n\nThe build may still be running on Netlify. Deploy logs: ${logsUrl}`,
     )
   }
 }
