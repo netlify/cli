@@ -12,13 +12,11 @@ import {
   type GitContext,
 } from './git.js'
 
-// `external`: the git host already has the commit, so nothing is pushed.
 export type RemoteSource = {
   kind: 'external'
   repoUrl: string
   head: string
   branch: string
-  /** Not part of the commit, so not part of the deploy either. */
   untracked: string[]
 }
 

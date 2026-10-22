@@ -66,7 +66,6 @@ export const remoteDeploy = async ({
   options: DeployOptionValues
   siteData: SiteInfo
   deployToProduction: boolean
-  /** Called only once the source checks pass, so production isn't unlocked for a deploy that then fails. */
   prepareProductionDeploy: () => Promise<void>
 }): Promise<RemoteDeployResults> => {
   const quiet = Boolean(options.json || options.silent)
@@ -119,6 +118,7 @@ export const remoteDeploy = async ({
     }
   }
 
+  // After the checks above, so we never unlock production and then bail.
   if (deployToProduction) {
     await prepareProductionDeploy()
   }
@@ -142,7 +142,6 @@ export const remoteDeploy = async ({
 
   debugLog?.(`Build ${build.id}, deploy ${build.deploy_id}`)
   const { logsUrl } = getDeployUrls({ id: build.deploy_id, admin_url: siteData.admin_url }, { deployToProduction })
-  // Not on the spinner, which writes to stderr, so non-interactive output says what's being built.
   log(`${NETLIFYDEVLOG} Building ${shortSha} on Netlify (${terminalLink('↗ View deploy logs', logsUrl)})`)
   log('')
 
