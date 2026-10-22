@@ -923,8 +923,13 @@ describe.concurrent('commands/init', () => {
   const countSiteCreations = (requests: { method: string; path: string }[]) =>
     requests.filter(({ method, path: requestPath }) => method === 'POST' && requestPath.endsWith('/test-account/sites'))
       .length
-  const runInitIn = (cwd: string, apiUrl: string, questions: { question: string; answer: string | string[] }[]) => {
-    const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
+  const runInitIn = (
+    cwd: string,
+    apiUrl: string,
+    questions: { question: string; answer: string | string[] }[],
+    flags: string[] = [],
+  ) => {
+    const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup', ...flags], {
       cwd,
       env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
       encoding: 'utf8',
@@ -949,10 +954,105 @@ describe.concurrent('commands/init', () => {
         t.expect(second.stdout).not.toContain(NO_GIT_PROMPT)
         t.expect(second.stdout).toContain('This folder is already linked to the Netlify project test-site-name')
         t.expect(second.stdout).toContain('https://test-site-name.netlify.app/')
-        t.expect(second.stdout).toContain('deploy')
+        t.expect(second.stdout).toMatch(/To deploy to this project, run (npx )?netlify deploy\./)
+        t.expect(second.stdout).toMatch(
+          /To link this folder to a different project, run (npx )?netlify unlink, then (npx )?netlify init\./,
+        )
+        t.expect(`${second.stdout}${second.stderr}`).not.toContain('Could not read the git remote')
         t.expect(countSiteCreations(requests)).toBe(1)
         await t.expect(readStateSiteId(builder.directory)).resolves.toBe('site_id')
       })
+    })
+  })
+
+  test('netlify init on a linked project reports a git remote it cannot read', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().withStateFile({ siteId: 'site_id' }).build()
+
+      await withMockApi(noGitRoutes, async ({ apiUrl, requests }) => {
+        const { stdout, stderr } = await runInitIn(builder.directory, apiUrl, createWithoutGitQuestions(), [
+          '--git-remote-name',
+          'upstream',
+        ])
+
+        t.expect(`${stdout}${stderr}`).toContain(
+          'Could not read the git remote: The specified remote "upstream" is not defined in Git repo',
+        )
+        t.expect(stdout).toContain('This folder is already linked to the Netlify project test-site-name')
+        t.expect(stdout).not.toContain(NO_GIT_PROMPT)
+        t.expect(countSiteCreations(requests)).toBe(0)
+      })
+    })
+  })
+
+  test('netlify init with a git remote unlinks a deleted project before creating a new one', async (t) => {
+    const routes = [
+      ...noGitRoutes,
+      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
+      { path: 'sites/site_id', method: 'PATCH' as const, response: { deploy_hook: 'deploy_hook' } },
+    ]
+    const questions = [
+      { question: 'Create & configure a new project', answer: answerWithValue(DOWN) },
+      { question: 'Team:', answer: CONFIRM },
+      {
+        question: 'Project name (leave blank for a random name; you can change it later)',
+        answer: answerWithValue('test-site-name'),
+      },
+      ...manualQuestions(),
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().withStateFile({ siteId: 'deleted_site_id' }).build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl, requests }) => {
+          const { stdout } = await runInitIn(builder.directory, apiUrl, questions)
+
+          t.expect(stdout).not.toContain('already linked')
+          t.expect(countSiteCreations(requests)).toBe(1)
+          const patchedPaths = requests
+            .filter(({ method }) => method === 'PATCH')
+            .map(({ path: requestPath }) => requestPath)
+          t.expect(patchedPaths).toEqual(['/api/v1/sites/site_id'])
+          await t.expect(readStateSiteId(builder.directory)).resolves.toBe('site_id')
+        },
+        true,
+      )
+    })
+  })
+
+  test('netlify init with a git remote treats a deleted project as unlinked when connecting an existing one', async (t) => {
+    const existingSiteInfo = { ...manualSiteInfo, build_settings: { repo_url: 'https://github.com/owner/repo' } }
+    const routes = [
+      { path: 'accounts', response: [{ slug: 'test-account' }] },
+      { path: 'sites', response: [existingSiteInfo] },
+      { path: 'sites/site_id/service-instances', response: [] },
+      { path: 'sites/site_id', response: existingSiteInfo },
+    ]
+    const questions = [
+      { question: 'Connect this directory to an existing Netlify project', answer: CONFIRM },
+      { question: 'How do you want to link this folder to a project?', answer: CONFIRM },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().withStateFile({ siteId: 'deleted_site_id' }).build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl, requests }) => {
+          const result = await runInitIn(builder.directory, apiUrl, questions).catch(
+            (error: unknown) => error as { exitCode: number; stdout: string; stderr: string },
+          )
+
+          t.expect(result.stdout).not.toContain('already linked')
+          t.expect(result.stderr).toContain('No project specified. In non-interactive mode')
+          t.expect(countSiteCreations(requests)).toBe(0)
+          t.expect(requests.filter(({ method }) => method === 'PATCH')).toEqual([])
+          await t.expect(readStateSiteId(builder.directory)).resolves.toBeUndefined()
+        },
+        true,
+      )
     })
   })
 
@@ -992,6 +1092,7 @@ describe.concurrent('commands/init', () => {
           t.expect(`${stdout}${stderr}`).toContain(
             'The Netlify project deleted_site_id linked to this folder no longer exists',
           )
+          t.expect(stdout).not.toContain('already linked')
           t.expect(stdout).toContain(NO_GIT_PROMPT)
           t.expect(countSiteCreations(requests)).toBe(1)
           await t.expect(readStateSiteId(builder.directory)).resolves.toBe('site_id')
@@ -1018,6 +1119,7 @@ describe.concurrent('commands/init', () => {
           t.expect(`${stdout}${stderr}`).toContain(
             "You don't have access to the Netlify project forbidden_site_id linked to this folder",
           )
+          t.expect(stdout).not.toContain('already linked')
           t.expect(stdout).toContain(NO_GIT_PROMPT)
           t.expect(countSiteCreations(requests)).toBe(1)
           await t.expect(readStateSiteId(builder.directory)).resolves.toBe('site_id')

@@ -3,7 +3,7 @@ import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 
 import { type APIError, chalk, exit, log, logAndThrowError, netlifyCommand, warn } from '../../utils/command-helpers.js'
-import getRepoData from '../../utils/get-repo-data.js'
+import getRepoData, { NO_GIT_REMOTE_ERROR } from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -38,20 +38,17 @@ const logExistingAndExit = ({ siteInfo }: { siteInfo: SiteInfo }): never => {
   return exit()
 }
 
-const logLinkedWithoutGitAndExit = ({
-  siteInfo,
-  customizeExitMessage,
-}: {
-  siteInfo: SiteInfo
-  customizeExitMessage: InitExitMessageCustomizer | undefined
-}): never => {
+const logLinkedWithoutGitAndExit = ({ siteInfo, repoError }: { siteInfo: SiteInfo; repoError: string }): never => {
+  if (repoError !== NO_GIT_REMOTE_ERROR) {
+    warn(`Could not read the git remote: ${repoError}`)
+    log(`Fix the git remote, then run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} again to connect it.`)
+  }
   log()
   log(`This folder is already linked to the Netlify project ${chalk.cyan(siteInfo.name)}`)
   log()
   log(`Project Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
   log()
-  const defaultExitMessage = `To deploy to this project, run ${chalk.cyanBright.bold(`${netlifyCommand()} deploy`)}.`
-  log(customizeExitMessage?.(LINKED_EXISTING_SITE_EXIT_CODE, defaultExitMessage) ?? defaultExitMessage)
+  log(`To deploy to this project, run ${chalk.cyanBright.bold(`${netlifyCommand()} deploy`)}.`)
   log(
     `To link this folder to a different project, run ${chalk.cyanBright.bold(
       `${netlifyCommand()} unlink`,
@@ -73,8 +70,8 @@ const getLinkedSiteInfo = async (command: BaseCommand): Promise<SiteInfo | undef
   } catch (error_) {
     const { status, message } = error_ as APIError
     const unusableLinkWarnings: Partial<Record<number, string>> = {
-      403: `You don't have access to the Netlify project ${siteInfo.id} linked to this folder. Continuing without it.`,
-      404: `The Netlify project ${siteInfo.id} linked to this folder no longer exists. Continuing without it.`,
+      403: `You don't have access to the Netlify project ${siteInfo.id} linked to this folder. Unlinking it and continuing.`,
+      404: `The Netlify project ${siteInfo.id} linked to this folder no longer exists. Unlinking it and continuing.`,
     }
     const unusableLinkWarning = unusableLinkWarnings[status]
     if (unusableLinkWarning === undefined) {
@@ -85,6 +82,9 @@ const getLinkedSiteInfo = async (command: BaseCommand): Promise<SiteInfo | undef
       )
     }
     warn(unusableLinkWarning)
+    command.netlify.state.delete('siteId')
+    command.siteId = undefined
+    command.netlify.siteInfo = {} as SiteInfo
     if (command.netlify.accounts.length === 0) {
       await command.refreshAccounts()
     }
@@ -319,7 +319,7 @@ export const init = async (
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
   if ('error' in repoData) {
     if (linkedSiteInfo) {
-      return logLinkedWithoutGitAndExit({ siteInfo: linkedSiteInfo, customizeExitMessage })
+      return logLinkedWithoutGitAndExit({ siteInfo: linkedSiteInfo, repoError: repoData.error })
     }
     // TODO(ndhoule): Custom error messaage here
     return await handleNoGitRemoteAndExit({
