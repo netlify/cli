@@ -967,7 +967,9 @@ export const startProxy = async function ({
   })
 
   const serverEntryEnabled =
-    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' || Boolean(siteInfo?.feature_flags?.netlify_build_server_entry)
+    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' ||
+    Boolean(siteInfo?.feature_flags?.netlify_build_server_entry) ||
+    Boolean(siteInfo?.feature_flags?.netlify_build_server_standalone)
 
   let serverHandler: ServerHandler | undefined
 
