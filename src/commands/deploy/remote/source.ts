@@ -51,26 +51,38 @@ type CloneState =
   | { pushed: true; head: string; branch?: string; untracked: string[] }
   | { pushed: false; reason: string }
 
-const inspectClone = async (ctx: GitContext, repoUrl: string): Promise<CloneState> => {
+const inspectClone = async (ctx: GitContext, repoUrl: string, productionBranch: string): Promise<CloneState> => {
   const head = await getHead(ctx)
   if (!head) {
-    return { pushed: false, reason: `This directory isn't a clone of ${repoUrl}.` }
+    return {
+      pushed: false,
+      reason: `This directory isn't a clone of ${repoUrl}, which Netlify builds this project from. Run this from a clone of it.`,
+    }
   }
   // Another remote having the commit doesn't mean the provider can build it.
   const providerRemotes = (await getRemotes(ctx))
     .filter(({ url }) => isSameRepository(url, repoUrl))
     .map(({ name }) => name)
   if (providerRemotes.length === 0) {
-    return { pushed: false, reason: `This repository has no remote for ${repoUrl}.` }
+    return {
+      pushed: false,
+      reason: `This repository has no remote for ${repoUrl}, which Netlify builds this project from. Run this from a clone of it, or add a remote for it.`,
+    }
   }
   const { hasChanges, untracked } = await getWorkTreeStatus(ctx)
   if (hasChanges) {
-    return { pushed: false, reason: 'You have uncommitted changes.' }
+    return {
+      pushed: false,
+      reason: `You have uncommitted changes. Netlify builds this project from ${repoUrl}, so commit them and push them to ${productionBranch} or another branch, then deploy again.`,
+    }
   }
   const remoteOf = (ref: string) => providerRemotes.find((remote) => ref.startsWith(`${remote}/`))
   const pushedTo = (await getRemoteBranchesContaining(ctx, head)).filter((ref) => remoteOf(ref) !== undefined)
   if (pushedTo.length === 0) {
-    return { pushed: false, reason: `Your checked-out commit isn't on ${repoUrl} as of your last fetch.` }
+    return {
+      pushed: false,
+      reason: `Your checked-out commit isn't on ${repoUrl} as of your last fetch. Push it to ${productionBranch} or another branch (or fetch, if you already pushed it), then deploy again.`,
+    }
   }
   // Only a branch the user evidently pushed this commit to, never a guess among other branches that
   // happen to contain it.
@@ -82,9 +94,6 @@ const inspectClone = async (ctx: GitContext, repoUrl: string): Promise<CloneStat
   const ref = candidates.find((candidate) => candidate !== undefined && pushedTo.includes(candidate))
   return { pushed: true, head, branch: ref?.slice((remoteOf(ref) ?? '').length + 1), untracked }
 }
-
-const describeManualPush = (reason: string, repoUrl: string, productionBranch: string) =>
-  `${reason} Netlify builds this project from ${repoUrl}, so commit your changes and push them to ${productionBranch} or another branch, then deploy again from your clone.`
 
 export const resolveRemoteSource = async ({
   siteInfo,
@@ -113,7 +122,7 @@ export const resolveRemoteSource = async ({
       throw new RemoteBuildError(gitProblem)
     }
     const repoUrl = settings.repo_url
-    const clone = await inspectClone(ctx, repoUrl)
+    const clone = await inspectClone(ctx, repoUrl, productionBranch)
     if (clone.pushed) {
       // Any pushed commit can go to production: the build fetches it by SHA, not from the branch.
       const branch = production ? productionBranch : clone.branch
@@ -124,7 +133,7 @@ export const resolveRemoteSource = async ({
       }
       return { kind: 'external', repoUrl, head: clone.head, branch, untracked: clone.untracked }
     }
-    throw new RemoteBuildError(describeManualPush(clone.reason, repoUrl, productionBranch))
+    throw new RemoteBuildError(clone.reason)
   }
 
   throw new RemoteBuildError(
