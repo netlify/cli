@@ -1,3 +1,5 @@
+import semver from 'semver'
+
 import { isNetlifyGitUrl, isSameRepository } from '../../../utils/netlify-git.js'
 import type { SiteInfo } from '../../../utils/types.js'
 import {
@@ -27,19 +29,15 @@ export interface SourceCommit {
 
 /** A problem the user can fix, as opposed to an unexpected failure. */
 export class RemoteBuildError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'RemoteBuildError'
-  }
+  readonly name = 'RemoteBuildError'
 }
 
-const describeGitProblem = (version: string | undefined): string | undefined => {
+const describeGitProblem = (version: string): string | undefined => {
   if (!version) {
     return "--remote uses git, which isn't installed or isn't on your PATH. Install git, then deploy again."
   }
-  const [major, minor] = version.split('.').map(Number)
   // 2.13 added `git branch --format`.
-  if (major < 2 || (major === 2 && minor < 13)) {
+  if (semver.lt(version, '2.13.0')) {
     return `--remote needs git 2.13 or later, but you have ${version}. Update git, then deploy again.`
   }
   return undefined
@@ -89,7 +87,7 @@ const inspectClone = async (ctx: GitContext, repoUrl: string, productionBranch: 
     await getUpstream(ctx),
     ...(currentBranch ? providerRemotes.map((remote) => `${remote}/${currentBranch}`) : []),
   ]
-  const ref = candidates.find((candidate) => candidate !== undefined && pushedTo.includes(candidate))
+  const ref = candidates.find((candidate) => pushedTo.includes(candidate))
   return { pushed: true, head, branch: ref?.slice((remoteOf(ref) ?? '').length + 1), untracked }
 }
 
