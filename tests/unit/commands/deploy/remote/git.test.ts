@@ -24,7 +24,7 @@ describe('inspecting a clone', () => {
     const commands: GitCommand[] = []
     const ctx = { cwd: project, onCommand: (command: GitCommand) => commands.push(command) }
 
-    expect(await getHead(ctx)).toBeUndefined()
+    expect(await getHead(ctx)).toBe('')
     await expect(getWorkTreeStatus(ctx)).rejects.toThrow()
 
     expect(commands.map(({ args }) => args[0])).toEqual(['rev-parse', 'status'])

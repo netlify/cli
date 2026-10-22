@@ -1,4 +1,9 @@
-import { execFile } from 'node:child_process'
+import { execFile, type ExecFileException } from 'node:child_process'
+import { promisify } from 'node:util'
+
+import semver from 'semver'
+
+const execFileAsync = promisify(execFile)
 
 export interface GitCommand {
   args: string[]
@@ -14,33 +19,38 @@ export interface GitContext {
   onCommand?: GitCommandObserver
 }
 
-// Resolves on any exit code, which callers inspect; rejects only if git never ran (e.g. ENOENT).
-const run = (ctx: GitContext, args: string[]): Promise<{ exitCode: number; stdout: string; stderr: string }> =>
-  new Promise((resolve, reject) => {
+// `code` is the exit code once git ran, or a string like ENOENT when it couldn't start.
+const isFailedCommand = (error: unknown): error is ExecFileException & { code: number } =>
+  error instanceof Error && 'code' in error && typeof error.code === 'number'
+
+const run = async (ctx: GitContext, args: string[]): Promise<{ exitCode: number; stdout: string; stderr: string }> => {
+  let result: { exitCode: number; stdout: string; stderr: string }
+  try {
     // GIT_OPTIONAL_LOCKS keeps read-only commands like `git status` from refreshing the user's index.
     const env = { ...process.env, GIT_OPTIONAL_LOCKS: '0' }
-    execFile('git', args, { cwd: ctx.cwd, env }, (error, stdout, stderr) => {
-      if (error && typeof error.code !== 'number') {
-        reject(new Error(`Couldn't run git: ${error.message}`, { cause: error }))
-        return
-      }
-      const result = { exitCode: typeof error?.code === 'number' ? error.code : 0, stdout, stderr: stderr.trimEnd() }
-      ctx.onCommand?.({ args, cwd: ctx.cwd, exitCode: result.exitCode, stderr: result.stderr })
-      resolve(result)
-    })
-  })
+    const { stdout, stderr } = await execFileAsync('git', args, { cwd: ctx.cwd, env })
+    result = { exitCode: 0, stdout, stderr }
+  } catch (error) {
+    if (!isFailedCommand(error)) {
+      throw new Error(`Couldn't run git: ${String(error)}`, { cause: error })
+    }
+    result = { exitCode: error.code, stdout: error.stdout ?? '', stderr: error.stderr ?? '' }
+  }
+  ctx.onCommand?.({ args, cwd: ctx.cwd, exitCode: result.exitCode, stderr: result.stderr.trimEnd() })
+  return result
+}
 
 const git = async (ctx: GitContext, args: string[]): Promise<string> => {
   const { exitCode, stdout, stderr } = await run(ctx, args)
   if (exitCode !== 0) {
-    throw new Error(`git ${args[0]} failed: ${stderr || stdout}`)
+    throw new Error(`git ${args[0]} failed: ${stderr.trimEnd() || stdout}`)
   }
   return stdout.trim()
 }
 
-const tryGit = async (ctx: GitContext, args: string[]): Promise<string | undefined> => {
+const tryGit = async (ctx: GitContext, args: string[]): Promise<string> => {
   const { exitCode, stdout } = await run(ctx, args)
-  return exitCode === 0 ? stdout.trim() : undefined
+  return exitCode === 0 ? stdout.trim() : ''
 }
 
 interface Remote {
@@ -49,26 +59,25 @@ interface Remote {
 }
 
 export const getRemotes = async (ctx: GitContext): Promise<Remote[]> => {
-  const names = ((await tryGit(ctx, ['remote'])) ?? '').split('\n').filter(Boolean)
+  const names = (await tryGit(ctx, ['remote'])).split('\n').filter(Boolean)
   return Promise.all(names.map(async (name) => ({ name, url: await git(ctx, ['remote', 'get-url', name]) })))
 }
 
-export const getHead = (ctx: GitContext): Promise<string | undefined> => tryGit(ctx, ['rev-parse', '--verify', 'HEAD'])
+export const getHead = (ctx: GitContext): Promise<string> => tryGit(ctx, ['rev-parse', '--verify', 'HEAD'])
 
-export const getGitVersion = async (ctx: GitContext): Promise<string | undefined> => {
-  const output = await tryGit(ctx, ['version']).catch(() => undefined)
-  return output ? /\d+\.\d+(\.\d+)?/.exec(output)?.[0] : undefined
+export const getGitVersion = async (ctx: GitContext): Promise<string> => {
+  const output = await tryGit(ctx, ['version']).catch(() => '')
+  return semver.coerce(output)?.version ?? ''
 }
 
 // Full ref names, since short ones become ambiguous when a local branch is named like a remote one
 // (e.g. `origin/main`).
-const stripRefPrefix = (ref: string | undefined, prefix: string) =>
-  ref?.startsWith(prefix) ? ref.slice(prefix.length) : undefined
+const stripRefPrefix = (ref: string, prefix: string) => (ref.startsWith(prefix) ? ref.slice(prefix.length) : '')
 
-export const getCurrentBranch = async (ctx: GitContext): Promise<string | undefined> =>
+export const getCurrentBranch = async (ctx: GitContext): Promise<string> =>
   stripRefPrefix(await tryGit(ctx, ['symbolic-ref', '--quiet', 'HEAD']), 'refs/heads/')
 
-export const getUpstream = async (ctx: GitContext): Promise<string | undefined> =>
+export const getUpstream = async (ctx: GitContext): Promise<string> =>
   stripRefPrefix(await tryGit(ctx, ['rev-parse', '--symbolic-full-name', '@{upstream}']), 'refs/remotes/')
 
 export const getWorkTreeStatus = async (ctx: GitContext): Promise<{ hasChanges: boolean; untracked: string[] }> => {
@@ -81,7 +90,7 @@ export const getWorkTreeStatus = async (ctx: GitContext): Promise<{ hasChanges: 
 
 const listRemoteBranches = async (ctx: GitContext, filter: string[]): Promise<string[]> => {
   const output = await tryGit(ctx, ['branch', '--remotes', ...filter, '--format=%(refname:lstrip=2)'])
-  return (output ?? '').split('\n').filter((name) => name !== '' && !name.endsWith('/HEAD'))
+  return output.split('\n').filter((name) => name !== '' && !name.endsWith('/HEAD'))
 }
 
 export const getRemoteBranchesContaining = (ctx: GitContext, sha: string): Promise<string[]> =>
