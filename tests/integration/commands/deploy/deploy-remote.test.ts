@@ -360,7 +360,7 @@ describe('deploy --remote', () => {
       await builder.build()
       harness = await setUp(builder, { ...siteInfo, build_settings: { repo_url: '' } })
 
-      await expect(deployRemoteJson(builder, harness)).rejects.toThrow(/can only be deployed with a local build/)
+      await expect(deployRemoteJson(builder, harness)).rejects.toThrow(/isn't connected to a git repository/)
       expect(harness.buildRequests).toEqual([])
     })
   })
