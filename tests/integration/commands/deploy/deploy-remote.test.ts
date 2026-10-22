@@ -228,7 +228,7 @@ describe('deploy --remote', () => {
     })
   })
 
-  test('checks the source before asking to unlock locked production deploys', async (t) => {
+  test('checks the source, then the production lock, before starting a production build', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder.withContentFile({ path: 'index.html', content: '<h1>Committed</h1>' })
       await builder.build()
@@ -237,6 +237,11 @@ describe('deploy --remote', () => {
       await writeFile(join(builder.directory, 'index.html'), '<h1>Uncommitted</h1>')
 
       await expect(deployRemoteJson(builder, harness, ['--prod'])).rejects.toThrow(/You have uncommitted changes/)
+
+      await git(builder.directory, 'checkout', '--', 'index.html')
+
+      await expect(deployRemoteJson(builder, harness, ['--prod'])).rejects.toThrow(/Deployments are "locked"/)
+      expect(harness.buildRequests).toEqual([])
     })
   })
 
