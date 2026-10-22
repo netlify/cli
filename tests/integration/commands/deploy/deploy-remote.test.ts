@@ -222,7 +222,7 @@ describe('deploy --remote', () => {
       await writeFile(join(builder.directory, 'index.html'), '<h1>Uncommitted</h1>')
 
       await expect(deployRemoteJson(builder, harness)).rejects.toThrow(
-        /You have uncommitted changes\. .*commit your changes and push them/,
+        /You have uncommitted changes\. .*commit them and push them/,
       )
       expect(harness.buildRequests).toEqual([])
     })
@@ -270,7 +270,7 @@ describe('deploy --remote', () => {
       await git(builder.directory, 'commit', '--quiet', '--allow-empty', '--message', 'Unpushed')
 
       await expect(deployRemoteJson(builder, harness, ['--prod'])).rejects.toThrow(
-        /Your checked-out commit isn't on .+ as of your last fetch\. .*commit your changes and push them/,
+        /Your checked-out commit isn't on .+ as of your last fetch\. Push it to main/,
       )
       expect(harness.buildRequests).toEqual([])
     })

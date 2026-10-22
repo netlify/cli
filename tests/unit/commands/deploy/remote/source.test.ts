@@ -201,7 +201,7 @@ describe('resolveRemoteSource for a project on a third-party git host', () => {
         await writeFiles(dir, { 'index.html': 'v2' })
         return dir
       },
-      /You have uncommitted changes/,
+      /You have uncommitted changes\. .*commit them and push them to main or another branch/,
     ],
     [
       'an unpushed commit',
@@ -211,12 +211,12 @@ describe('resolveRemoteSource for a project on a third-party git host', () => {
         await git(dir, 'commit', '--quiet', '--all', '--message', 'Unpushed')
         return dir
       },
-      /isn't on .+ as of your last fetch/,
+      /isn't on .+ as of your last fetch\. Push it to main or another branch/,
     ],
     [
       'outside a clone',
       async (sandbox: GitSandbox) => sandbox.createDir('project', { 'index.html': 'v1' }),
-      /isn't a clone of /,
+      /isn't a clone of .+\. Run this from a clone of it\./,
     ],
     [
       'without a remote for the provider repository',
@@ -226,7 +226,7 @@ describe('resolveRemoteSource for a project on a third-party git host', () => {
         await writeFiles(dir, { 'index.html': 'v2' })
         return dir
       },
-      /has no remote for /,
+      /has no remote for .+\. Run this from a clone of it, or add a remote for it\./,
     ],
     [
       'with HEAD pushed only to another remote',
@@ -238,7 +238,7 @@ describe('resolveRemoteSource for a project on a third-party git host', () => {
         await git(dir, 'push', '--quiet', 'origin', 'main')
         return dir
       },
-      /has no remote for /,
+      /has no remote for .+\. Run this from a clone of it, or add a remote for it\./,
     ],
   ])('explains how to deploy %s', async (_, createProject, reason) => {
     const created = await setup()
@@ -248,7 +248,6 @@ describe('resolveRemoteSource for a project on a third-party git host', () => {
 
     await expect(result).rejects.toThrow(RemoteBuildError)
     await expect(result).rejects.toThrow(reason)
-    await expect(result).rejects.toThrow(/commit your changes and push them/)
   })
 })
 
