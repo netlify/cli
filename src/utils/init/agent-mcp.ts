@@ -1,7 +1,8 @@
-import { constants as fsConstants, promises as fs } from 'node:fs'
+import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
 import { checkbox } from '@inquirer/prompts'
+import { isexe } from 'isexe'
 
 import { type CanonicalAgentName, getDrivingAgent } from '../agent-detection.js'
 import { chalk, log, netlifyCommand, warn } from '../command-helpers.js'
@@ -193,22 +194,11 @@ const pathExists = async (target: string): Promise<boolean> => {
   }
 }
 
-const isExecutableFile = async (target: string): Promise<boolean> => {
-  try {
-    if (!(await fs.stat(target)).isFile()) {
-      return false
-    }
-    await fs.access(target, process.platform === 'win32' ? fsConstants.F_OK : fsConstants.X_OK)
-    return true
-  } catch {
-    return false
-  }
-}
-
 const findOnPath = async (binary: string, env: NodeJS.ProcessEnv): Promise<string | undefined> => {
   const pathExtensions = (env.PATHEXT ?? '').split(';').filter(Boolean)
   const extensions =
     process.platform === 'win32' ? (pathExtensions.length > 0 ? pathExtensions : ['.EXE', '.CMD', '.BAT']) : ['']
+  const isExecutableFile = (target: string) => isexe(target, { ignoreErrors: true, pathExt: extensions.join(';') })
   const candidates = (env.PATH ?? '')
     .split(path.delimiter)
     .filter((directory) => path.isAbsolute(directory))
@@ -483,17 +473,16 @@ export interface McpChoiceStore {
 
 interface SavedChoice {
   url: string
-  scope: McpScope
-  choice: 'accepted' | 'declined'
+  choice: 'accepted' | 'declined' | 'kept'
 }
 
 const SAVED_CHOICES_KEY = 'agentMcpSetup'
 
-const savedChoiceKey = (agent: McpAgent): string => `${SAVED_CHOICES_KEY}.${agent.id}`
+const savedChoiceKey = (agent: McpAgent, scope: McpScope): string => `${SAVED_CHOICES_KEY}.${scope}.${agent.id}`
 
 const savedChoice = (store: McpChoiceStore, agent: McpAgent, scope: McpScope): SavedChoice | undefined => {
-  const saved = store.get(savedChoiceKey(agent)) as SavedChoice | undefined
-  return saved?.url === NETLIFY_MCP_URL && saved.scope === scope ? saved : undefined
+  const saved = store.get(savedChoiceKey(agent, scope)) as SavedChoice | undefined
+  return saved?.url === NETLIFY_MCP_URL ? saved : undefined
 }
 
 const saveChoices = (
@@ -504,11 +493,12 @@ const saveChoices = (
   statuses: Record<string, AgentMcpStatus>,
 ): void => {
   for (const agent of offered) {
-    if (!chosen.includes(agent)) {
-      store.set(savedChoiceKey(agent), { url: NETLIFY_MCP_URL, scope, choice: 'declined' } satisfies SavedChoice)
-    } else if (statuses[agent.id] !== 'failed' && statuses[agent.id] !== 'kept') {
-      store.set(savedChoiceKey(agent), { url: NETLIFY_MCP_URL, scope, choice: 'accepted' } satisfies SavedChoice)
+    const status = statuses[agent.id]
+    if (status === 'failed') {
+      continue
     }
+    const choice: SavedChoice['choice'] = !chosen.includes(agent) ? 'declined' : status === 'kept' ? 'kept' : 'accepted'
+    store.set(savedChoiceKey(agent, scope), { url: NETLIFY_MCP_URL, choice } satisfies SavedChoice)
   }
 }
 
@@ -539,11 +529,8 @@ const selectAgents = async ({
   store: McpChoiceStore
 }): Promise<Selected> => {
   const drivingAgent = getDrivingAgent(env)
-  if (drivingAgent) {
-    const agent = MCP_AGENTS.find(({ drivenBy }) => drivenBy?.includes(drivingAgent.name))
-    if (!agent) {
-      return { selection: 'none', agents: [] }
-    }
+  const agent = drivingAgent && MCP_AGENTS.find(({ drivenBy }) => drivenBy?.includes(drivingAgent.name))
+  if (agent) {
     return {
       selection: 'driving',
       agents: [agent],
@@ -591,6 +578,9 @@ export const setupAgentMcp = async ({
     }
     if (selected.selection === 'none') {
       log(`To add the Netlify MCP server to your AI agents, run ${formatCommand('npx', addMcpArgs([], scope))}`)
+      log(
+        `  It asks which agents to set up. To skip the questions, add ${chalk.cyan('-y -a <agent>')}; ${formatCommand('npx', [`add-mcp@${ADD_MCP_VERSION}`, 'list-agents'])} shows the agent names.`,
+      )
       return summary
     }
 

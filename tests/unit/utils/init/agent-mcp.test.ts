@@ -1,6 +1,6 @@
 import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { delimiter, join } from 'node:path'
+import { delimiter, join, relative, resolve } from 'node:path'
 
 import { LocalState } from '@netlify/dev-utils'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -53,7 +53,7 @@ const warned = () =>
 
 const neverChoose = vi.fn<ChooseAgents>(() => Promise.reject(new Error('prompt should not open')))
 
-const executableName = (binary: string) => (process.platform === 'win32' ? `${binary}.cmd` : binary)
+const executableName = (binary: string) => (process.platform === 'win32' ? `${binary}.CMD` : binary)
 
 describe('setupAgentMcp', () => {
   let root: string
@@ -293,18 +293,30 @@ describe('setupAgentMcp', () => {
       expect(logged()).toContain(`claude ${claudeAdd('local').join(' ')}`)
     })
 
-    test('never runs an agent binary from the project folder or a relative PATH entry', async () => {
-      await writeFile(join(project, executableName('claude')), '')
-      await chmod(join(project, executableName('claude')), 0o755)
+    test('never runs an agent binary found through a relative PATH entry', async () => {
+      await install('claude')
+      const relativeBin = relative(resolve(), bin)
+      expect(relativeBin).not.toBe(bin)
 
-      await run({ NETLIFY_AGENT: 'claude-code' }, { path: ['.', project.replace(root, '..')].join(delimiter) })
+      await expect(run({ NETLIFY_AGENT: 'claude-code' }, { path: relativeBin })).resolves.toMatchObject({
+        agents: { 'claude-code': 'printed' },
+      })
 
       expect(execaMock).not.toHaveBeenCalled()
     })
 
+    test('runs the agent binary from the same directory once it is an absolute PATH entry', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
+
+      await run({ NETLIFY_AGENT: 'claude-code' }, { path: [relative(resolve(), bin), bin].join(delimiter) })
+
+      expect(execaMock).toHaveBeenNthCalledWith(1, installed('claude'), ['mcp', 'list'], expect.anything())
+    })
+
     test('respects a saved no from the prompt for this project', async () => {
       await install('claude')
-      saved.set('agentMcpSetup.claude-code', { url: NETLIFY_MCP_URL, scope: 'project', choice: 'declined' })
+      saved.set('agentMcpSetup.project.claude-code', { url: NETLIFY_MCP_URL, choice: 'declined' })
 
       await expect(run({ NETLIFY_AGENT: 'claude-code' })).resolves.toMatchObject({
         agents: { 'claude-code': 'declined' },
@@ -316,23 +328,36 @@ describe('setupAgentMcp', () => {
 
     test('--reset-mcp-setup ignores a saved no for the agent running init without changing it', async () => {
       await install('claude')
-      const declined = { url: NETLIFY_MCP_URL, scope: 'project', choice: 'declined' }
-      saved.set('agentMcpSetup.claude-code', declined)
+      const declined = { url: NETLIFY_MCP_URL, choice: 'declined' }
+      saved.set('agentMcpSetup.project.claude-code', declined)
       execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
 
       await expect(run({ NETLIFY_AGENT: 'claude-code' }, { reset: true })).resolves.toMatchObject({
         agents: { 'claude-code': 'added' },
       })
 
-      expect(saved.get('agentMcpSetup.claude-code')).toEqual(declined)
+      expect(saved.get('agentMcpSetup.project.claude-code')).toEqual(declined)
     })
 
-    test('prints the generic project command for an agent it has no mapping for', async () => {
-      await expect(run({ AGENT: 'amp' }, { interactive: true })).resolves.toMatchObject({ selection: 'none' })
+    test('prints the generic command with how to skip its questions for an agent it has no mapping for', async () => {
+      await expect(run({ AGENT: 'amp' })).resolves.toMatchObject({ selection: 'none' })
 
       expect(neverChoose).not.toHaveBeenCalled()
       expect(logged()).toContain(ADD_MCP)
       expect(logged()).not.toContain(`${ADD_MCP} -`)
+      expect(logged()).toContain('-y -a <agent>')
+      expect(logged()).toContain('add-mcp@2.4.1 list-agents')
+    })
+
+    test('shows the checkbox to a person in a terminal when the detected agent has no mapping', async () => {
+      await install('claude')
+      const choose = chooseIds()
+
+      await expect(run({ AGENT: 'amp' }, { interactive: true, choose })).resolves.toMatchObject({
+        selection: 'prompt',
+      })
+
+      expect(offeredIds(choose)).toEqual(['claude-code'])
     })
   })
 
@@ -483,7 +508,7 @@ describe('setupAgentMcp', () => {
 
       await run({}, { interactive: true, choose })
       expect(offeredIds(choose)).toEqual(['claude-code', 'codex'])
-      expect(saved.get('agentMcpSetup.codex')).toEqual({ url: NETLIFY_MCP_URL, scope: 'project', choice: 'declined' })
+      expect(saved.get('agentMcpSetup.project.codex')).toEqual({ url: NETLIFY_MCP_URL, choice: 'declined' })
 
       await expect(run({}, { interactive: true })).resolves.toMatchObject({ selection: 'saved' })
       expect(neverChoose).not.toHaveBeenCalled()
@@ -492,12 +517,22 @@ describe('setupAgentMcp', () => {
 
     test('a choice saved for project scope does not answer a user-scope run', async () => {
       await install('codex')
-      saved.set('agentMcpSetup.codex', { url: NETLIFY_MCP_URL, scope: 'project', choice: 'declined' })
+      saved.set('agentMcpSetup.project.codex', { url: NETLIFY_MCP_URL, choice: 'declined' })
       const choose = chooseIds()
 
       await run({}, { interactive: true, choose, scope: 'user' })
 
       expect(offeredIds(choose)).toEqual(['codex'])
+    })
+
+    test('a user-scope run keeps the project answer, so the next default run does not ask again', async () => {
+      await install('codex')
+      await run({}, { interactive: true, choose: chooseIds() })
+      await run({}, { interactive: true, choose: chooseIds(), scope: 'user' })
+
+      await expect(run({}, { interactive: true })).resolves.toMatchObject({ selection: 'saved' })
+      expect(saved.get('agentMcpSetup.project.codex')).toEqual({ url: NETLIFY_MCP_URL, choice: 'declined' })
+      expect(saved.get('agentMcpSetup.user.codex')).toEqual({ url: NETLIFY_MCP_URL, choice: 'declined' })
     })
 
     test('asks only about an agent installed since the last run', async () => {
@@ -521,9 +556,18 @@ describe('setupAgentMcp', () => {
       expect(offeredIds(choose)).toEqual(['codex'])
     })
 
-    test('does not save a yes whose add failed or that kept another server', async () => {
+    test('remembers a kept server, so a rerun does not offer the agent again', async () => {
       await install('claude')
       execaMock.mockResolvedValueOnce(listed(LOCAL_LINE))
+      await run({}, { interactive: true, choose: chooseIds('claude-code') })
+
+      await expect(run({}, { interactive: true })).resolves.toMatchObject({ selection: 'saved' })
+      expect(saved.get('agentMcpSetup.project.claude-code')).toEqual({ url: NETLIFY_MCP_URL, choice: 'kept' })
+    })
+
+    test('does not save a yes whose add failed, so it is offered again', async () => {
+      await install('claude')
+      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(1, 'boom'))
       await run({}, { interactive: true, choose: chooseIds('claude-code') })
       const choose = chooseIds()
 
@@ -553,7 +597,7 @@ describe('setupAgentMcp', () => {
 
       const written = JSON.parse(await readFile(stateFile(), 'utf8')) as Record<string, unknown>
       expect(written).toEqual({
-        agentMcpSetup: { 'claude-code': { url: NETLIFY_MCP_URL, scope: 'project', choice: 'accepted' } },
+        agentMcpSetup: { project: { 'claude-code': { url: NETLIFY_MCP_URL, choice: 'accepted' } } },
       })
       await expect(run({}, { interactive: true, store: new LocalState(project) })).resolves.toMatchObject({
         selection: 'saved',
@@ -576,7 +620,7 @@ describe('setupAgentMcp', () => {
       await install('claude')
       const state = new LocalState(project)
       state.set('siteId', 'site_id')
-      state.set('agentMcpSetup.claude-code', { url: NETLIFY_MCP_URL, scope: 'project', choice: 'declined' })
+      state.set('agentMcpSetup.project.claude-code', { url: NETLIFY_MCP_URL, choice: 'declined' })
       const before = await readFile(stateFile(), 'utf8')
       execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(addResult)
 
