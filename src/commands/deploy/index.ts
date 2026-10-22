@@ -26,11 +26,11 @@ export const createDeployCommand = (program: BaseCommand) =>
     .description(
       `Deploy your project to Netlify
 
-Builds and deploys your project to Netlify. Creates a draft deploy by default.
+Builds your project locally, or on Netlify with --remote, and deploys it to Netlify. Creates a draft deploy by default.
 Use --prod to deploy directly to your live site.
 
 The deploy command will:
-- Build your project (unless --no-build is specified)
+- Build your project locally (unless --no-build or --remote is specified)
 - Upload static files, functions, and edge functions
 - Process redirects and headers from netlify.toml or _redirects/_headers files
 - Provide deploy and function logs URLs
@@ -73,7 +73,7 @@ For detailed configuration options, see the Netlify documentation.`,
     .addOption(
       new Option(
         '--remote',
-        'Build and deploy on Netlify from your project source, instead of building locally. Netlify builds your checked-out commit, which must already be pushed to the git provider your project is connected to.',
+        'Build your project on Netlify instead of locally. Useful when building with native packages, on devices with limited resources or missing toolchains. Build logs stream in real time and are available on Netlify.',
       ).conflicts([...BUILD_RELATED_OPTIONS, 'alias', 'allowAnonymous', 'branch', 'createSite', 'siteName', 'trigger']),
     )
     .addOption(
@@ -137,7 +137,7 @@ For detailed configuration options, see the Netlify documentation.`,
       'netlify deploy --message "A message with an $ENV_VAR"',
       'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
       'netlify deploy --trigger',
-      'netlify deploy --remote # Build a draft on Netlify from your checked-out commit',
+      'netlify deploy --remote # Build on Netlify and deploy a draft',
       'netlify deploy --remote --prod',
       'netlify deploy --context deploy-preview',
       'netlify deploy --env "NODE_ENV=production" --env "API_URL=https://api.example.com"',
