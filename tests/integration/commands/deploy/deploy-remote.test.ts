@@ -69,17 +69,23 @@ const startFakeDeployLog = async (lines: string[], onSent: () => void) => {
 
 /**
  * With `buildLog`, the deploy stays building until those lines have been streamed. With `failWith`, the
- * deploy fails with that error. With `rejectBuildWith`, the API refuses to start the build.
+ * deploy fails with that error. With `rejectBuildWith`, the API refuses to start the build. With `stuck`,
+ * the deploy never finishes.
  */
 const setUp = async (
   builder: SiteBuilder,
   site: Record<string, unknown> = siteInfo,
-  { buildLog, failWith, rejectBuildWith }: { buildLog?: string[]; failWith?: string; rejectBuildWith?: string } = {},
+  {
+    buildLog,
+    failWith,
+    rejectBuildWith,
+    stuck,
+  }: { buildLog?: string[]; failWith?: string; rejectBuildWith?: string; stuck?: boolean } = {},
 ): Promise<Harness> => {
   await isolateGitConfig(join(builder.directory, '..'))
   // Keeps the CLI off the real log stream; `startFakeDeployLog` points it at a local one instead.
   vi.stubEnv('NETLIFY_SOCKETEER_URL', 'ws://127.0.0.1:9')
-  let deployState = failWith ? 'error' : buildLog ? 'building' : 'ready'
+  let deployState = failWith ? 'error' : buildLog || stuck ? 'building' : 'ready'
   const logServer =
     buildLog &&
     (await startFakeDeployLog(buildLog, () => {
@@ -285,6 +291,19 @@ describe('deploy --remote', () => {
 
       await expect(deployRemoteJson(builder, harness)).rejects.toThrow(
         /Deploy failed: Build script returned non-zero exit code: 2\s+Deploy logs: https:\/\/app\.netlify\.com\/projects\/test-site\/deploys\/deploy_id/,
+      )
+    })
+  })
+
+  test('says how to wait longer when the deploy times out', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder.withContentFile({ path: 'index.html', content: '<h1>Hi</h1>' })
+      await builder.build()
+      const project = await setUpForgeProject(builder, { stuck: true })
+      harness = project.harness
+
+      await expect(deployRemoteJson(builder, harness, ['--timeout', '2'])).rejects.toThrow(
+        /Timed out after 2 seconds waiting for the deploy to finish\. .*pass a larger --timeout/,
       )
     })
   })
