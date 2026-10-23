@@ -1,4 +1,4 @@
-import { Mock, afterAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { type Mock, afterAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createLogsCommand } from '../../../../src/commands/logs/index.js'

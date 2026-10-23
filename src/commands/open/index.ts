@@ -1,7 +1,7 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 export const createOpenCommand = (program: BaseCommand) => {
   program

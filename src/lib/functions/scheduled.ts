@@ -1,7 +1,7 @@
 import type { IncomingHttpHeaders } from 'node:http'
 
 import AnsiToHtml from 'ansi-to-html'
-import express from 'express'
+import type express from 'express'
 import type { LambdaEvent } from 'lambda-local'
 
 import { CLOCKWORK_USERAGENT } from '../../utils/functions/index.js'

@@ -1,4 +1,4 @@
-import express from 'express'
+import type express from 'express'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG } from '../../utils/command-helpers.js'
 

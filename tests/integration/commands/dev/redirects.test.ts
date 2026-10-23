@@ -6,7 +6,7 @@ import fetch from 'node-fetch'
 import { describe, expect, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
 describe('redirects', async () => {

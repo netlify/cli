@@ -1,5 +1,5 @@
 declare module 'maxstache-stream' {
-  import { Transform } from 'stream'
+  import type { Transform } from 'stream'
 
   function maxstacheStream(vars: Record<string, string>): Transform
 

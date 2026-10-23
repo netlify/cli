@@ -2,7 +2,7 @@ import { Buffer } from 'buffer'
 import { inspect } from 'util'
 
 import { renderFunctionErrorPage } from '@netlify/dev-utils'
-import express from 'express'
+import type express from 'express'
 import { isReadableStream as baseIsReadableStream } from 'is-stream'
 import type { LambdaEvent } from 'lambda-local'
 

@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 
 describe('functions:invoke command', async () => {
   await setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {

@@ -1,5 +1,5 @@
-import http from 'node:http'
-import net from 'node:net'
+import type http from 'node:http'
+import type net from 'node:net'
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

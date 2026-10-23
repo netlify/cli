@@ -1,4 +1,4 @@
-import http from 'node:http'
+import type http from 'node:http'
 import os from 'node:os'
 import events from 'node:events'
 import { existsSync } from 'node:fs'

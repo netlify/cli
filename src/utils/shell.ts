@@ -4,7 +4,7 @@ import { stripVTControlCharacters } from 'util'
 
 import execa from 'execa'
 
-import { type Spinner } from '../lib/spinner.js'
+import type { Spinner } from '../lib/spinner.js'
 
 import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'

@@ -1,8 +1,8 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import { chalk, log, logAndThrowError } from '../../utils/command-helpers.js'
 import { promptEnvCloneOverwrite } from '../../utils/prompts/env-clone-prompt.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
 const safeGetSite = async (api, siteId) => {

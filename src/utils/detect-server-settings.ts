@@ -2,19 +2,19 @@ import { readFile } from 'fs/promises'
 import { EOL } from 'os'
 import { dirname, relative, resolve } from 'path'
 
-import { Project, Settings, getFramework, getSettings } from '@netlify/build-info'
+import { type Project, type Settings, getFramework, getSettings } from '@netlify/build-info'
 import type { OptionValues } from 'commander'
 import getPort from 'get-port'
 
-import BaseCommand from '../commands/base-command.js'
-import { type DevConfig } from '../commands/dev/types.js'
+import type BaseCommand from '../commands/base-command.js'
+import type { DevConfig } from '../commands/dev/types.js'
 
 import { detectFrameworkSettings } from './build-info.js'
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
 import { acquirePort } from './dev.js'
 import { getPluginsToAutoInstall } from './init/utils.js'
-import { BaseServerSettings, ServerSettings } from './types.js'
-import { CachedConfig } from '../lib/build.js'
+import type { BaseServerSettings, ServerSettings } from './types.js'
+import type { CachedConfig } from '../lib/build.js'
 
 const formatProperty = (str: string) => chalk.magenta(`'${str}'`)
 const formatValue = (str: string) => chalk.green(`'${str}'`)

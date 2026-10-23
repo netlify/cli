@@ -4,7 +4,8 @@
     "allowJs": true,
     "noEmit": true,
     "resolveJsonModule": true,
-    "typeRoots": ["node_modules/@types", "types"]
+    "typeRoots": ["node_modules/@types", "types"],
+    "verbatimModuleSyntax": true
   },
   "exclude": ["**/__fixtures__/**", "dist/", "functions-templates/", "site/"]
 }

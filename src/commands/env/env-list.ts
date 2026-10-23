@@ -8,7 +8,7 @@ import logUpdate from 'log-update'
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { SUPPORTED_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
-import { EnvironmentVariables } from '../../utils/types.js'
+import type { EnvironmentVariables } from '../../utils/types.js'
 import { getSiteInfo } from './utils.js'
 
 const MASK_LENGTH = 50

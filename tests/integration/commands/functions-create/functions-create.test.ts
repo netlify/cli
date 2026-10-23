@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest'
 
 import { fileExistsAsync } from '../../../../src/lib/fs.js'
 import { cliPath } from '../../utils/cli-path.js'
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'

@@ -1,6 +1,6 @@
 import { Option } from 'commander'
 
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import type { MigrationNewOptions } from './db-migration-new.js'
 import type { MigrationPullOptions } from './db-migration-pull.js'
 import type { MigrationsResetOptions } from './db-migrations-reset.js'

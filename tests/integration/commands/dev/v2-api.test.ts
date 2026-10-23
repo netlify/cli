@@ -1,7 +1,7 @@
 import execa from 'execa'
 import { describe, test } from 'vitest'
 
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { type FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 
 const siteInfo = {
   account_id: 'mock-account-id',
