@@ -262,17 +262,20 @@ const setUpAgents = async (
   const { repositoryRoot } = command.netlify
   log()
   const blocker = await findProjectSetupBlocker(repositoryRoot)
-  if (blocker) {
-    const skipped = [skills && 'Netlify skills', mcp && 'the Netlify MCP server'].filter(Boolean).join(' and ')
-    log(`Skipped setting up ${skipped}: ${blocker}.`)
+  const skillsBlocked = skills && blocker !== undefined
+  const mcpBlocked = mcp && blocker !== undefined && (blocker.place === 'root' || mcpScope === 'project')
+  if (blocker && (skillsBlocked || mcpBlocked)) {
+    const skipped = [skillsBlocked && 'Netlify skills', mcpBlocked && 'the Netlify MCP server']
+      .filter(Boolean)
+      .join(' and ')
+    log(`Skipped setting up ${skipped}: ${blocker.reason}.`)
     log(`  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} from your project folder to set them up there.`)
-    await track('sites_agentSetupSkipped', { skills, mcp })
-    return
+    await track('sites_agentSetupSkipped', { skills: skillsBlocked, mcp: mcpBlocked })
   }
-  if (skills) {
+  if (skills && !skillsBlocked) {
     await installAgentSkills(repositoryRoot, reset)
   }
-  if (mcp) {
+  if (mcp && !mcpBlocked) {
     await addAgentMcp(command, resetMcp, mcpScope)
   }
 }

@@ -22,17 +22,21 @@ describe('findProjectSetupBlocker', () => {
 
   test('blocks the home directory even when it is a git repository', async () => {
     await mkdir(join(home, '.git'))
-    await expect(findProjectSetupBlocker(home, home)).resolves.toMatch(/home directory/)
+    const blocker = await findProjectSetupBlocker(home, home)
+    expect(blocker?.place).toBe('home')
+    expect(blocker?.reason).toMatch(/home directory/)
   })
 
   test('blocks a path that resolves to the home directory through a symlink', async () => {
     const link = join(root, 'link-to-home')
     await symlink(home, link)
-    await expect(findProjectSetupBlocker(link, home)).resolves.toMatch(/home directory/)
+    await expect(findProjectSetupBlocker(link, home)).resolves.toMatchObject({ place: 'home' })
   })
 
   test('blocks the root of the file system', async () => {
-    await expect(findProjectSetupBlocker(parse(root).root, home)).resolves.toMatch(/root of the file system/)
+    const blocker = await findProjectSetupBlocker(parse(root).root, home)
+    expect(blocker?.place).toBe('root')
+    expect(blocker?.reason).toMatch(/root of the file system/)
   })
 
   test('allows an empty folder, where an agent starts a new site', async () => {

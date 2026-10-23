@@ -949,6 +949,14 @@ describe.concurrent('commands/init', () => {
               .expect(readFile(path.join(builder.directory, '.agents', 'skills', 'netlify-functions', 'SKILL.md')))
               .rejects.toThrow(/ENOENT/)
             await t.expect(readFile(claudeBin.calls, 'utf8')).rejects.toThrow(/ENOENT/)
+
+            const userWide = await runInit('--mcp-scope', 'user')
+            t.expect(userWide.stdout).toContain('Skipped setting up Netlify skills: this is your home directory')
+            t.expect(userWide.stdout).toContain('Added the Netlify MCP server to Claude Code for all your projects')
+            t.expect((await readFile(claudeBin.calls, 'utf8')).trim().split('\n')).toEqual([
+              'mcp list',
+              'mcp add --transport http --scope user netlify https://mcp.netlify.com/mcp',
+            ])
           })
         })
       })

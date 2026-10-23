@@ -249,9 +249,13 @@ const OUR_URL = new URL(NETLIFY_MCP_URL)
 
 const isOurUrl = (url: URL): boolean =>
   url.protocol === OUR_URL.protocol &&
+  url.username === '' &&
+  url.password === '' &&
   url.hostname.toLowerCase() === OUR_URL.hostname &&
   url.port === OUR_URL.port &&
-  url.pathname.replace(/\/$/, '') === OUR_URL.pathname
+  url.pathname.replace(/\/$/, '') === OUR_URL.pathname &&
+  url.search === '' &&
+  url.hash === ''
 
 const pointsAtNetlify = (target: string): boolean =>
   urlsIn(target).some((url) => NETLIFY_MCP_HOSTS.has(url.hostname.toLowerCase())) ||
@@ -259,6 +263,16 @@ const pointsAtNetlify = (target: string): boolean =>
 
 const isNetlifyName = (name: string): boolean =>
   name === NETLIFY_MCP_SERVER_NAME || name.endsWith(`:${NETLIFY_MCP_SERVER_NAME}`)
+
+const isControlCharacter = (character: string): boolean => {
+  const code = character.codePointAt(0) ?? 0
+  return code < 0x20 || (code >= 0x7f && code <= 0x9f)
+}
+
+const printable = (text: string): string =>
+  Array.from(text)
+    .filter((character) => !isControlCharacter(character))
+    .join('')
 
 const shellQuote = (arg: string): string => {
   if (process.platform === 'win32') {
@@ -304,6 +318,9 @@ const describeFailure = ({ timedOut, output, exitCode }: NativeRun): string =>
 type Existing = { found: 'ours' | 'other'; name: string }
 type Lookup = Existing | { found: 'none' } | { found: 'unknown'; run: NativeRun }
 
+const PENDING_APPROVAL = 'Pending approval'
+const USER_SCOPE_DETAIL = /^\s*Scope: User config\b/m
+
 const listedServers = (stdout: string): { name: string; target: string }[] =>
   stdout.split('\n').flatMap((line) => {
     const separator = line.indexOf(': ')
@@ -312,6 +329,9 @@ const listedServers = (stdout: string): { name: string; target: string }[] =>
     }
     const status = line.lastIndexOf(' - ')
     const end = status > separator ? status : line.length
+    if (line.slice(end).includes(PENDING_APPROVAL)) {
+      return []
+    }
     return [{ name: line.slice(0, separator).trim(), target: line.slice(separator + 2, end).trim() }]
   })
 
@@ -350,17 +370,32 @@ const classify = (servers: { name: string; target: string }[]): Lookup => {
   return other ? { found: 'other', name: other.name } : { found: 'none' }
 }
 
-const lookUp = async (executable: string, kind: LookupKind, workingDir: string): Promise<Lookup> => {
+const isExisting = (lookup: Lookup): lookup is Existing => lookup.found === 'ours' || lookup.found === 'other'
+
+const lookUpAtUserScope = async (executable: string, lookup: Lookup, workingDir: string): Promise<Lookup> => {
+  if (!isExisting(lookup) || lookup.name.startsWith('plugin:')) {
+    return lookup
+  }
+  const details = await runNative(executable, ['mcp', 'get', lookup.name], workingDir, LIST_TIMEOUT_MS)
+  if (details.exitCode !== 0) {
+    return { found: 'unknown', run: details }
+  }
+  return USER_SCOPE_DETAIL.test(details.stdout) ? lookup : { found: 'none' }
+}
+
+const lookUp = async (executable: string, kind: LookupKind, workingDir: string, scope: McpScope): Promise<Lookup> => {
   if (kind === 'list-json') {
     const run = await runNative(executable, ['mcp', 'list', '--json'], workingDir)
     const servers = run.exitCode === 0 ? codexServers(run.stdout) : undefined
     return servers ? classify(servers) : { found: 'unknown', run }
   }
   const run = await runNative(executable, ['mcp', 'list'], workingDir, LIST_TIMEOUT_MS)
-  return run.exitCode === 0 ? classify(listedServers(run.stdout)) : { found: 'unknown', run }
+  if (run.exitCode !== 0) {
+    return { found: 'unknown', run }
+  }
+  const lookup = classify(listedServers(run.stdout))
+  return scope === 'user' ? await lookUpAtUserScope(executable, lookup, workingDir) : lookup
 }
-
-const isExisting = (lookup: Lookup): lookup is Existing => lookup.found === 'ours' || lookup.found === 'other'
 
 const reportExisting = (agent: McpAgent, { found, name }: Existing): AgentMcpStatus => {
   if (found === 'ours') {
@@ -368,9 +403,11 @@ const reportExisting = (agent: McpAgent, { found, name }: Existing): AgentMcpSta
     return 'present'
   }
   log(
-    `${agent.label} already has a Netlify MCP server (${chalk.cyan(name)}) that isn't ${chalk.underline(NETLIFY_MCP_URL)}, so another one wasn't added.`,
+    `${agent.label} already has a Netlify MCP server (${chalk.cyan(printable(name))}) that isn't ${chalk.underline(NETLIFY_MCP_URL)}, so another one wasn't added.`,
   )
-  log(`  To switch, remove ${chalk.cyan(name)} in ${agent.label} and run ${netlifyCommand()} init again.`)
+  log(
+    `  To switch, remove ${chalk.cyan(printable(name))} in ${agent.label} and run ${chalk.cyanBright.bold(`${netlifyCommand()} init --reset-mcp-setup`)}`,
+  )
   return 'kept'
 }
 
@@ -378,6 +415,7 @@ const lookUpExisting = async (
   agent: McpAgent,
   env: NodeJS.ProcessEnv,
   workingDir: string,
+  scope: McpScope,
 ): Promise<{ executable?: string; lookup?: Lookup }> => {
   if (agent.binary === undefined) {
     return {}
@@ -387,7 +425,7 @@ const lookUpExisting = async (
   if (!executable || !kind) {
     return { executable }
   }
-  return { executable, lookup: await lookUp(executable, kind, workingDir) }
+  return { executable, lookup: await lookUp(executable, kind, workingDir, scope) }
 }
 
 const restartHint = (agent: McpAgent, scope: McpScope): string =>
@@ -437,7 +475,7 @@ const add = async (
     return 'unsupported'
   }
   const commands = agent.native?.scopes[scope]
-  const { executable, lookup } = await lookUpExisting(agent, env, workingDir)
+  const { executable, lookup } = await lookUpExisting(agent, env, workingDir, scope)
   if (lookup?.found === 'unknown') {
     warn(`Could not check ${agent.label} for an existing Netlify MCP server: ${describeFailure(lookup.run)}`)
     printCommand(agent, scope, `  Add it yourself with`)
@@ -469,6 +507,7 @@ const add = async (
 export interface McpChoiceStore {
   get(key: string): unknown
   set(key: string, value: unknown): void
+  delete(key: string): void
 }
 
 interface SavedChoice {
@@ -485,6 +524,17 @@ const savedChoice = (store: McpChoiceStore, agent: McpAgent, scope: McpScope): S
   return saved?.url === NETLIFY_MCP_URL ? saved : undefined
 }
 
+const saveChoice = (store: McpChoiceStore, agent: McpAgent, scope: McpScope, status: AgentMcpStatus): void => {
+  if (status === 'failed') {
+    if (store.get(savedChoiceKey(agent, scope)) !== undefined) {
+      store.delete(savedChoiceKey(agent, scope))
+    }
+    return
+  }
+  const choice: SavedChoice['choice'] = status === 'declined' ? 'declined' : status === 'kept' ? 'kept' : 'accepted'
+  store.set(savedChoiceKey(agent, scope), { url: NETLIFY_MCP_URL, choice } satisfies SavedChoice)
+}
+
 const saveChoices = (
   store: McpChoiceStore,
   scope: McpScope,
@@ -493,12 +543,7 @@ const saveChoices = (
   statuses: Record<string, AgentMcpStatus>,
 ): void => {
   for (const agent of offered) {
-    const status = statuses[agent.id]
-    if (status === 'failed') {
-      continue
-    }
-    const choice: SavedChoice['choice'] = !chosen.includes(agent) ? 'declined' : status === 'kept' ? 'kept' : 'accepted'
-    store.set(savedChoiceKey(agent, scope), { url: NETLIFY_MCP_URL, choice } satisfies SavedChoice)
+    saveChoice(store, agent, scope, chosen.includes(agent) ? statuses[agent.id] : 'declined')
   }
 }
 
@@ -590,7 +635,11 @@ export const setupAgentMcp = async ({
         log(`You chose not to add the Netlify MCP server to ${agent.label}. ${resetHint()}`)
         summary.agents[agent.id] = 'declined'
       } else {
-        summary.agents[agent.id] = await add(agent, scope, env, workingDir)
+        const status = await add(agent, scope, env, workingDir)
+        summary.agents[agent.id] = status
+        if (reset && status !== 'failed' && status !== 'unsupported' && savedChoice(store, agent, scope)) {
+          saveChoice(store, agent, scope, status)
+        }
       }
       return summary
     }
