@@ -1,4 +1,4 @@
-import { OptionValues } from 'commander'
+import { Option, OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
 import BaseCommand from '../base-command.js'
@@ -11,7 +11,23 @@ export const createInitCommand = (program: BaseCommand) =>
     )
     .option('-m, --manual', 'Manually configure a git remote for CI')
     .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
-    .option('--skip-agent-setup', 'Skip installing Netlify skills for AI coding agents into the project')
+    .option(
+      '--skip-agent-setup',
+      'Skip installing Netlify skills and adding the Netlify MCP server for AI coding agents',
+    )
+    .option('--skip-mcp-setup', 'Skip adding the Netlify MCP server to your AI coding agents')
+    .addOption(
+      new Option(
+        '--mcp-scope <scope>',
+        'Add the Netlify MCP server for this project only, or for your user across all projects',
+      )
+        .choices(['project', 'user'])
+        .default('project'),
+    )
+    .option(
+      '--reset-mcp-setup',
+      'Forget your saved Netlify MCP server choices and ask which AI coding agents to set up',
+    )
     .option(
       '--reset-context',
       'Replace locally edited Netlify skills with the latest release, and migrate or delete edited copies under renamed or deprecated names',
@@ -26,6 +42,9 @@ For more information about getting started with Netlify CLI, see ${terminalLink(
       const { init } = await import('./init.js')
       await init(options, command, {
         setupAgentSkills: !options.skipAgentSetup,
+        setupAgentMcp: !options.skipAgentSetup && !options.skipMcpSetup,
+        resetMcpSetup: Boolean(options.resetMcpSetup),
+        mcpScope: options.mcpScope === 'user' ? 'user' : 'project',
         resetContext: Boolean(options.resetContext),
       })
     })

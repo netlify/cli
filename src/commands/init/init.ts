@@ -11,6 +11,8 @@ import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { LocalState, SiteInfo } from '../../utils/types.js'
+import { findProjectSetupBlocker } from '../../utils/init/agent-location.js'
+import { type McpScope, setupAgentMcp } from '../../utils/init/agent-mcp.js'
 import { setupAgentSkills } from '../../utils/init/agent-skills.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
 import { type InitExitCode, LINKED_EXISTING_SITE_EXIT_CODE, LINKED_NEW_SITE_EXIT_CODE } from './constants.js'
@@ -212,12 +214,14 @@ type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
   setupAgentSkills?: boolean | undefined
+  setupAgentMcp?: boolean | undefined
   resetContext?: boolean | undefined
+  resetMcpSetup?: boolean | undefined
+  mcpScope?: McpScope | undefined
 }
 
-const installAgentSkills = async (command: BaseCommand, reset: boolean): Promise<void> => {
-  log()
-  const result = await setupAgentSkills({ workingDir: command.netlify.repositoryRoot, reset })
+const installAgentSkills = async (workingDir: string, reset: boolean): Promise<void> => {
+  const result = await setupAgentSkills({ workingDir, reset })
   await track('sites_agentSkillsSetup', {
     installed: result.installed,
     directories: result.directories,
@@ -227,6 +231,52 @@ const installAgentSkills = async (command: BaseCommand, reset: boolean): Promise
   })
 }
 
+const addAgentMcp = async (command: BaseCommand, reset: boolean, scope: McpScope): Promise<void> => {
+  const { repositoryRoot, state } = command.netlify
+  const {
+    selection,
+    agents,
+    failed = false,
+  } = await setupAgentMcp({
+    workingDir: repositoryRoot,
+    store: state,
+    scope,
+    reset,
+  })
+  await track('sites_agentMcpSetup', { selection, agents, failed, scope, resetMcpSetup: reset })
+}
+
+const setUpAgents = async (
+  command: BaseCommand,
+  {
+    skills,
+    mcp,
+    reset,
+    resetMcp,
+    mcpScope,
+  }: { skills: boolean; mcp: boolean; reset: boolean; resetMcp: boolean; mcpScope: McpScope },
+): Promise<void> => {
+  if (!skills && !mcp) {
+    return
+  }
+  const { repositoryRoot } = command.netlify
+  log()
+  const blocker = await findProjectSetupBlocker(repositoryRoot)
+  if (blocker) {
+    const skipped = [skills && 'Netlify skills', mcp && 'the Netlify MCP server'].filter(Boolean).join(' and ')
+    log(`Skipped setting up ${skipped}: ${blocker}.`)
+    log(`  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} from your project folder to set them up there.`)
+    await track('sites_agentSetupSkipped', { skills, mcp })
+    return
+  }
+  if (skills) {
+    await installAgentSkills(repositoryRoot, reset)
+  }
+  if (mcp) {
+    await addAgentMcp(command, resetMcp, mcpScope)
+  }
+}
+
 export const init = async (
   options: OptionValues,
   command: BaseCommand,
@@ -234,14 +284,20 @@ export const init = async (
     customizeExitMessage,
     exitAfterConfiguringRepo = false,
     setupAgentSkills: shouldSetupAgentSkills = false,
+    setupAgentMcp: shouldSetupAgentMcp = false,
     resetContext = false,
+    resetMcpSetup = false,
+    mcpScope = 'project',
   }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
   command.setAnalyticsPayload({
     manual: options.manual,
     force: options.force,
     skipAgentSetup: options.skipAgentSetup,
+    skipMcpSetup: options.skipMcpSetup,
     resetContext: options.resetContext,
+    resetMcpSetup: options.resetMcpSetup,
+    mcpScope,
   })
 
   const { repositoryRoot, state } = command.netlify
@@ -253,9 +309,13 @@ export const init = async (
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
-  if (shouldSetupAgentSkills) {
-    await installAgentSkills(command, resetContext)
-  }
+  await setUpAgents(command, {
+    skills: shouldSetupAgentSkills,
+    mcp: shouldSetupAgentMcp,
+    reset: resetContext,
+    resetMcp: resetMcpSetup,
+    mcpScope,
+  })
 
   const repoUrl = getRepoUrl(existingSiteInfo)
   if (repoUrl && !options.force) {
