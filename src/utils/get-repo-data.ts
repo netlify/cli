@@ -18,6 +18,8 @@ export interface RepoData {
   httpsUrl: string
 }
 
+export const NO_GIT_REMOTE_ERROR = 'No Git remote found'
+
 const getRepoData = async ({
   remoteName,
   workingDir,
@@ -26,13 +28,14 @@ const getRepoData = async ({
   workingDir: string
 }): Promise<RepoData | { error: string }> => {
   try {
-    const [gitConfig, gitDirectory] = await Promise.all([
-      util.promisify(gitconfiglocal)(workingDir),
-      findUp('.git', { cwd: workingDir, type: 'directory' }),
-    ])
+    const gitDirectory = await findUp('.git', { cwd: workingDir, type: 'directory' })
+    if (!gitDirectory) {
+      throw new Error(NO_GIT_REMOTE_ERROR)
+    }
+    const gitConfig = await util.promisify(gitconfiglocal)(workingDir)
 
-    if (!gitDirectory || !gitConfig?.remote || Object.keys(gitConfig.remote).length === 0) {
-      throw new Error('No Git remote found')
+    if (!gitConfig?.remote || Object.keys(gitConfig.remote).length === 0) {
+      throw new Error(NO_GIT_REMOTE_ERROR)
     }
 
     const baseGitPath = dirname(gitDirectory)
