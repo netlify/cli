@@ -152,6 +152,9 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
   const port = options.port || DEFAULT_PORT
 
   const functions = await getFunctions(functionsDir, config)
+  if (functions.length === 0) {
+    return logAndThrowError(`No functions found in ${functionsDir}`)
+  }
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
   const functionObj = functions.find((func) => func.name === functionToTrigger)
 
