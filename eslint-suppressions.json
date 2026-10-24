@@ -261,10 +261,10 @@
       "count": 38
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 8
+      "count": 7
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 47
+      "count": 48
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 11
@@ -276,7 +276,7 @@
       "count": 6
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 24
+      "count": 26
     },
     "n/no-process-exit": {
       "count": 2

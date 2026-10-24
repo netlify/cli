@@ -367,6 +367,9 @@ const downloadFromURL = async function (command, options, argumentName, function
   const fnFolder = getSafeFunctionPath(functionsDir, nameToUse)
 
   const folderContents = await readRepoURL(options.url)
+  if (!Array.isArray(folderContents)) {
+    throw new Error(`Could not list the contents of ${options.url}`)
+  }
 
   if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
     log(
@@ -381,8 +384,10 @@ const downloadFromURL = async function (command, options, argumentName, function
     // Ignore
   }
   await Promise.all(
-    // @ts-expect-error TS(7031) FIXME: Binding element 'downloadUrl' implicitly has an 'a... Remove this comment to see the full error message
     folderContents.map(async ({ download_url: downloadUrl, name }) => {
+      if (downloadUrl === null) {
+        throw new Error(`Error while retrieving ${name}: directories are not supported`)
+      }
       try {
         const res = await fetch(downloadUrl)
         const fileName = path.basename(name)
