@@ -920,6 +920,7 @@ describe.concurrent('commands/init', () => {
     { path: 'user', response: { name: 'test user', slug: 'test-user', email: 'user@test.com' } },
     { path: 'test-account/sites', method: 'POST' as const, response: { id: 'site_id', name: 'test-site-name' } },
   ]
+  const deletedSiteRoute = { path: 'sites/deleted_site_id', status: 404, response: { message: 'Not Found' } }
   const countSiteCreations = (requests: { method: string; path: string }[]) =>
     requests.filter(({ method, path: requestPath }) => method === 'POST' && requestPath.endsWith('/test-account/sites'))
       .length
@@ -985,8 +986,9 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init with a git remote unlinks a deleted project before creating a new one', async (t) => {
+  test('netlify init with a git remote replaces a deleted project link with a new project', async (t) => {
     const routes = [
+      deletedSiteRoute,
       ...noGitRoutes,
       { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
       { path: 'sites/site_id', method: 'PATCH' as const, response: { deploy_hook: 'deploy_hook' } },
@@ -1022,9 +1024,10 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init with a git remote treats a deleted project as unlinked when connecting an existing one', async (t) => {
+  test('netlify init keeps a deleted project link until a new project is saved', async (t) => {
     const existingSiteInfo = { ...manualSiteInfo, build_settings: { repo_url: 'https://github.com/owner/repo' } }
     const routes = [
+      deletedSiteRoute,
       { path: 'accounts', response: [{ slug: 'test-account' }] },
       { path: 'sites', response: [existingSiteInfo] },
       { path: 'sites/site_id/service-instances', response: [] },
@@ -1049,7 +1052,7 @@ describe.concurrent('commands/init', () => {
           t.expect(result.stderr).toContain('No project specified. In non-interactive mode')
           t.expect(countSiteCreations(requests)).toBe(0)
           t.expect(requests.filter(({ method }) => method === 'PATCH')).toEqual([])
-          await t.expect(readStateSiteId(builder.directory)).resolves.toBeUndefined()
+          await t.expect(readStateSiteId(builder.directory)).resolves.toBe('deleted_site_id')
         },
         true,
       )
@@ -1085,7 +1088,7 @@ describe.concurrent('commands/init', () => {
       await builder.withStateFile({ siteId: 'deleted_site_id' }).build()
 
       await withMockApi(
-        noGitRoutes,
+        [deletedSiteRoute, ...noGitRoutes],
         async ({ apiUrl, requests }) => {
           const { stdout, stderr } = await runInitIn(builder.directory, apiUrl, createWithoutGitQuestions())
 

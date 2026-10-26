@@ -995,7 +995,7 @@
       "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 3
+      "count": 2
     }
   },
   "src/utils/headers.ts": {

@@ -3,7 +3,7 @@ import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 
 import { type APIError, chalk, exit, log, logAndThrowError, netlifyCommand, warn } from '../../utils/command-helpers.js'
-import getRepoData, { NO_GIT_REMOTE_ERROR } from '../../utils/get-repo-data.js'
+import getRepoData, { type RepoDataError } from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -38,9 +38,15 @@ const logExistingAndExit = ({ siteInfo }: { siteInfo: SiteInfo }): never => {
   return exit()
 }
 
-const logLinkedWithoutGitAndExit = ({ siteInfo, repoError }: { siteInfo: SiteInfo; repoError: string }): never => {
-  if (repoError !== NO_GIT_REMOTE_ERROR) {
-    warn(`Could not read the git remote: ${repoError}`)
+const logLinkedWithoutGitAndExit = ({
+  siteInfo,
+  repoError,
+}: {
+  siteInfo: SiteInfo
+  repoError: RepoDataError
+}): never => {
+  if (repoError.reason !== 'no-remote') {
+    warn(`Could not read the git remote: ${repoError.error}`)
     log(`Fix the git remote, then run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} again to connect it.`)
   }
   log()
@@ -57,6 +63,22 @@ const logLinkedWithoutGitAndExit = ({ siteInfo, repoError }: { siteInfo: SiteInf
   return exit()
 }
 
+const ignoreLinkedSiteForThisRun = (command: BaseCommand): void => {
+  const { site } = command.netlify
+  command.siteId = undefined
+  command.netlify.siteInfo = {} as SiteInfo
+  command.netlify.site = {
+    root: site.root,
+    configPath: site.configPath,
+    get id(): string | undefined {
+      return command.siteId
+    },
+    set id(id: string) {
+      site.id = id
+    },
+  }
+}
+
 const getLinkedSiteInfo = async (command: BaseCommand): Promise<SiteInfo | undefined> => {
   const { api, siteInfo } = command.netlify
   if (isEmpty(siteInfo)) {
@@ -69,22 +91,27 @@ const getLinkedSiteInfo = async (command: BaseCommand): Promise<SiteInfo | undef
     return (await api.getSite({ siteId: siteInfo.id })) as unknown as SiteInfo
   } catch (error_) {
     const { status, message } = error_ as APIError
-    const unusableLinkWarnings: Partial<Record<number, string>> = {
-      403: `You don't have access to the Netlify project ${siteInfo.id} linked to this folder. Unlinking it and continuing.`,
-      404: `The Netlify project ${siteInfo.id} linked to this folder no longer exists. Unlinking it and continuing.`,
+    const unusableLinks: Partial<Record<number, { reason: string; warning: string }>> = {
+      403: {
+        reason: 'forbidden',
+        warning: `You don't have access to the Netlify project ${siteInfo.id} linked to this folder. Continuing without it.`,
+      },
+      404: {
+        reason: 'not_found',
+        warning: `The Netlify project ${siteInfo.id} linked to this folder no longer exists. Continuing without it.`,
+      },
     }
-    const unusableLinkWarning = unusableLinkWarnings[status]
-    if (unusableLinkWarning === undefined) {
+    const unusableLink = unusableLinks[status]
+    if (unusableLink === undefined) {
       return logAndThrowError(
         `Could not load the Netlify project ${siteInfo.id} linked to this folder (${
           status ? `status ${status.toString()}` : message
         }). Try again, or run ${chalk.cyanBright.bold(`${netlifyCommand()} unlink`)} to start over.`,
       )
     }
-    warn(unusableLinkWarning)
-    command.netlify.state.delete('siteId')
-    command.siteId = undefined
-    command.netlify.siteInfo = {} as SiteInfo
+    warn(unusableLink.warning)
+    await track('sites_unlinked', { siteId: siteInfo.id, kind: 'init', reason: unusableLink.reason })
+    ignoreLinkedSiteForThisRun(command)
     if (command.netlify.accounts.length === 0) {
       await command.refreshAccounts()
     }
@@ -319,7 +346,7 @@ export const init = async (
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
   if ('error' in repoData) {
     if (linkedSiteInfo) {
-      return logLinkedWithoutGitAndExit({ siteInfo: linkedSiteInfo, repoError: repoData.error })
+      return logLinkedWithoutGitAndExit({ siteInfo: linkedSiteInfo, repoError: repoData })
     }
     // TODO(ndhoule): Custom error messaage here
     return await handleNoGitRemoteAndExit({
