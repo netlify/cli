@@ -319,6 +319,26 @@ describe('setupAgentMcp', () => {
       expect(execaMock).toHaveBeenCalledTimes(2)
     })
 
+    test('leaves a user-wide Netlify server under another name alone when ours is only set for this project', async () => {
+      await install('claude')
+      execaMock
+        .mockResolvedValueOnce(listed(OURS_LINE, 'netlify-stdio: npx -y @netlify/mcp - ✔ Connected'))
+        .mockResolvedValueOnce(exited(0, '', 'netlify:\n  Scope: Local config (private to you in this project)\n'))
+        .mockResolvedValueOnce(exited(0, '', 'netlify-stdio:\n  Scope: User config (available in all your projects)\n'))
+
+      await expect(run({ NETLIFY_AGENT: 'claude-code' }, { scope: 'user' })).resolves.toMatchObject({
+        agents: { 'claude-code': 'kept' },
+      })
+
+      expect(execaMock).toHaveBeenNthCalledWith(
+        3,
+        installed('claude'),
+        ['mcp', 'get', 'netlify-stdio'],
+        expect.anything(),
+      )
+      expect(execaMock).toHaveBeenCalledTimes(3)
+    })
+
     test('adds nothing user-wide when the scope of an existing entry cannot be read', async () => {
       await install('claude')
       execaMock.mockResolvedValueOnce(listed(OURS_LINE)).mockResolvedValueOnce(exited(1, 'boom'))

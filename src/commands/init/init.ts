@@ -269,7 +269,9 @@ const setUpAgents = async (
       .filter(Boolean)
       .join(' and ')
     log(`Skipped setting up ${skipped}: ${blocker.reason}.`)
-    log(`  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} from your project folder to set them up there.`)
+    log(
+      `  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} from your project folder to set up ${skipped} there.`,
+    )
     await track('sites_agentSetupSkipped', { skills: skillsBlocked, mcp: mcpBlocked })
   }
   if (skills && !skillsBlocked) {
