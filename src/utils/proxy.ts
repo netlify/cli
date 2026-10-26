@@ -794,6 +794,10 @@ const onRequest = async (
             headers.append(req.rawHeaders[index], req.rawHeaders[index + 1])
           }
 
+          // The server handler gets a `Request` with no socket, so it reads the
+          // client's address from this header to set `context.ip`.
+          headers.set('x-forwarded-for', req.socket.remoteAddress ?? '')
+
           const response = await serverMatch.handle(
             new Request(requestURL, {
               body: req.originalBody,
