@@ -58,7 +58,7 @@ describe('fetchServerHistoricalLogs', () => {
 
   it.each([
     { levels: ['error'], severity: 'error' },
-    { levels: ['warn', 'fatal', 'debug'], severity: 'warn' },
+    { levels: ['warn', 'fatal'], severity: null },
     { levels: ['error', 'warn'], severity: null },
     { levels: ['fatal'], severity: null },
     { levels: undefined, severity: null },
@@ -149,14 +149,14 @@ describe('streamServer', () => {
     expect(url.searchParams.get('to_ts')).toBe(String(start))
   })
 
-  it('asks the API for the one severity it can filter by on every poll', async () => {
+  it('asks the API for the requested severity on every poll', async () => {
     fetchMock.mockResolvedValue(page([]))
 
     const stop = streamServer({
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
-      levels: ['error', 'fatal'],
+      levels: ['error'],
       onEntry: vi.fn(),
     })
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)

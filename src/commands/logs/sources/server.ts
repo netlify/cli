@@ -20,13 +20,12 @@ const POLL_INTERVAL_MS = 2_000
 // Retrying cannot change these answers, so following stops on them.
 const PERMANENT_FAILURE_STATUSES = new Set([401, 403, 404])
 
-// The API filters by at most one severity, and only these.
-const FILTERABLE_SEVERITIES = ['error', 'warn', 'info']
+// The API filters by at most one severity, and only these, though lines can
+// carry other levels too.
+const FILTERABLE_SEVERITIES = new Set(['error', 'warn', 'info'])
 
-const severityFor = (levels: string[] | undefined) => {
-  const matching = FILTERABLE_SEVERITIES.filter((severity) => levels?.includes(severity))
-  return matching.length === 1 ? matching[0] : undefined
-}
+const severityFor = (levels: string[] | undefined) =>
+  levels?.length === 1 && FILTERABLE_SEVERITIES.has(levels[0]) ? levels[0] : undefined
 
 class ServerLogsRequestError extends Error {
   constructor(
