@@ -12,16 +12,18 @@ export const SOURCE_INDICATORS: Record<LogEntry['source'], string> = {
   function: '𝒇',
   'edge-function': '🌐',
   deploy: '🚀',
+  server: '🖥️',
 }
 
 export const SOURCE_LABELS: Record<LogEntry['source'], string> = {
   function: 'Function',
   'edge-function': 'Edge function',
   deploy: 'Deploy',
+  server: 'Server',
 }
 
 export interface LogEntry {
-  source: 'function' | 'edge-function' | 'deploy'
+  source: 'function' | 'edge-function' | 'deploy' | 'server'
   name: string
   ts: number
   level: string
