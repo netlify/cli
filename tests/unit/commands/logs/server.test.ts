@@ -56,6 +56,20 @@ describe('fetchServerHistoricalLogs', () => {
     expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({ Authorization: `Bearer ${ACCESS_TOKEN}` })
   })
 
+  it.each([
+    { levels: ['error'], severity: 'error' },
+    { levels: ['warn', 'fatal', 'debug'], severity: 'warn' },
+    { levels: ['error', 'warn'], severity: null },
+    { levels: ['fatal'], severity: null },
+    { levels: undefined, severity: null },
+  ])('asks the API for severity $severity when the levels are $levels', async ({ levels, severity }) => {
+    fetchMock.mockResolvedValueOnce(page([]))
+
+    await fetchServerHistoricalLogs({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, from, to, levels })
+
+    expect(requestedUrls()[0].searchParams.get('severity')).toBe(severity)
+  })
+
   it('maps each line to a server entry named after its instance', async () => {
     fetchMock.mockResolvedValueOnce(page([line(from + 1, 'boom', { severity: 'error', actor_id: 'actor-9' })]))
 
@@ -133,6 +147,22 @@ describe('streamServer', () => {
     const [url] = requestedUrls()
     expect(url.searchParams.get('from_ts')).toBe(String(start - LOOK_BACK_MS))
     expect(url.searchParams.get('to_ts')).toBe(String(start))
+  })
+
+  it('asks the API for the one severity it can filter by on every poll', async () => {
+    fetchMock.mockResolvedValue(page([]))
+
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      levels: ['error', 'fatal'],
+      onEntry: vi.fn(),
+    })
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
+    stop()
+
+    expect(requestedUrls().map((url) => url.searchParams.get('severity'))).toEqual(['error', 'error'])
   })
 
   it('emits each line once, oldest first, across overlapping polls', async () => {

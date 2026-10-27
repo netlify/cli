@@ -184,6 +184,12 @@ describe('logsCommand --source server', () => {
     expect(fetchServerHistoricalLogsMock).not.toHaveBeenCalled()
   })
 
+  it('passes the --level levels to the server source', async () => {
+    await logsCommand({ source: ['server'], since: '1h', level: ['error'] }, makeCommand())
+
+    expect(fetchServerHistoricalLogsMock.mock.calls[0]?.[0]).toMatchObject({ levels: ['error'] })
+  })
+
   it('does not look up a deploy for server logs alone', async () => {
     await logsCommand({ source: ['server'], since: '1h' }, makeCommand())
 
@@ -192,13 +198,16 @@ describe('logsCommand --source server', () => {
   })
 
   it('streams the server logs in follow mode', async () => {
-    await runFollowMode(followArgs({ sources: ['server'], client: { basePath: API_BASE } as never }))
+    await runFollowMode(
+      followArgs({ sources: ['server'], client: { basePath: API_BASE } as never, levelsToPrint: ['warn'] }),
+    )
 
     expect(streamServerMock).toHaveBeenCalledOnce()
     expect(streamServerMock.mock.calls[0]?.[0]).toMatchObject({
       apiBase: API_BASE,
       siteId: 'site-1',
       accessToken: 'token-1',
+      levels: ['warn'],
     })
   })
 })

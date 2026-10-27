@@ -368,6 +368,7 @@ const runHistoricalMode = async ({
       accessToken,
       from,
       to,
+      levels: levelsToPrint,
     })
     allEntries.push(...entries)
     serverLogsTruncated = truncated
@@ -471,6 +472,13 @@ export const runFollowMode = async ({
   }
 
   if (sources.includes('server')) {
-    streamServer({ apiBase: client.basePath, siteId, accessToken, onEntry, onError: logError })
+    streamServer({
+      apiBase: client.basePath,
+      siteId,
+      accessToken,
+      levels: levelsToPrint,
+      onEntry,
+      onError: logError,
+    })
   }
 }

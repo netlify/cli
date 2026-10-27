@@ -20,6 +20,14 @@ const POLL_INTERVAL_MS = 2_000
 // Retrying cannot change these answers, so following stops on them.
 const PERMANENT_FAILURE_STATUSES = new Set([401, 403, 404])
 
+// The API filters by at most one severity, and only these.
+const FILTERABLE_SEVERITIES = ['error', 'warn', 'info']
+
+const severityFor = (levels: string[] | undefined) => {
+  const matching = FILTERABLE_SEVERITIES.filter((severity) => levels?.includes(severity))
+  return matching.length === 1 ? matching[0] : undefined
+}
+
 class ServerLogsRequestError extends Error {
   constructor(
     readonly status: number,
@@ -54,14 +62,17 @@ const fetchServerLogLines = async ({
   accessToken,
   from,
   to,
+  levels,
 }: {
   apiBase: string
   siteId: string
   accessToken: string | null | undefined
   from: number
   to: number
+  levels?: string[]
 }): Promise<{ lines: ServerLogLine[]; truncated: boolean }> => {
   const lines: ServerLogLine[] = []
+  const severity = severityFor(levels)
 
   for (let page = 1; page <= MAX_PAGES; page++) {
     const url = new URL(`${apiBase}/sites/${encodeURIComponent(siteId)}/observability/server/logs`)
@@ -69,6 +80,9 @@ const fetchServerLogLines = async ({
     url.searchParams.set('to_ts', String(to))
     url.searchParams.set('page', String(page))
     url.searchParams.set('per_page', String(PER_PAGE))
+    if (severity) {
+      url.searchParams.set('severity', severity)
+    }
 
     const response = await debugFetch(url.toString(), {
       headers: {
@@ -95,6 +109,7 @@ export const fetchServerHistoricalLogs = async (options: {
   accessToken: string | null | undefined
   from: number
   to: number
+  levels?: string[]
 }): Promise<{ entries: LogEntry[]; truncated: boolean }> => {
   const { lines, truncated } = await fetchServerLogLines(options)
   return { entries: lines.map(toEntry), truncated }
@@ -104,6 +119,7 @@ export const streamServer = ({
   apiBase,
   siteId,
   accessToken,
+  levels,
   onEntry,
   onError,
   intervalMs = POLL_INTERVAL_MS,
@@ -111,6 +127,7 @@ export const streamServer = ({
   apiBase: string
   siteId: string
   accessToken: string | null | undefined
+  levels?: string[]
   onEntry: (entry: LogEntry) => void
   onError?: (error: Error) => void
   intervalMs?: number
@@ -128,6 +145,7 @@ export const streamServer = ({
         apiBase,
         siteId,
         accessToken,
+        levels,
         from: newest - LOOK_BACK_MS,
         to: Date.now(),
       })
