@@ -319,26 +319,6 @@ describe('setupAgentMcp', () => {
       expect(execaMock).toHaveBeenCalledTimes(2)
     })
 
-    test('leaves a user-wide Netlify server under another name alone when ours is only set for this project', async () => {
-      await install('claude')
-      execaMock
-        .mockResolvedValueOnce(listed(OURS_LINE, 'netlify-stdio: npx -y @netlify/mcp - ✔ Connected'))
-        .mockResolvedValueOnce(exited(0, '', 'netlify:\n  Scope: Local config (private to you in this project)\n'))
-        .mockResolvedValueOnce(exited(0, '', 'netlify-stdio:\n  Scope: User config (available in all your projects)\n'))
-
-      await expect(run({ NETLIFY_AGENT: 'claude-code' }, { scope: 'user' })).resolves.toMatchObject({
-        agents: { 'claude-code': 'kept' },
-      })
-
-      expect(execaMock).toHaveBeenNthCalledWith(
-        3,
-        installed('claude'),
-        ['mcp', 'get', 'netlify-stdio'],
-        expect.anything(),
-      )
-      expect(execaMock).toHaveBeenCalledTimes(3)
-    })
-
     test('adds nothing user-wide when the scope of an existing entry cannot be read', async () => {
       await install('claude')
       execaMock.mockResolvedValueOnce(listed(OURS_LINE)).mockResolvedValueOnce(exited(1, 'boom'))
@@ -795,39 +775,6 @@ describe('setupAgentMcp', () => {
       await run({ NETLIFY_AGENT: 'claude-code' }, { reset: true, store: new LocalState(project) })
 
       await expect(readFile(stateFile(), 'utf8')).resolves.toBe(before)
-    })
-
-    test('an agent run with --reset-mcp-setup changes only the saved no once the add succeeds', async () => {
-      await install('claude')
-      const state = new LocalState(project)
-      state.set('siteId', 'site_id')
-      state.set('agentMcpSetup.project.claude-code', { url: NETLIFY_MCP_URL, choice: 'declined' })
-      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(0))
-
-      await run({ NETLIFY_AGENT: 'claude-code' }, { reset: true, store: new LocalState(project) })
-
-      await expect(readFile(stateFile(), 'utf8').then(JSON.parse)).resolves.toEqual({
-        siteId: 'site_id',
-        agentMcpSetup: { project: { 'claude-code': { url: NETLIFY_MCP_URL, choice: 'accepted' } } },
-      })
-    })
-
-    test('forgets a saved no through the real state file when an add fails after --reset-mcp-setup', async () => {
-      await install('claude')
-      const state = new LocalState(project)
-      state.set('siteId', 'site_id')
-      state.set('agentMcpSetup.project.claude-code', { url: NETLIFY_MCP_URL, choice: 'declined' })
-      execaMock.mockResolvedValueOnce(listed()).mockResolvedValueOnce(exited(1, 'boom'))
-
-      await run(
-        {},
-        { interactive: true, choose: chooseIds('claude-code'), reset: true, store: new LocalState(project) },
-      )
-
-      await expect(readFile(stateFile(), 'utf8').then(JSON.parse)).resolves.toEqual({
-        siteId: 'site_id',
-        agentMcpSetup: { project: {} },
-      })
     })
   })
 

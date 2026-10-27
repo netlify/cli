@@ -313,7 +313,7 @@ const runNative = async (executable: string, args: string[], cwd: string, timeou
 type NativeRun = Awaited<ReturnType<typeof runNative>>
 
 const describeFailure = ({ timedOut, output, exitCode }: NativeRun): string =>
-  timedOut ? 'timed out' : printable(output) || `exit code ${String(exitCode)}`
+  timedOut ? 'timed out' : output || `exit code ${String(exitCode)}`
 
 type Existing = { found: 'ours' | 'other'; name: string }
 type Lookup = Existing | { found: 'none' } | { found: 'unknown'; run: NativeRun }
@@ -372,28 +372,15 @@ const classify = (servers: { name: string; target: string }[]): Lookup => {
 
 const isExisting = (lookup: Lookup): lookup is Existing => lookup.found === 'ours' || lookup.found === 'other'
 
-const lookUpAtUserScope = async (
-  executable: string,
-  servers: { name: string; target: string }[],
-  workingDir: string,
-): Promise<Lookup> => {
-  const netlifyServers = servers
-    .map((server) => ({ server, lookup: classify([server]) }))
-    .filter(({ lookup }) => isExisting(lookup))
-    .sort((a, b) => Number(b.lookup.found === 'ours') - Number(a.lookup.found === 'ours'))
-  for (const { server, lookup } of netlifyServers) {
-    if (server.name.startsWith('plugin:')) {
-      return lookup
-    }
-    const details = await runNative(executable, ['mcp', 'get', server.name], workingDir, LIST_TIMEOUT_MS)
-    if (details.exitCode !== 0) {
-      return { found: 'unknown', run: details }
-    }
-    if (USER_SCOPE_DETAIL.test(details.stdout)) {
-      return lookup
-    }
+const lookUpAtUserScope = async (executable: string, lookup: Lookup, workingDir: string): Promise<Lookup> => {
+  if (!isExisting(lookup) || lookup.name.startsWith('plugin:')) {
+    return lookup
   }
-  return { found: 'none' }
+  const details = await runNative(executable, ['mcp', 'get', lookup.name], workingDir, LIST_TIMEOUT_MS)
+  if (details.exitCode !== 0) {
+    return { found: 'unknown', run: details }
+  }
+  return USER_SCOPE_DETAIL.test(details.stdout) ? lookup : { found: 'none' }
 }
 
 const lookUp = async (executable: string, kind: LookupKind, workingDir: string, scope: McpScope): Promise<Lookup> => {
@@ -406,8 +393,8 @@ const lookUp = async (executable: string, kind: LookupKind, workingDir: string, 
   if (run.exitCode !== 0) {
     return { found: 'unknown', run }
   }
-  const servers = listedServers(run.stdout)
-  return scope === 'user' ? await lookUpAtUserScope(executable, servers, workingDir) : classify(servers)
+  const lookup = classify(listedServers(run.stdout))
+  return scope === 'user' ? await lookUpAtUserScope(executable, lookup, workingDir) : lookup
 }
 
 const reportExisting = (agent: McpAgent, { found, name }: Existing): AgentMcpStatus => {
