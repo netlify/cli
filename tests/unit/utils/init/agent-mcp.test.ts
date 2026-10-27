@@ -1,5 +1,5 @@
 import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { delimiter, join, relative, resolve } from 'node:path'
 
 import { LocalState } from '@netlify/dev-utils'
@@ -145,7 +145,12 @@ describe('setupAgentMcp', () => {
         ['mcp', 'list'],
         expect.objectContaining({ cwd: project, reject: false, stdin: 'ignore' }),
       )
-      expect(execaMock).toHaveBeenNthCalledWith(2, installed('claude'), claudeAdd('local'), expect.anything())
+      expect(execaMock).toHaveBeenNthCalledWith(
+        2,
+        installed('claude'),
+        claudeAdd('local'),
+        expect.objectContaining({ cwd: project }),
+      )
       expect(logged()).toContain("Saved in ~/.claude.json, under this project's path")
       expect(logged()).toContain('claude mcp remove --scope local netlify')
       expect(logged()).toContain('loads the next time you start Claude Code in this folder')
@@ -189,6 +194,12 @@ describe('setupAgentMcp', () => {
 
       await expect(run({ CODEX_CI: '1' }, { scope: 'user' })).resolves.toMatchObject({ agents: { codex: 'added' } })
 
+      expect(execaMock).toHaveBeenNthCalledWith(
+        1,
+        installed('codex'),
+        ['mcp', 'list', '--json'],
+        expect.objectContaining({ cwd: homedir() }),
+      )
       expect(execaMock).toHaveBeenNthCalledWith(
         2,
         installed('codex'),

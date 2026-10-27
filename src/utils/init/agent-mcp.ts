@@ -1,4 +1,5 @@
 import { promises as fs } from 'node:fs'
+import { homedir } from 'node:os'
 import path from 'node:path'
 
 import { checkbox } from '@inquirer/prompts'
@@ -313,7 +314,7 @@ const runNative = async (executable: string, args: string[], cwd: string, timeou
 type NativeRun = Awaited<ReturnType<typeof runNative>>
 
 const describeFailure = ({ timedOut, output, exitCode }: NativeRun): string =>
-  timedOut ? 'timed out' : output || `exit code ${String(exitCode)}`
+  timedOut ? 'timed out' : output.split('\n').map(printable).join('\n') || `exit code ${String(exitCode)}`
 
 type Existing = { found: 'ours' | 'other'; name: string }
 type Lookup = Existing | { found: 'none' } | { found: 'unknown'; run: NativeRun }
@@ -385,7 +386,7 @@ const lookUpAtUserScope = async (executable: string, lookup: Lookup, workingDir:
 
 const lookUp = async (executable: string, kind: LookupKind, workingDir: string, scope: McpScope): Promise<Lookup> => {
   if (kind === 'list-json') {
-    const run = await runNative(executable, ['mcp', 'list', '--json'], workingDir)
+    const run = await runNative(executable, ['mcp', 'list', '--json'], scope === 'user' ? homedir() : workingDir)
     const servers = run.exitCode === 0 ? codexServers(run.stdout) : undefined
     return servers ? classify(servers) : { found: 'unknown', run }
   }
@@ -637,7 +638,8 @@ export const setupAgentMcp = async ({
       } else {
         const status = await add(agent, scope, env, workingDir)
         summary.agents[agent.id] = status
-        if (reset && status !== 'failed' && status !== 'unsupported' && savedChoice(store, agent, scope)) {
+        const installed = status === 'added' || status === 'present' || status === 'kept'
+        if (reset && installed && savedChoice(store, agent, scope)) {
           saveChoice(store, agent, scope, status)
         }
       }
