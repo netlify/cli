@@ -172,6 +172,18 @@ describe('streamServer', () => {
     expect(onEntry.mock.calls.map(([entry]) => entry.message)).toEqual(['recovered'])
   })
 
+  it.each([401, 403, 404])('stops and reports when the API answers %i', async (status) => {
+    fetchMock.mockResolvedValue(new Response('', { status }))
+    const onError = vi.fn<(error: Error) => void>()
+
+    streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry: vi.fn(), onError })
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 3)
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(onError).toHaveBeenCalledOnce()
+    expect(onError.mock.calls[0][0].message).toContain(`Failed to fetch server logs: ${String(status)}`)
+  })
+
   it('stops polling once stopped', async () => {
     fetchMock.mockResolvedValue(page([]))
 

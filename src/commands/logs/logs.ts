@@ -1,6 +1,6 @@
 import type { NetlifyAPI } from '@netlify/api'
 
-import { chalk, log, logAndThrowError, netlifyCommand, warn } from '../../utils/command-helpers.js'
+import { chalk, log, logAndThrowError, logError, netlifyCommand, warn } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 
 import {
@@ -172,6 +172,12 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
     if (sources.length === 0) {
       sources = ['functions', 'edge-functions']
     }
+  }
+
+  if (sources.includes('server') && (options.deployId || options.url)) {
+    return logAndThrowError(
+      'Server logs cannot be filtered by deploy. Remove --deploy-id and --url, or the server source.',
+    )
   }
 
   let deployId: string | undefined
@@ -385,7 +391,12 @@ const runHistoricalMode = async ({
   }
 
   if (serverLogsTruncated) {
-    warn('Only the most recent server logs are shown. Narrow --since/--until to see older ones.')
+    const message = 'Only the most recent server logs are shown. Narrow --since/--until to see older ones.'
+    if (json) {
+      process.stderr.write(`Warning: ${message}\n`)
+    } else {
+      warn(message)
+    }
   }
 }
 
@@ -460,6 +471,6 @@ export const runFollowMode = async ({
   }
 
   if (sources.includes('server')) {
-    streamServer({ apiBase: client.basePath, siteId, accessToken, onEntry })
+    streamServer({ apiBase: client.basePath, siteId, accessToken, onEntry, onError: logError })
   }
 }

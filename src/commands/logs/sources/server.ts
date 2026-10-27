@@ -17,6 +17,18 @@ const MAX_PAGES = 1 + 10_000 / PER_PAGE
 const LOOK_BACK_MS = 10_000
 const POLL_INTERVAL_MS = 2_000
 
+// Retrying cannot change these answers, so following stops on them.
+const PERMANENT_FAILURE_STATUSES = new Set([401, 403, 404])
+
+class ServerLogsRequestError extends Error {
+  constructor(
+    readonly status: number,
+    statusText: string,
+  ) {
+    super(`Failed to fetch server logs: ${status.toString()} ${statusText}`)
+  }
+}
+
 const lineKey = (line: ServerLogLine) => `${line.timestamp.toString()}|${line.actor_id}|${line.severity}|${line.body}`
 
 const toEntry = (line: ServerLogLine): LogEntry => ({
@@ -55,7 +67,7 @@ const fetchServerLogLines = async ({
       },
     })
     if (!response.ok) {
-      throw new Error(`Failed to fetch server logs: ${response.status.toString()} ${response.statusText}`)
+      throw new ServerLogsRequestError(response.status, response.statusText)
     }
 
     const body = (await response.json()) as { logs?: ServerLogLine[]; has_next_page?: boolean }
@@ -84,12 +96,14 @@ export const streamServer = ({
   siteId,
   accessToken,
   onEntry,
+  onError,
   intervalMs = POLL_INTERVAL_MS,
 }: {
   apiBase: string
   siteId: string
   accessToken: string | null | undefined
   onEntry: (entry: LogEntry) => void
+  onError?: (error: Error) => void
   intervalMs?: number
 }): (() => void) => {
   let newest = Date.now()
@@ -118,8 +132,13 @@ export const streamServer = ({
       // The next window starts inside this one, so only these lines can repeat.
       seen = new Set(lines.map(lineKey))
       newest = fresh.reduce((max, line) => Math.max(max, line.timestamp), newest)
-    } catch {
-      // The next poll's window still covers what this one missed.
+    } catch (error) {
+      if (error instanceof ServerLogsRequestError && PERMANENT_FAILURE_STATUSES.has(error.status)) {
+        stopped = true
+        onError?.(error)
+        return
+      }
+      // Otherwise the next poll's window still covers what this one missed.
     }
 
     if (!stopped) {

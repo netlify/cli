@@ -128,13 +128,13 @@ export const createLogsCommand = (program: BaseCommand) => {
     .addOption(
       new Option(
         '-u, --url <url>',
-        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains. Can be used with all sources.',
+        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains. Can be used with all sources except server.',
       ),
     )
     .addOption(
       new Option(
         '-d, --deploy-id <deploy-id>',
-        'Show logs for a specific deploy by ID, including failed builds. Can be used with all sources.',
+        'Show logs for a specific deploy by ID, including failed builds. Can be used with all sources except server.',
       ),
     )
     .addOption(

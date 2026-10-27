@@ -174,6 +174,16 @@ describe('logsCommand --source server', () => {
     expect(args.to).toBeGreaterThanOrEqual(before)
   })
 
+  it.each([
+    ['--deploy-id', { deployId: A_VALID_DEPLOY_ID }],
+    ['--url', { url: 'https://example.netlify.app' }],
+  ])('rejects %s, which server logs cannot be filtered by', async (_flag, deployOptions) => {
+    await expect(
+      logsCommand({ source: ['functions', 'server'], since: '1h', ...deployOptions }, makeCommand()),
+    ).rejects.toThrow('Server logs cannot be filtered by deploy')
+    expect(fetchServerHistoricalLogsMock).not.toHaveBeenCalled()
+  })
+
   it('does not look up a deploy for server logs alone', async () => {
     await logsCommand({ source: ['server'], since: '1h' }, makeCommand())
 
