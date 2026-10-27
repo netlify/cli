@@ -196,6 +196,36 @@ describe('streamServer', () => {
     expect(onError.mock.calls[0][0].message).toBe('Failed to fetch server logs: 502 Bad Gateway')
   })
 
+  it('reports the first of consecutive truncated polls, and again after a complete one', async () => {
+    const maxPages = 1 + 10_000 / 500
+    const truncatedPoll = () => {
+      for (let pageNumber = 0; pageNumber < maxPages; pageNumber++) {
+        fetchMock.mockResolvedValueOnce(page([line(start, `line ${String(pageNumber)}`)], true))
+      }
+    }
+    truncatedPoll()
+    truncatedPoll()
+    fetchMock.mockResolvedValueOnce(page([]))
+    truncatedPoll()
+    const onError = vi.fn<(error: Error) => void>()
+
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      onEntry: vi.fn(),
+      onError,
+    })
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 3)
+    stop()
+
+    expect(fetchMock).toHaveBeenCalledTimes(maxPages * 3 + 1)
+    expect(onError).toHaveBeenCalledTimes(2)
+    expect(onError.mock.calls[0][0].message).toBe(
+      'Server logs are arriving faster than they can be shown, so some lines were skipped.',
+    )
+  })
+
   it('keeps polling after a failed request', async () => {
     fetchMock
       .mockResolvedValueOnce(new Response('', { status: 502, statusText: 'Bad Gateway' }))

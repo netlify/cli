@@ -118,12 +118,13 @@ export const streamServer = ({
   let newest = Date.now()
   let seen = new Map<string, number>()
   let failing = false
+  let truncating = false
   let stopped = false
   let timer: ReturnType<typeof setTimeout> | undefined
 
   const poll = async () => {
     try {
-      const { lines } = await fetchServerLogLines({
+      const { lines, truncated } = await fetchServerLogLines({
         apiBase,
         siteId,
         accessToken,
@@ -148,6 +149,11 @@ export const streamServer = ({
       for (const line of fresh) {
         onEntry(toEntry(line))
       }
+      // The API pages newest first, so a truncated window loses its oldest lines for good.
+      if (truncated && !truncating) {
+        onError?.(new Error('Server logs are arriving faster than they can be shown, so some lines were skipped.'))
+      }
+      truncating = truncated
 
       // The next window starts inside this one, so only these lines can repeat.
       seen = countKeys(lines)
