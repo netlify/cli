@@ -70,8 +70,10 @@ describe('fetchServerHistoricalLogs', () => {
     expect(requestedUrls()[0].searchParams.get('severity')).toBe(severity)
   })
 
-  it('maps each line to a server entry named after its instance', async () => {
-    fetchMock.mockResolvedValueOnce(page([line(from + 1, 'boom', { severity: 'error', actor_id: 'actor-9' })]))
+  it('maps each line to a server entry named after the short form of its instance ID', async () => {
+    fetchMock.mockResolvedValueOnce(
+      page([line(from + 1, 'boom', { severity: 'error', actor_id: 'b7763a51-36a1-4839-9827-a265fa5af79c' })]),
+    )
 
     const { entries } = await fetchServerHistoricalLogs({
       apiBase: API_BASE,
@@ -82,7 +84,7 @@ describe('fetchServerHistoricalLogs', () => {
     })
 
     expect(entries).toEqual<LogEntry[]>([
-      { source: 'server', name: 'actor-9', ts: from + 1, level: 'ERROR', message: 'boom' },
+      { source: 'server', name: 'b7763a51', ts: from + 1, level: 'ERROR', message: 'boom' },
     ])
   })
 

@@ -49,7 +49,8 @@ const countKeys = (lines: ServerLogLine[]) => {
 
 const toEntry = (line: ServerLogLine): LogEntry => ({
   source: 'server',
-  name: line.actor_id || 'server',
+  // The dashboard shows instances by the first 8 characters of their ID too.
+  name: line.actor_id ? line.actor_id.slice(0, 8) : 'server',
   ts: line.timestamp,
   level: line.severity ? line.severity.toUpperCase() : 'INFO',
   message: line.body,
