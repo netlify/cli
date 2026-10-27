@@ -31,6 +31,15 @@ class ServerLogsRequestError extends Error {
 
 const lineKey = (line: ServerLogLine) => `${line.timestamp.toString()}|${line.actor_id}|${line.severity}|${line.body}`
 
+const countKeys = (lines: ServerLogLine[]) => {
+  const counts = new Map<string, number>()
+  for (const line of lines) {
+    const key = lineKey(line)
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  return counts
+}
+
 const toEntry = (line: ServerLogLine): LogEntry => ({
   source: 'server',
   name: line.actor_id || 'server',
@@ -107,7 +116,8 @@ export const streamServer = ({
   intervalMs?: number
 }): (() => void) => {
   let newest = Date.now()
-  let seen = new Set<string>()
+  let seen = new Map<string, number>()
+  let failing = false
   let stopped = false
   let timer: ReturnType<typeof setTimeout> | undefined
 
@@ -124,21 +134,38 @@ export const streamServer = ({
         return
       }
 
-      const fresh = lines.filter((line) => !seen.has(lineKey(line))).sort((a, b) => a.timestamp - b.timestamp)
+      // Lines carry no ID, so identical ones are told apart by how many of them
+      // the previous poll returned.
+      const unclaimed = new Map(seen)
+      const fresh = lines
+        .filter((line) => {
+          const key = lineKey(line)
+          const count = unclaimed.get(key) ?? 0
+          unclaimed.set(key, count - 1)
+          return count <= 0
+        })
+        .sort((a, b) => a.timestamp - b.timestamp)
       for (const line of fresh) {
         onEntry(toEntry(line))
       }
 
       // The next window starts inside this one, so only these lines can repeat.
-      seen = new Set(lines.map(lineKey))
+      seen = countKeys(lines)
       newest = fresh.reduce((max, line) => Math.max(max, line.timestamp), newest)
+      failing = false
     } catch (error) {
+      const failure = error instanceof Error ? error : new Error(String(error))
       if (error instanceof ServerLogsRequestError && PERMANENT_FAILURE_STATUSES.has(error.status)) {
         stopped = true
-        onError?.(error)
+        onError?.(failure)
         return
       }
-      // Otherwise the next poll's window still covers what this one missed.
+      // The next poll's window still covers what this one missed, so a run of
+      // failures is reported once.
+      if (!failing) {
+        failing = true
+        onError?.(failure)
+      }
     }
 
     if (!stopped) {

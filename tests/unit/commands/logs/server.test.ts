@@ -159,6 +159,43 @@ describe('streamServer', () => {
     expect(requestedUrls()[1].searchParams.get('from_ts')).toBe(String(newest - LOOK_BACK_MS))
   })
 
+  it('emits a repeated identical line as often as the API returns it', async () => {
+    fetchMock
+      .mockResolvedValueOnce(page([line(start - 1, 'same')]))
+      .mockResolvedValueOnce(page([line(start - 1, 'same'), line(start - 1, 'same')]))
+    const onEntry = vi.fn<(entry: LogEntry) => void>()
+
+    const stop = streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry })
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
+    stop()
+
+    expect(onEntry).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports the first of consecutive failed polls, and again after a recovery', async () => {
+    const failure = () => new Response('', { status: 502, statusText: 'Bad Gateway' })
+    fetchMock
+      .mockResolvedValueOnce(failure())
+      .mockResolvedValueOnce(failure())
+      .mockResolvedValueOnce(page([]))
+      .mockResolvedValueOnce(failure())
+    const onError = vi.fn<(error: Error) => void>()
+
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      onEntry: vi.fn(),
+      onError,
+    })
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 3)
+    stop()
+
+    expect(fetchMock).toHaveBeenCalledTimes(4)
+    expect(onError).toHaveBeenCalledTimes(2)
+    expect(onError.mock.calls[0][0].message).toBe('Failed to fetch server logs: 502 Bad Gateway')
+  })
+
   it('keeps polling after a failed request', async () => {
     fetchMock
       .mockResolvedValueOnce(new Response('', { status: 502, statusText: 'Bad Gateway' }))
