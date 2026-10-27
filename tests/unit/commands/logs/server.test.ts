@@ -103,8 +103,22 @@ describe('fetchServerHistoricalLogs', () => {
     })
 
     expect(requestedUrls().map((url) => url.searchParams.get('page'))).toEqual(['1', '2', '3'])
-    expect(entries.map((entry) => entry.message)).toEqual(['third', 'second', 'first'])
+    expect(entries.map((entry) => entry.message)).toEqual(['first', 'second', 'third'])
     expect(truncated).toBe(false)
+  })
+
+  it('keeps lines from the same millisecond in the order they were written', async () => {
+    fetchMock.mockResolvedValueOnce(page([line(from + 1, 'written second'), line(from + 1, 'written first')]))
+
+    const { entries } = await fetchServerHistoricalLogs({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      from,
+      to,
+    })
+
+    expect(entries.map((entry) => entry.message)).toEqual(['written first', 'written second'])
   })
 
   it('stops paging where the API stops serving older pages, and says so', async () => {
@@ -178,6 +192,17 @@ describe('streamServer', () => {
     stop()
 
     expect(onEntry.mock.calls.map(([entry]) => entry.message)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('emits lines from the same millisecond in the order they were written', async () => {
+    fetchMock.mockResolvedValueOnce(page([line(start, 'written second'), line(start, 'written first')]))
+    const onEntry = vi.fn<(entry: LogEntry) => void>()
+
+    const stop = streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry })
+    await vi.advanceTimersByTimeAsync(0)
+    stop()
+
+    expect(onEntry.mock.calls.map(([entry]) => entry.message)).toEqual(['written first', 'written second'])
   })
 
   it('looks back from the newest line it has seen', async () => {

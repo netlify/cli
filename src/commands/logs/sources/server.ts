@@ -71,6 +71,8 @@ const fetchServerLogLines = async ({
   to: number
   levels?: string[]
 }): Promise<{ lines: ServerLogLine[]; truncated: boolean }> => {
+  // The API pages newest first and sends millisecond timestamps, though it
+  // orders by finer ones, so reversing is what keeps same-millisecond lines in order.
   const lines: ServerLogLine[] = []
   const severity = severityFor(levels)
 
@@ -96,11 +98,11 @@ const fetchServerLogLines = async ({
     const body = (await response.json()) as { logs?: ServerLogLine[]; has_next_page?: boolean }
     lines.push(...(body.logs ?? []))
     if (!body.has_next_page) {
-      return { lines, truncated: false }
+      return { lines: lines.reverse(), truncated: false }
     }
   }
 
-  return { lines, truncated: true }
+  return { lines: lines.reverse(), truncated: true }
 }
 
 export const fetchServerHistoricalLogs = async (options: {
