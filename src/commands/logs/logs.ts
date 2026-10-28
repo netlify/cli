@@ -1,6 +1,6 @@
 import type { NetlifyAPI } from '@netlify/api'
 
-import { chalk, log, logAndThrowError, netlifyCommand } from '../../utils/command-helpers.js'
+import { chalk, log, logAndThrowError, logError, netlifyCommand, warn } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 
 import {
@@ -32,9 +32,10 @@ import {
   streamFunctions,
   validateFunctionCount,
 } from './sources/functions.js'
+import { fetchServerHistoricalLogs, streamServer } from './sources/server.js'
 
-type Source = 'functions' | 'edge-functions' | 'deploy'
-const VALID_SOURCES: Source[] = ['functions', 'edge-functions', 'deploy']
+type Source = 'functions' | 'edge-functions' | 'deploy' | 'server'
+const VALID_SOURCES: Source[] = ['functions', 'edge-functions', 'deploy', 'server']
 const DEFAULT_SINCE = '10m'
 const DEPLOY_STREAM_IDLE_CLOSE_MS = 3_000
 
@@ -55,6 +56,7 @@ const SOURCE_TO_ENTRY_SOURCE: Record<Source, LogEntry['source']> = {
   functions: 'function',
   'edge-functions': 'edge-function',
   deploy: 'deploy',
+  server: 'server',
 }
 
 const humanizeTimeRange = (sinceValue: string | undefined, untilValue: string | undefined): string => {
@@ -79,6 +81,8 @@ const printHeader = (sources: Source[], timeDescription: string, isFollow: boole
         return 'edge functions'
       case 'deploy':
         return 'deploy'
+      case 'server':
+        return 'server'
     }
   })
 
@@ -168,6 +172,12 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
     if (sources.length === 0) {
       sources = ['functions', 'edge-functions']
     }
+  }
+
+  if (sources.includes('server') && (options.deployId || options.url)) {
+    return logAndThrowError(
+      'Server logs cannot be filtered by deploy. Remove --deploy-id and --url, or the server source.',
+    )
   }
 
   let deployId: string | undefined
@@ -350,6 +360,20 @@ const runHistoricalMode = async ({
     allEntries.push(...entries)
   }
 
+  let serverLogsTruncated = false
+  if (sources.includes('server')) {
+    const { entries, truncated } = await fetchServerHistoricalLogs({
+      apiBase: client.basePath,
+      siteId,
+      accessToken,
+      from,
+      to,
+      levels: levelsToPrint,
+    })
+    allEntries.push(...entries)
+    serverLogsTruncated = truncated
+  }
+
   allEntries.sort((a, b) => a.ts - b.ts)
 
   if (allEntries.length === 0) {
@@ -365,6 +389,15 @@ const runHistoricalMode = async ({
   for (const entry of allEntries) {
     const key = `${entry.source}:${entry.name}`
     printEntry(entry, levelsToPrint, json, assignColor(key))
+  }
+
+  if (serverLogsTruncated) {
+    const message = 'Only the most recent server logs are shown. Narrow --since/--until to see older ones.'
+    if (json) {
+      process.stderr.write(`Warning: ${message}\n`)
+    } else {
+      warn(message)
+    }
   }
 }
 
@@ -436,5 +469,16 @@ export const runFollowMode = async ({
 
   if (sources.includes('edge-functions') && deployId) {
     streamEdgeFunctions(siteId, deployId, accessToken, edgeFunctionNames, onEntry)
+  }
+
+  if (sources.includes('server')) {
+    streamServer({
+      apiBase: client.basePath,
+      siteId,
+      accessToken,
+      levels: levelsToPrint,
+      onEntry,
+      onError: logError,
+    })
   }
 }
