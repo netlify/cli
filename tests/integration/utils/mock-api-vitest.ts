@@ -84,6 +84,18 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     )
   })
 
+  app.get('/site/:siteId/integrations/safe', function onRequest(req, res) {
+    addRequest(requests, req)
+    res.status(200)
+    res.json([])
+  })
+
+  app.get('/team/:accountId/integrations/installations/meta/:siteId', function onRequest(req, res) {
+    addRequest(requests, req)
+    res.status(200)
+    res.json([])
+  })
+
   app.all('{*splat}', function onRequest(req, res) {
     addRequest(requests, req)
     if (!silent) {
@@ -141,6 +153,8 @@ const getEnvironmentVariables = ({ apiUrl }: { apiUrl?: string }) => ({
   NETLIFY_AUTH_TOKEN: 'fake-token',
   NETLIFY_SITE_ID: 'site_id',
   NETLIFY_API_URL: apiUrl,
+  // Repeated from the vitest config for callers that pass `extendEnv: false`
+  NETLIFY_TELEMETRY_DISABLED: 'true',
 })
 
 export const getCLIOptions = ({

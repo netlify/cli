@@ -1,11 +1,8 @@
 import { Readable, Writable } from 'stream'
 import { describe, expect, it } from 'vitest'
 
-import {
-  parseGitCredentialInput,
-  writeCredentials,
-  NETLIFY_GIT_HOST,
-} from '../../../../src/commands/git-credential/git-credential.js'
+import { parseGitCredentialInput, writeCredentials } from '../../../../src/commands/git-credential/git-credential.js'
+import { NETLIFY_GIT_HOST } from '../../../../src/utils/netlify-git.js'
 
 describe('git-credential command', () => {
   describe('parseGitCredentialInput', () => {

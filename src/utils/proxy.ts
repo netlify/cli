@@ -485,6 +485,15 @@ const initializeProxy = async function ({
       }
     }
 
+    if (res instanceof http.ServerResponse && res.headersSent) {
+      if (!res.writableEnded) {
+        log(NETLIFYDEVWARN, `Could not finish proxying ${req.url ?? ''}: ${err.message}`)
+        res.destroy()
+      }
+
+      return
+    }
+
     if (res instanceof http.ServerResponse) {
       res.writeHead(500, {
         'Content-Type': 'text/plain',
@@ -815,6 +824,10 @@ const onRequest = async (
             headers.append(req.rawHeaders[index], req.rawHeaders[index + 1])
           }
 
+          // The server handler gets a `Request` with no socket, so it reads the
+          // client's address from this header to set `context.ip`.
+          headers.set('x-forwarded-for', req.socket.remoteAddress ?? '')
+
           const response = await serverMatch.handle(
             new Request(requestURL, {
               body: req.originalBody,
@@ -988,7 +1001,9 @@ export const startProxy = async function ({
   })
 
   const serverEntryEnabled =
-    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' || Boolean(siteInfo?.feature_flags?.netlify_build_server_entry)
+    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' ||
+    Boolean(siteInfo?.feature_flags?.netlify_build_server_entry) ||
+    Boolean(siteInfo?.feature_flags?.netlify_build_server_standalone)
 
   let serverHandler: ServerHandler | undefined
 

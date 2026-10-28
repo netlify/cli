@@ -1,6 +1,7 @@
 // Handlers are meant to be async outside tests
+import events from 'node:events'
 import fs from 'node:fs/promises'
-import { type AddressInfo } from 'node:net'
+import net, { type AddressInfo } from 'node:net'
 import path from 'node:path'
 import process from 'process'
 
@@ -13,6 +14,7 @@ import { describe, test } from 'vitest'
 import { withDevServer } from '../../utils/dev-server.js'
 import { startExternalServer } from '../../utils/external-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
+import { pause } from '../../utils/pause.js'
 import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.js'
 
 type BlobFixture = {
@@ -472,6 +474,45 @@ describe.concurrent('command/dev', () => {
         t.expect(server.error).toContain('Failed to handle request to /%E0%A4%A')
         t.expect(server.error).toContain('URIError: URI malformed')
       })
+    })
+  })
+
+  test('should not crash dev server when the framework server resets the connection mid-response', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const targetPort = await getPort()
+      const frameworkServer = net.createServer((socket) => {
+        socket.once('data', () => {
+          socket.write('HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n')
+          setTimeout(() => socket.resetAndDestroy(), 100)
+        })
+      })
+      frameworkServer.listen(targetPort, '127.0.0.1')
+      await events.once(frameworkServer, 'listening')
+      await builder.build()
+
+      try {
+        await withDevServer(
+          { cwd: builder.directory, command: 'node', framework: '#custom', targetPort, skipWaitPort: true },
+          async (server) => {
+            const response = await fetch(server.url)
+
+            t.expect(response.status).toBe(200)
+            await t.expect(response.text()).rejects.toThrow('Premature close')
+
+            await pause(500)
+
+            t.expect(server.error).not.toContain('Netlify CLI has terminated unexpectedly')
+            t.expect(server.output).toContain('Could not finish proxying /')
+
+            const nextResponse = await fetch(server.url)
+
+            t.expect(nextResponse.status).toBe(200)
+            await t.expect(nextResponse.text()).rejects.toThrow('Premature close')
+          },
+        )
+      } finally {
+        frameworkServer.close()
+      }
     })
   })
 

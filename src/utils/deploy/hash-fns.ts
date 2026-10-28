@@ -10,6 +10,8 @@ import {
   zipServer,
   type Config as FunctionsConfig,
   type FunctionResult,
+  type NetlifyServerConfig,
+  type ServerResult,
   type TrafficRules,
 } from '@netlify/zip-it-and-ship-it'
 
@@ -23,9 +25,15 @@ import type { FunctionUploadFile, ServerUploadFile } from './upload-files.js'
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
 
-interface ServerBundle {
-  path: string
+// The deploy API's `server` object.
+interface ServerPayload {
+  sha: string
   region?: string
+  instance_size?: ServerResult['instanceSize']
+  routes?: ServerResult['routes']
+  excluded_routes?: ServerResult['excludedRoutes']
+  runtime_version?: ServerResult['runtimeVersion']
+  scale?: ServerResult['scale']
 }
 
 type HashedFunctionFile = FunctionUploadFile & { hash: string; relname: string }
@@ -103,16 +111,18 @@ const getFunctionZips = async ({
 const getServerBundle = async ({
   packagePath,
   rootDir,
+  serverConfig,
   serverEnabled,
   serverManifestPath,
   tmpDir,
 }: {
   packagePath?: string | undefined
   rootDir?: string | undefined
+  serverConfig?: NetlifyServerConfig | undefined
   serverEnabled?: boolean | undefined
   serverManifestPath?: string | undefined
   tmpDir: string
-}): Promise<ServerBundle | undefined> => {
+}): Promise<ServerResult | undefined> => {
   if (!serverEnabled) {
     return undefined
   }
@@ -120,7 +130,7 @@ const getServerBundle = async ({
   if (serverManifestPath) {
     try {
       const { server, timestamp } = JSON.parse(await readFile(serverManifestPath, 'utf-8')) as {
-        server?: ServerBundle
+        server?: ServerResult
         timestamp: number
       }
 
@@ -139,7 +149,7 @@ const getServerBundle = async ({
     return undefined
   }
 
-  return await zipServer(entryPath, join(tmpDir, 'server'), { basePath: rootDir })
+  return await zipServer(entryPath, join(tmpDir, 'server'), { basePath: rootDir, config: serverConfig })
 }
 
 const trafficRulesConfig = (trafficRules?: TrafficRules) => {
@@ -163,18 +173,20 @@ const trafficRulesConfig = (trafficRules?: TrafficRules) => {
   }
 }
 
-interface FunctionConfigPayload {
-  display_name: FunctionResult['displayName']
-  excluded_routes: FunctionResult['excludedRoutes']
-  generator: FunctionResult['generator']
-  memory: FunctionResult['memory']
-  region: FunctionResult['region']
-  routes: FunctionResult['routes']
-  build_data: FunctionResult['buildData']
-  priority: FunctionResult['priority']
-  traffic_rules: ReturnType<typeof trafficRulesConfig>
-  vcpu: FunctionResult['vcpu']
-}
+const toFunctionConfigPayload = (func: FunctionResult) => ({
+  display_name: func.displayName,
+  excluded_routes: func.excludedRoutes,
+  generator: func.generator,
+  memory: func.memory,
+  region: func.region,
+  routes: func.routes,
+  build_data: func.buildData,
+  priority: func.priority,
+  traffic_rules: trafficRulesConfig(func.trafficRules),
+  vcpu: func.vcpu,
+})
+
+type FunctionConfigPayload = ReturnType<typeof toFunctionConfigPayload>
 
 const hashFns = async (
   command: BaseCommand,
@@ -186,6 +198,7 @@ const hashFns = async (
     manifestPath,
     packagePath,
     rootDir,
+    serverConfig,
     serverEnabled,
     serverManifestPath,
     skipFunctionsCache,
@@ -198,30 +211,26 @@ const hashFns = async (
     manifestPath?: string | undefined
     packagePath?: string | undefined
     rootDir?: string | undefined
+    serverConfig?: NetlifyServerConfig | undefined
     serverEnabled?: boolean | undefined
     serverManifestPath?: string | undefined
     skipFunctionsCache?: boolean | undefined
     statusCb: StatusCallback
-    tmpDir?: string | undefined
+    tmpDir: string
   },
 ): Promise<{
   functionSchedules?: { name: string; cron: string }[] | undefined
   functions: Record<string, string>
   functionsWithNativeModules: FunctionResult[]
-  shaMap?: Record<string, never> | undefined
   fnShaMap?: Record<string, HashedFunctionFile[]> | undefined
   fnConfig?: Record<string, FunctionConfigPayload> | undefined
-  server?: { sha: string; region?: string } | undefined
+  server?: ServerPayload | undefined
   serverShaMap?: Record<string, ServerUploadFile[]> | undefined
 }> => {
   // Exit early if there is nothing to bundle. A site can have a server without
   // any functions directory.
   if (directories.length === 0 && !serverEnabled) {
-    return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
-  }
-
-  if (!tmpDir) {
-    throw new Error('Missing tmpDir directory for zipping files')
+    return { functions: {}, functionsWithNativeModules: [] }
   }
 
   const [functionZips, serverBundle] = await Promise.all([
@@ -237,7 +246,7 @@ const hashFns = async (
           statusCb,
           tmpDir,
         }),
-    getServerBundle({ packagePath, rootDir, serverEnabled, serverManifestPath, tmpDir }),
+    getServerBundle({ packagePath, rootDir, serverConfig, serverEnabled, serverManifestPath, tmpDir }),
   ])
 
   // ZISI's in-memory FunctionResult only nests bootstrap/runtime version into
@@ -282,38 +291,23 @@ const hashFns = async (
       trafficRules,
     }),
   )
-  const fnConfig = functionZips
-    .filter((func) =>
-      Boolean(
-        func.displayName ||
-        func.generator ||
-        func.routes ||
-        func.buildData ||
-        func.priority ||
-        func.trafficRules ||
-        func.region ||
-        func.memory ||
-        func.vcpu,
-      ),
-    )
-    .reduce<Record<string, FunctionConfigPayload>>(
-      (funcs, curr) => ({
-        ...funcs,
-        [curr.name]: {
-          display_name: curr.displayName,
-          excluded_routes: curr.excludedRoutes,
-          generator: curr.generator,
-          memory: curr.memory,
-          region: curr.region,
-          routes: curr.routes,
-          build_data: curr.buildData,
-          priority: curr.priority,
-          traffic_rules: trafficRulesConfig(curr.trafficRules),
-          vcpu: curr.vcpu,
-        },
-      }),
-      {},
-    )
+  const fnConfig = Object.fromEntries(
+    functionZips
+      .filter((func) =>
+        Boolean(
+          func.displayName ||
+          func.generator ||
+          func.routes ||
+          func.buildData ||
+          func.priority ||
+          func.trafficRules ||
+          func.region ||
+          func.memory ||
+          func.vcpu,
+        ),
+      )
+      .map((func) => [func.name, toFunctionConfigPayload(func)]),
+  )
   const functionSchedules = functionZips
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
     .filter((schedule): schedule is { name: string; cron: string } => schedule !== '' && schedule !== undefined)
@@ -343,14 +337,14 @@ const hashFns = async (
 // map keyed by name. It still goes through the same hashing pipeline, so the
 // upload flow can treat it like any other artifact.
 const hashServer = async (
-  serverBundle: ServerBundle | undefined,
+  serverBundle: ServerResult | undefined,
   {
     concurrentHash,
     hashAlgorithm,
     statusCb,
     tmpDir,
   }: { concurrentHash?: number; hashAlgorithm: string; statusCb: StatusCallback; tmpDir: string },
-): Promise<{ server?: { sha: string; region?: string }; serverShaMap?: Record<string, ServerUploadFile[]> }> => {
+): Promise<{ server?: ServerPayload; serverShaMap?: Record<string, ServerUploadFile[]> }> => {
   if (!serverBundle) {
     return {}
   }
@@ -375,7 +369,18 @@ const hashServer = async (
     manifestCollectorCtor(servers, serverShaMap, { statusCb }),
   ])
 
-  return { server: { sha: Object.values(servers)[0], region: serverBundle.region }, serverShaMap }
+  const { excludedRoutes, instanceSize, region, routes, runtimeVersion, scale } = serverBundle
+  const server: ServerPayload = {
+    sha: Object.values(servers)[0],
+    ...(region === undefined ? {} : { region }),
+    ...(instanceSize === undefined ? {} : { instance_size: instanceSize }),
+    ...(routes === undefined ? {} : { routes }),
+    ...(excludedRoutes === undefined ? {} : { excluded_routes: excludedRoutes }),
+    ...(runtimeVersion === undefined ? {} : { runtime_version: runtimeVersion }),
+    ...(scale === undefined ? {} : { scale }),
+  }
+
+  return { server, serverShaMap }
 }
 
 export default hashFns

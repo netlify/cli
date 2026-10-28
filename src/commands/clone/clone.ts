@@ -8,22 +8,11 @@ import { chalk, logAndThrowError, log, getToken, netlifyCommand, type APIError }
 import { runGit } from '../../utils/run-git.js'
 import execa from '../../utils/execa.js'
 import type BaseCommand from '../base-command.js'
-import { NETLIFY_GIT_HOST } from '../git-credential/git-credential.js'
+import { isNetlifyGitUrl, NETLIFY_GIT_HOST } from '../../utils/netlify-git.js'
 import { link } from '../link/link.js'
 import type { CloneOptionValues } from './option_values.js'
 import { startSpinner } from '../../lib/spinner.js'
 import type { SiteInfo } from '../../utils/types.js'
-
-const NETLIFY_GIT_SERVICE_HOST = 'hgit.services-prod.nsvcs.net'
-
-const isNetlifyGitServiceUrl = (repoUrl: string): boolean => {
-  try {
-    const host = new URL(repoUrl).host
-    return host === NETLIFY_GIT_HOST || host === NETLIFY_GIT_SERVICE_HOST
-  } catch {
-    return false
-  }
-}
 
 const getTargetDir = async (defaultDir: string): Promise<string> => {
   return await input({
@@ -257,7 +246,7 @@ export const clone = async (
 
     const connectedRepoUrl = siteInfo.build_settings?.repo_url
 
-    if (connectedRepoUrl && isNetlifyGitServiceUrl(connectedRepoUrl)) {
+    if (connectedRepoUrl && isNetlifyGitUrl(connectedRepoUrl)) {
       log(`Site is connected to Netlify's managed git service.`)
       log(`Cloning from Netlify's managed git service...`)
       log()
