@@ -255,7 +255,7 @@ const prepareServer = async ({
       formatExportTypeError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
           name,
-        )}. The file does not seem to have a function as the default export.`,
+        )}. The file does not seem to have a function, or an object with a \`fetch\` method, as the default export.`,
       formatImportError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
       inspectSettings,
