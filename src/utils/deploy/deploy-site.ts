@@ -142,6 +142,7 @@ export const deploySite = async (
       statusCb,
       manifestPath,
       packagePath,
+      serverConfig: config.server,
       serverEnabled,
       serverManifestPath,
       skipFunctionsCache,

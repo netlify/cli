@@ -11,4 +11,5 @@ export interface DeployConfig {
   functionsDirectory?: string
   headers?: NetlifyConfig['headers'] | MinimalHeader[]
   redirects?: unknown[]
+  server?: NetlifyConfig['server']
 }
