@@ -105,8 +105,9 @@ await withMockApi(routes, () => {
       didEnableCompileCache: expect.any(Boolean),
       monorepo: false,
       nodejsVersion,
+      flags: [],
       opts: expect.any(Object),
-      args: expect.any(Array),
+      argCount: expect.any(Number),
       // TODO: this should be NPM however some CI tests are using pnpm which changes the value
       packageManager: expect.stringMatching(/npm|pnpm/),
     })
@@ -129,8 +130,9 @@ await withMockApi(routes, () => {
       didEnableCompileCache: expect.any(Boolean),
       monorepo: false,
       nodejsVersion,
+      flags: [],
       opts: expect.any(Object),
-      args: expect.any(Array),
+      argCount: expect.any(Number),
       // TODO: this should be NPM however some CI tests are using pnpm which changes the value
       packageManager: expect.stringMatching(/npm|pnpm/),
     })
@@ -157,7 +159,7 @@ await withMockApi(routes, () => {
     })
   })
 
-  test<MockApiTestContext>('should attach user options as `opts` and positional args as `args`', async ({
+  test<MockApiTestContext>('should attach user-set flag names as `flags` and the positional arg count as `argCount`', async ({
     apiUrl,
     requests,
   }) => {
@@ -172,31 +174,33 @@ await withMockApi(routes, () => {
       'properties',
       expect.objectContaining({
         command: 'blobs:get',
-        opts: {
-          filter: { source: 'cli', value: 'web' },
-          output: { source: 'cli', value: './output_dir' },
-        },
-        args: ['my-store', 'my-key'],
+        flags: ['filter', 'output'],
+        opts: {},
+        argCount: 2,
       }),
     )
   })
 
-  test<MockApiTestContext>('should scrub values of sensitive `opts`', async ({ apiUrl, requests }) => {
-    await callCli(['api', 'listSites', '--auth', 'my-sensitive-token'], getCLIOptions(apiUrl))
+  test<MockApiTestContext>('should not send option values or positional args', async ({ apiUrl, requests }) => {
+    await callCli(
+      ['api', 'listSites', '--auth', 'my-sensitive-token', '--data', '{"filter":"my-filter-value"}'],
+      getCLIOptions(apiUrl),
+    )
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
 
-    expect(request!.body).toHaveProperty('event', 'cli:command')
     expect(request!.body).toHaveProperty(
       'properties',
       expect.objectContaining({
         command: 'api',
-        opts: {
-          auth: { source: 'cli', value: '********' },
-          list: { source: 'default', value: false },
-        },
-        args: ['listSites'],
+        flags: ['auth', 'data'],
+        opts: {},
+        argCount: 1,
       }),
     )
+    const sentPayload = JSON.stringify(request!.body)
+    expect(sentPayload).not.toContain('my-sensitive-token')
+    expect(sentPayload).not.toContain('my-filter-value')
+    expect(sentPayload).not.toContain('listSites')
   })
 })

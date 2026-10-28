@@ -87,22 +87,24 @@ const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set([
  */
 const COMMANDS_WITH_FEATURE_FLAGS = new Set(['build', 'dev', 'deploy'])
 
-/**
- * Names of options whose values should be scrubbed
- */
-const SCRUBBED_OPTIONS = new Set(['auth'])
+// Each value sent becomes an Amplitude property; free-text values can carry user secrets.
+const TELEMETRY_FLAGS_WITH_VALUES = new Set(['command'])
 
-const getScrubbedOptions = (command: BaseCommand): Record<string, { source: OptionValues['source']; value: unknown }> =>
-  Object.entries(command.optsWithGlobals()).reduce(
-    (acc: Record<string, { source: OptionValues['source']; value: unknown }>, [key, value]) => ({
-      ...acc,
-      [key]: {
-        source: command.getOptionValueSourceWithGlobals(key),
-        value: SCRUBBED_OPTIONS.has(key) ? '********' : value,
-      },
-    }),
-    {},
+const USER_SET_OPTION_SOURCES = new Set(['cli', 'env'])
+
+const getUserSetFlagNames = (command: BaseCommand): string[] =>
+  Object.keys(command.optsWithGlobals()).filter((key) =>
+    USER_SET_OPTION_SOURCES.has(command.getOptionValueSourceWithGlobals(key) ?? ''),
   )
+
+const getAllowlistedFlagValues = (command: BaseCommand): Record<string, { value: unknown }> => {
+  const options: Record<string, unknown> = command.optsWithGlobals()
+  return Object.fromEntries(
+    getUserSetFlagNames(command)
+      .filter((key) => TELEMETRY_FLAGS_WITH_VALUES.has(key))
+      .map((key) => [key, { value: options[key] }]),
+  )
+}
 
 /** Formats a help list correctly with the correct indent */
 const formatHelpList = (textArray: string[]) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
@@ -699,7 +701,10 @@ export default class BaseCommand extends Command {
     if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
       try {
         // FIXME(serhalp): Remove `any` and fix errors. API types exist now.
-        const site = await (api as any).getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
+        const site = await (api as any).getSite({
+          siteId: actionCommand.siteId,
+          feature_flags: 'cli',
+        })
         actionCommand.featureFlags = site.feature_flags
         actionCommand.accountId = site.account_id
       } catch {
@@ -757,8 +762,9 @@ export default class BaseCommand extends Command {
       monorepo: Boolean(this.project.workspace),
       packageManager: this.project.packageManager?.name,
       buildSystem: this.project.buildSystems.map(({ id }) => id),
-      opts: getScrubbedOptions(actionCommand),
-      args: actionCommand.args,
+      flags: getUserSetFlagNames(actionCommand),
+      opts: getAllowlistedFlagValues(actionCommand),
+      argCount: actionCommand.args.length,
     })
 
     // set the project and the netlify api object on the command,
