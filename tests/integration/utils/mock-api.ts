@@ -72,7 +72,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     )
   })
 
-  app.get('/site/site_id/integrations/safe', function onRequest(req, res) {
+  app.get('/site/:siteId/integrations/safe', function onRequest(req, res) {
     if (process.env.DEBUG_TESTS) {
       console.debug('[mock-api] ', req.method, req.path, req.body)
     }
@@ -81,7 +81,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     res.json([])
   })
 
-  app.get('/team/account_id/integrations/installations/meta/site_id', function onRequest(req, res) {
+  app.get('/team/:accountId/integrations/installations/meta/:siteId', function onRequest(req, res) {
     if (process.env.DEBUG_TESTS) {
       console.debug('[mock-api] ', req.method, req.path, req.body)
     }

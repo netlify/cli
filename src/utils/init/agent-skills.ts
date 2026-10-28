@@ -288,8 +288,9 @@ const isOlderThan = async (file: string, ageMs: number): Promise<boolean> => {
 
 const isSameEntry = async (a: string, b: string): Promise<boolean> => {
   try {
-    const [statA, statB] = await Promise.all([fs.lstat(a), fs.lstat(b)])
-    return statA.ino !== 0 && statA.ino === statB.ino && statA.dev === statB.dev
+    // As numbers, Windows file IDs lose precision and two directories can share one.
+    const [statA, statB] = await Promise.all([fs.lstat(a, { bigint: true }), fs.lstat(b, { bigint: true })])
+    return statA.ino !== 0n && statA.ino === statB.ino && statA.dev === statB.dev
   } catch {
     return false
   }

@@ -10,6 +10,8 @@ import {
   zipServer,
   type Config as FunctionsConfig,
   type FunctionResult,
+  type NetlifyServerConfig,
+  type ServerResult,
   type TrafficRules,
 } from '@netlify/zip-it-and-ship-it'
 
@@ -23,9 +25,15 @@ import type { FunctionUploadFile, ServerUploadFile } from './upload-files.js'
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
 
-interface ServerBundle {
-  path: string
+// The deploy API's `server` object.
+interface ServerPayload {
+  sha: string
   region?: string
+  instance_size?: ServerResult['instanceSize']
+  routes?: ServerResult['routes']
+  excluded_routes?: ServerResult['excludedRoutes']
+  runtime_version?: ServerResult['runtimeVersion']
+  scale?: ServerResult['scale']
 }
 
 type HashedFunctionFile = FunctionUploadFile & { hash: string; relname: string }
@@ -103,16 +111,18 @@ const getFunctionZips = async ({
 const getServerBundle = async ({
   packagePath,
   rootDir,
+  serverConfig,
   serverEnabled,
   serverManifestPath,
   tmpDir,
 }: {
   packagePath?: string | undefined
   rootDir?: string | undefined
+  serverConfig?: NetlifyServerConfig | undefined
   serverEnabled?: boolean | undefined
   serverManifestPath?: string | undefined
   tmpDir: string
-}): Promise<ServerBundle | undefined> => {
+}): Promise<ServerResult | undefined> => {
   if (!serverEnabled) {
     return undefined
   }
@@ -120,7 +130,7 @@ const getServerBundle = async ({
   if (serverManifestPath) {
     try {
       const { server, timestamp } = JSON.parse(await readFile(serverManifestPath, 'utf-8')) as {
-        server?: ServerBundle
+        server?: ServerResult
         timestamp: number
       }
 
@@ -139,7 +149,7 @@ const getServerBundle = async ({
     return undefined
   }
 
-  return await zipServer(entryPath, join(tmpDir, 'server'), { basePath: rootDir })
+  return await zipServer(entryPath, join(tmpDir, 'server'), { basePath: rootDir, config: serverConfig })
 }
 
 const trafficRulesConfig = (trafficRules?: TrafficRules) => {
@@ -188,6 +198,7 @@ const hashFns = async (
     manifestPath,
     packagePath,
     rootDir,
+    serverConfig,
     serverEnabled,
     serverManifestPath,
     skipFunctionsCache,
@@ -200,6 +211,7 @@ const hashFns = async (
     manifestPath?: string | undefined
     packagePath?: string | undefined
     rootDir?: string | undefined
+    serverConfig?: NetlifyServerConfig | undefined
     serverEnabled?: boolean | undefined
     serverManifestPath?: string | undefined
     skipFunctionsCache?: boolean | undefined
@@ -212,7 +224,7 @@ const hashFns = async (
   functionsWithNativeModules: FunctionResult[]
   fnShaMap?: Record<string, HashedFunctionFile[]> | undefined
   fnConfig?: Record<string, FunctionConfigPayload> | undefined
-  server?: { sha: string; region?: string } | undefined
+  server?: ServerPayload | undefined
   serverShaMap?: Record<string, ServerUploadFile[]> | undefined
 }> => {
   // Exit early if there is nothing to bundle. A site can have a server without
@@ -234,7 +246,7 @@ const hashFns = async (
           statusCb,
           tmpDir,
         }),
-    getServerBundle({ packagePath, rootDir, serverEnabled, serverManifestPath, tmpDir }),
+    getServerBundle({ packagePath, rootDir, serverConfig, serverEnabled, serverManifestPath, tmpDir }),
   ])
 
   // ZISI's in-memory FunctionResult only nests bootstrap/runtime version into
@@ -325,14 +337,14 @@ const hashFns = async (
 // map keyed by name. It still goes through the same hashing pipeline, so the
 // upload flow can treat it like any other artifact.
 const hashServer = async (
-  serverBundle: ServerBundle | undefined,
+  serverBundle: ServerResult | undefined,
   {
     concurrentHash,
     hashAlgorithm,
     statusCb,
     tmpDir,
   }: { concurrentHash?: number; hashAlgorithm: string; statusCb: StatusCallback; tmpDir: string },
-): Promise<{ server?: { sha: string; region?: string }; serverShaMap?: Record<string, ServerUploadFile[]> }> => {
+): Promise<{ server?: ServerPayload; serverShaMap?: Record<string, ServerUploadFile[]> }> => {
   if (!serverBundle) {
     return {}
   }
@@ -357,7 +369,18 @@ const hashServer = async (
     manifestCollectorCtor(servers, serverShaMap, { statusCb }),
   ])
 
-  return { server: { sha: Object.values(servers)[0], region: serverBundle.region }, serverShaMap }
+  const { excludedRoutes, instanceSize, region, routes, runtimeVersion, scale } = serverBundle
+  const server: ServerPayload = {
+    sha: Object.values(servers)[0],
+    ...(region === undefined ? {} : { region }),
+    ...(instanceSize === undefined ? {} : { instance_size: instanceSize }),
+    ...(routes === undefined ? {} : { routes }),
+    ...(excludedRoutes === undefined ? {} : { excluded_routes: excludedRoutes }),
+    ...(runtimeVersion === undefined ? {} : { runtime_version: runtimeVersion }),
+    ...(scale === undefined ? {} : { scale }),
+  }
+
+  return { server, serverShaMap }
 }
 
 export default hashFns

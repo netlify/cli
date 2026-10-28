@@ -3,6 +3,7 @@ import { select } from '@inquirer/prompts'
 
 import { log, chalk } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
+import { SOCKETEER_URL } from '../../utils/socketeer.js'
 import type BaseCommand from '../base-command.js'
 
 export function getName({ deploy, userId }: { deploy: any; userId: string }) {
@@ -66,7 +67,7 @@ export const logsBuild = async (_options: OptionValues, command: BaseCommand) =>
 
   const { id } = deploy
 
-  const ws = getWebSocket(`wss://socketeer.services.netlify.com/build/logs`)
+  const ws = getWebSocket(`${SOCKETEER_URL}/build/logs`)
 
   ws.on('open', function open() {
     ws.send(JSON.stringify({ deploy_id: id, site_id: siteId, access_token: client.accessToken }))
