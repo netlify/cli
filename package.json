@@ -68,7 +68,7 @@
     "@netlify/headers-parser": "^10.1.1",
     "@netlify/images": "^2.0.5",
     "@netlify/local-functions-proxy": "^2.0.3",
-    "@netlify/redirect-matcher": "^0.4.2",
+    "@netlify/redirect-matcher": "^0.7.0",
     "@netlify/redirect-parser": "^16.1.1",
     "@netlify/server-dev": "^0.1.4",
     "@netlify/zip-it-and-ship-it": "^16.6.0",
