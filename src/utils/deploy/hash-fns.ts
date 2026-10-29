@@ -33,6 +33,7 @@ interface ServerPayload {
   routes?: ServerResult['routes']
   excluded_routes?: ServerResult['excludedRoutes']
   runtime_version?: ServerResult['runtimeVersion']
+  scale?: ServerResult['scale']
 }
 
 type HashedFunctionFile = FunctionUploadFile & { hash: string; relname: string }
@@ -368,7 +369,7 @@ const hashServer = async (
     manifestCollectorCtor(servers, serverShaMap, { statusCb }),
   ])
 
-  const { excludedRoutes, instanceSize, region, routes, runtimeVersion } = serverBundle
+  const { excludedRoutes, instanceSize, region, routes, runtimeVersion, scale } = serverBundle
   const server: ServerPayload = {
     sha: Object.values(servers)[0],
     ...(region === undefined ? {} : { region }),
@@ -376,6 +377,7 @@ const hashServer = async (
     ...(routes === undefined ? {} : { routes }),
     ...(excludedRoutes === undefined ? {} : { excluded_routes: excludedRoutes }),
     ...(runtimeVersion === undefined ? {} : { runtime_version: runtimeVersion }),
+    ...(scale === undefined ? {} : { scale }),
   }
 
   return { server, serverShaMap }

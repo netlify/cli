@@ -1,0 +1,35 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`deploy --remote > prints the production URL when deploying to production 1`] = `
+"⬥ Building 7046334 on Netlify (↗ View deploy logs https://app.netlify.com/projects/test-site/deploys/deploy_id)
+
+
+🚀 Deploy complete
+────────────────────────────────────────────────────────────────
+
+Production URL: <https://test-site.netlify.app>
+Unique deploy URL: <https://deploy-id--test-site.netlify.app>
+
+Build logs: <https://app.netlify.com/projects/test-site/deploys/deploy_id>
+Function logs: <https://app.netlify.com/projects/test-site/logs/functions>
+Edge function logs: <https://app.netlify.com/projects/test-site/logs/edge-functions>"
+`;
+
+exports[`deploy --remote > streams the build log, then prints the draft URL and how to deploy it to production 1`] = `
+"⬥ Building 7046334 on Netlify (↗ View deploy logs https://app.netlify.com/projects/test-site/deploys/deploy_id)
+
+│ Installing dependencies
+│ Build script success
+
+🚀 Deploy complete
+────────────────────────────────────────────────────────────────
+
+Draft URL: <https://deploy-id--test-site.netlify.app>
+
+Build logs: <https://app.netlify.com/projects/test-site/deploys/deploy_id>
+Function logs: <https://app.netlify.com/projects/test-site/logs/functions?scope=deploy:deploy_id>
+Edge function logs: <https://app.netlify.com/projects/test-site/logs/edge-functions?scope=deployid:deploy_id>
+
+If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:
+netlify deploy --remote --prod"
+`;

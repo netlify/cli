@@ -217,6 +217,60 @@ test('Omits the server fields the manifest does not set', async (t) => {
   })
 })
 
+const hashWithServerManifest = async (builder: { directory: string }, manifestServer: Record<string, unknown>) => {
+  const cachedBundle = path.join(builder.directory, 'cached-server.tgz')
+  await fs.writeFile(cachedBundle, 'cached server bundle')
+
+  const serverManifestPath = path.join(builder.directory, 'server-manifest.json')
+  await fs.writeFile(
+    serverManifestPath,
+    JSON.stringify({ server: { path: cachedBundle, ...manifestServer }, timestamp: Date.now() }),
+  )
+
+  return await hashWithServer(builder, { serverManifestPath })
+}
+
+test('Sends the scale from the server manifest', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const { server } = await hashWithServerManifest(builder, { instanceSize: 'large', scale: { min: 2, max: 10 } })
+
+    expect(serverFields(server)).toStrictEqual({ instance_size: 'large', scale: { min: 2, max: 10 } })
+  })
+})
+
+test('Sends a scale that only sets the maximum', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const { server } = await hashWithServerManifest(builder, { scale: { max: 5 } })
+
+    expect(serverFields(server)).toStrictEqual({ scale: { max: 5 } })
+  })
+})
+
+test('Sends a scale minimum of 0', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const { server } = await hashWithServerManifest(builder, { scale: { min: 0 } })
+
+    expect(serverFields(server)).toStrictEqual({ scale: { min: 0 } })
+  })
+})
+
+test('Omits the scale when the server manifest has none', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const { server } = await hashWithServerManifest(builder, { instanceSize: 'large' })
+
+    expect(server).not.toHaveProperty('scale')
+    expect(serverFields(server)).toStrictEqual({ instance_size: 'large' })
+  })
+})
+
 test('Bundles the Netlify Server with the server block of the Netlify configuration', async (t) => {
   await withSiteBuilder(t, async (builder) => {
     await builder.withNetlifyToml({ config: {} }).build()
