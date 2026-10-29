@@ -4,9 +4,7 @@ import BaseCommand from '../../../../src/commands/base-command.js'
 import { createLogsCommand } from '../../../../src/commands/logs/index.js'
 import { log, warn } from '../../../../src/utils/command-helpers.js'
 import { getWebSocket } from '../../../../src/utils/websockets/index.js'
-import { startMockApi } from '../../utils/mock-api-vitest.js'
-import type { MockApi } from '../../utils/mock-api-vitest.js'
-import { getEnvironmentVariables } from '../../utils/mock-api.js'
+import { getEnvironmentVariables, startMockApi, type MockApi } from '../../utils/mock-api.js'
 
 vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: vi.fn(),
