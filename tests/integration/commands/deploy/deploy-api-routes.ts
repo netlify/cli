@@ -3,7 +3,7 @@ import { isDeepStrictEqual, promisify } from 'util'
 
 import expressModule, { urlencoded, json, raw } from 'express'
 
-import type { Route, MockApi } from '../../utils/mock-api-vitest.js'
+import type { Route, MockApi } from '../../utils/mock-api.js'
 import type express from 'express'
 
 const siteInfo = {
