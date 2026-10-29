@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
-import { getCLIOptions, type MockApi } from '../../utils/mock-api-vitest.js'
+import { getCLIOptions, type MockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 import { createDeployRoutes, startDeployMockApi, type DeployRouteState } from './deploy-api-routes.js'
 

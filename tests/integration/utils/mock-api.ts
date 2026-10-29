@@ -21,14 +21,10 @@ interface MockApiOptions {
 
 export interface MockApi {
   apiUrl: string
+  clearRequests: () => void
   requests: { path: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
   server: Server
   close: () => Promise<void>
-}
-
-export interface MockApiTestContext {
-  apiUrl: string
-  requests: MockApi['requests']
 }
 
 const addRequest = (requests: MockApi['requests'], request: express.Request) => {
@@ -40,11 +36,12 @@ const addRequest = (requests: MockApi['requests'], request: express.Request) => 
   })
 }
 
-/**
- *
- * @param {*} param0
- * @returns
- */
+const logRequest = (req: express.Request) => {
+  if (process.env.DEBUG_TESTS) {
+    console.debug('[mock-api] ', req.method, req.path, req.body)
+  }
+}
+
 export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockApi> => {
   const requests: MockApi['requests'] = []
   const app = express()
@@ -56,9 +53,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     app[method.toLowerCase() as 'all' | 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head'](
       `/api/v1/${path}`,
       function onRequest(req, res) {
-        if (process.env.DEBUG_TESTS) {
-          console.debug('[mock-api] ', req.method, req.path, req.body)
-        }
+        logRequest(req)
         // validate request body
         if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
           res.status(500)
@@ -67,33 +62,38 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
         }
         addRequest(requests, req)
         res.status(status)
-        res.json(response)
+
+        if (typeof response === 'function') {
+          response(req, res)
+          return
+        }
+
+        const isObjectResponse = typeof response === 'object' && !Array.isArray(response)
+        res.json(
+          status === 404 && isObjectResponse && !('message' in response)
+            ? { ...response, message: 'Not found' }
+            : response,
+        )
       },
     )
   })
 
   app.get('/site/:siteId/integrations/safe', function onRequest(req, res) {
-    if (process.env.DEBUG_TESTS) {
-      console.debug('[mock-api] ', req.method, req.path, req.body)
-    }
+    logRequest(req)
     addRequest(requests, req)
     res.status(200)
     res.json([])
   })
 
   app.get('/team/:accountId/integrations/installations/meta/:siteId', function onRequest(req, res) {
-    if (process.env.DEBUG_TESTS) {
-      console.debug('[mock-api] ', req.method, req.path, req.body)
-    }
+    logRequest(req)
     addRequest(requests, req)
     res.status(200)
     res.json([])
   })
 
   app.all('{*splat}', function onRequest(req, res) {
-    if (process.env.DEBUG_TESTS) {
-      console.debug('[mock-api] ', req.method, req.path, req.body)
-    }
+    logRequest(req)
     addRequest(requests, req)
     if (!silent) {
       console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
@@ -111,6 +111,10 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
         server,
         apiUrl: `http://localhost:${address.port.toString()}/api/v1`,
         requests,
+        clearRequests() {
+          // Tests hold a reference to this array, so it must be emptied in place
+          requests.length = 0
+        },
         async close() {
           return promisify(server.close.bind(server))()
         },
@@ -183,14 +187,10 @@ export const setCI = (value: string) => {
   process.env.CI = value
 }
 
-/**
- *
- * @param {*} param0
- * @returns {import('execa').Options<string>}
- */
 export const getCLIOptions = ({
   apiUrl,
   builder,
+  cwd,
   env = {},
   extendEnv = true,
 }: {
@@ -200,7 +200,7 @@ export const getCLIOptions = ({
   env?: CommonOptions<string>['env']
   extendEnv?: CommonOptions<string>['extendEnv']
 }): NodeOptions => ({
-  cwd: builder?.directory,
+  cwd: builder?.directory ?? cwd,
   env: { ...getEnvironmentVariables({ apiUrl }), ...env },
   extendEnv,
 })
