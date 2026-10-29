@@ -42,6 +42,7 @@ import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 
 import {
+  NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   type NormalizedCachedConfigConfig,
@@ -50,7 +51,7 @@ import {
   logError,
   warn,
 } from './command-helpers.js'
-import createStreamPromise from './create-stream-promise.js'
+import createStreamPromise, { StreamBodyTooBigError, StreamTimeoutError } from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
@@ -484,6 +485,15 @@ const initializeProxy = async function ({
       }
     }
 
+    if (res instanceof http.ServerResponse && res.headersSent) {
+      if (!res.writableEnded) {
+        log(NETLIFYDEVWARN, `Could not finish proxying ${req.url ?? ''}: ${err.message}`)
+        res.destroy()
+      }
+
+      return
+    }
+
     if (res instanceof http.ServerResponse) {
       res.writeHead(500, {
         'Content-Type': 'text/plain',
@@ -723,6 +733,19 @@ const initializeProxy = async function ({
   return handlers
 }
 
+const rejectRequestBody = (req: Request, res: ServerResponse, error: unknown) => {
+  if (!(error instanceof StreamBodyTooBigError || error instanceof StreamTimeoutError)) {
+    res.destroy()
+    return
+  }
+
+  const status = error instanceof StreamBodyTooBigError ? 413 : 408
+
+  log(NETLIFYDEVWARN, `Responded to ${req.method ?? ''} ${req.url ?? ''} with ${status.toString()}: ${error.message}`)
+  res.writeHead(status)
+  res.end(http.STATUS_CODES[status])
+}
+
 const onRequest = async (
   {
     api,
@@ -745,8 +768,15 @@ const onRequest = async (
   req: Request,
   res: ServerResponse,
 ) => {
-  req.originalBody =
-    req.method && ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, BYTES_LIMIT)
+  try {
+    req.originalBody =
+      req.method && ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
+        ? null
+        : await createStreamPromise(req, REQUEST_BODY_TIMEOUT_SECONDS)
+  } catch (error) {
+    rejectRequestBody(req, res, error)
+    return
+  }
 
   if (isImageRequest(req)) {
     return imageProxy(req, res)
@@ -793,6 +823,10 @@ const onRequest = async (
           for (let index = 0; index < req.rawHeaders.length; index += 2) {
             headers.append(req.rawHeaders[index], req.rawHeaders[index + 1])
           }
+
+          // The server handler gets a `Request` with no socket, so it reads the
+          // client's address from this header to set `context.ip`.
+          headers.set('x-forwarded-for', req.socket.remoteAddress ?? '')
 
           const response = await serverMatch.handle(
             new Request(requestURL, {
@@ -1019,7 +1053,7 @@ export const startProxy = async function ({
     projectDir,
   })
 
-  const onRequestWithOptions = onRequest.bind(undefined, {
+  const requestOptions = {
     proxy,
     rewriter,
     serverHandler,
@@ -1031,7 +1065,19 @@ export const startProxy = async function ({
     siteInfo,
     env,
     api,
-  })
+  }
+  const onRequestWithOptions = (req: Request, res: ServerResponse) => {
+    onRequest(requestOptions, req, res).catch((error: unknown) => {
+      console.error(NETLIFYDEVERR, 'Failed to handle request to', req.url, error)
+
+      if (res.headersSent) {
+        res.destroy()
+      } else {
+        res.writeHead(500)
+        res.end('Could not proxy request.')
+      }
+    })
+  }
   const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
@@ -1089,4 +1135,4 @@ export const startProxy = async function ({
   return getProxyUrl(settings)
 }
 
-const BYTES_LIMIT = 30
+const REQUEST_BODY_TIMEOUT_SECONDS = 30
