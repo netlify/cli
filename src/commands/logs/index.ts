@@ -107,6 +107,7 @@ export const createLogsCommand = (program: BaseCommand) => {
         'functions',
         'edge-functions',
         'deploy',
+        'server',
       ]),
     )
     .addOption(new Option('--function <name...>', 'Filter to specific functions by name'))
@@ -127,13 +128,13 @@ export const createLogsCommand = (program: BaseCommand) => {
     .addOption(
       new Option(
         '-u, --url <url>',
-        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains. Can be used with all sources.',
+        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains. Can be used with all sources except server.',
       ),
     )
     .addOption(
       new Option(
         '-d, --deploy-id <deploy-id>',
-        'Show logs for a specific deploy by ID, including failed builds. Can be used with all sources.',
+        'Show logs for a specific deploy by ID, including failed builds. Can be used with all sources except server.',
       ),
     )
     .addOption(
@@ -148,6 +149,8 @@ export const createLogsCommand = (program: BaseCommand) => {
       'netlify logs --source functions --function checkout --since 24h',
       'netlify logs --source edge-functions --since 30m',
       'netlify logs --source deploy --source functions --since 1h',
+      'netlify logs --source server --since 30m',
+      'netlify logs --follow --source server',
       'netlify logs --follow',
       'netlify logs --follow --source functions --source edge-functions',
       'netlify logs --json --since 1h',
