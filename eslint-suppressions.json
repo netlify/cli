@@ -1595,14 +1595,6 @@
       "count": 1
     }
   },
-  "tests/integration/utils/mock-api-vitest.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    },
-    "@typescript-eslint/prefer-nullish-coalescing": {
-      "count": 1
-    }
-  },
   "tests/integration/utils/mock-api.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 1
