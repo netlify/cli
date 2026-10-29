@@ -1,5 +1,5 @@
 {
-  "extends": ["@tsconfig/recommended", "@tsconfig/node22"],
+  "extends": ["@tsconfig/recommended", "@tsconfig/node24"],
   "compilerOptions": {
     "allowJs": true,
     "noEmit": true,
