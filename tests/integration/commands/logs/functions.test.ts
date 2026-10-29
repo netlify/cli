@@ -5,8 +5,7 @@ import { createLogsCommand } from '../../../../src/commands/logs/index.js'
 import { LOG_LEVELS } from '../../../../src/commands/logs/log-levels.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { getWebSocket } from '../../../../src/utils/websockets/index.js'
-import { startMockApi } from '../../utils/mock-api-vitest.js'
-import { getEnvironmentVariables } from '../../utils/mock-api.js'
+import { getEnvironmentVariables, startMockApi } from '../../utils/mock-api.js'
 
 vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: vi.fn(),
