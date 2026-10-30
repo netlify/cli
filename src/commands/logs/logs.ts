@@ -344,7 +344,9 @@ const runHistoricalMode = async ({
         to,
         deployId,
       })
-      allEntries.push(...entries)
+      for (const entry of entries) {
+        allEntries.push(entry)
+      }
     }
   }
 
@@ -357,7 +359,9 @@ const runHistoricalMode = async ({
       deployId,
       filterNames: edgeFunctionNames,
     })
-    allEntries.push(...entries)
+    for (const entry of entries) {
+      allEntries.push(entry)
+    }
   }
 
   let serverLogsTruncated = false
