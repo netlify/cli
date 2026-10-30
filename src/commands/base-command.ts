@@ -504,7 +504,7 @@ export default class BaseCommand extends Command {
     return accessToken
   }
 
-  private async refreshAccounts() {
+  async refreshAccounts() {
     try {
       const accounts = (await this.netlify.api.listAccountsForUser()) as MinimalAccount[]
       this.netlify.accounts = accounts
