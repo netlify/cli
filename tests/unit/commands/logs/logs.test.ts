@@ -6,6 +6,17 @@ const findLatestReadyDeployMock = vi.fn<(...args: unknown[]) => Promise<string |
 const streamDeployMock = vi.fn<(...args: unknown[]) => void>()
 const findCurrentBuildingDeployMock = vi.fn<(...args: unknown[]) => Promise<string | undefined>>()
 const isDeployFinishedMock = vi.fn<(...args: unknown[]) => Promise<boolean>>()
+const fetchFunctionHistoricalLogsMock = vi.fn<(...args: unknown[]) => Promise<unknown[]>>()
+const fetchEdgeFunctionHistoricalLogsMock = vi.fn<(...args: unknown[]) => Promise<unknown[]>>()
+
+vi.mock('../../../../src/commands/logs/sources/functions.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/commands/logs/sources/functions.js')>()
+  return {
+    ...actual,
+    listFunctions: () => Promise.resolve([{ n: 'test-function' }]),
+    fetchFunctionHistoricalLogs: (...args: unknown[]) => fetchFunctionHistoricalLogsMock(...args),
+  }
+})
 
 vi.mock('../../../../src/commands/logs/sources/deploy.js', () => ({
   fetchDeployHistoricalLogs: (...args: unknown[]) => fetchDeployHistoricalLogsMock(...args),
@@ -19,7 +30,7 @@ vi.mock('../../../../src/commands/logs/sources/deploy.js', () => ({
 }))
 
 vi.mock('../../../../src/commands/logs/sources/edge-functions.js', () => ({
-  fetchEdgeFunctionHistoricalLogs: () => Promise.resolve([]),
+  fetchEdgeFunctionHistoricalLogs: (...args: unknown[]) => fetchEdgeFunctionHistoricalLogsMock(...args),
   streamEdgeFunctions: vi.fn(),
 }))
 
@@ -71,8 +82,40 @@ beforeEach(() => {
   streamDeployMock.mockClear()
   findCurrentBuildingDeployMock.mockReset().mockResolvedValue('building-deploy')
   isDeployFinishedMock.mockReset().mockResolvedValue(false)
+  fetchFunctionHistoricalLogsMock.mockReset().mockResolvedValue([])
+  fetchEdgeFunctionHistoricalLogsMock.mockReset().mockResolvedValue([])
   fetchServerHistoricalLogsMock.mockReset().mockResolvedValue({ entries: [], truncated: false })
   streamServerMock.mockClear()
+})
+
+describe('logsCommand large histories', () => {
+  it.each(['functions', 'edge-functions'])('prints a large %s history without changing entry order', async (source) => {
+    const visibleIndices = [0, 500_000, 999_999]
+    const hiddenEntry = {
+      source: source === 'functions' ? 'function' : 'edge-function',
+      name: 'test-function',
+      ts: 1,
+      level: 'DEBUG',
+      message: 'hidden',
+    }
+    const entries = Array<typeof hiddenEntry>(1_000_000).fill(hiddenEntry)
+    for (const index of visibleIndices) {
+      entries[index] = { ...hiddenEntry, level: 'INFO', message: `entry-${index.toString()}` }
+    }
+    const fetchLogs = source === 'functions' ? fetchFunctionHistoricalLogsMock : fetchEdgeFunctionHistoricalLogsMock
+    fetchLogs.mockResolvedValueOnce(entries)
+    const output = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+
+    try {
+      await logsCommand({ source: [source], since: '1h', level: ['info'], json: true }, makeCommand())
+
+      expect(output.mock.calls.map(([line]) => (JSON.parse(line.toString()) as { message: string }).message)).toEqual(
+        visibleIndices.map((index) => `entry-${index.toString()}`),
+      )
+    } finally {
+      output.mockRestore()
+    }
+  })
 })
 
 describe('logsCommand deploy auto-selection', () => {
