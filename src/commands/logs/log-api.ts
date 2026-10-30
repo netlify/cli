@@ -141,9 +141,9 @@ export const fetchHistoricalLogs = async ({
       throw new Error(`Failed to fetch logs: ${response.status.toString()} ${response.statusText}`)
     }
 
-    const body = (await response.json()) as { logs?: HistoricalLogEntry[]; pagination?: { next?: string } }
+    const body = (await response.json()) as { logs?: HistoricalLogEntry[]; next?: string }
     entries.push(...(body.logs ?? []))
-    cursor = body.pagination?.next
+    cursor = body.next
   } while (cursor)
 
   return entries
