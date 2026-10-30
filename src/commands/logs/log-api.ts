@@ -276,15 +276,13 @@ export const resolveDeployIdFromUrl = async (
     throw mismatchError
   }
 
-  const firstLabel = hostname.split('.')[0] ?? ''
-  const separatorIndex = firstLabel.indexOf('--')
-  if (separatorIndex === -1) {
+  const siteSuffix = `--${netlifyAppBaseHost}`
+  if (!hostname.endsWith(siteSuffix)) {
     throw mismatchError
   }
 
-  const prefix = firstLabel.slice(0, separatorIndex)
-  const suffix = firstLabel.slice(separatorIndex + 2)
-  if (suffix !== siteInfo.name?.toLowerCase()) {
+  const prefix = hostname.slice(0, -siteSuffix.length)
+  if (!prefix || prefix.includes('.')) {
     throw mismatchError
   }
 
