@@ -1,50 +1,84 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: ['github>netlify/renovate-config:esm'],
-  ignorePresets: [':prHourlyLimit2'],
+  extends: [
+    'github>netlify/renovate-config:esm',
+  ],
+  ignorePresets: [
+    ':prHourlyLimit2',
+  ],
   semanticCommits: 'enabled',
   dependencyDashboard: true,
-  postUpdateOptions: ['npmDedupe'],
+  postUpdateOptions: [
+    'npmDedupe',
+  ],
   packageRules: [
     {
       description: 'Open PRs immediately for @netlify/ packages without a schedule',
-      matchPackagePatterns: ['^@netlify/'],
-      schedule: ['at any time'],
+      schedule: [
+        'at any time',
+      ],
+      matchPackageNames: [
+        '/^@netlify//',
+      ],
     },
     {
-      matchFileNames: ['site/package.json'],
+      matchFileNames: [
+        'site/package.json',
+      ],
       semanticCommitType: 'chore',
-      addLabels: ['website'],
+      addLabels: [
+        'website',
+      ],
       semanticCommitScope: 'website',
       additionalBranchPrefix: 'website-',
     },
-    // Reduce noise by grouping `site/package.json` non-major updates together
     {
-      matchFileNames: ['site/package.json'],
-      matchUpdateTypes: ['minor', 'patch', 'pin', 'digest'],
+      matchFileNames: [
+        'site/package.json',
+      ],
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+        'pin',
+        'digest',
+      ],
       groupName: 'website non-major dependencies',
     },
     {
-      matchFileNames: ['tests/**/package.json'],
+      matchFileNames: [
+        'tests/**/package.json',
+      ],
       semanticCommitType: 'chore',
-      addLabels: ['tests'],
+      addLabels: [
+        'tests',
+      ],
       semanticCommitScope: 'tests',
       additionalBranchPrefix: 'tests-',
     },
     {
-      matchFileNames: ['src/**/package.json'],
+      matchFileNames: [
+        'src/**/package.json',
+      ],
       semanticCommitType: 'fix',
-      addLabels: ['templates'],
+      addLabels: [
+        'templates',
+      ],
       semanticCommitScope: 'templates',
       additionalBranchPrefix: 'templates-',
     },
     {
-      matchFileNames: ['tests/**/package.json'],
-      extends: [':pinAllExceptPeerDependencies'],
+      matchFileNames: [
+        'tests/**/package.json',
+      ],
+      extends: [
+        ':pinAllExceptPeerDependencies',
+      ],
     },
     {
       description: 'Pin get-port to v5 (https://github.com/netlify/cli/pull/6531)',
-      matchPackageNames: ['get-port'],
+      matchPackageNames: [
+        'get-port',
+      ],
       allowedVersions: '<6',
     },
   ],
