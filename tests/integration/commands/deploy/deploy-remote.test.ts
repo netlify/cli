@@ -10,7 +10,7 @@ import { WebSocketServer } from 'ws'
 import { git, initPushedRepository, isolateGitConfig } from '../../../utils/git.js'
 
 import { callCli } from '../../utils/call-cli.js'
-import { getCLIOptions, type MockApi, type Route } from '../../utils/mock-api-vitest.js'
+import { getCLIOptions, type MockApi, type Route } from '../../utils/mock-api.js'
 import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.js'
 import { normalize } from '../../utils/snapshots.js'
 import { startDeployMockApi } from './deploy-api-routes.js'
