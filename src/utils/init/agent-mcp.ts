@@ -106,7 +106,6 @@ export const MCP_AGENTS: McpAgent[] = [
     drivenBy: ['opencode'],
     projectMarkers: ['opencode.json', 'opencode.jsonc', '.opencode'],
     projectFile: 'opencode.jsonc',
-    native: { scopes: { user: { add: ['mcp', 'add', NETLIFY_MCP_SERVER_NAME, '--url', NETLIFY_MCP_URL] } } },
   },
   {
     id: 'vscode',
