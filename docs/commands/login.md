@@ -9,7 +9,8 @@ description: Login to your Netlify account
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 Login to your Netlify account
-Opens a web browser to acquire an OAuth token.
+Opens a web browser to acquire an OAuth token, which is stored in your OS keychain when available.
+To store it in a plaintext config file instead, set NETLIFY_USE_LEGACY_AUTH_STORAGE=1. This is not recommended.
 
 **Usage**
 

@@ -186,7 +186,7 @@ export interface SiteInfo {
   user_id: string
 }
 
-export type TokenLocation = 'env' | 'flag' | 'config' | 'not found'
+export type TokenLocation = 'env' | 'flag' | 'config' | 'keychain' | 'not found'
 
 export type EnvVar = {
   key: string

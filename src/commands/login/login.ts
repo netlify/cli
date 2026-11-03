@@ -12,6 +12,8 @@ const msg = function (location: TokenLocation) {
       return 'via CLI --auth flag'
     case 'config':
       return 'via netlify config on your machine'
+    case 'keychain':
+      return 'via your OS keychain (secure storage)'
     default:
       return ''
   }
