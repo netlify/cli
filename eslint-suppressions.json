@@ -995,7 +995,7 @@
       "count": 1
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 3
+      "count": 2
     }
   },
   "src/utils/headers.ts": {
@@ -1077,7 +1077,7 @@
       "count": 1
     },
     "@typescript-eslint/no-misused-promises": {
-      "count": 7
+      "count": 4
     },
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 7
@@ -1592,14 +1592,6 @@
       "count": 2
     },
     "@typescript-eslint/require-await": {
-      "count": 1
-    }
-  },
-  "tests/integration/utils/mock-api-vitest.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    },
-    "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 1
     }
   },

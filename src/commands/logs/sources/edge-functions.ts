@@ -1,4 +1,5 @@
 import { getWebSocket } from '../../../utils/websockets/index.js'
+import { SOCKETEER_URL } from '../../../utils/socketeer.js'
 import { buildEdgeFunctionLogsUrl, debugFetch, fetchHistoricalLogs } from '../log-api.js'
 import type { LogEntry } from '../log-api.js'
 
@@ -77,7 +78,7 @@ export const streamEdgeFunctions = (
   filterNames: string[],
   onEntry: (entry: LogEntry) => void,
 ): (() => void) => {
-  const ws = getWebSocket('wss://socketeer.services.netlify.com/edge-function/logs')
+  const ws = getWebSocket(`${SOCKETEER_URL}/edge-function/logs`)
 
   ws.on('open', () => {
     ws.send(

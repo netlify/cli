@@ -41,6 +41,7 @@ import {
 import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
 import { getDeploySourceFields } from '../../utils/deploy/deploy-source.js'
+import { getDeployUrls, type DeployUrls } from '../../utils/deploy/deploy-urls.js'
 import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { mergeDeployEnvVars } from '../../utils/env/deploy-env-vars.js'
@@ -71,6 +72,7 @@ import { sitesCreate } from '../sites/sites-create.js'
 import type { NetlifyOptions, NetlifySite } from '../types.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type { DeployOptionValues } from './option_values.js'
+import { remoteDeploy } from './remote-deploy.js'
 import boxen from 'boxen'
 import terminalLink from 'terminal-link'
 import { anyEdgeFunctionsDirectoryExists } from '../../lib/edge-functions/get-directories.js'
@@ -726,27 +728,11 @@ const runDeploy = async ({
     return reportDeployError({ error: error as DeployError, failAndExit: logAndThrowError })
   }
 
-  const siteUrl = results.deploy.ssl_url || results.deploy.url
-  const deployUrl = results.deploy.deploy_ssl_url || results.deploy.deploy_url
-  const logsUrl = `${results.deploy.admin_url}/deploys/${results.deploy.id}`
-
-  let functionLogsUrl = `${results.deploy.admin_url}/logs/functions`
-  let edgeFunctionLogsUrl = `${results.deploy.admin_url}/logs/edge-functions`
-
-  if (!deployToProduction) {
-    functionLogsUrl += `?scope=deploy:${deployId}`
-    edgeFunctionLogsUrl += `?scope=deployid:${deployId}`
-  }
-
   return {
     siteId: results.deploy.site_id,
     siteName: results.deploy.name,
     deployId: results.deployId,
-    siteUrl,
-    deployUrl,
-    logsUrl,
-    functionLogsUrl,
-    edgeFunctionLogsUrl,
+    ...getDeployUrls(results.deploy, { deployToProduction }),
     sourceZipFileName: uploadSourceZipResult?.sourceZipFileName,
   }
 }
@@ -871,6 +857,15 @@ interface JsonData {
   edge_function_logs: string
   url?: string
   source_zip_filename?: string
+  commit_sha?: string
+}
+
+interface DeployResults extends DeployUrls {
+  siteId: string
+  siteName: string
+  deployId: string
+  sourceZipFileName?: string
+  commitSha?: string
 }
 
 const printResults = ({
@@ -878,13 +873,13 @@ const printResults = ({
   uploadSourceZip,
   json,
   results,
-  runBuildCommand,
+  prodCommand,
 }: {
   deployToProduction: boolean
   uploadSourceZip: boolean
   json: boolean
-  results: Awaited<ReturnType<typeof prepAndRunDeploy>>
-  runBuildCommand: boolean
+  results: DeployResults
+  prodCommand: string
 }): void => {
   const msgData: Record<string, string> = {
     'Build logs': terminalLink(results.logsUrl, results.logsUrl, { fallback: false }),
@@ -915,6 +910,10 @@ const printResults = ({
       jsonData.source_zip_filename = results.sourceZipFileName
     }
 
+    if (results.commitSha) {
+      jsonData.commit_sha = results.commitSha
+    }
+
     logJson(jsonData)
     exit(0)
   } else if (!isInteractive()) {
@@ -931,7 +930,7 @@ const printResults = ({
     if (!deployToProduction) {
       log()
       log('If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:')
-      log(`netlify deploy${runBuildCommand ? '' : ' --no-build'} --prod`)
+      log(prodCommand)
       log()
     }
   } else {
@@ -959,7 +958,7 @@ const printResults = ({
     if (!deployToProduction) {
       log()
       log('If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:')
-      log(chalk.cyanBright.bold(`netlify deploy${runBuildCommand ? '' : ' --no-build'} --prod`))
+      log(chalk.cyanBright.bold(prodCommand))
       log()
     }
   }
@@ -1177,6 +1176,12 @@ const ensureSiteExists = async (
     return siteInfo
   }
 
+  if (options.remote) {
+    return logAndThrowError(
+      '--remote needs an existing Netlify project connected to a git repository. Run netlify link to link this directory to one, or pass --site.',
+    )
+  }
+
   if (options.createSite) {
     return createSiteWithFlags(options, command, site)
   }
@@ -1369,7 +1374,13 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch
 
-  command.setAnalyticsPayload({ open: options.open, prod: options.prod, json: options.json, alias: Boolean(alias) })
+  command.setAnalyticsPayload({
+    open: options.open,
+    prod: options.prod,
+    json: options.json,
+    alias: Boolean(alias),
+    remote: Boolean(options.remote),
+  })
 
   if (options.allowAnonymous) {
     const [token] = await getToken(options.auth)
@@ -1417,9 +1428,20 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   const deployToProduction =
     !options.draft && (options.prod || (options.prodIfUnlocked && !(siteData.published_deploy?.locked ?? false)))
 
-  let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
+  let results = {} as DeployResults
+  let prodCommand = `netlify deploy${options.build ? '' : ' --no-build'} --prod`
 
-  if (options.build) {
+  if (options.remote) {
+    results = await remoteDeploy({
+      api,
+      workingDir,
+      options,
+      siteData,
+      deployToProduction,
+      prepareProductionDeploy: () => prepareProductionDeploy({ siteData, api, options, command }),
+    })
+    prodCommand = 'netlify deploy --remote --prod'
+  } else if (options.build) {
     const deployMetadata = await createDeploy({ alias, api, command, deployToProduction, options, siteData, siteId })
     const deployId = deployMetadata.id
     const skewProtectionToken = deployMetadata.skew_protection_token
@@ -1491,7 +1513,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     })
   }
   printResults({
-    runBuildCommand: options.build,
+    prodCommand,
     json: options.json,
     results,
     deployToProduction,

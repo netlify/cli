@@ -1,6 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { getWebSocket } from '../../../utils/websockets/index.js'
+import { SOCKETEER_URL } from '../../../utils/socketeer.js'
 import type { LogEntry } from '../log-api.js'
 
 interface DeployLogMessage {
@@ -58,7 +59,7 @@ export const fetchDeployHistoricalLogs = async ({
   to: number
 }): Promise<LogEntry[]> => {
   const collected: { entry: LogEntry; hasTimestamp: boolean }[] = []
-  const ws = getWebSocket('wss://socketeer.services.netlify.com/build/logs')
+  const ws = getWebSocket(`${SOCKETEER_URL}/build/logs`)
 
   await new Promise<void>((resolve, reject) => {
     let settled = false
@@ -127,7 +128,7 @@ export const streamDeploy = (
   onClose: () => void,
   { closeWhenIdleMs }: { closeWhenIdleMs?: number } = {},
 ): (() => void) => {
-  const ws = getWebSocket('wss://socketeer.services.netlify.com/build/logs')
+  const ws = getWebSocket(`${SOCKETEER_URL}/build/logs`)
 
   let closeTimer: ReturnType<typeof setTimeout> | undefined
   const scheduleClose = (ms: number) => {

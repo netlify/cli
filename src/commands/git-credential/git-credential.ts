@@ -3,9 +3,8 @@ import readline from 'readline'
 import type { Readable, Writable } from 'stream'
 
 import { getToken } from '../../utils/command-helpers.js'
+import { NETLIFY_GIT_HOST } from '../../utils/netlify-git.js'
 import type { GitCredentialOptionValues } from './option_values.js'
-
-export const NETLIFY_GIT_HOST = 'git.netlify.com'
 
 export const parseGitCredentialInput = async (input: Readable): Promise<Partial<Record<string, string>>> => {
   const rl = readline.createInterface({

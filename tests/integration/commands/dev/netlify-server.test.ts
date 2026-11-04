@@ -40,6 +40,7 @@ const withServerEntry = (builder: SiteBuilder): SiteBuilder =>
               url: req.url,
               body,
               siteID: req.headers['x-nf-site-id'] ?? null,
+              clientIP: req.headers['x-nf-client-connection-ip'] ?? null,
             }),
           )
         })
@@ -113,6 +114,7 @@ describe.concurrent('command/dev Netlify Server', () => {
         t.expect(result.source).toBe('server')
         t.expect(result.url).toBe('/some/deep/path?value=1')
         t.expect(result.siteID).toBe('unlinked')
+        t.expect(result.clientIP).toMatch(/^(::ffff:)?127\.0\.0\.1$|^::1$/)
       })
     })
   })

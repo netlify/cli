@@ -149,6 +149,149 @@ test('Takes the Netlify Server from its own manifest when that is fresh', async 
   })
 })
 
+// Checks the server's digest and returns the rest of its fields, to be compared exactly.
+const serverFields = <T extends { sha: string }>(server: T | undefined): Omit<T, 'sha'> => {
+  expect(server).toBeDefined()
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- covered above
+  const { sha, ...fields } = server!
+
+  expect(sha).toMatch(/^[0-9a-f]{64}$/)
+
+  return fields
+}
+
+test('Sends the instance size, routes and runtime version from the server manifest', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const cachedBundle = path.join(builder.directory, 'cached-server.tgz')
+    await fs.writeFile(cachedBundle, 'cached server bundle')
+
+    const routes = [
+      { pattern: '/api/*', expression: '^/api(?:/(.*))/?$', methods: ['GET', 'POST'], prefer_static: true },
+      { pattern: '/health', literal: '/health', prefer_static: true },
+    ]
+    const excludedRoutes = [{ pattern: '/api/internal', literal: '/api/internal' }]
+    const serverManifestPath = path.join(builder.directory, 'server-manifest.json')
+    await fs.writeFile(
+      serverManifestPath,
+      JSON.stringify({
+        server: {
+          path: cachedBundle,
+          region: 'fra',
+          instanceSize: 'large',
+          routes,
+          excludedRoutes,
+          runtimeVersion: 'nodejs24.x',
+        },
+        timestamp: Date.now(),
+      }),
+    )
+
+    const { server } = await hashWithServer(builder, { serverManifestPath })
+
+    expect(serverFields(server)).toStrictEqual({
+      region: 'fra',
+      instance_size: 'large',
+      routes,
+      excluded_routes: excludedRoutes,
+      runtime_version: 'nodejs24.x',
+    })
+  })
+})
+
+test('Omits the server fields the manifest does not set', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const cachedBundle = path.join(builder.directory, 'cached-server.tgz')
+    await fs.writeFile(cachedBundle, 'cached server bundle')
+
+    const serverManifestPath = path.join(builder.directory, 'server-manifest.json')
+    await fs.writeFile(serverManifestPath, JSON.stringify({ server: { path: cachedBundle }, timestamp: Date.now() }))
+
+    const { server } = await hashWithServer(builder, { serverManifestPath })
+
+    expect(serverFields(server)).toStrictEqual({})
+  })
+})
+
+const hashWithServerManifest = async (builder: { directory: string }, manifestServer: Record<string, unknown>) => {
+  const cachedBundle = path.join(builder.directory, 'cached-server.tgz')
+  await fs.writeFile(cachedBundle, 'cached server bundle')
+
+  const serverManifestPath = path.join(builder.directory, 'server-manifest.json')
+  await fs.writeFile(
+    serverManifestPath,
+    JSON.stringify({ server: { path: cachedBundle, ...manifestServer }, timestamp: Date.now() }),
+  )
+
+  return await hashWithServer(builder, { serverManifestPath })
+}
+
+test('Sends the scale from the server manifest', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const { server } = await hashWithServerManifest(builder, { instanceSize: 'large', scale: { min: 2, max: 10 } })
+
+    expect(serverFields(server)).toStrictEqual({ instance_size: 'large', scale: { min: 2, max: 10 } })
+  })
+})
+
+test('Sends a scale that only sets the maximum', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const { server } = await hashWithServerManifest(builder, { scale: { max: 5 } })
+
+    expect(serverFields(server)).toStrictEqual({ scale: { max: 5 } })
+  })
+})
+
+test('Sends a scale minimum of 0', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const { server } = await hashWithServerManifest(builder, { scale: { min: 0 } })
+
+    expect(serverFields(server)).toStrictEqual({ scale: { min: 0 } })
+  })
+})
+
+test('Omits the scale when the server manifest has none', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const { server } = await hashWithServerManifest(builder, { instanceSize: 'large' })
+
+    expect(server).not.toHaveProperty('scale')
+    expect(serverFields(server)).toStrictEqual({ instance_size: 'large' })
+  })
+})
+
+test('Bundles the Netlify Server with the server block of the Netlify configuration', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+    await withServerEntry(builder)
+
+    const { server } = await hashWithServer(builder, {
+      serverConfig: { path: ['/api/*', '/health'], excludedPath: '/api/internal', region: 'fra', size: 'medium' },
+    })
+
+    const { routes, excluded_routes: excludedRoutes, runtime_version: runtimeVersion, ...fields } = serverFields(server)
+
+    expect(fields).toStrictEqual({ region: 'fra', instance_size: 'medium' })
+    expect(runtimeVersion).toMatch(/^nodejs\d+\.x$/)
+    expect(routes).toHaveLength(2)
+    expect(routes?.[0]).toMatchObject({ pattern: '/api/*', prefer_static: true })
+    expect(routes?.[0]).toHaveProperty('expression')
+    expect(routes?.[1]).toStrictEqual({ pattern: '/health', literal: '/health', prefer_static: true })
+    expect(excludedRoutes).toStrictEqual([{ pattern: '/api/internal', literal: '/api/internal' }])
+  })
+})
+
 test('Rebuilds the Netlify Server when its own manifest is expired', async (t) => {
   await withSiteBuilder(t, async (builder) => {
     await builder.withNetlifyToml({ config: {} }).build()
