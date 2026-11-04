@@ -12,16 +12,18 @@ export const SOURCE_INDICATORS: Record<LogEntry['source'], string> = {
   function: '𝒇',
   'edge-function': '🌐',
   deploy: '🚀',
+  server: '🖥️',
 }
 
 export const SOURCE_LABELS: Record<LogEntry['source'], string> = {
   function: 'Function',
   'edge-function': 'Edge function',
   deploy: 'Deploy',
+  server: 'Server',
 }
 
 export interface LogEntry {
-  source: 'function' | 'edge-function' | 'deploy'
+  source: 'function' | 'edge-function' | 'deploy' | 'server'
   name: string
   ts: number
   level: string
@@ -115,6 +117,7 @@ export const fetchHistoricalLogs = async ({
   deployId?: string
 }): Promise<HistoricalLogEntry[]> => {
   const entries: HistoricalLogEntry[] = []
+  const requestedCursors = new Set<string>()
   let cursor: string | undefined
 
   do {
@@ -139,9 +142,15 @@ export const fetchHistoricalLogs = async ({
       throw new Error(`Failed to fetch logs: ${response.status.toString()} ${response.statusText}`)
     }
 
-    const body = (await response.json()) as { logs?: HistoricalLogEntry[]; pagination?: { next?: string } }
+    const body = (await response.json()) as { logs?: HistoricalLogEntry[]; next?: string }
     entries.push(...(body.logs ?? []))
-    cursor = body.pagination?.next
+    cursor = body.next
+    if (cursor) {
+      if (requestedCursors.has(cursor)) {
+        throw new Error(`Failed to fetch logs: pagination repeated cursor ${cursor}`)
+      }
+      requestedCursors.add(cursor)
+    }
   } while (cursor)
 
   return entries
