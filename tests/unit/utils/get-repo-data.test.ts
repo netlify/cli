@@ -127,7 +127,18 @@ describe('getRepoData', () => {
 
     const result = await getRepoData({ workingDir: '/test' })
 
-    expect(result).toEqual({ error: 'No Git remote found' })
+    expect(result).toEqual({ error: 'No Git remote found', reason: 'no-remote' })
+  })
+
+  it('returns an error without credentials when the remote URL is invalid', async () => {
+    mockGitConfig.mockReturnValue({ remote: { origin: { url: 'https://user:s3cret@' } } })
+
+    const result = await getRepoData({ workingDir: '/test' })
+
+    expect(result).toEqual({
+      error: 'The specified Git remote origin is not a valid URL: https://***@',
+      reason: 'invalid-url',
+    })
   })
 
   it('returns an error when the requested remote is not defined', async () => {
@@ -138,6 +149,7 @@ describe('getRepoData', () => {
     expect(result).toEqual({
       error:
         'The specified remote "missing" is not defined in Git repo. Please use --git-remote-name flag to specify a remote.',
+      reason: 'unknown-remote',
     })
   })
 })
