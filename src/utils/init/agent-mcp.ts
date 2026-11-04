@@ -9,6 +9,7 @@ import { type CanonicalAgentName, getDrivingAgent } from '../agent-detection.js'
 import { chalk, log, netlifyCommand, warn } from '../command-helpers.js'
 import execa from '../execa.js'
 import { isInteractive } from '../scripted-commands.js'
+import { type ProjectConfigFile, addToProjectConfig, readProjectConfig } from './agent-mcp-config.js'
 
 export const NETLIFY_MCP_URL = 'https://mcp.netlify.com/mcp'
 export const NETLIFY_MCP_SERVER_NAME = 'netlify'
@@ -40,12 +41,21 @@ export interface McpAgent {
   binary?: string
   drivenBy?: CanonicalAgentName[]
   projectMarkers?: string[]
-  projectFile?: string
+  projectFile?: ProjectConfigFile
   inTerminal?: (env: NodeJS.ProcessEnv) => boolean
   native?: NativeSetup
 }
 
 const inEditorTerminal = (env: NodeJS.ProcessEnv): boolean => env.TERM_PROGRAM === 'vscode'
+
+const jsonServers = (
+  file: string,
+  entry: ProjectConfigFile['entry'] = { url: NETLIFY_MCP_URL },
+  key = 'mcpServers',
+  alternatives?: string[],
+): ProjectConfigFile => ({ path: file, alternatives, format: 'json', key, entry })
+
+const HTTP_ENTRY = { type: 'http', url: NETLIFY_MCP_URL }
 
 const claudeAdd = (scope: string) => [
   'mcp',
@@ -65,7 +75,7 @@ export const MCP_AGENTS: McpAgent[] = [
     binary: 'claude',
     drivenBy: ['claude'],
     projectMarkers: ['.claude', '.mcp.json', 'CLAUDE.md'],
-    projectFile: '.mcp.json',
+    projectFile: jsonServers('.mcp.json', HTTP_ENTRY),
     native: {
       lookup: 'list',
       scopes: {
@@ -88,7 +98,12 @@ export const MCP_AGENTS: McpAgent[] = [
     binary: 'codex',
     drivenBy: ['codex'],
     projectMarkers: ['.codex'],
-    projectFile: path.join('.codex', 'config.toml'),
+    projectFile: {
+      path: path.join('.codex', 'config.toml'),
+      format: 'toml',
+      key: 'mcp_servers',
+      entry: { url: NETLIFY_MCP_URL },
+    },
     native: {
       lookup: 'list-json',
       scopes: {
@@ -105,14 +120,18 @@ export const MCP_AGENTS: McpAgent[] = [
     binary: 'opencode',
     drivenBy: ['opencode'],
     projectMarkers: ['opencode.json', 'opencode.jsonc', '.opencode'],
-    projectFile: 'opencode.jsonc',
+    projectFile: jsonServers('opencode.jsonc', { type: 'remote', url: NETLIFY_MCP_URL, enabled: true }, 'mcp', [
+      'opencode.json',
+      path.join('.opencode', 'opencode.jsonc'),
+      path.join('.opencode', 'opencode.json'),
+    ]),
   },
   {
     id: 'vscode',
     label: 'VS Code',
     binary: 'code',
     projectMarkers: [path.join('.vscode', 'mcp.json')],
-    projectFile: path.join('.vscode', 'mcp.json'),
+    projectFile: jsonServers(path.join('.vscode', 'mcp.json'), HTTP_ENTRY, 'servers'),
     inTerminal: (env) => inEditorTerminal(env) && !env.CURSOR_TRACE_ID,
     native: {
       scopes: {
@@ -128,7 +147,7 @@ export const MCP_AGENTS: McpAgent[] = [
     binary: 'cursor-agent',
     drivenBy: ['cursor'],
     projectMarkers: ['.cursor'],
-    projectFile: path.join('.cursor', 'mcp.json'),
+    projectFile: jsonServers(path.join('.cursor', 'mcp.json')),
     inTerminal: (env) => inEditorTerminal(env) && Boolean(env.CURSOR_TRACE_ID),
   },
   { id: 'windsurf', label: 'Windsurf', binary: 'windsurf', projectMarkers: ['.windsurf'] },
@@ -138,14 +157,14 @@ export const MCP_AGENTS: McpAgent[] = [
     binary: 'gemini',
     drivenBy: ['gemini'],
     projectMarkers: ['.gemini', 'GEMINI.md'],
-    projectFile: path.join('.gemini', 'settings.json'),
+    projectFile: jsonServers(path.join('.gemini', 'settings.json'), { httpUrl: NETLIFY_MCP_URL }),
   },
   {
     id: 'github-copilot-cli',
     label: 'GitHub Copilot CLI',
     binary: 'copilot',
     drivenBy: ['copilot'],
-    projectFile: '.mcp.json',
+    projectFile: jsonServers('.mcp.json', HTTP_ENTRY, 'mcpServers', [path.join('.github', 'mcp.json')]),
   },
   {
     id: 'kiro-cli',
@@ -153,7 +172,7 @@ export const MCP_AGENTS: McpAgent[] = [
     binary: 'kiro-cli',
     drivenBy: ['kiro'],
     projectMarkers: ['.kiro'],
-    projectFile: path.join('.kiro', 'settings', 'mcp.json'),
+    projectFile: jsonServers(path.join('.kiro', 'settings', 'mcp.json')),
   },
   { id: 'cline', label: 'Cline', drivenBy: ['cline'], projectMarkers: ['.clinerules'] },
 ]
@@ -448,7 +467,7 @@ const fileNote = (agent: McpAgent, scope: McpScope): string | undefined => {
     return undefined
   }
   if (scope === 'project') {
-    return `  This writes ${agent.projectFile ?? ''} in this folder. Commit it only if everyone on the project should get it.`
+    return `  This writes ${agent.projectFile?.path ?? ''} in this folder. Commit it only if everyone on the project should get it.`
   }
   return undefined
 }
@@ -460,6 +479,42 @@ const printCommand = (agent: McpAgent, scope: McpScope, lead: string): void => {
     log(note)
   }
   log(restartHint(agent, scope))
+}
+
+const addToProjectFile = async (
+  agent: McpAgent,
+  file: ProjectConfigFile,
+  workingDir: string,
+): Promise<AgentMcpStatus> => {
+  const read = await readProjectConfig(workingDir, file)
+  const printInstead = (reason: string): AgentMcpStatus => {
+    log(`Could not add the Netlify MCP server to ${read.path}: ${reason}.`)
+    printCommand(agent, 'project', '  Add it yourself with')
+    return 'printed'
+  }
+  if (!read.readable) {
+    return printInstead(read.reason)
+  }
+  const existing = classify(read.servers)
+  if (isExisting(existing)) {
+    return reportExisting(agent, existing)
+  }
+  let written: boolean
+  try {
+    written = await addToProjectConfig(workingDir, file, NETLIFY_MCP_SERVER_NAME, read)
+  } catch (error) {
+    warn(`Could not write ${read.path}: ${error instanceof Error ? error.message : String(error)}`)
+    printCommand(agent, 'project', '  Add it yourself with')
+    return 'failed'
+  }
+  if (!written) {
+    return printInstead('the result would not parse')
+  }
+  log(
+    `Added the Netlify MCP server to ${agent.label} for this project in ${read.path}. Commit it only if everyone on the project should get it.`,
+  )
+  log(restartHint(agent, 'project'))
+  return 'added'
 }
 
 const add = async (
@@ -483,6 +538,9 @@ const add = async (
   }
   if (lookup && isExisting(lookup)) {
     return reportExisting(agent, lookup)
+  }
+  if (scope === 'project' && agent.projectFile && !commands) {
+    return await addToProjectFile(agent, agent.projectFile, workingDir)
   }
   if (!commands || !executable || !agent.binary || !agent.native?.lookup) {
     printCommand(agent, scope, `To add the Netlify MCP server to ${agent.label} for ${where(scope)}, run`)

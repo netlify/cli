@@ -176,16 +176,37 @@ describe('setupAgentMcp', () => {
       expect(execaMock).toHaveBeenNthCalledWith(2, installed('claude'), claudeAdd('user'), expect.anything())
     })
 
-    test('prints a project add-mcp command for Codex, naming the file it writes', async () => {
+    test('appends to the Codex project config once the Codex CLI reports no Netlify server', async () => {
       await install('codex')
       execaMock.mockResolvedValueOnce(codexListed())
+      await mkdir(join(project, '.codex'))
+      await writeFile(join(project, '.codex', 'config.toml'), 'model = "o3"\n')
+
+      await expect(run({ CODEX_CI: '1' })).resolves.toMatchObject({ agents: { codex: 'added' } })
+
+      expect(execaMock).toHaveBeenCalledWith(installed('codex'), ['mcp', 'list', '--json'], expect.anything())
+      expect(execaMock).toHaveBeenCalledTimes(1)
+      expect(await readFile(join(project, '.codex', 'config.toml'), 'utf8')).toBe(
+        `model = "o3"\n\n[mcp_servers.netlify]\nurl = "${NETLIFY_MCP_URL}"\n`,
+      )
+      expect(logged()).toContain(
+        `Added the Netlify MCP server to Codex for this project in ${join('.codex', 'config.toml')}`,
+      )
+      expect(logged()).not.toContain('add-mcp')
+    })
+
+    test('prints the Codex command instead when the appended table would not parse', async () => {
+      await install('codex')
+      execaMock.mockResolvedValueOnce(codexListed())
+      await mkdir(join(project, '.codex'))
+      const inline = 'mcp_servers = { other = { url = "https://example.com/mcp" } }\n'
+      await writeFile(join(project, '.codex', 'config.toml'), inline)
 
       await expect(run({ CODEX_CI: '1' })).resolves.toMatchObject({ agents: { codex: 'printed' } })
 
-      expect(execaMock).toHaveBeenCalledWith(installed('codex'), ['mcp', 'list', '--json'], expect.anything())
+      expect(await readFile(join(project, '.codex', 'config.toml'), 'utf8')).toBe(inline)
+      expect(logged()).toContain('the result would not parse')
       expect(logged()).toContain(`${ADD_MCP} -y -a codex`)
-      expect(logged()).not.toContain(' -g')
-      expect(logged()).toContain(join('.codex', 'config.toml'))
     })
 
     test('runs the Codex CLI when the scope is user', async () => {
@@ -361,11 +382,102 @@ describe('setupAgentMcp', () => {
       })
     })
 
-    test('prints add-mcp for Gemini CLI without running anything', async () => {
-      await expect(run({ GEMINI_CLI: '1' })).resolves.toMatchObject({ agents: { 'gemini-cli': 'printed' } })
+    test('writes the Gemini CLI project settings without running anything', async () => {
+      await expect(run({ GEMINI_CLI: '1' })).resolves.toMatchObject({ agents: { 'gemini-cli': 'added' } })
 
       expect(execaMock).not.toHaveBeenCalled()
-      expect(logged()).toContain(`${ADD_MCP} -y -a gemini-cli`)
+      expect(await readFile(join(project, '.gemini', 'settings.json'), 'utf8')).toBe(
+        `${JSON.stringify({ mcpServers: { netlify: { httpUrl: NETLIFY_MCP_URL } } }, null, 2)}\n`,
+      )
+      expect(logged()).toContain('Commit it only if everyone on the project should get it')
+      expect(logged()).toContain('loads the next time you start Gemini CLI in this folder')
+      expect(logged()).not.toContain('add-mcp')
+    })
+
+    test('keeps the other servers and the formatting of a config file it adds to', async () => {
+      await mkdir(join(project, '.cursor'))
+      const before =
+        '{\n    "mcpServers": {\n        "other": {\n            "url": "https://example.com/mcp"\n        }\n    }\n}'
+      await writeFile(join(project, '.cursor', 'mcp.json'), before)
+
+      await expect(run({ CURSOR_AGENT: '1' })).resolves.toMatchObject({ agents: { cursor: 'added' } })
+
+      expect(await readFile(join(project, '.cursor', 'mcp.json'), 'utf8')).toBe(
+        before.replace(
+          '        }\n    }',
+          `        },\n        "netlify": {\n            "url": "${NETLIFY_MCP_URL}"\n        }\n    }`,
+        ),
+      )
+    })
+
+    test('leaves a config file alone when it already has the hosted server', async () => {
+      await mkdir(join(project, '.cursor'))
+      const before = `${JSON.stringify({ mcpServers: { netlify: { url: NETLIFY_MCP_URL } } }, null, 2)}\n`
+      await writeFile(join(project, '.cursor', 'mcp.json'), before)
+
+      await expect(run({ CURSOR_AGENT: '1' })).resolves.toMatchObject({ agents: { cursor: 'present' } })
+
+      expect(await readFile(join(project, '.cursor', 'mcp.json'), 'utf8')).toBe(before)
+      expect(logged()).toContain('Cursor already has the Netlify MCP server')
+    })
+
+    test('leaves a config file alone when it has another Netlify server under any name', async () => {
+      await mkdir(join(project, '.cursor'))
+      const before = `${JSON.stringify({ mcpServers: { mine: { command: 'npx', args: ['-y', '@netlify/mcp'] } } }, null, 2)}\n`
+      await writeFile(join(project, '.cursor', 'mcp.json'), before)
+
+      await expect(run({ CURSOR_AGENT: '1' })).resolves.toMatchObject({ agents: { cursor: 'kept' } })
+
+      expect(await readFile(join(project, '.cursor', 'mcp.json'), 'utf8')).toBe(before)
+      expect(logged()).toContain('Cursor already has a Netlify MCP server (mine)')
+    })
+
+    test('prints the command instead of rewriting a config file with comments', async () => {
+      const before = '{\n  // servers\n  "mcp": {}\n}\n'
+      await writeFile(join(project, 'opencode.jsonc'), before)
+
+      await expect(run({ OPENCODE: '1' })).resolves.toMatchObject({ agents: { opencode: 'printed' } })
+
+      expect(await readFile(join(project, 'opencode.jsonc'), 'utf8')).toBe(before)
+      expect(logged()).toContain('Could not add the Netlify MCP server to opencode.jsonc: it is not plain JSON')
+      expect(logged()).toContain(`${ADD_MCP} -y -a opencode`)
+    })
+
+    test('adds to the OpenCode config file the project already has instead of creating another', async () => {
+      const before = '{"mcp":{"other":{"type":"remote","url":"https://example.com/mcp"}}}\n'
+      await writeFile(join(project, 'opencode.json'), before)
+
+      await expect(run({ OPENCODE: '1' })).resolves.toMatchObject({ agents: { opencode: 'added' } })
+
+      expect(await readFile(join(project, 'opencode.json'), 'utf8')).toBe(
+        before.replace('"}}}', `"},"netlify":{"type":"remote","url":"${NETLIFY_MCP_URL}","enabled":true}}}`),
+      )
+      await expect(readFile(join(project, 'opencode.jsonc'), 'utf8')).rejects.toThrow(/ENOENT/)
+      expect(logged()).toContain('for this project in opencode.json')
+    })
+
+    test('sees a Netlify server in an alternative config file, so it adds nothing', async () => {
+      await mkdir(join(project, '.github'))
+      const before = `${JSON.stringify({ mcpServers: { netlify: { type: 'http', url: NETLIFY_MCP_URL } } }, null, 2)}\n`
+      await writeFile(join(project, '.github', 'mcp.json'), before)
+
+      await expect(run({ NETLIFY_AGENT: 'copilot' })).resolves.toMatchObject({
+        agents: { 'github-copilot-cli': 'present' },
+      })
+
+      await expect(readFile(join(project, '.mcp.json'), 'utf8')).rejects.toThrow(/ENOENT/)
+    })
+
+    test('prints the command instead of rewriting a .mcp.json that lists servers at its top level', async () => {
+      const before = `${JSON.stringify({ other: { type: 'http', url: 'https://example.com/mcp' } }, null, 2)}\n`
+      await writeFile(join(project, '.mcp.json'), before)
+
+      await expect(run({ NETLIFY_AGENT: 'copilot' })).resolves.toMatchObject({
+        agents: { 'github-copilot-cli': 'printed' },
+      })
+
+      expect(await readFile(join(project, '.mcp.json'), 'utf8')).toBe(before)
+      expect(logged()).toContain('its servers are not under "mcpServers"')
     })
 
     test('suggests nothing user-wide at project scope for an agent with no per-project setting', async () => {
@@ -536,17 +648,19 @@ describe('setupAgentMcp', () => {
       expect(logged()).toContain('claude mcp remove --scope local netlify')
     })
 
-    test('prints project commands for ticked agents whose CLIs only add user-wide', async () => {
+    test('writes the project config for ticked agents whose CLIs only add user-wide', async () => {
       await install('code')
 
       await expect(
         run({ TERM_PROGRAM: 'vscode' }, { interactive: true, choose: chooseIds('vscode') }),
-      ).resolves.toMatchObject({ agents: { vscode: 'printed' } })
+      ).resolves.toMatchObject({ agents: { vscode: 'added' } })
 
       expect(execaMock).not.toHaveBeenCalled()
-      expect(logged()).toContain(`${ADD_MCP} -y -a vscode`)
-      expect(logged()).toContain(join('.vscode', 'mcp.json'))
-      expect(logged()).toContain('Run the command shown for VS Code to finish')
+      expect(await readFile(join(project, '.vscode', 'mcp.json'), 'utf8')).toBe(
+        `${JSON.stringify({ servers: { netlify: { type: 'http', url: NETLIFY_MCP_URL } } }, null, 2)}\n`,
+      )
+      expect(logged()).not.toContain('Run the command shown')
+      expect(saved.get('agentMcpSetup.project.vscode')).toEqual({ url: NETLIFY_MCP_URL, choice: 'accepted' })
     })
 
     test('prints instead of running an agent CLI that cannot check for an existing server', async () => {

@@ -831,12 +831,14 @@ describe.concurrent('commands/init', () => {
       cwd,
       skillsHost,
       claudeBin,
+      agent,
       home,
     }: {
       apiUrl: string
       cwd: string
       skillsHost: string
       claudeBin?: string
+      agent?: string
       home?: string
     }) =>
     async (...flags: string[]) => {
@@ -848,9 +850,10 @@ describe.concurrent('commands/init', () => {
         ...(claudeBin
           ? { PATH: `${claudeBin}${path.delimiter}${process.env.PATH ?? ''}`, NETLIFY_AGENT: 'claude-code' }
           : {}),
+        ...(agent ? { NETLIFY_AGENT: agent } : {}),
         ...(home ? { HOME: home, USERPROFILE: home } : {}),
       }
-      const mcpFlags = claudeBin ? [] : ['--skip-mcp-setup']
+      const mcpFlags = claudeBin || agent ? [] : ['--skip-mcp-setup']
       const childProcess = execa(cliPath, ['init', '--manual', ...mcpFlags, ...flags], { cwd, env })
       if (process.env.DEBUG_TESTS) {
         childProcess.stdout?.on('data', (data: Buffer) => {
@@ -923,6 +926,35 @@ describe.concurrent('commands/init', () => {
       })
     },
   )
+
+  test('netlify init writes the project MCP config for an agent that has no CLI to run', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().build()
+
+      await withMockApi(linkedSiteRoutes, async ({ apiUrl }) => {
+        await withSkillsHost(async (skillsHost) => {
+          const runInit = initOnLinkedSite({
+            apiUrl,
+            cwd: builder.directory,
+            skillsHost: skillsHost.url,
+            agent: 'gemini',
+          })
+          const settings = path.join(builder.directory, '.gemini', 'settings.json')
+
+          const first = await runInit()
+          t.expect(first.stdout).toContain(
+            `Added the Netlify MCP server to Gemini CLI for this project in ${path.join('.gemini', 'settings.json')}`,
+          )
+          t.expect(JSON.parse(await readFile(settings, 'utf8'))).toEqual({
+            mcpServers: { netlify: { httpUrl: 'https://mcp.netlify.com/mcp' } },
+          })
+
+          const again = await runInit()
+          t.expect(again.stdout).toContain('Gemini CLI already has the Netlify MCP server')
+        })
+      })
+    })
+  })
 
   test.skipIf(process.platform === 'win32')(
     'netlify init skips skills and the MCP server when run from the home directory',
