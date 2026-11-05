@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
 import toml from 'toml'
+import writeFileAtomic from 'write-file-atomic'
 
 export type ConfigFormat = 'json' | 'toml'
 
@@ -190,6 +191,6 @@ export const addToProjectConfig = async (
   }
   const target = path.join(workingDir, resolved)
   await fs.mkdir(path.dirname(target), { recursive: true })
-  await fs.writeFile(target, updated, 'utf8')
+  await writeFileAtomic(target, updated, 'utf8')
   return true
 }
