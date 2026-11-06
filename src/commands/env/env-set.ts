@@ -4,7 +4,7 @@ import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpe
 import { SUPPORTED_CONTEXTS, ALL_ENVELOPE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-set-prompts.js'
 import BaseCommand from '../base-command.js'
-import { getSiteInfo } from './utils.js'
+import { failNotLinked, getEnvSiteId, getSiteInfo } from './utils.js'
 
 /**
  * Updates the env for a site configured with Envelope with a new key/value pair
@@ -110,11 +110,10 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
 
 export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
   const { context, force, scope, secret } = options
-  const { api, cachedConfig, site } = command.netlify
-  const siteId = site.id
+  const { api, cachedConfig } = command.netlify
+  const siteId = getEnvSiteId(options, command)
   if (!siteId) {
-    log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return failNotLinked(options)
   }
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
 
