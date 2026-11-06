@@ -54,7 +54,7 @@
   "dependencies": {
     "@fastify/static": "^10.0.0",
     "@inquirer/prompts": "^8.7.2",
-    "@netlify/ai": "^1.0.2",
+    "@netlify/ai": "^1.0.4",
     "@netlify/api": "^15.1.6",
     "@netlify/blobs": "^11.1.7",
     "@netlify/build": "^37.7.6",
