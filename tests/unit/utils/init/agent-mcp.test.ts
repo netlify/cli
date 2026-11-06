@@ -1,4 +1,4 @@
-import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { homedir, tmpdir } from 'node:os'
 import { delimiter, join, relative, resolve } from 'node:path'
 
@@ -202,11 +202,20 @@ describe('setupAgentMcp', () => {
       const inline = 'mcp_servers = { other = { url = "https://example.com/mcp" } }\n'
       await writeFile(join(project, '.codex', 'config.toml'), inline)
 
-      await expect(run({ CODEX_CI: '1' })).resolves.toMatchObject({ agents: { codex: 'printed' } })
+      await expect(run({ CODEX_CI: '1' })).resolves.toMatchObject({ agents: { codex: 'failed' } })
 
       expect(await readFile(join(project, '.codex', 'config.toml'), 'utf8')).toBe(inline)
       expect(logged()).toContain('the result would not parse')
       expect(logged()).toContain(`${ADD_MCP} -y -a codex`)
+    })
+
+    test('says when Codex needs to trust the project before it reads the config', async () => {
+      await install('codex')
+      execaMock.mockResolvedValueOnce(codexListed())
+
+      await expect(run({ CODEX_CI: '1' })).resolves.toMatchObject({ agents: { codex: 'added' } })
+
+      expect(logged()).toContain('Codex reads it once this project is trusted')
     })
 
     test('runs the Codex CLI when the scope is user', async () => {
@@ -387,17 +396,35 @@ describe('setupAgentMcp', () => {
 
       expect(execaMock).not.toHaveBeenCalled()
       expect(await readFile(join(project, '.gemini', 'settings.json'), 'utf8')).toBe(
-        `${JSON.stringify({ mcpServers: { netlify: { httpUrl: NETLIFY_MCP_URL } } }, null, 2)}\n`,
+        `${JSON.stringify({ mcpServers: { netlify: { type: 'http', url: NETLIFY_MCP_URL } } }, null, 2)}\n`,
       )
       expect(logged()).toContain('Commit it only if everyone on the project should get it')
       expect(logged()).toContain('loads the next time you start Gemini CLI in this folder')
       expect(logged()).not.toContain('add-mcp')
     })
 
+    test('prints the Gemini CLI command, never add-mcp, when its settings file cannot be edited', async () => {
+      await mkdir(join(project, '.gemini'))
+      await writeFile(join(project, '.gemini', 'settings.json'), '{ not json\n')
+
+      await expect(run({ GEMINI_CLI: '1' })).resolves.toMatchObject({ agents: { 'gemini-cli': 'failed' } })
+
+      expect(logged()).toContain('it is not valid JSON')
+      expect(logged()).toContain(`gemini mcp add --transport http --scope project netlify ${NETLIFY_MCP_URL}`)
+      expect(logged()).not.toContain('add-mcp')
+    })
+
+    test('prints the Gemini CLI command for all projects when the scope is user', async () => {
+      await run({ GEMINI_CLI: '1' }, { scope: 'user' })
+
+      expect(logged()).toContain(`gemini mcp add --transport http --scope user netlify ${NETLIFY_MCP_URL}`)
+      expect(logged()).not.toContain('add-mcp')
+    })
+
     test('keeps the other servers and the formatting of a config file it adds to', async () => {
       await mkdir(join(project, '.cursor'))
       const before =
-        '{\n    "mcpServers": {\n        "other": {\n            "url": "https://example.com/mcp"\n        }\n    }\n}'
+        '{\n    "mcpServers": {\n        "other": {\n            "command": "npx",\n            "args": ["-y", "pkg"]\n        }\n    }\n}'
       await writeFile(join(project, '.cursor', 'mcp.json'), before)
 
       await expect(run({ CURSOR_AGENT: '1' })).resolves.toMatchObject({ agents: { cursor: 'added' } })
@@ -408,6 +435,51 @@ describe('setupAgentMcp', () => {
           `        },\n        "netlify": {\n            "url": "${NETLIFY_MCP_URL}"\n        }\n    }`,
         ),
       )
+    })
+
+    test('keeps the line endings of a config file it adds to', async () => {
+      await mkdir(join(project, '.cursor'))
+      const before = '{\r\n  "mcpServers": {}\r\n}\r\n'
+      await writeFile(join(project, '.cursor', 'mcp.json'), before)
+
+      await expect(run({ CURSOR_AGENT: '1' })).resolves.toMatchObject({ agents: { cursor: 'added' } })
+
+      expect(await readFile(join(project, '.cursor', 'mcp.json'), 'utf8')).toBe(
+        `{\r\n  "mcpServers": {\r\n    "netlify": {\r\n      "url": "${NETLIFY_MCP_URL}"\r\n    }\r\n  }\r\n}\r\n`,
+      )
+    })
+
+    test('refuses a config file that is not an object under its server key', async () => {
+      await mkdir(join(project, '.cursor'))
+      const before = '{\n  "mcpServers": []\n}\n'
+      await writeFile(join(project, '.cursor', 'mcp.json'), before)
+
+      await expect(run({ CURSOR_AGENT: '1' })).resolves.toMatchObject({ agents: { cursor: 'failed' } })
+
+      expect(await readFile(join(project, '.cursor', 'mcp.json'), 'utf8')).toBe(before)
+      expect(logged()).toContain('its "mcpServers" is not an object')
+    })
+
+    test('refuses a config file that is a symlink to somewhere outside the project', async () => {
+      const outside = join(root, 'home-cursor')
+      await mkdir(outside)
+      await writeFile(join(outside, 'mcp.json'), '{}\n')
+      await symlink(outside, join(project, '.cursor'))
+
+      await expect(run({ CURSOR_AGENT: '1' })).resolves.toMatchObject({ agents: { cursor: 'failed' } })
+
+      expect(await readFile(join(outside, 'mcp.json'), 'utf8')).toBe('{}\n')
+      expect(logged()).toContain('it points outside this project')
+    })
+
+    test('says when the existing entry is turned off instead of calling it set up', async () => {
+      const before = `${JSON.stringify({ mcp: { netlify: { type: 'remote', url: NETLIFY_MCP_URL, enabled: false } } }, null, 2)}\n`
+      await writeFile(join(project, 'opencode.json'), before)
+
+      await expect(run({ OPENCODE: '1' })).resolves.toMatchObject({ agents: { opencode: 'kept' } })
+
+      expect(await readFile(join(project, 'opencode.json'), 'utf8')).toBe(before)
+      expect(logged()).toContain('already has the Netlify MCP server, turned off in opencode.json')
     })
 
     test('leaves a config file alone when it already has the hosted server', async () => {
@@ -432,28 +504,43 @@ describe('setupAgentMcp', () => {
       expect(logged()).toContain('Cursor already has a Netlify MCP server (mine)')
     })
 
-    test('prints the command instead of rewriting a config file with comments', async () => {
-      const before = '{\n  // servers\n  "mcp": {}\n}\n'
+    test('keeps the comments of a config file it adds to', async () => {
+      const before =
+        '{\n  // servers\n  "mcp": {\n    "other": { "type": "remote", "url": "https://example.com/mcp" }, // keep\n  },\n}\n'
       await writeFile(join(project, 'opencode.jsonc'), before)
 
-      await expect(run({ OPENCODE: '1' })).resolves.toMatchObject({ agents: { opencode: 'printed' } })
+      await expect(run({ OPENCODE: '1' })).resolves.toMatchObject({ agents: { opencode: 'added' } })
 
-      expect(await readFile(join(project, 'opencode.jsonc'), 'utf8')).toBe(before)
-      expect(logged()).toContain('Could not add the Netlify MCP server to opencode.jsonc: it is not plain JSON')
-      expect(logged()).toContain(`${ADD_MCP} -y -a opencode`)
+      const after = await readFile(join(project, 'opencode.jsonc'), 'utf8')
+      expect(after).toContain('// servers')
+      expect(after).toContain('"other": { "type": "remote", "url": "https://example.com/mcp" }, // keep')
+      expect(after).toContain(
+        `"netlify": {\n      "type": "remote",\n      "url": "${NETLIFY_MCP_URL}",\n      "enabled": true\n    }`,
+      )
+      expect(logged()).not.toContain('add-mcp')
     })
 
     test('adds to the OpenCode config file the project already has instead of creating another', async () => {
-      const before = '{"mcp":{"other":{"type":"remote","url":"https://example.com/mcp"}}}\n'
+      const before = '{\n  "mcp": {\n    "other": { "type": "remote", "url": "https://example.com/mcp" }\n  }\n}\n'
       await writeFile(join(project, 'opencode.json'), before)
 
       await expect(run({ OPENCODE: '1' })).resolves.toMatchObject({ agents: { opencode: 'added' } })
 
-      expect(await readFile(join(project, 'opencode.json'), 'utf8')).toBe(
-        before.replace('"}}}', `"},"netlify":{"type":"remote","url":"${NETLIFY_MCP_URL}","enabled":true}}}`),
-      )
+      const after = await readFile(join(project, 'opencode.json'), 'utf8')
+      expect(after).toContain('"other": { "type": "remote", "url": "https://example.com/mcp" }')
+      expect(after).toContain('"netlify"')
       await expect(readFile(join(project, 'opencode.jsonc'), 'utf8')).rejects.toThrow(/ENOENT/)
       expect(logged()).toContain('for this project in opencode.json')
+    })
+
+    test('reads every OpenCode config file the project has before adding to the first', async () => {
+      await writeFile(join(project, 'opencode.jsonc'), '{\n  "mcp": {}\n}\n')
+      const other = `${JSON.stringify({ mcp: { netlify: { type: 'remote', url: NETLIFY_MCP_URL } } }, null, 2)}\n`
+      await writeFile(join(project, 'opencode.json'), other)
+
+      await expect(run({ OPENCODE: '1' })).resolves.toMatchObject({ agents: { opencode: 'present' } })
+
+      expect(await readFile(join(project, 'opencode.jsonc'), 'utf8')).toBe('{\n  "mcp": {}\n}\n')
     })
 
     test('sees a Netlify server in an alternative config file, so it adds nothing', async () => {
@@ -473,11 +560,12 @@ describe('setupAgentMcp', () => {
       await writeFile(join(project, '.mcp.json'), before)
 
       await expect(run({ NETLIFY_AGENT: 'copilot' })).resolves.toMatchObject({
-        agents: { 'github-copilot-cli': 'printed' },
+        agents: { 'github-copilot-cli': 'failed' },
       })
 
       expect(await readFile(join(project, '.mcp.json'), 'utf8')).toBe(before)
       expect(logged()).toContain('its servers are not under "mcpServers"')
+      expect(saved.size).toBe(0)
     })
 
     test('suggests nothing user-wide at project scope for an agent with no per-project setting', async () => {

@@ -57,6 +57,17 @@ const jsonServers = (
 
 const HTTP_ENTRY = { type: 'http', url: NETLIFY_MCP_URL }
 
+const geminiAdd = (scope: McpScope) => [
+  'mcp',
+  'add',
+  '--transport',
+  'http',
+  '--scope',
+  scope,
+  NETLIFY_MCP_SERVER_NAME,
+  NETLIFY_MCP_URL,
+]
+
 const claudeAdd = (scope: string) => [
   'mcp',
   'add',
@@ -103,6 +114,7 @@ export const MCP_AGENTS: McpAgent[] = [
       format: 'toml',
       key: 'mcp_servers',
       entry: { url: NETLIFY_MCP_URL },
+      note: 'Codex reads it once this project is trusted.',
     },
     native: {
       lookup: 'list-json',
@@ -157,7 +169,8 @@ export const MCP_AGENTS: McpAgent[] = [
     binary: 'gemini',
     drivenBy: ['gemini'],
     projectMarkers: ['.gemini', 'GEMINI.md'],
-    projectFile: jsonServers(path.join('.gemini', 'settings.json'), { httpUrl: NETLIFY_MCP_URL }),
+    projectFile: jsonServers(path.join('.gemini', 'settings.json'), HTTP_ENTRY),
+    native: { scopes: { project: { add: geminiAdd('project') }, user: { add: geminiAdd('user') } } },
   },
   {
     id: 'github-copilot-cli',
@@ -490,13 +503,17 @@ const addToProjectFile = async (
   const printInstead = (reason: string): AgentMcpStatus => {
     log(`Could not add the Netlify MCP server to ${read.path}: ${reason}.`)
     printCommand(agent, 'project', '  Add it yourself with')
-    return 'printed'
+    return 'failed'
   }
   if (!read.readable) {
     return printInstead(read.reason)
   }
   const existing = classify(read.servers)
   if (isExisting(existing)) {
+    if (existing.found === 'ours' && read.servers.some(({ name, disabled }) => name === existing.name && disabled)) {
+      log(`${agent.label} already has the Netlify MCP server, turned off in ${read.path}. Turn it on there to use it.`)
+      return 'kept'
+    }
     return reportExisting(agent, existing)
   }
   let written: boolean
@@ -513,6 +530,9 @@ const addToProjectFile = async (
   log(
     `Added the Netlify MCP server to ${agent.label} for this project in ${read.path}. Commit it only if everyone on the project should get it.`,
   )
+  if (file.note) {
+    log(`  ${file.note}`)
+  }
   log(restartHint(agent, 'project'))
   return 'added'
 }
@@ -539,7 +559,7 @@ const add = async (
   if (lookup && isExisting(lookup)) {
     return reportExisting(agent, lookup)
   }
-  if (scope === 'project' && agent.projectFile && !commands) {
+  if (scope === 'project' && agent.projectFile && !(commands && agent.native?.lookup)) {
     return await addToProjectFile(agent, agent.projectFile, workingDir)
   }
   if (!commands || !executable || !agent.binary || !agent.native?.lookup) {

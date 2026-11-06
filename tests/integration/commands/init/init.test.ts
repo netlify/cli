@@ -946,7 +946,7 @@ describe.concurrent('commands/init', () => {
             `Added the Netlify MCP server to Gemini CLI for this project in ${path.join('.gemini', 'settings.json')}`,
           )
           t.expect(JSON.parse(await readFile(settings, 'utf8'))).toEqual({
-            mcpServers: { netlify: { httpUrl: 'https://mcp.netlify.com/mcp' } },
+            mcpServers: { netlify: { type: 'http', url: 'https://mcp.netlify.com/mcp' } },
           })
 
           const again = await runInit()
