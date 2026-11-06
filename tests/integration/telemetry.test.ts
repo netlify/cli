@@ -110,6 +110,7 @@ test('should send invoked command on success', async () => {
     expect(request!.body).toHaveProperty('event', 'cli:command')
     expect(request!.body).toHaveProperty('status', 'success')
     expect(request!.body).toHaveProperty('properties', {
+      authTokenSource: 'env',
       buildSystem: [],
       cliVersion: pkg.version,
       command: 'api',
@@ -136,6 +137,7 @@ test('should send invoked command on failure', async () => {
     expect(request!.body).toHaveProperty('event', 'cli:command')
     expect(request!.body).toHaveProperty('status', 'error')
     expect(request!.body).toHaveProperty('properties', {
+      authTokenSource: 'env',
       buildSystem: [],
       cliVersion: pkg.version,
       command: 'dev:exec',

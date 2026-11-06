@@ -61,7 +61,7 @@
     "@netlify/build-info": "^11.3.1",
     "@netlify/config": "^25.6.2",
     "@netlify/dev": "^5.1.12",
-    "@netlify/dev-utils": "^6.0.4",
+    "@netlify/dev-utils": "https://pkg.pr.new/@netlify/dev-utils@2b6145e",
     "@netlify/edge-bundler": "^16.2.0",
     "@netlify/edge-functions": "^4.0.3",
     "@netlify/edge-functions-bootstrap": "^3.2.0",
@@ -211,6 +211,9 @@
     "typescript-native": "npm:typescript@~7.0.2",
     "verdaccio": "^6.3.2",
     "vitest": "^5.0.0"
+  },
+  "overrides": {
+    "@netlify/dev-utils": "$@netlify/dev-utils"
   },
   "engines": {
     "node": ">=22.13.0"

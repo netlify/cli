@@ -4,12 +4,12 @@ import process from 'process'
 import { format, inspect } from 'util'
 
 import type { NetlifyAPI } from '@netlify/api'
-import { getAPIToken } from '@netlify/dev-utils'
 import { Chalk, type ChalkInstance as ChalkInstancePrimitiveType } from 'chalk'
 import type { Option } from 'commander'
 import WSL from 'is-wsl'
 import terminalLink from 'terminal-link'
 
+import { getStoredAPIToken } from '../lib/secure-storage.js'
 import { startSpinner } from '../lib/spinner.js'
 
 import { getDrivingAgent } from './agent-detection.js'
@@ -132,7 +132,6 @@ export const pollForToken = async ({
 /**
  * Get a netlify token
  * @param {string} [tokenFromOptions] optional token from the provided --auth options
- * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
 
 export type TokenTuple = [string | null, TokenLocation]
@@ -147,10 +146,9 @@ export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> =
   if (NETLIFY_AUTH_TOKEN && NETLIFY_AUTH_TOKEN !== 'null') {
     return [NETLIFY_AUTH_TOKEN, 'env']
   }
-  // 3. If no env var use global user setting
-  const tokenFromConfig = await getAPIToken()
-  if (tokenFromConfig) {
-    return [tokenFromConfig, 'config']
+  const { token, fromKeychain } = await getStoredAPIToken()
+  if (token) {
+    return [token, fromKeychain ? 'keychain' : 'config']
   }
   return [null, 'not found']
 }
@@ -168,9 +166,10 @@ export const logJson = (message: unknown = '') => {
   }
 }
 
+export const isLogSuppressed = (): boolean => argv.includes('--json') || argv.includes('--silent') || isDefaultJson()
+
 export const log = (message = '', ...args: string[]) => {
-  // If  --silent or --json flag passed disable logger
-  if (argv.includes('--json') || argv.includes('--silent') || isDefaultJson()) {
+  if (isLogSuppressed()) {
     return
   }
   message = typeof message === 'string' ? message : inspect(message)
