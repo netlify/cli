@@ -29,6 +29,12 @@ describe('createHandler', () => {
     const mainFile = join(functionsDirectory, 'hello.js')
     await writeFile(mainFile, `exports.handler = async (event) => ({ statusCode: 200, body: event.rawUrl })`)
 
+    const clientIpFile = join(functionsDirectory, 'client-ip.js')
+    await writeFile(
+      clientIpFile,
+      `exports.handler = async (event) => ({ statusCode: 200, body: JSON.stringify({ clientIp: event.headers['client-ip'], connectionIp: event.headers['x-nf-client-connection-ip'] }) })`,
+    )
+
     const functionsRegistry = new FunctionsRegistry({
       projectRoot,
       // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'NormalizedCac... Remove this comment to see the full error message
@@ -89,4 +95,45 @@ describe('createHandler', () => {
     expect(response.status).toBe(200)
     expect(await response.text()).toMatch(/^http:\/\/localhost:\d+?\/orig\?jam=stack$/)
   })
+
+  test.each([
+    ['1.2.3.4', '1.2.3.4'],
+    ['1.2.3.4, 5.6.7.8', '5.6.7.8'],
+    ['1.2.3.4:5678', '1.2.3.4'],
+    ['::ffff:1.2.3.4', '1.2.3.4'],
+    ['2001:db8::1', '2001:db8::1'],
+    ['2001:db8::1, 2001:db8::2', '2001:db8::2'],
+    ['[2001:db8::1]:5678', '2001:db8::1'],
+    ['2001:db8::192.0.2.1', '2001:db8::192.0.2.1'],
+  ])(
+    'should set both client IP headers to a single IP address for `x-forwarded-for: %s`',
+    async (forwardedFor, expected) => {
+      const response = await fetch(new URL('/.netlify/functions/client-ip', serverAddress), {
+        headers: { 'x-forwarded-for': forwardedFor },
+      })
+
+      expect(response.status).toBe(200)
+
+      const { clientIp, connectionIp } = (await response.json()) as { clientIp: string; connectionIp: string }
+      expect(net.isIP(clientIp)).not.toBe(0)
+      expect(clientIp).toBe(expected)
+      expect(connectionIp).toBe(expected)
+    },
+  )
+
+  test.each(['999.999.999.999', '1.2.3.4.5', 'unknown'])(
+    'should fall back to the connection address when `x-forwarded-for: %s` is not an IP address',
+    async (forwardedFor) => {
+      const response = await fetch(new URL('/.netlify/functions/client-ip', serverAddress), {
+        headers: { 'x-forwarded-for': forwardedFor },
+      })
+
+      expect(response.status).toBe(200)
+
+      const { clientIp, connectionIp } = (await response.json()) as { clientIp: string; connectionIp: string }
+      expect(net.isIP(clientIp)).not.toBe(0)
+      expect(['127.0.0.1', '::1']).toContain(clientIp)
+      expect(connectionIp).toBe(clientIp)
+    },
+  )
 })
