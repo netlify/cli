@@ -54,6 +54,19 @@ describe('buildHelpResponse', () => {
     expect(response.message).toContain('There was an error')
   })
 
+  test('buildHelpResponse prints errors that are not objects', () => {
+    const response = buildHelpResponse({
+      // @ts-expect-error -- functions can throw values that aren't `Error`s, e.g. a string
+      error: 'boom',
+      headers: {},
+      path: '/',
+      result: null,
+    })
+
+    expect(response.message).toContain('There was an error')
+    expect(response.message).toContain('boom')
+  })
+
   test('buildHelpResponse conditionally prints notice about HTTP x scheduled functions', () => {
     expect(withUserAgent('').message).toContain("it won't work in production")
     expect(withUserAgent(CLOCKWORK_USERAGENT).message).not.toContain("it won't work in production")

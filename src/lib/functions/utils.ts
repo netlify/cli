@@ -15,9 +15,16 @@ export const warnIfAwsSdkError = ({ error }: { error: Error | InvocationError | 
   }
 }
 
-export const formatLambdaError = (err: Error | InvocationError): string =>
-  chalk.red(
-    `${'errorType' in err ? err.errorType : 'Error'}: ${'errorMessage' in err ? err.errorMessage : err.message}`,
-  )
+// `err` is typed as `unknown` because functions can throw anything, e.g. a string, which `in` would throw on
+export const formatLambdaError = (err: unknown): string => {
+  if (typeof err !== 'object' || err === null) {
+    return chalk.red(`Error: ${String(err)}`)
+  }
+
+  const errorType = 'errorType' in err ? err.errorType : 'Error'
+  const errorMessage = 'errorMessage' in err ? err.errorMessage : 'message' in err ? err.message : ''
+
+  return chalk.red(`${String(errorType)}: ${String(errorMessage)}`)
+}
 
 export const styleFunctionName = (name: string): string => chalk.magenta(name)
