@@ -61,3 +61,49 @@ describe('EdgeFunctionsRegistryImpl.build() coalescing', () => {
     expect(state.buildCount).toBe(2)
   })
 })
+
+describe('EdgeFunctionsRegistryImpl.matchURLPath() percent-encoded paths', () => {
+  const createRegistryWithRoute = () => {
+    const registry = Object.create(EdgeFunctionsRegistryImpl.prototype) as EdgeFunctionsRegistryImpl
+    // `routes` and `manifest` are private; matchURLPath() only reads them, so
+    // setting them directly is enough to exercise it in isolation.
+    const registryInternals = registry as unknown as { routes: unknown[]; manifest: unknown }
+
+    // A route pattern as it would be compiled for `/admin/*`: written against
+    // the decoded path, same as it's authored in a project's routing config.
+    registryInternals.routes = [
+      {
+        function: 'admin-guard',
+        pattern: /^\/admin\/.*$/,
+        excluded_patterns: [],
+      },
+    ]
+    registryInternals.manifest = null
+
+    return registry
+  }
+
+  test('matches a route for the literal, unencoded path', () => {
+    const registry = createRegistryWithRoute()
+
+    const { functionNames } = registry.matchURLPath('/admin/secretpath', 'GET', {})
+
+    expect(functionNames).toEqual(['admin-guard'])
+  })
+
+  test('matches a route when the request path is percent-encoded', () => {
+    const registry = createRegistryWithRoute()
+
+    // "%61" is a percent-encoded "a": this requests the same logical path as
+    // /admin/secretpath, just spelled differently on the wire.
+    const { functionNames } = registry.matchURLPath('/%61dmin/secretpath', 'GET', {})
+
+    expect(functionNames).toEqual(['admin-guard'])
+  })
+
+  test('falls back to the raw path for malformed percent-encoding instead of throwing', () => {
+    const registry = createRegistryWithRoute()
+
+    expect(() => registry.matchURLPath('/admin/%', 'GET', {})).not.toThrow()
+  })
+})
