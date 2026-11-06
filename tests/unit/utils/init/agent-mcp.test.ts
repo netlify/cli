@@ -176,16 +176,14 @@ describe('setupAgentMcp', () => {
       expect(execaMock).toHaveBeenNthCalledWith(2, installed('claude'), claudeAdd('user'), expect.anything())
     })
 
-    test('appends to the Codex project config once the Codex CLI reports no Netlify server', async () => {
+    test('appends to the Codex project config without running the Codex CLI', async () => {
       await install('codex')
-      execaMock.mockResolvedValueOnce(codexListed())
       await mkdir(join(project, '.codex'))
       await writeFile(join(project, '.codex', 'config.toml'), 'model = "o3"\n')
 
       await expect(run({ CODEX_CI: '1' })).resolves.toMatchObject({ agents: { codex: 'added' } })
 
-      expect(execaMock).toHaveBeenCalledWith(installed('codex'), ['mcp', 'list', '--json'], expect.anything())
-      expect(execaMock).toHaveBeenCalledTimes(1)
+      expect(execaMock).not.toHaveBeenCalled()
       expect(await readFile(join(project, '.codex', 'config.toml'), 'utf8')).toBe(
         `model = "o3"\n\n[mcp_servers.netlify]\nurl = "${NETLIFY_MCP_URL}"\n`,
       )
@@ -197,7 +195,6 @@ describe('setupAgentMcp', () => {
 
     test('prints the Codex command instead when the appended table would not parse', async () => {
       await install('codex')
-      execaMock.mockResolvedValueOnce(codexListed())
       await mkdir(join(project, '.codex'))
       const inline = 'mcp_servers = { other = { url = "https://example.com/mcp" } }\n'
       await writeFile(join(project, '.codex', 'config.toml'), inline)
@@ -211,7 +208,6 @@ describe('setupAgentMcp', () => {
 
     test('says when Codex needs to trust the project before it reads the config', async () => {
       await install('codex')
-      execaMock.mockResolvedValueOnce(codexListed())
 
       await expect(run({ CODEX_CI: '1' })).resolves.toMatchObject({ agents: { codex: 'added' } })
 
@@ -464,7 +460,7 @@ describe('setupAgentMcp', () => {
       const outside = join(root, 'home-cursor')
       await mkdir(outside)
       await writeFile(join(outside, 'mcp.json'), '{}\n')
-      await symlink(outside, join(project, '.cursor'))
+      await symlink(outside, join(project, '.cursor'), 'junction')
 
       await expect(run({ CURSOR_AGENT: '1' })).resolves.toMatchObject({ agents: { cursor: 'failed' } })
 

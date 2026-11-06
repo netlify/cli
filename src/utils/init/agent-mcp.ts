@@ -550,6 +550,9 @@ const add = async (
     return 'unsupported'
   }
   const commands = agent.native?.scopes[scope]
+  if (scope === 'project' && agent.projectFile && !(commands && agent.native?.lookup)) {
+    return await addToProjectFile(agent, agent.projectFile, workingDir)
+  }
   const { executable, lookup } = await lookUpExisting(agent, env, workingDir, scope)
   if (lookup?.found === 'unknown') {
     warn(`Could not check ${agent.label} for an existing Netlify MCP server: ${describeFailure(lookup.run)}`)
@@ -558,9 +561,6 @@ const add = async (
   }
   if (lookup && isExisting(lookup)) {
     return reportExisting(agent, lookup)
-  }
-  if (scope === 'project' && agent.projectFile && !(commands && agent.native?.lookup)) {
-    return await addToProjectFile(agent, agent.projectFile, workingDir)
   }
   if (!commands || !executable || !agent.binary || !agent.native?.lookup) {
     printCommand(agent, scope, `To add the Netlify MCP server to ${agent.label} for ${where(scope)}, run`)
