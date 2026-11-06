@@ -34,6 +34,7 @@ interface ServerPayload {
   excluded_routes?: ServerResult['excludedRoutes']
   runtime_version?: ServerResult['runtimeVersion']
   scale?: ServerResult['scale']
+  access?: ServerResult['access']
 }
 
 type HashedFunctionFile = FunctionUploadFile & { hash: string; relname: string }
@@ -174,6 +175,7 @@ const trafficRulesConfig = (trafficRules?: TrafficRules) => {
 }
 
 const toFunctionConfigPayload = (func: FunctionResult) => ({
+  access: func.access,
   display_name: func.displayName,
   excluded_routes: func.excludedRoutes,
   generator: func.generator,
@@ -369,7 +371,7 @@ const hashServer = async (
     manifestCollectorCtor(servers, serverShaMap, { statusCb }),
   ])
 
-  const { excludedRoutes, instanceSize, region, routes, runtimeVersion, scale } = serverBundle
+  const { access, excludedRoutes, instanceSize, region, routes, runtimeVersion, scale } = serverBundle
   const server: ServerPayload = {
     sha: Object.values(servers)[0],
     ...(region === undefined ? {} : { region }),
@@ -378,6 +380,7 @@ const hashServer = async (
     ...(excludedRoutes === undefined ? {} : { excluded_routes: excludedRoutes }),
     ...(runtimeVersion === undefined ? {} : { runtime_version: runtimeVersion }),
     ...(scale === undefined ? {} : { scale }),
+    ...(access === undefined ? {} : { access }),
   }
 
   return { server, serverShaMap }
