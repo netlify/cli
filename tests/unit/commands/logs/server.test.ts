@@ -153,7 +153,6 @@ describe('fetchServerHistoricalLogs', () => {
   it('stops paging after 10,000 lines back with every line of the pages it read, and says so', async () => {
     const perPage = 500
     const maxPages = 1 + 10_000 / perPage
-    // Newest first, as the API pages: line 0 is the newest of all.
     let served = 0
     fetchMock.mockImplementation(() => {
       const pageIndex = served++

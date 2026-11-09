@@ -8,8 +8,8 @@ interface ServerLogLine {
   actor_id: string
 }
 
-// The API serves up to 500 lines a page. Paging stops 10,000 lines back, so a
-// long window doesn't page without end.
+// The API serves up to 500 lines a page. MAX_PAGES bounds the pages read, so
+// a long window doesn't page without end.
 const PER_PAGE = 500
 const MAX_PAGES = 1 + 10_000 / PER_PAGE
 
@@ -77,8 +77,7 @@ const fetchServerLogLines = async ({
   const lines: ServerLogLine[] = []
   const severity = severityFor(levels)
 
-  // Each page starts at the previous one's cursor, which reads only older
-  // lines. An API that sends no cursor pages by number.
+  // An API that sends no cursor is paged by number.
   let cursor: string | undefined
   for (let page = 1; page <= MAX_PAGES; page++) {
     const url = new URL(`${apiBase}/sites/${encodeURIComponent(siteId)}/observability/server/logs`)
