@@ -1,6 +1,6 @@
 {
   "name": "netlify-cli",
-  "version": "27.16.2",
+  "version": "27.16.3",
   "description": "Netlify command line tool",
   "keywords": [
     "api",
@@ -55,11 +55,11 @@
     "@fastify/static": "^10.0.0",
     "@inquirer/prompts": "^8.7.2",
     "@netlify/ai": "^1.0.2",
-    "@netlify/api": "^15.1.5",
+    "@netlify/api": "^15.1.6",
     "@netlify/blobs": "^11.1.7",
-    "@netlify/build": "^37.7.2",
+    "@netlify/build": "^37.7.6",
     "@netlify/build-info": "^11.3.1",
-    "@netlify/config": "^25.5.1",
+    "@netlify/config": "^25.6.2",
     "@netlify/dev": "^5.1.12",
     "@netlify/dev-utils": "^6.1.0",
     "@netlify/edge-bundler": "^16.2.0",
