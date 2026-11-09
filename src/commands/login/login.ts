@@ -1,6 +1,7 @@
 import { OptionValues } from 'commander'
 
 import { chalk, exit, getToken, log, logAndThrowError } from '../../utils/command-helpers.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import { TokenLocation } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
@@ -43,6 +44,15 @@ export const login = async (options: OptionValues, command: BaseCommand) => {
   if (accessToken && !options.new) {
     log(`Already logged in ${msg(location)}`)
     log()
+    // Agents run this when an older @netlify/mcp, which only reads config.json, says they're logged out
+    if (location === 'keychain' && !isInteractive()) {
+      log(
+        `If another tool says you're not logged in, it may not support tokens stored in your OS keychain yet. For the Netlify MCP server, update ${chalk.cyanBright(
+          '@netlify/mcp',
+        )}, then restart your agent or editor.`,
+      )
+      log()
+    }
     log(`Run ${chalk.cyanBright('netlify status')} for account details`)
     log()
     log(`or run ${chalk.cyanBright('netlify switch')} to switch accounts`)
