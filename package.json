@@ -56,11 +56,11 @@
     "@inquirer/prompts": "^8.7.2",
     "@netlify/ai": "^1.0.2",
     "@netlify/api": "^15.1.6",
-    "@netlify/blobs": "^11.1.7",
+    "@netlify/blobs": "^11.1.9",
     "@netlify/build": "^37.7.6",
     "@netlify/build-info": "^11.3.1",
     "@netlify/config": "^25.6.2",
-    "@netlify/dev": "^5.1.12",
+    "@netlify/dev": "^5.1.16",
     "@netlify/dev-utils": "^6.1.0",
     "@netlify/edge-bundler": "^16.2.0",
     "@netlify/edge-functions": "^4.0.3",
@@ -211,9 +211,6 @@
     "typescript-native": "npm:typescript@~7.0.2",
     "verdaccio": "^6.3.2",
     "vitest": "^5.0.0"
-  },
-  "overrides": {
-    "@netlify/dev-utils": "$@netlify/dev-utils"
   },
   "engines": {
     "node": ">=22.13.0"
