@@ -26,7 +26,7 @@ export const STATUS_ERROR_CODES = {
 const formatTokenStorage = (location: TokenLocation): string => {
   switch (location) {
     case 'keychain':
-      return 'native secure storage'
+      return "operating system's keychain"
     case 'config':
       return `plaintext config file (${getLegacyConfigFilePath()})`
     case 'env':

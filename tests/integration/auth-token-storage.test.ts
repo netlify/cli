@@ -365,7 +365,7 @@ describe('migration prompt interactive flow', () => {
           env: isolatedEnv(apiUrl),
           extendEnv: false,
         })) as string
-        expect(stdout).toContain('native secure storage')
+        expect(stdout).toContain("operating system's keychain")
       })
     },
   )

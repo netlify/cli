@@ -8,7 +8,8 @@ export const createLoginCommand = (program: BaseCommand) =>
     .command('login')
     .description(
       `Login to your Netlify account
-Opens a web browser to acquire an OAuth token, which is stored in your OS keychain when available.
+Opens a web browser to acquire an OAuth token, which is stored in your operating system's keychain
+(macOS Keychain, Windows Credential Manager or Linux Secret Service) when available.
 To store it in a plaintext config file instead, set NETLIFY_USE_LEGACY_AUTH_STORAGE=1. This is not recommended.`,
     )
     .option('--new', 'Login to new Netlify account')

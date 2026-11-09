@@ -14,7 +14,7 @@ const msg = function (location: TokenLocation) {
     case 'config':
       return 'via netlify config on your machine'
     case 'keychain':
-      return 'via your OS keychain (secure storage)'
+      return "via your operating system's keychain"
     default:
       return ''
   }
@@ -47,7 +47,7 @@ export const login = async (options: OptionValues, command: BaseCommand) => {
     // Agents run this when an older @netlify/mcp, which only reads config.json, says they're logged out
     if (location === 'keychain' && !isInteractive()) {
       log(
-        `If another tool says you're not logged in, it may not support tokens stored in your OS keychain yet. For the Netlify MCP server, update ${chalk.cyanBright(
+        `If another tool says you're not logged in, it may not support tokens stored in your operating system's keychain yet. For the Netlify MCP server, update ${chalk.cyanBright(
           '@netlify/mcp',
         )}, then restart your agent or editor.`,
       )

@@ -27,7 +27,7 @@ const warnKeychainReadFailed = (error: Error): void => {
   if (keychainReadFailureWarned) return
   keychainReadFailureWarned = true
   warn(
-    `Could not read your Netlify auth token from the OS keychain: ${error.message}
+    `Could not read your Netlify auth token from your keychain: ${error.message}
 If your keychain is locked or access was denied, unlock it or allow access and try again, or run ${chalk.cyanBright(
       'netlify login --new',
     )}. In scripts, CI or agents, set ${chalk.cyanBright('NETLIFY_AUTH_TOKEN')} instead.`,
@@ -60,7 +60,7 @@ const attemptMigration = async (token: string, env: NodeJS.ProcessEnv): Promise<
 
   log()
   log(`Your Netlify auth token is stored in plaintext at ${chalk.cyanBright(getLegacyConfigFilePath())}.`)
-  log(`The CLI can move it to your OS keychain, which is more secure. Your OS may ask you to allow access.`)
+  log(`The CLI can move it to your operating system's keychain, which is more secure. You may be asked to allow access.`)
   log()
   let confirmed: boolean
   try {
@@ -86,7 +86,7 @@ const attemptMigration = async (token: string, env: NodeJS.ProcessEnv): Promise<
   if (write.status === 'error') {
     globalConfig.set(skipMigrationKey(userId), true)
     warn(
-      `Could not save your token to the OS keychain: ${write.error.message}
+      `Could not save your token to your keychain: ${write.error.message}
 It stays in plaintext and the CLI won't ask again. To retry, unlock your keychain and run ${chalk.cyanBright(
         'netlify login --new',
       )}.`,
@@ -95,7 +95,7 @@ It stays in plaintext and the CLI won't ask again. To retry, unlock your keychai
     return false
   }
   globalConfig.set(`users.${userId}.auth.token`, undefined)
-  log(chalk.green('Auth token moved to the OS keychain.'))
+  log(chalk.green('Auth token moved to your keychain.'))
   trackStored('keychain', true)
   return true
 }
@@ -133,7 +133,7 @@ export const writeAuthTokenForStorage = async (
   }
 
   warn(
-    `Could not save your auth token to the OS keychain: ${write.error.message}
+    `Could not save your auth token to your keychain: ${write.error.message}
 It was saved in plaintext at ${getLegacyConfigFilePath()} instead. To retry, unlock your keychain and run ${chalk.cyanBright(
       'netlify login --new',
     )}. To always use plaintext storage and hide this warning, set ${chalk.cyanBright(`${LEGACY_STORAGE_ENV_VAR}=1`)}.`,
