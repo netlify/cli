@@ -150,11 +150,21 @@ describe('fetchServerHistoricalLogs', () => {
     expect(entries.map((entry) => entry.message)).toEqual(['written first', 'written second'])
   })
 
-  it('stops paging after 10,000 lines back, and says so', async () => {
-    const maxPages = 1 + 10_000 / 500
-    fetchMock.mockImplementation(() => Promise.resolve(page([line(from + 1, 'more')], true, 'older')))
+  it('stops paging after 10,000 lines back with every line of the pages it read, and says so', async () => {
+    const perPage = 500
+    const maxPages = 1 + 10_000 / perPage
+    // Newest first, as the API pages: line 0 is the newest of all.
+    let served = 0
+    fetchMock.mockImplementation(() => {
+      const pageIndex = served++
+      const logs = Array.from({ length: perPage }, (_, i) => {
+        const n = pageIndex * perPage + i
+        return line(to - n, `line ${n.toString()}`)
+      })
+      return Promise.resolve(page(logs, true, `after-page-${(pageIndex + 1).toString()}`))
+    })
 
-    const { truncated } = await fetchServerHistoricalLogs({
+    const { entries, truncated } = await fetchServerHistoricalLogs({
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
@@ -162,7 +172,15 @@ describe('fetchServerHistoricalLogs', () => {
       to,
     })
 
-    expect(fetchMock).toHaveBeenCalledTimes(maxPages)
+    expect(requestedUrls().map((url) => url.searchParams.get('cursor'))).toEqual([
+      null,
+      ...Array.from({ length: maxPages - 1 }, (_, i) => `after-page-${(i + 1).toString()}`),
+    ])
+    const read = maxPages * perPage
+    // Oldest first, with no line missing or repeated, across every page boundary.
+    expect(entries.map((entry) => entry.message)).toEqual(
+      Array.from({ length: read }, (_, i) => `line ${(read - 1 - i).toString()}`),
+    )
     expect(truncated).toBe(true)
   })
 
