@@ -8,7 +8,8 @@ interface ServerLogLine {
   actor_id: string
 }
 
-// The API serves up to 500 lines a page and stops paging 10,000 lines back.
+// The API serves up to 500 lines a page. MAX_PAGES bounds the pages read, so
+// a long window doesn't page without end.
 const PER_PAGE = 500
 const MAX_PAGES = 1 + 10_000 / PER_PAGE
 
@@ -76,11 +77,17 @@ const fetchServerLogLines = async ({
   const lines: ServerLogLine[] = []
   const severity = severityFor(levels)
 
+  // An API that sends no cursor is paged by number.
+  let cursor: string | undefined
   for (let page = 1; page <= MAX_PAGES; page++) {
     const url = new URL(`${apiBase}/sites/${encodeURIComponent(siteId)}/observability/server/logs`)
     url.searchParams.set('from_ts', String(from))
     url.searchParams.set('to_ts', String(to))
-    url.searchParams.set('page', String(page))
+    if (cursor) {
+      url.searchParams.set('cursor', cursor)
+    } else if (page > 1) {
+      url.searchParams.set('page', String(page))
+    }
     url.searchParams.set('per_page', String(PER_PAGE))
     if (severity) {
       url.searchParams.set('severity', severity)
@@ -95,11 +102,12 @@ const fetchServerLogLines = async ({
       throw new ServerLogsRequestError(response.status, response.statusText)
     }
 
-    const body = (await response.json()) as { logs?: ServerLogLine[]; has_next_page?: boolean }
+    const body = (await response.json()) as { logs?: ServerLogLine[]; has_next_page?: boolean; next_cursor?: string }
     lines.push(...(body.logs ?? []))
     if (!body.has_next_page) {
       return { lines: lines.reverse(), truncated: false }
     }
+    cursor = body.next_cursor
   }
 
   return { lines: lines.reverse(), truncated: true }

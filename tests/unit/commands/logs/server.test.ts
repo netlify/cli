@@ -24,8 +24,10 @@ const line = (timestamp: number, body: string, overrides: Partial<ServerLogLine>
   ...overrides,
 })
 
-const page = (logs: ServerLogLine[], hasNextPage = false) =>
-  new Response(JSON.stringify({ logs, page: 1, has_next_page: hasNextPage }), { status: 200 })
+const page = (logs: ServerLogLine[], hasNextPage = false, nextCursor?: string) =>
+  new Response(JSON.stringify({ logs, page: 1, has_next_page: hasNextPage, next_cursor: nextCursor }), {
+    status: 200,
+  })
 
 const fetchMock = vi.fn<typeof fetch>()
 const requestedUrls = () => fetchMock.mock.calls.map(([input]) => new URL(input as string))
@@ -65,7 +67,14 @@ describe('fetchServerHistoricalLogs', () => {
   ])('asks the API for severity $severity when the levels are $levels', async ({ levels, severity }) => {
     fetchMock.mockResolvedValueOnce(page([]))
 
-    await fetchServerHistoricalLogs({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, from, to, levels })
+    await fetchServerHistoricalLogs({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      from,
+      to,
+      levels,
+    })
 
     expect(requestedUrls()[0].searchParams.get('severity')).toBe(severity)
   })
@@ -88,7 +97,27 @@ describe('fetchServerHistoricalLogs', () => {
     ])
   })
 
-  it('follows has_next_page until the last page', async () => {
+  it('follows next_cursor until the last page', async () => {
+    fetchMock
+      .mockResolvedValueOnce(page([line(from + 3, 'third')], true, 'after-third'))
+      .mockResolvedValueOnce(page([line(from + 2, 'second')], true, 'after-second'))
+      .mockResolvedValueOnce(page([line(from + 1, 'first')]))
+
+    const { entries, truncated } = await fetchServerHistoricalLogs({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      from,
+      to,
+    })
+
+    expect(requestedUrls().map((url) => url.searchParams.get('cursor'))).toEqual([null, 'after-third', 'after-second'])
+    expect(requestedUrls().every((url) => !url.searchParams.has('page'))).toBe(true)
+    expect(entries.map((entry) => entry.message)).toEqual(['first', 'second', 'third'])
+    expect(truncated).toBe(false)
+  })
+
+  it('pages by number when the API sends no cursor', async () => {
     fetchMock
       .mockResolvedValueOnce(page([line(from + 3, 'third')], true))
       .mockResolvedValueOnce(page([line(from + 2, 'second')], true))
@@ -102,7 +131,7 @@ describe('fetchServerHistoricalLogs', () => {
       to,
     })
 
-    expect(requestedUrls().map((url) => url.searchParams.get('page'))).toEqual(['1', '2', '3'])
+    expect(requestedUrls().map((url) => url.searchParams.get('page'))).toEqual([null, '2', '3'])
     expect(entries.map((entry) => entry.message)).toEqual(['first', 'second', 'third'])
     expect(truncated).toBe(false)
   })
@@ -121,11 +150,20 @@ describe('fetchServerHistoricalLogs', () => {
     expect(entries.map((entry) => entry.message)).toEqual(['written first', 'written second'])
   })
 
-  it('stops paging where the API stops serving older pages, and says so', async () => {
-    const maxPages = 1 + 10_000 / 500
-    fetchMock.mockImplementation(() => Promise.resolve(page([line(from + 1, 'more')], true)))
+  it('stops paging after 10,000 lines back with every line of the pages it read, and says so', async () => {
+    const perPage = 500
+    const maxPages = 1 + 10_000 / perPage
+    let served = 0
+    fetchMock.mockImplementation(() => {
+      const pageIndex = served++
+      const logs = Array.from({ length: perPage }, (_, i) => {
+        const n = pageIndex * perPage + i
+        return line(to - n, `line ${n.toString()}`)
+      })
+      return Promise.resolve(page(logs, true, `after-page-${(pageIndex + 1).toString()}`))
+    })
 
-    const { truncated } = await fetchServerHistoricalLogs({
+    const { entries, truncated } = await fetchServerHistoricalLogs({
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
@@ -133,7 +171,15 @@ describe('fetchServerHistoricalLogs', () => {
       to,
     })
 
-    expect(fetchMock).toHaveBeenCalledTimes(maxPages)
+    expect(requestedUrls().map((url) => url.searchParams.get('cursor'))).toEqual([
+      null,
+      ...Array.from({ length: maxPages - 1 }, (_, i) => `after-page-${(i + 1).toString()}`),
+    ])
+    const read = maxPages * perPage
+    // Oldest first, with no line missing or repeated, across every page boundary.
+    expect(entries.map((entry) => entry.message)).toEqual(
+      Array.from({ length: read }, (_, i) => `line ${(read - 1 - i).toString()}`),
+    )
     expect(truncated).toBe(true)
   })
 
