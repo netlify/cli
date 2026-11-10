@@ -6,6 +6,7 @@ import type { LogEntry } from '../../../../src/commands/logs/log-api.js'
 const API_BASE = 'https://api.example.test/api/v1'
 const SITE_ID = 'site-1'
 const ACCESS_TOKEN = 'token-1'
+const BRANCHES = ['main', '__nf-no-branch-production-traffic']
 const POLL_INTERVAL_MS = 2_000
 const LOOK_BACK_MS = 10_000
 
@@ -49,13 +50,21 @@ describe('fetchServerHistoricalLogs', () => {
   it('requests the window from the site observability endpoint with the access token', async () => {
     fetchMock.mockResolvedValueOnce(page([]))
 
-    await fetchServerHistoricalLogs({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, from, to })
+    await fetchServerHistoricalLogs({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
+      from,
+      to,
+    })
 
     const [url] = requestedUrls()
     expect(url.pathname).toBe(`/api/v1/sites/${SITE_ID}/observability/server/logs`)
     expect(url.searchParams.get('from_ts')).toBe(String(from))
     expect(url.searchParams.get('to_ts')).toBe(String(to))
     expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({ Authorization: `Bearer ${ACCESS_TOKEN}` })
+    expect(url.searchParams.getAll('branch')).toEqual(BRANCHES)
   })
 
   it.each([
@@ -71,6 +80,7 @@ describe('fetchServerHistoricalLogs', () => {
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
       from,
       to,
       levels,
@@ -88,6 +98,7 @@ describe('fetchServerHistoricalLogs', () => {
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
       from,
       to,
     })
@@ -107,6 +118,7 @@ describe('fetchServerHistoricalLogs', () => {
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
       from,
       to,
     })
@@ -127,6 +139,7 @@ describe('fetchServerHistoricalLogs', () => {
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
       from,
       to,
     })
@@ -143,6 +156,7 @@ describe('fetchServerHistoricalLogs', () => {
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
       from,
       to,
     })
@@ -167,6 +181,7 @@ describe('fetchServerHistoricalLogs', () => {
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
       from,
       to,
     })
@@ -187,7 +202,14 @@ describe('fetchServerHistoricalLogs', () => {
     fetchMock.mockResolvedValueOnce(new Response('', { status: 403, statusText: 'Forbidden' }))
 
     await expect(
-      fetchServerHistoricalLogs({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, from, to }),
+      fetchServerHistoricalLogs({
+        apiBase: API_BASE,
+        siteId: SITE_ID,
+        accessToken: ACCESS_TOKEN,
+        branches: BRANCHES,
+        from,
+        to,
+      }),
     ).rejects.toThrow('Failed to fetch server logs: 403 Forbidden')
   })
 })
@@ -202,7 +224,13 @@ describe('streamServer', () => {
   it('first polls the look-back window up to now', async () => {
     fetchMock.mockResolvedValue(page([]))
 
-    const stop = streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry: vi.fn() })
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
+      onEntry: vi.fn(),
+    })
     await vi.advanceTimersByTimeAsync(0)
     stop()
 
@@ -218,6 +246,7 @@ describe('streamServer', () => {
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
       levels: ['error'],
       onEntry: vi.fn(),
     })
@@ -227,13 +256,35 @@ describe('streamServer', () => {
     expect(requestedUrls().map((url) => url.searchParams.get('severity'))).toEqual(['error', 'error'])
   })
 
+  it('asks the API for the branches on every poll', async () => {
+    fetchMock.mockResolvedValue(page([]))
+
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: ['feature'],
+      onEntry: vi.fn(),
+    })
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
+    stop()
+
+    expect(requestedUrls().map((url) => url.searchParams.getAll('branch'))).toEqual([['feature'], ['feature']])
+  })
+
   it('emits each line once, oldest first, across overlapping polls', async () => {
     fetchMock
       .mockResolvedValueOnce(page([line(start - 1, 'b'), line(start - 2, 'a')]))
       .mockResolvedValueOnce(page([line(start + 1, 'c'), line(start - 1, 'b')]))
     const onEntry = vi.fn<(entry: LogEntry) => void>()
 
-    const stop = streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry })
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
+      onEntry,
+    })
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
     stop()
 
@@ -244,7 +295,13 @@ describe('streamServer', () => {
     fetchMock.mockResolvedValueOnce(page([line(start, 'written second'), line(start, 'written first')]))
     const onEntry = vi.fn<(entry: LogEntry) => void>()
 
-    const stop = streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry })
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
+      onEntry,
+    })
     await vi.advanceTimersByTimeAsync(0)
     stop()
 
@@ -255,7 +312,13 @@ describe('streamServer', () => {
     const newest = start + 500
     fetchMock.mockResolvedValueOnce(page([line(newest, 'latest')])).mockResolvedValue(page([]))
 
-    const stop = streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry: vi.fn() })
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
+      onEntry: vi.fn(),
+    })
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
     stop()
 
@@ -268,7 +331,13 @@ describe('streamServer', () => {
       .mockResolvedValueOnce(page([line(start - 1, 'same'), line(start - 1, 'same')]))
     const onEntry = vi.fn<(entry: LogEntry) => void>()
 
-    const stop = streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry })
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
+      onEntry,
+    })
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
     stop()
 
@@ -288,6 +357,7 @@ describe('streamServer', () => {
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
       onEntry: vi.fn(),
       onError,
     })
@@ -316,6 +386,7 @@ describe('streamServer', () => {
       apiBase: API_BASE,
       siteId: SITE_ID,
       accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
       onEntry: vi.fn(),
       onError,
     })
@@ -335,7 +406,13 @@ describe('streamServer', () => {
       .mockResolvedValueOnce(page([line(start, 'recovered')]))
     const onEntry = vi.fn<(entry: LogEntry) => void>()
 
-    const stop = streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry })
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
+      onEntry,
+    })
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
     stop()
 
@@ -346,7 +423,14 @@ describe('streamServer', () => {
     fetchMock.mockResolvedValue(new Response('', { status }))
     const onError = vi.fn<(error: Error) => void>()
 
-    streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry: vi.fn(), onError })
+    streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
+      onEntry: vi.fn(),
+      onError,
+    })
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 3)
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -357,7 +441,13 @@ describe('streamServer', () => {
   it('stops polling once stopped', async () => {
     fetchMock.mockResolvedValue(page([]))
 
-    const stop = streamServer({ apiBase: API_BASE, siteId: SITE_ID, accessToken: ACCESS_TOKEN, onEntry: vi.fn() })
+    const stop = streamServer({
+      apiBase: API_BASE,
+      siteId: SITE_ID,
+      accessToken: ACCESS_TOKEN,
+      branches: BRANCHES,
+      onEntry: vi.fn(),
+    })
     await vi.advanceTimersByTimeAsync(0)
     stop()
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 3)

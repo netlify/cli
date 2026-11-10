@@ -1,6 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logAndThrowError, logError, netlifyCommand, warn } from '../../utils/command-helpers.js'
+import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 
 import {
@@ -9,7 +10,7 @@ import {
   formatJsonLine,
   formatLogLine,
   parseTimeValue,
-  resolveDeployIdFromUrl,
+  resolveDeployFromUrl,
   SOURCE_INDICATORS,
   SOURCE_LABELS,
 } from './log-api.js'
@@ -38,6 +39,21 @@ type Source = 'functions' | 'edge-functions' | 'deploy' | 'server'
 const VALID_SOURCES: Source[] = ['functions', 'edge-functions', 'deploy', 'server']
 const DEFAULT_SINCE = '10m'
 const DEPLOY_STREAM_IDLE_CLOSE_MS = 3_000
+
+// Server logs from a deploy without a branch are recorded under this branch.
+const NO_BRANCH_PRODUCTION = '__nf-no-branch-production-traffic'
+
+// getProductionBranches returns the branches that make up production, the same
+// ones the Netlify UI shows as a server's production logs.
+const getProductionBranches = (siteInfo: SiteInfo): string[] => {
+  const publishedBranch = siteInfo.published_deploy?.branch
+  const branches = siteInfo.build_settings?.provider
+    ? [siteInfo.build_settings.repo_branch, publishedBranch]
+    : // CLI deploys can have an empty branch.
+      [publishedBranch?.length ? publishedBranch : 'main']
+
+  return [...new Set([...branches.filter((branch): branch is string => Boolean(branch)), NO_BRANCH_PRODUCTION])]
+}
 
 const parseSources = (rawSources: string[]): Source[] => {
   const sources: Source[] = []
@@ -171,21 +187,16 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
     }
     if (sources.length === 0) {
       sources = ['functions', 'edge-functions']
-      // Server logs can't be filtered by deploy, so a deploy filter leaves them out.
-      if (siteInfo.published_deploy?.server && !options.deployId && !options.url) {
+      if (siteInfo.published_deploy?.server) {
         sources.push('server')
       }
     }
   }
-
-  if (sources.includes('server') && (options.deployId || options.url)) {
-    return logAndThrowError(
-      'Server logs cannot be filtered by deploy. Remove --deploy-id and --url, or the server source.',
-    )
-  }
+  const serverByDefault = !rawSources && sources.includes('server')
 
   let deployId: string | undefined
   let deployTargeted = false
+  let urlBranch: string | undefined
   if (options.deployId) {
     const explicitDeployId = options.deployId.trim()
     if (!DEPLOY_ID_RE.test(explicitDeployId)) {
@@ -198,7 +209,9 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
     deployTargeted = true
   } else if (options.url) {
     try {
-      deployId = await resolveDeployIdFromUrl(options.url, client, siteId, siteInfo)
+      const resolved = await resolveDeployFromUrl(options.url, client, siteId, siteInfo)
+      deployId = resolved.deployId
+      urlBranch = resolved.branch
       deployTargeted = deployId !== undefined
     } catch (error) {
       const message = (error as Error).message
@@ -214,6 +227,20 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
       return logAndThrowError(message)
     }
   }
+
+  // Server logs can be filtered by branch, but not by deploy.
+  if (sources.includes('server') && deployTargeted && !urlBranch) {
+    if (serverByDefault) {
+      sources = sources.filter((source) => source !== 'server')
+    } else {
+      return logAndThrowError(
+        options.deployId
+          ? 'Server logs cannot be filtered by deploy. Remove --deploy-id or the server source.'
+          : 'Server logs cannot be filtered by deploy. Use a branch URL instead of a deploy permalink, or remove the server source.',
+      )
+    }
+  }
+  const serverBranches = urlBranch ? [urlBranch] : getProductionBranches(siteInfo)
 
   const now = Date.now()
   let historicalRange: { from: number; to: number } | undefined
@@ -272,6 +299,7 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
       from: historicalRange.from,
       to: historicalRange.to,
       levelsToPrint,
+      serverBranches,
       json,
       timeDescription: humanizeTimeRange(sinceValue, untilValue),
     })
@@ -292,6 +320,7 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
     functionNames,
     edgeFunctionNames,
     levelsToPrint,
+    serverBranches,
     json,
   })
 }
@@ -307,6 +336,7 @@ const runHistoricalMode = async ({
   from,
   to,
   levelsToPrint,
+  serverBranches,
   json,
   timeDescription,
 }: {
@@ -320,6 +350,7 @@ const runHistoricalMode = async ({
   from: number
   to: number
   levelsToPrint: string[]
+  serverBranches: string[]
   json: boolean
   timeDescription: string
 }) => {
@@ -377,6 +408,7 @@ const runHistoricalMode = async ({
       from,
       to,
       levels: levelsToPrint,
+      branches: serverBranches,
     })
     allEntries.push(...entries)
     serverLogsTruncated = truncated
@@ -419,6 +451,7 @@ export const runFollowMode = async ({
   functionNames,
   edgeFunctionNames,
   levelsToPrint,
+  serverBranches,
   json,
 }: {
   sources: Source[]
@@ -430,6 +463,7 @@ export const runFollowMode = async ({
   functionNames: string[]
   edgeFunctionNames: string[]
   levelsToPrint: string[]
+  serverBranches: string[]
   json: boolean
 }) => {
   const assignColor = createColorAssigner()
@@ -485,6 +519,7 @@ export const runFollowMode = async ({
       siteId,
       accessToken,
       levels: levelsToPrint,
+      branches: serverBranches,
       onEntry,
       onError: logError,
     })
