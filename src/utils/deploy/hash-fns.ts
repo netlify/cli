@@ -112,21 +112,15 @@ const getServerBundle = async ({
   packagePath,
   rootDir,
   serverConfig,
-  serverEnabled,
   serverManifestPath,
   tmpDir,
 }: {
   packagePath?: string | undefined
   rootDir?: string | undefined
   serverConfig?: NetlifyServerConfig | undefined
-  serverEnabled?: boolean | undefined
   serverManifestPath?: string | undefined
   tmpDir: string
 }): Promise<ServerResult | undefined> => {
-  if (!serverEnabled) {
-    return undefined
-  }
-
   if (serverManifestPath) {
     try {
       const { server, timestamp } = JSON.parse(await readFile(serverManifestPath, 'utf-8')) as {
@@ -199,7 +193,6 @@ const hashFns = async (
     packagePath,
     rootDir,
     serverConfig,
-    serverEnabled,
     serverManifestPath,
     skipFunctionsCache,
     statusCb,
@@ -212,7 +205,6 @@ const hashFns = async (
     packagePath?: string | undefined
     rootDir?: string | undefined
     serverConfig?: NetlifyServerConfig | undefined
-    serverEnabled?: boolean | undefined
     serverManifestPath?: string | undefined
     skipFunctionsCache?: boolean | undefined
     statusCb: StatusCallback
@@ -227,12 +219,6 @@ const hashFns = async (
   server?: ServerPayload | undefined
   serverShaMap?: Record<string, ServerUploadFile[]> | undefined
 }> => {
-  // Exit early if there is nothing to bundle. A site can have a server without
-  // any functions directory.
-  if (directories.length === 0 && !serverEnabled) {
-    return { functions: {}, functionsWithNativeModules: [] }
-  }
-
   const [functionZips, serverBundle] = await Promise.all([
     directories.length === 0
       ? []
@@ -246,8 +232,12 @@ const hashFns = async (
           statusCb,
           tmpDir,
         }),
-    getServerBundle({ packagePath, rootDir, serverConfig, serverEnabled, serverManifestPath, tmpDir }),
+    getServerBundle({ packagePath, rootDir, serverConfig, serverManifestPath, tmpDir }),
   ])
+
+  if (directories.length === 0 && serverBundle === undefined) {
+    return { functions: {}, functionsWithNativeModules: [] }
+  }
 
   // ZISI's in-memory FunctionResult only nests bootstrap/runtime version into
   // buildData when writing the manifest cache. Reconstruct it for direct-zip paths.

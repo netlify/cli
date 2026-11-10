@@ -12,8 +12,6 @@ import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.js'
 // only test the error surface.
 const unsupportedNodeVersion = Number.parseInt(process.versions.node) < 24
 
-const env = { EXPERIMENTAL_NETLIFY_SERVER: 'true' }
-
 const withServerEntry = (builder: SiteBuilder): SiteBuilder =>
   builder.withContentFile({
     path: 'netlify/server/index.mjs',
@@ -84,10 +82,8 @@ const withServerEntry = (builder: SiteBuilder): SiteBuilder =>
   })
 
 describe.concurrent('command/dev Netlify Server', () => {
-  test('is inert without the opt-in', async (t) => {
+  test('is inert without a server entry', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      withServerEntry(builder)
-
       await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
@@ -98,13 +94,13 @@ describe.concurrent('command/dev Netlify Server', () => {
     })
   })
 
-  test.skipIf(unsupportedNodeVersion)('serves every path from the server when enabled', async (t) => {
+  test.skipIf(unsupportedNodeVersion)('serves every path from the server', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       withServerEntry(builder)
 
       await builder.build()
 
-      await withDevServer({ cwd: builder.directory, env }, async (server) => {
+      await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/some/deep/path?value=1`)
 
         t.expect(response.status).toBe(200)
@@ -125,7 +121,7 @@ describe.concurrent('command/dev Netlify Server', () => {
 
       await builder.build()
 
-      await withDevServer({ cwd: builder.directory, env }, async (server) => {
+      await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/submit`, {
           body: 'name=netlify',
           headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -156,7 +152,7 @@ describe.concurrent('command/dev Netlify Server', () => {
 
       await builder.build()
 
-      await withDevServer({ cwd: builder.directory, env }, async (server) => {
+      await withDevServer({ cwd: builder.directory }, async (server) => {
         const staticResponse = await fetch(`${server.url}/asset.txt`)
 
         t.expect(await staticResponse.text()).toBe('from static file')
@@ -182,7 +178,7 @@ describe.concurrent('command/dev Netlify Server', () => {
 
       await builder.build()
 
-      await withDevServer({ cwd: builder.directory, env }, async (server) => {
+      await withDevServer({ cwd: builder.directory }, async (server) => {
         const functionResponse = await fetch(`${server.url}/fn`)
 
         t.expect(await functionResponse.text()).toBe('from-function')
@@ -201,7 +197,7 @@ describe.concurrent('command/dev Netlify Server', () => {
 
       await builder.build()
 
-      await withDevServer({ cwd: builder.directory, env }, async (server) => {
+      await withDevServer({ cwd: builder.directory }, async (server) => {
         const socket = new WebSocket(`ws://localhost:${String(server.port)}/ws`)
 
         await new Promise((resolve, reject) => {
@@ -230,7 +226,7 @@ describe.concurrent('command/dev Netlify Server', () => {
 
       await builder.build()
 
-      await withDevServer({ cwd: builder.directory, env }, async (server) => {
+      await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/some/path`)
 
         t.expect(response.status).toBe(500)
