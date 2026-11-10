@@ -13,6 +13,7 @@ import {
   type SkillActionRecord,
   type SkillsSyncResult,
   describeSync,
+  failedSkillNames,
   fetchSkillsManifestIfChanged,
   recordSync,
   resolveSkillsHost,
@@ -155,11 +156,13 @@ export const refreshAgentSkills = async ({
     results.push({ directory, actions })
   }
 
-  const failed = results.some(({ actions }) => actions.some(({ action }) => action === 'failed'))
   const changes = results
     .map(({ directory, actions }) => ({ directory, actions: actions.filter(isChange) }))
     .filter(({ actions }) => actions.length > 0)
-  await recordSync(repositoryRoot, manifest, failed ? null : etag, changes)
+  await recordSync(repositoryRoot, manifest, etag, {
+    failed: failedSkillNames(results.flatMap(({ actions }) => actions)),
+    notice: changes,
+  })
   return changes
 }
 

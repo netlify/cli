@@ -795,23 +795,27 @@ const logSync = (directory: string, result: SkillsSyncResult, reset: boolean): v
 
 /**
  * Records a finished sync in the project's skills state, so a background refresh compares against
- * it. `etag` is null when the sync had failures, which makes the next refresh download the manifest
- * again. Never throws.
+ * it. Skills in `failed` are left out of the known skills, so a later refresh still adds them, and
+ * any failure drops the ETag, so that refresh downloads the manifest again. Never throws.
  */
 export const recordSync = async (
   repositoryRoot: string,
   manifest: SkillsManifest,
   etag: string | null,
-  notice: SkillsSyncResult[] = [],
+  { failed = [], notice = [] }: { failed?: string[]; notice?: SkillsSyncResult[] } = {},
 ): Promise<void> => {
+  const failedNames = new Set(failed)
+  const settled = manifest.skills.filter(({ name }) => !failedNames.has(name))
   try {
     await updateAgentSkillsState(repositoryRoot, (state) => {
       const next: AgentSkillsState = {
         ...state,
         checkedAt: Date.now(),
-        knownSkills: [...new Set([...(state.knownSkills ?? []), ...manifestSkillNames(manifest)])].sort(),
+        knownSkills: [
+          ...new Set([...(state.knownSkills ?? []), ...manifestSkillNames({ ...manifest, skills: settled })]),
+        ].sort(),
       }
-      if (etag) {
+      if (etag && failedNames.size === 0) {
         next.etag = etag
       } else {
         delete next.etag
@@ -825,6 +829,9 @@ export const recordSync = async (
     // A missing record only means the next refresh downloads the manifest again.
   }
 }
+
+export const failedSkillNames = (actions: SkillActionRecord[]): string[] =>
+  actions.filter(({ action }) => action === 'failed').map(({ name }) => name)
 
 export interface AgentSkillsSetupSummary {
   installed: boolean
@@ -855,7 +862,7 @@ export const setupAgentSkills = async ({
       logSync(directory, result, reset)
     }
     const summary = summarize(actions)
-    await recordSync(workingDir, manifest, summary.failed === 0 ? etag : null)
+    await recordSync(workingDir, manifest, etag, { failed: failedSkillNames(actions) })
     return {
       installed: summary.current + summary.added + summary.updated + summary.reset + summary.renamed + summary.kept > 0,
       directories,

@@ -317,6 +317,31 @@ describe('agent skills background refresh', () => {
         '# functions v2\n',
       )
     })
+
+    test('adds a newly published skill on a later refresh when its download failed', async () => {
+      const { files } = host([FUNCTIONS, CACHING], '"v2"')
+      files.delete('/skills/netlify-caching/SKILL.md')
+      await writeSkill(claudeSkills, 'netlify-functions', FUNCTIONS.files)
+      await writeState(projectDir, { etag: '"v1"', knownSkills: ['netlify-blobs', 'netlify-functions'] })
+
+      await refreshAgentSkills({ repositoryRoot: projectDir, env: ENV })
+
+      await expect(skillNames(claudeSkills)).resolves.toEqual(['netlify-functions'])
+      const state = await readAgentSkillsState(projectDir)
+      expect(state.knownSkills).toEqual(['netlify-blobs', 'netlify-functions'])
+      expect(state).not.toHaveProperty('etag')
+
+      host([FUNCTIONS, CACHING], '"v2"')
+      vi.mocked(fetch).mockClear()
+      await refreshAgentSkills({ repositoryRoot: projectDir, env: ENV })
+
+      expect(conditionalHeaders()[0]).toBeNull()
+      await expect(skillNames(claudeSkills)).resolves.toEqual(['netlify-caching', 'netlify-functions'])
+      await expect(readAgentSkillsState(projectDir)).resolves.toMatchObject({
+        etag: '"v2"',
+        knownSkills: ['netlify-blobs', 'netlify-caching', 'netlify-functions'],
+      })
+    })
   })
 
   describe('showAgentSkillsRefreshNotice', () => {
@@ -354,5 +379,23 @@ describe('agent skills background refresh', () => {
     vi.mocked(fetch).mockClear()
     await expect(refreshAgentSkills({ repositoryRoot: projectDir, env: ENV })).resolves.toEqual([])
     expect(requestedPaths()).toEqual(['/manifest.json'])
+  })
+
+  test('a skill that failed to download during setupAgentSkills is added by a later refresh', async () => {
+    const { files } = host([FUNCTIONS, BLOBS], '"v2"')
+    files.delete('/skills/netlify-blobs/SKILL.md')
+    await mkdir(join(projectDir, '.claude'))
+
+    await setupAgentSkills({ workingDir: projectDir, env: ENV })
+
+    await expect(skillNames(claudeSkills)).resolves.toEqual(['netlify-functions'])
+    const state = await readAgentSkillsState(projectDir)
+    expect(state.knownSkills).toEqual(['netlify-functions'])
+    expect(state).not.toHaveProperty('etag')
+
+    host([FUNCTIONS, BLOBS], '"v2"')
+    await refreshAgentSkills({ repositoryRoot: projectDir, env: ENV })
+
+    await expect(skillNames(claudeSkills)).resolves.toEqual(['netlify-blobs', 'netlify-functions'])
   })
 })
