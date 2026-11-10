@@ -66,7 +66,6 @@ export interface DeploySiteOptions {
   manifestPath?: string | undefined
   maxRetry?: number
   packagePath?: string | undefined
-  serverEnabled?: boolean
   serverManifestPath?: string | undefined
   siteRoot?: string | undefined
   skipFunctionsCache?: boolean | undefined
@@ -97,7 +96,6 @@ export const deploySite = async (
     manifestPath,
     maxRetry = DEFAULT_MAX_RETRY,
     packagePath,
-    serverEnabled,
     serverManifestPath,
     siteRoot,
     skipFunctionsCache,
@@ -143,7 +141,6 @@ export const deploySite = async (
       manifestPath,
       packagePath,
       serverConfig: config.server,
-      serverEnabled,
       serverManifestPath,
       skipFunctionsCache,
       rootDir: siteRoot,

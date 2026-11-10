@@ -714,7 +714,6 @@ const runDeploy = async ({
       workingDir: command.workingDir,
       manifestPath: manifestPath ?? undefined,
       packagePath,
-      serverEnabled: Boolean(siteData.feature_flags?.netlify_build_server_standalone),
       serverManifestPath: serverManifestPath ?? undefined,
       skipFunctionsCache,
       siteRoot: site.root,

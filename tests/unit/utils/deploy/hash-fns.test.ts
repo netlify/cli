@@ -87,7 +87,6 @@ const hashWithServer = async (builder: { directory: string }, overrides: Record<
     tmpDir: temporaryDirectory(),
     concurrentHash: DEFAULT_CONCURRENT_HASH,
     rootDir: builder.directory,
-    serverEnabled: true,
     statusCb() {},
     ...overrides,
   })
@@ -121,7 +120,6 @@ test('Bundles a Netlify Server for a site with no functions', async (t) => {
       tmpDir: temporaryDirectory(),
       concurrentHash: DEFAULT_CONCURRENT_HASH,
       rootDir: builder.directory,
-      serverEnabled: true,
       statusCb() {},
     })
 
@@ -331,7 +329,7 @@ test('Skipping the functions cache does not skip the Netlify Server', async (t) 
   })
 })
 
-test('Does not bundle a Netlify Server when the feature is off', async (t) => {
+test('Does not bundle a Netlify Server when the project has no server entry', async (t) => {
   await withSiteBuilder(t, async (builder) => {
     await builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
@@ -340,9 +338,8 @@ test('Does not bundle a Netlify Server when the feature is off', async (t) => {
         handler: async () => Promise.resolve({ statusCode: 200, body: 'Hello' }),
       })
       .build()
-    await withServerEntry(builder)
 
-    const { functions, server } = await hashWithServer(builder, { serverEnabled: false })
+    const { functions, server } = await hashWithServer(builder)
 
     expect(Object.keys(functions)).toEqual(['hello'])
     expect(server).toBeUndefined()
