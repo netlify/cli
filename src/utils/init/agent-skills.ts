@@ -5,11 +5,13 @@ import path from 'node:path'
 import { getDrivingAgent } from '../agent-detection.js'
 import { chalk, log, netlifyCommand, version, warn } from '../command-helpers.js'
 
+import { type AgentSkillsState, updateAgentSkillsState } from './agent-skills-state.js'
+
 export const DEFAULT_SKILLS_HOST = 'https://netlify-agent-skills.netlify.app'
 export const SKILLS_HOST_ENV = 'NETLIFY_SKILLS_HOST'
 export const DEFAULT_SKILLS_DIRECTORY = path.join('.agents', 'skills')
 
-const AGENT_DIRECTORIES = ['.claude', '.agents', '.grok'] as const
+export const AGENT_DIRECTORIES = ['.claude', '.agents', '.grok'] as const
 const AGENT_DIRECTORY_BY_DRIVING_AGENT: Partial<Record<string, string>> = {
   claude: '.claude',
 }
@@ -22,6 +24,8 @@ const RETIRED_LEFTOVER = /^(.+)\.old-\d+-[0-9a-f]{12}$/
 const FETCH_TIMEOUT_MS = 10_000
 const LEFTOVER_MIN_AGE_MS = 10 * 60_000
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+export const LEFTOVER_DETAIL = 'leftover from an interrupted install'
 
 export interface SkillHistoryEntry {
   version: string | null
@@ -115,12 +119,15 @@ export const resolveSkillsHost = (env: NodeJS.ProcessEnv = process.env): string 
 const urlFor = (host: string, ...parts: string[]): string =>
   `${host}/${parts.map((part) => encodeURIComponent(part)).join('/')}`
 
-const fetchBytes = async (url: string): Promise<Uint8Array> => {
-  const response = await fetch(url, {
-    headers: { 'user-agent': `NetlifyCLI ${version}` },
+const request = (url: string, headers: Record<string, string> = {}): Promise<Response> =>
+  fetch(url, {
+    headers: { 'user-agent': `NetlifyCLI ${version}`, ...headers },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     redirect: 'error',
   })
+
+const fetchBytes = async (url: string): Promise<Uint8Array> => {
+  const response = await request(url)
   if (!response.ok) {
     throw new SkillsError(`${url}: HTTP ${response.status.toString()}`)
   }
@@ -178,12 +185,27 @@ const indexManifest = (manifest: SkillsManifest): ManifestIndex => {
 const skillUnderName = ({ exact, prior }: ManifestIndex, name: string): ManifestSkill | undefined =>
   exact.get(name) ?? prior.get(name)
 
-export const fetchSkillsManifest = async (host: string): Promise<SkillsManifest> => {
+export interface FetchedManifest {
+  manifest: SkillsManifest
+  etag: string | null
+}
+
+/**
+ * Fetches the manifest, sending `etag` as `If-None-Match` when given. Returns null when the
+ * host answers 304, meaning the manifest is unchanged since the response that carried `etag`.
+ */
+export const fetchSkillsManifestIfChanged = async (host: string, etag?: string): Promise<FetchedManifest | null> => {
   const url = urlFor(host, 'manifest.json')
-  const bytes = await fetchBytes(url)
+  const response = await request(url, etag ? { 'if-none-match': etag } : {})
+  if (response.status === 304 && etag) {
+    return null
+  }
+  if (!response.ok) {
+    throw new SkillsError(`${url}: HTTP ${response.status.toString()}`)
+  }
   let manifest: SkillsManifest
   try {
-    manifest = JSON.parse(Buffer.from(bytes).toString('utf8')) as SkillsManifest
+    manifest = JSON.parse(await response.text()) as SkillsManifest
   } catch {
     throw new SkillsError(`${url}: invalid JSON`)
   }
@@ -193,8 +215,23 @@ export const fetchSkillsManifest = async (host: string): Promise<SkillsManifest>
     )
   }
   indexManifest(manifest)
-  return manifest
+  return { manifest, etag: response.headers.get('etag') }
 }
+
+const fetchLatestManifest = async (host: string): Promise<FetchedManifest> => {
+  const fetched = await fetchSkillsManifestIfChanged(host)
+  if (!fetched) {
+    throw new SkillsError(`${urlFor(host, 'manifest.json')}: no manifest in the response`)
+  }
+  return fetched
+}
+
+export const fetchSkillsManifest = async (host: string): Promise<SkillsManifest> =>
+  (await fetchLatestManifest(host)).manifest
+
+/** Every name a manifest knows a skill by, current and prior, active and deprecated. */
+export const manifestSkillNames = (manifest: SkillsManifest): string[] =>
+  manifest.skills.flatMap((skill) => [skill.name, ...(skill.prior_names ?? [])])
 
 const historyOf = (skill: ManifestSkill): SkillHistoryEntry[] => {
   if (Array.isArray(skill.history) && skill.history.length > 0) {
@@ -505,16 +542,22 @@ const removeInstallLeftovers = async (root: string, index: ManifestIndex): Promi
   return removed
 }
 
+/**
+ * Brings `directory` in line with `manifest`. `shouldAdd` decides which active skills absent from
+ * the directory get installed; by default all of them are.
+ */
 export const syncSkills = async ({
   host,
   directory,
   manifest,
   reset = false,
+  shouldAdd = () => true,
 }: {
   host: string
   directory: string
   manifest: SkillsManifest
   reset?: boolean
+  shouldAdd?: (skill: ManifestSkill) => boolean
 }): Promise<SkillsSyncResult> => {
   const index = indexManifest(manifest)
   const actions: SkillActionRecord[] = []
@@ -544,7 +587,7 @@ export const syncSkills = async ({
   }
 
   for (const leftover of await removeInstallLeftovers(directory, index)) {
-    act(leftover, 'removed', 'leftover from an interrupted install')
+    act(leftover, 'removed', LEFTOVER_DETAIL)
   }
   const before = await classifySkillsDirectory(directory, manifest)
 
@@ -667,6 +710,7 @@ export const syncSkills = async ({
   for (const name of before.missing) {
     if (installed.has(name)) continue
     const skill = skillByName(name)
+    if (!shouldAdd(skill)) continue
     if (await install(skill)) {
       act(name, 'added', skill.version ?? undefined)
     }
@@ -711,7 +755,7 @@ const summarize = (actions: SkillActionRecord[]): Record<SkillAction, number> =>
   return summary
 }
 
-const describeSync = ({ directory, actions }: SkillsSyncResult): string => {
+export const describeSync = ({ directory, actions }: SkillsSyncResult): string => {
   const summary = summarize(actions)
   const location = chalk.underline(directory)
   const changed = summary.added + summary.updated + summary.reset + summary.renamed + summary.removed
@@ -749,6 +793,39 @@ const logSync = (directory: string, result: SkillsSyncResult, reset: boolean): v
   }
 }
 
+/**
+ * Records a finished sync in the project's skills state, so a background refresh compares against
+ * it. `etag` is null when the sync had failures, which makes the next refresh download the manifest
+ * again. Never throws.
+ */
+export const recordSync = async (
+  repositoryRoot: string,
+  manifest: SkillsManifest,
+  etag: string | null,
+  notice: SkillsSyncResult[] = [],
+): Promise<void> => {
+  try {
+    await updateAgentSkillsState(repositoryRoot, (state) => {
+      const next: AgentSkillsState = {
+        ...state,
+        checkedAt: Date.now(),
+        knownSkills: [...new Set([...(state.knownSkills ?? []), ...manifestSkillNames(manifest)])].sort(),
+      }
+      if (etag) {
+        next.etag = etag
+      } else {
+        delete next.etag
+      }
+      if (notice.length > 0) {
+        next.notice = [...(state.notice ?? []), ...notice]
+      }
+      return next
+    })
+  } catch {
+    // A missing record only means the next refresh downloads the manifest again.
+  }
+}
+
 export interface AgentSkillsSetupSummary {
   installed: boolean
   directories: string[]
@@ -770,7 +847,7 @@ export const setupAgentSkills = async ({
   try {
     directories = await resolveSkillsDirectories(workingDir, env)
     const host = resolveSkillsHost(env)
-    const manifest = await fetchSkillsManifest(host)
+    const { manifest, etag } = await fetchLatestManifest(host)
     const actions: SkillActionRecord[] = []
     for (const directory of directories) {
       const result = await syncSkills({ host, directory: path.resolve(workingDir, directory), manifest, reset })
@@ -778,6 +855,7 @@ export const setupAgentSkills = async ({
       logSync(directory, result, reset)
     }
     const summary = summarize(actions)
+    await recordSync(workingDir, manifest, summary.failed === 0 ? etag : null)
     return {
       installed: summary.current + summary.added + summary.updated + summary.reset + summary.renamed + summary.kept > 0,
       directories,
