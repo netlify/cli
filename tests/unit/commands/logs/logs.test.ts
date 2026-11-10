@@ -51,14 +51,16 @@ const A_VALID_DEPLOY_ID = 'a'.repeat(24)
 
 const API_BASE = 'https://api.example.test/api/v1'
 
-const makeCommand = () =>
+const makeCommand = (siteInfo: Record<string, unknown> = {}) =>
   ({
     netlify: {
       api: { accessToken: 'token-1', basePath: API_BASE },
       site: { id: 'site-1' },
-      siteInfo: {},
+      siteInfo,
     },
   }) as never
+
+const siteWithServer = { published_deploy: { server: { region: 'iad', script_id: 'script-1' } } }
 
 type FollowArgs = Parameters<typeof runFollowMode>[0]
 
@@ -200,6 +202,47 @@ describe('runFollowMode deploy targeting', () => {
 
     expect(streamDeployMock).toHaveBeenCalledTimes(1)
     expect(streamDeployMock.mock.calls[0]?.[1]).toBe('target-deploy')
+  })
+})
+
+describe('logsCommand default sources', () => {
+  it('includes the server logs when the published deploy has a server', async () => {
+    await logsCommand({ since: '1h' }, makeCommand(siteWithServer))
+
+    expect(fetchFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchEdgeFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchServerHistoricalLogsMock).toHaveBeenCalledOnce()
+  })
+
+  it('streams the server logs in follow mode when the published deploy has a server', async () => {
+    await logsCommand({ follow: true }, makeCommand(siteWithServer))
+
+    expect(streamServerMock).toHaveBeenCalledOnce()
+  })
+
+  it.each([
+    ['no published deploy', {}],
+    ['a published deploy without a server', { published_deploy: { server: null } }],
+  ])('leaves out the server logs for a project with %s', async (_case, siteInfo) => {
+    await logsCommand({ since: '1h' }, makeCommand(siteInfo))
+
+    expect(fetchFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchEdgeFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchServerHistoricalLogsMock).not.toHaveBeenCalled()
+  })
+
+  it('leaves out the server logs when filtering by deploy', async () => {
+    await logsCommand({ since: '1h', deployId: A_VALID_DEPLOY_ID }, makeCommand(siteWithServer))
+
+    expect(fetchFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchServerHistoricalLogsMock).not.toHaveBeenCalled()
+  })
+
+  it('leaves out the server logs when filtering by function', async () => {
+    await logsCommand({ since: '1h', function: ['test-function'] }, makeCommand(siteWithServer))
+
+    expect(fetchFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchServerHistoricalLogsMock).not.toHaveBeenCalled()
   })
 })
 

@@ -171,6 +171,10 @@ export const logsCommand = async (options: LogsOptionValues, command: BaseComman
     }
     if (sources.length === 0) {
       sources = ['functions', 'edge-functions']
+      // Server logs can't be filtered by deploy, so a deploy filter leaves them out.
+      if (siteInfo.published_deploy?.server && !options.deployId && !options.url) {
+        sources.push('server')
+      }
     }
   }
 

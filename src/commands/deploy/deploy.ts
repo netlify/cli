@@ -619,6 +619,7 @@ const runDeploy = async ({
   logsUrl: string
   functionLogsUrl: string
   edgeFunctionLogsUrl: string
+  serverLogsUrl?: string | undefined
   sourceZipFileName?: string
 }> => {
   let results
@@ -854,6 +855,7 @@ interface JsonData {
   logs: string
   function_logs: string
   edge_function_logs: string
+  server_logs?: string
   url?: string
   source_zip_filename?: string
   commit_sha?: string
@@ -885,6 +887,9 @@ const printResults = ({
     'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl, { fallback: false }),
     'Edge function Logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl, { fallback: false }),
   }
+  if (results.serverLogsUrl) {
+    msgData['Server logs'] = terminalLink(results.serverLogsUrl, results.serverLogsUrl, { fallback: false })
+  }
 
   log('')
   // Note: this is leakily mimicking the @netlify/build heading style
@@ -901,6 +906,10 @@ const printResults = ({
       function_logs: results.functionLogsUrl,
       edge_function_logs: results.edgeFunctionLogsUrl,
     }
+    if (results.serverLogsUrl) {
+      jsonData.server_logs = results.serverLogsUrl
+    }
+
     if (deployToProduction) {
       jsonData.url = results.siteUrl
     }
@@ -925,6 +934,9 @@ const printResults = ({
     log(`\nBuild logs: <${results.logsUrl}>`)
     log(`Function logs: <${results.functionLogsUrl}>`)
     log(`Edge function logs: <${results.edgeFunctionLogsUrl}>`)
+    if (results.serverLogsUrl) {
+      log(`Server logs: <${results.serverLogsUrl}>`)
+    }
 
     if (!deployToProduction) {
       log()
