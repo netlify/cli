@@ -74,6 +74,10 @@ const requestPath = (input: string | URL | Request) =>
 
 const requestedPaths = () => vi.mocked(fetch).mock.calls.map(([input]) => requestPath(input))
 
+const userAgents = () => [
+  ...new Set(vi.mocked(fetch).mock.calls.map(([, init]) => new Headers(init?.headers).get('user-agent'))),
+]
+
 const conditionalHeaders = () =>
   vi.mocked(fetch).mock.calls.map(([, init]) => new Headers(init?.headers).get('if-none-match'))
 
@@ -258,15 +262,16 @@ describe('agent skills background refresh', () => {
       expect(state.etag).toBe('"v2"')
       expect(state.knownSkills).toEqual(['netlify-blobs', 'netlify-caching', 'netlify-functions'])
       expect(state.notice).toEqual(changes)
+      expect(userAgents()).toEqual([expect.stringMatching(/^NetlifyCLI \S+ \(refresh\)$/)])
     })
 
-    test('adds nothing on a first refresh with no record of what the project was offered', async () => {
+    test('adds missing skills on a first refresh with no record of what the project had', async () => {
       host([FUNCTIONS, BLOBS], '"v2"')
       await writeSkill(claudeSkills, 'netlify-functions', FUNCTIONS_V1)
 
       await refreshAgentSkills({ repositoryRoot: projectDir, env: ENV })
 
-      await expect(skillNames(claudeSkills)).resolves.toEqual(['netlify-functions'])
+      await expect(skillNames(claudeSkills)).resolves.toEqual(['netlify-blobs', 'netlify-functions'])
       await expect(readFile(join(claudeSkills, 'netlify-functions', 'SKILL.md'), 'utf8')).resolves.toBe(
         '# functions v2\n',
       )
@@ -274,6 +279,21 @@ describe('agent skills background refresh', () => {
         etag: '"v2"',
         knownSkills: ['netlify-blobs', 'netlify-functions'],
       })
+    })
+
+    test('records only the skills installed in every directory', async () => {
+      const agentsSkills = join(projectDir, '.agents', 'skills')
+      const { files } = host([FUNCTIONS, BLOBS], '"v2"')
+      files.delete('/skills/netlify-blobs/SKILL.md')
+      await writeSkill(claudeSkills, 'netlify-functions', FUNCTIONS.files)
+      await writeSkill(claudeSkills, 'netlify-blobs', BLOBS.files)
+      await writeSkill(agentsSkills, 'netlify-functions', FUNCTIONS.files)
+      await writeState(projectDir, { knownSkills: ['netlify-functions'] })
+
+      await refreshAgentSkills({ repositoryRoot: projectDir, env: ENV })
+
+      await expect(skillNames(agentsSkills)).resolves.toEqual(['netlify-functions'])
+      await expect(readAgentSkillsState(projectDir)).resolves.toMatchObject({ knownSkills: ['netlify-functions'] })
     })
 
     test('only writes to directories that already hold Netlify skills', async () => {
@@ -372,6 +392,7 @@ describe('agent skills background refresh', () => {
 
     await setupAgentSkills({ workingDir: projectDir, env: ENV })
 
+    expect(userAgents()).toEqual([expect.stringMatching(/^NetlifyCLI \S+ \(init\)$/)])
     await expect(readAgentSkillsState(projectDir)).resolves.toMatchObject({
       etag: '"v2"',
       knownSkills: ['netlify-blobs', 'netlify-functions'],

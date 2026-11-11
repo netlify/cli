@@ -13,7 +13,6 @@ import {
   type SkillActionRecord,
   type SkillsSyncResult,
   describeSync,
-  failedSkillNames,
   fetchSkillsManifestIfChanged,
   recordSync,
   resolveSkillsHost,
@@ -119,8 +118,8 @@ const isChange = ({ action, detail }: SkillActionRecord): boolean =>
 /**
  * Runs in the detached process. When the manifest changed since the last sync, brings every
  * directory that already holds Netlify skills up to date and saves what changed for the next
- * command to show. A skill missing from a directory is added only if the project has never been
- * offered it, so skills someone deleted stay deleted.
+ * command to show. A skill missing from a directory is added unless the project has had it
+ * installed before, so skills someone deleted stay deleted.
  */
 export const refreshAgentSkills = async ({
   repositoryRoot,
@@ -135,7 +134,7 @@ export const refreshAgentSkills = async ({
     return []
   }
   const host = resolveSkillsHost(env)
-  const fetched = await fetchSkillsManifestIfChanged(host, state.etag)
+  const fetched = await fetchSkillsManifestIfChanged(host, { etag: state.etag, trigger: 'refresh' })
   if (!fetched) {
     return []
   }
@@ -143,7 +142,7 @@ export const refreshAgentSkills = async ({
   const { manifest, etag } = fetched
   const known = new Set(state.knownSkills)
   const isNew = (skill: ManifestSkill): boolean =>
-    state.knownSkills !== undefined && ![skill.name, ...(skill.prior_names ?? [])].some((name) => known.has(name))
+    ![skill.name, ...(skill.prior_names ?? [])].some((name) => known.has(name))
 
   const results: SkillsSyncResult[] = []
   for (const directory of directories) {
@@ -152,15 +151,19 @@ export const refreshAgentSkills = async ({
       directory: path.join(repositoryRoot, directory),
       manifest,
       shouldAdd: isNew,
+      trigger: 'refresh',
     })
     results.push({ directory, actions })
   }
 
+  const failed = results.some(({ actions }) => actions.some(({ action }) => action === 'failed'))
   const changes = results
     .map(({ directory, actions }) => ({ directory, actions: actions.filter(isChange) }))
     .filter(({ actions }) => actions.length > 0)
-  await recordSync(repositoryRoot, manifest, etag, {
-    failed: failedSkillNames(results.flatMap(({ actions }) => actions)),
+  await recordSync(repositoryRoot, {
+    manifest,
+    directories: directories.map((directory) => path.join(repositoryRoot, directory)),
+    etag: failed ? null : etag,
     notice: changes,
   })
   return changes
