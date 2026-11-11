@@ -64,6 +64,7 @@ const fetchServerLogLines = async ({
   from,
   to,
   levels,
+  branches,
 }: {
   apiBase: string
   siteId: string
@@ -71,6 +72,7 @@ const fetchServerLogLines = async ({
   from: number
   to: number
   levels?: string[]
+  branches: string[]
 }): Promise<{ lines: ServerLogLine[]; truncated: boolean }> => {
   // The API pages newest first and sends millisecond timestamps, though it
   // orders by finer ones, so reversing is what keeps same-millisecond lines in order.
@@ -91,6 +93,9 @@ const fetchServerLogLines = async ({
     url.searchParams.set('per_page', String(PER_PAGE))
     if (severity) {
       url.searchParams.set('severity', severity)
+    }
+    for (const branch of branches) {
+      url.searchParams.append('branch', branch)
     }
 
     const response = await debugFetch(url.toString(), {
@@ -120,6 +125,7 @@ export const fetchServerHistoricalLogs = async (options: {
   from: number
   to: number
   levels?: string[]
+  branches: string[]
 }): Promise<{ entries: LogEntry[]; truncated: boolean }> => {
   const { lines, truncated } = await fetchServerLogLines(options)
   return { entries: lines.map(toEntry), truncated }
@@ -130,6 +136,7 @@ export const streamServer = ({
   siteId,
   accessToken,
   levels,
+  branches,
   onEntry,
   onError,
   intervalMs = POLL_INTERVAL_MS,
@@ -138,6 +145,7 @@ export const streamServer = ({
   siteId: string
   accessToken: string | null | undefined
   levels?: string[]
+  branches: string[]
   onEntry: (entry: LogEntry) => void
   onError?: (error: Error) => void
   intervalMs?: number
@@ -156,6 +164,7 @@ export const streamServer = ({
         siteId,
         accessToken,
         levels,
+        branches,
         from: newest - LOOK_BACK_MS,
         to: Date.now(),
       })
