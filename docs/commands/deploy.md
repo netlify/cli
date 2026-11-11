@@ -9,11 +9,11 @@ sidebar:
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 Deploy your project to Netlify
 
-Builds and deploys your project to Netlify. Creates a draft deploy by default.
+Builds your project locally, or on Netlify with --remote, and deploys it to Netlify. Creates a draft deploy by default.
 Use --prod to deploy directly to your live site.
 
 The deploy command will:
-- Build your project (unless --no-build is specified)
+- Build your project locally (unless --no-build or --remote is specified)
 - Upload static files, functions, and edge functions
 - Process redirects and headers from netlify.toml or _redirects/_headers files
 - Provide deploy and function logs URLs
@@ -44,6 +44,7 @@ netlify deploy
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `prod` (*boolean*) - Deploy to production
+- `remote` (*boolean*) - Build your project on Netlify instead of locally. Useful when building with native packages, on devices with limited resources or missing toolchains. Build logs stream in real time and are available on Netlify.
 - `secret-env` (*string*) - Set a secret environment variable for this deploy only. Applies to deployed functions only. The value is masked in the Netlify UI and API. Can be specified multiple times.
 - `site` (*string*) - A project name or ID to deploy to
 - `site-name` (*string*) - Name for a new site. Implies --create-site if the site does not already exist.
@@ -64,6 +65,8 @@ netlify deploy --prod-if-unlocked
 netlify deploy --message "A message with an $ENV_VAR"
 netlify deploy --auth $NETLIFY_AUTH_TOKEN
 netlify deploy --trigger
+netlify deploy --remote # Build on Netlify and deploy a draft
+netlify deploy --remote --prod
 netlify deploy --context deploy-preview
 netlify deploy --env "NODE_ENV=production" --env "API_URL=https://api.example.com"
 netlify deploy --env "NODE_ENV=production" --secret-env "DATABASE_PASSWORD=$DB_PASSWORD"

@@ -4,6 +4,7 @@ export interface DeployUrls {
   logsUrl: string
   functionLogsUrl: string
   edgeFunctionLogsUrl: string
+  serverLogsUrl?: string | undefined
 }
 
 interface DeployUrlFields {
@@ -13,6 +14,22 @@ interface DeployUrlFields {
   deploy_ssl_url?: string
   deploy_url?: string
   admin_url?: string
+  branch?: string
+  server?: object | null
+}
+
+const getServerLogsUrl = (deploy: DeployUrlFields, deployToProduction: boolean): string | undefined => {
+  if (!deploy.server) {
+    return undefined
+  }
+
+  const params = new URLSearchParams({ panel: 'logs' })
+  // Server logs are kept per branch, not per deploy.
+  if (!deployToProduction && deploy.branch) {
+    params.set('branch', deploy.branch)
+  }
+
+  return `${deploy.admin_url ?? ''}/server?${params.toString()}`
 }
 
 export const getDeployUrls = (
@@ -30,5 +47,6 @@ export const getDeployUrls = (
     edgeFunctionLogsUrl: deployToProduction
       ? edgeFunctionLogsUrl
       : `${edgeFunctionLogsUrl}?scope=deployid:${deploy.id ?? ''}`,
+    serverLogsUrl: getServerLogsUrl(deploy, deployToProduction),
   }
 }

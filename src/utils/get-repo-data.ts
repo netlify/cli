@@ -18,21 +18,40 @@ export interface RepoData {
   httpsUrl: string
 }
 
+export type RepoDataErrorReason = 'no-remote' | 'unknown-remote' | 'invalid-url' | 'unreadable'
+
+export interface RepoDataError {
+  error: string
+  reason: RepoDataErrorReason
+}
+
+class RepoDataLookupError extends Error {
+  constructor(
+    message: string,
+    readonly reason: RepoDataErrorReason,
+  ) {
+    super(message)
+  }
+}
+
+const redactCredentials = (url: string): string => url.replace(/\/\/[^/@]*@/, '//***@')
+
 const getRepoData = async ({
   remoteName,
   workingDir,
 }: {
   remoteName?: string
   workingDir: string
-}): Promise<RepoData | { error: string }> => {
+}): Promise<RepoData | RepoDataError> => {
   try {
-    const [gitConfig, gitDirectory] = await Promise.all([
-      util.promisify(gitconfiglocal)(workingDir),
-      findUp('.git', { cwd: workingDir, type: 'directory' }),
-    ])
+    const gitDirectory = await findUp('.git', { cwd: workingDir, type: 'directory' })
+    if (!gitDirectory) {
+      throw new RepoDataLookupError('No Git remote found', 'no-remote')
+    }
+    const gitConfig = await util.promisify(gitconfiglocal)(workingDir)
 
-    if (!gitDirectory || !gitConfig?.remote || Object.keys(gitConfig.remote).length === 0) {
-      throw new Error('No Git remote found')
+    if (!gitConfig?.remote || Object.keys(gitConfig.remote).length === 0) {
+      throw new RepoDataLookupError('No Git remote found', 'no-remote')
     }
 
     const baseGitPath = dirname(gitDirectory)
@@ -51,8 +70,9 @@ const getRepoData = async ({
       !gitConfig.remote[remoteName] ||
       Object.keys(gitConfig.remote[remoteName]).length === 0
     ) {
-      throw new Error(
+      throw new RepoDataLookupError(
         `The specified remote "${remoteName}" is not defined in Git repo. Please use --git-remote-name flag to specify a remote.`,
+        'unknown-remote',
       )
     }
 
@@ -60,7 +80,10 @@ const getRepoData = async ({
     const parsedUrl = parseGithubUrl(url)
     // TODO(serhalp): Validate more aggressively? We should probably require `owner`, `repo`, `host`?
     if (parsedUrl == null) {
-      throw new Error(`The specified Git remote ${remoteName} is not a valid URL: ${url}`)
+      throw new RepoDataLookupError(
+        `The specified Git remote ${remoteName} is not a valid URL: ${redactCredentials(String(url))}`,
+        'invalid-url',
+      )
     }
     const { host, name, owner, repo } = parsedUrl
     const { branch } = gitRepoInfo()
@@ -76,6 +99,7 @@ const getRepoData = async ({
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : (error?.toString() ?? 'Failed to get repo data'),
+      reason: error instanceof RepoDataLookupError ? error.reason : 'unreadable',
     }
   }
 }

@@ -8,7 +8,8 @@ interface ServerLogLine {
   actor_id: string
 }
 
-// The API serves up to 500 lines a page and stops paging 10,000 lines back.
+// The API serves up to 500 lines a page. MAX_PAGES bounds the pages read, so
+// a long window doesn't page without end.
 const PER_PAGE = 500
 const MAX_PAGES = 1 + 10_000 / PER_PAGE
 
@@ -63,6 +64,7 @@ const fetchServerLogLines = async ({
   from,
   to,
   levels,
+  branches,
 }: {
   apiBase: string
   siteId: string
@@ -70,20 +72,30 @@ const fetchServerLogLines = async ({
   from: number
   to: number
   levels?: string[]
+  branches: string[]
 }): Promise<{ lines: ServerLogLine[]; truncated: boolean }> => {
   // The API pages newest first and sends millisecond timestamps, though it
   // orders by finer ones, so reversing is what keeps same-millisecond lines in order.
   const lines: ServerLogLine[] = []
   const severity = severityFor(levels)
 
+  // An API that sends no cursor is paged by number.
+  let cursor: string | undefined
   for (let page = 1; page <= MAX_PAGES; page++) {
     const url = new URL(`${apiBase}/sites/${encodeURIComponent(siteId)}/observability/server/logs`)
     url.searchParams.set('from_ts', String(from))
     url.searchParams.set('to_ts', String(to))
-    url.searchParams.set('page', String(page))
+    if (cursor) {
+      url.searchParams.set('cursor', cursor)
+    } else if (page > 1) {
+      url.searchParams.set('page', String(page))
+    }
     url.searchParams.set('per_page', String(PER_PAGE))
     if (severity) {
       url.searchParams.set('severity', severity)
+    }
+    for (const branch of branches) {
+      url.searchParams.append('branch', branch)
     }
 
     const response = await debugFetch(url.toString(), {
@@ -95,11 +107,12 @@ const fetchServerLogLines = async ({
       throw new ServerLogsRequestError(response.status, response.statusText)
     }
 
-    const body = (await response.json()) as { logs?: ServerLogLine[]; has_next_page?: boolean }
+    const body = (await response.json()) as { logs?: ServerLogLine[]; has_next_page?: boolean; next_cursor?: string }
     lines.push(...(body.logs ?? []))
     if (!body.has_next_page) {
       return { lines: lines.reverse(), truncated: false }
     }
+    cursor = body.next_cursor
   }
 
   return { lines: lines.reverse(), truncated: true }
@@ -112,6 +125,7 @@ export const fetchServerHistoricalLogs = async (options: {
   from: number
   to: number
   levels?: string[]
+  branches: string[]
 }): Promise<{ entries: LogEntry[]; truncated: boolean }> => {
   const { lines, truncated } = await fetchServerLogLines(options)
   return { entries: lines.map(toEntry), truncated }
@@ -122,6 +136,7 @@ export const streamServer = ({
   siteId,
   accessToken,
   levels,
+  branches,
   onEntry,
   onError,
   intervalMs = POLL_INTERVAL_MS,
@@ -130,6 +145,7 @@ export const streamServer = ({
   siteId: string
   accessToken: string | null | undefined
   levels?: string[]
+  branches: string[]
   onEntry: (entry: LogEntry) => void
   onError?: (error: Error) => void
   intervalMs?: number
@@ -148,6 +164,7 @@ export const streamServer = ({
         siteId,
         accessToken,
         levels,
+        branches,
         from: newest - LOOK_BACK_MS,
         to: Date.now(),
       })
