@@ -104,7 +104,7 @@ jobs:
           deno-version: 2.6.6
 
       - name: Install pinned npm version
-        run: npm install -g npm@11.19.1
+        run: npx -y npm@11.19.1 install -g npm@11.19.1
 
       - name: Install core dependencies
         run: npm ci --no-audit
