@@ -48,8 +48,8 @@ See the [CLI command line reference](https://cli.netlify.com/#commands) to get s
 
 ## Installation
 
-Netlify CLI requires [Node.js](https://nodejs.org) version 22.13.0 or above. To install, run the following command from
-any directory in your terminal:
+Netlify CLI requires [Node.js](https://nodejs.org) 22.22.2 or later 22.x, 24.15.0 or later 24.x, or 26 and above. To
+install, run the following command from any directory in your terminal:
 
 ```bash
 npm install netlify-cli -g

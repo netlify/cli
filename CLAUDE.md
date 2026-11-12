@@ -150,7 +150,7 @@ The CLI integrates with Netlify's build plugin system, allowing plugins to:
 
 ### Development Setup Requirements
 
-- Node.js 22.13.0+ required
+- Node.js 22.22.2 or later 22.x, 24.15.0 or later 24.x, or 26 and above required
 - Git LFS must be installed for full test suite
 - Some integration tests require Netlify Auth Token (`NETLIFY_AUTH_TOKEN`) or login via `./bin/run.js login`
 
