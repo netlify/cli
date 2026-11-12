@@ -1,0 +1,58 @@
+---
+// Starlight's SiteTitle with the product name as text after the logo.
+// Brand 2026: sub-brands are the logo plus the product name in type, not a lockup asset.
+import { logos } from 'virtual:starlight/user-images';
+import config from 'virtual:starlight/user-config';
+const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a href={siteTitleHref} class="site-title sl-flex">
+  {
+    config.logo && logos.dark && (
+      <>
+        <img
+          class:list={{ 'light:sl-hidden print:hidden': !('src' in config.logo) }}
+          alt=""
+          src={logos.dark.src}
+          width={logos.dark.width}
+          height={logos.dark.height}
+        />
+        {!('src' in config.logo) && (
+          <img
+            class="dark:sl-hidden print:block"
+            alt=""
+            src={logos.light?.src}
+            width={logos.light?.width}
+            height={logos.light?.height}
+          />
+        )}
+      </>
+    )
+  }
+  <span class="sr-only" translate="no">{siteTitle}</span>
+  <span class="product" aria-hidden="true" translate="no">CLI</span>
+</a>
+
+<style>
+  .site-title {
+    align-items: center;
+    gap: 0.375rem;
+    text-decoration: none;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  img {
+    /* The 2026 logo is solid, so it draws at 72% of the nav height to match the old lockup's weight. */
+    height: 1.75rem;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: 0 50%;
+  }
+  .product {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--sl-color-white);
+  }
+</style>
