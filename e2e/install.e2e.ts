@@ -207,8 +207,8 @@ const installTests: [packageManager: string, config: InstallTest][] = [
     'yarn',
     {
       packageName: 'netlify-cli',
-      install: ['yarn', ['add', 'netlify-cli@testing']],
-      cleanInstall: ['yarn', ['install', '--frozen-lockfile']],
+      install: ['yarn', ['add', 'netlify-cli@testing', '--ignore-engines']],
+      cleanInstall: ['yarn', ['install', '--frozen-lockfile', '--ignore-engines']],
       lockfile: 'yarn.lock',
     },
   ],
