@@ -140,7 +140,7 @@ export const shouldFetchLatestVersion = async ({
     return false
   }
 
-  const match = stdout.match(new RegExp(pattern))
+  const match = new RegExp(pattern).exec(stdout)
   if (!match) {
     return false
   }

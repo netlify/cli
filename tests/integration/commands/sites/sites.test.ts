@@ -1,6 +1,5 @@
 import process from 'process'
 
-import inquirer from 'inquirer'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
@@ -12,7 +11,10 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   log: () => {},
 }))
 
-vi.spyOn(inquirer, 'prompt').mockImplementation(() => Promise.resolve({ accountSlug: 'test-account' }))
+vi.mock('@inquirer/prompts', () => ({
+  input: vi.fn().mockResolvedValue(''),
+  select: vi.fn().mockResolvedValue('test-account'),
+}))
 
 const siteInfo = {
   admin_url: 'https://app.netlify.com/projects/site-name/overview',
@@ -80,7 +82,7 @@ describe('sites command', () => {
 
         await expect(async () => {
           await program.parseAsync(['', '', 'sites:create', '--name', Array.from({ length: 64 }).fill('a').join('')])
-        }).rejects.toThrowError('--name should be less than 64 characters')
+        }).rejects.toThrow('--name should be less than 64 characters')
       })
     })
 
@@ -163,7 +165,7 @@ describe('sites command', () => {
             'test-account',
             '--disable-linking',
           ])
-        }).rejects.toThrowError(/already taken/)
+        }).rejects.toThrow(/already taken/)
 
         const siteCreateRequests = requests.filter(
           (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
@@ -222,7 +224,7 @@ describe('sites command', () => {
             'test-account',
             '--disable-linking',
           ])
-        }).rejects.toThrowError(/already taken/)
+        }).rejects.toThrow(/already taken/)
 
         const siteCreateRequests = requests.filter(
           (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',

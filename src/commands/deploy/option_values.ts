@@ -20,6 +20,7 @@ export type DeployOptionValues = BaseOptionValues & {
   open: boolean
   prod: boolean
   prodIfUnlocked: boolean
+  remote?: boolean
   secretEnv?: DeployEnvironmentVariable[]
   site?: string
   siteName?: string

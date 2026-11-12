@@ -2,8 +2,8 @@ import fs from 'fs'
 import { createRequire } from 'module'
 import path from 'path'
 
+import { select } from '@inquirer/prompts'
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
 import { APIError, NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
@@ -113,15 +113,10 @@ const getNameFromArgs = async function (functions, options, argumentName) {
     )
   }
 
-  const { trigger } = await inquirer.prompt([
-    {
-      type: 'list',
-      message: 'Pick a function to trigger',
-      name: 'trigger',
-      choices: functionNames,
-    },
-  ])
-  return trigger
+  return await select({
+    message: 'Pick a function to trigger',
+    choices: functionNames,
+  })
 }
 
 /**

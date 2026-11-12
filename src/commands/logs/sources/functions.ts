@@ -1,6 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import { getWebSocket } from '../../../utils/websockets/index.js'
+import { SOCKETEER_URL } from '../../../utils/socketeer.js'
 import { buildFunctionLogsUrl, fetchHistoricalLogs } from '../log-api.js'
 import type { LogEntry } from '../log-api.js'
 
@@ -68,15 +69,13 @@ export const fetchFunctionHistoricalLogs = async ({
     functions.map(async (fn) => {
       const baseUrl = buildFunctionLogsUrl({ siteId, branch: fn.branch, functionName: fn.n })
       const entries = await fetchHistoricalLogs({ baseUrl, accessToken, from, to, deployId })
-      return entries.map(
-        (entry): LogEntry => ({
-          source: 'function',
-          name: fn.n,
-          ts: entry.ts,
-          level: entry.level || 'INFO',
-          message: entry.message,
-        }),
-      )
+      return entries.map((entry): LogEntry => ({
+        source: 'function',
+        name: fn.n,
+        ts: entry.ts,
+        level: entry.level || 'INFO',
+        message: entry.message,
+      }))
     }),
   )
   return results.flat()
@@ -91,7 +90,7 @@ export const streamFunctions = (
   const sockets: ReturnType<typeof getWebSocket>[] = []
 
   for (const fn of functions) {
-    const ws = getWebSocket('wss://socketeer.services.netlify.com/function/logs')
+    const ws = getWebSocket(`${SOCKETEER_URL}/function/logs`)
     sockets.push(ws)
 
     ws.on('open', () => {

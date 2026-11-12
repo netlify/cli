@@ -191,7 +191,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         await fetch(`${url}/.netlify/functions/hello-background`)
 
         const output = outputBuffer.toString()
-        const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)?.[1] ?? '""')
+        const context = JSON.parse(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/.exec(output)?.[1] ?? '""')
         t.expect(context).toHaveProperty('clientContext', {})
         t.expect(context).toHaveProperty('identity', null)
       })
@@ -244,7 +244,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     await withSiteBuilder(t, async (builder) => {
       setupRoleBasedRedirectsSite(builder)
       await builder.build()
-      await t.expect(validateRoleBasedRedirectsSite({ builder, t })).resolves.not.toThrowError()
+      await t.expect(validateRoleBasedRedirectsSite({ builder, t })).resolves.not.toThrow()
     })
   })
 
@@ -261,7 +261,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         },
       })
       await builder.build()
-      await t.expect(validateRoleBasedRedirectsSite({ builder, t, jwtSecret, jwtRolePath })).resolves.not.toThrowError()
+      await t.expect(validateRoleBasedRedirectsSite({ builder, t, jwtSecret, jwtRolePath })).resolves.not.toThrow()
     })
   })
 

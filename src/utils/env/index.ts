@@ -289,7 +289,6 @@ export const getEnvelopeEnv = async ({
 
   const generalEnv = filterEnvBySource(env, 'general')
   const internalEnv = filterEnvBySource(env, 'internal')
-  const addonsEnv = filterEnvBySource(env, 'addons')
   const configFileEnv = filterEnvBySource(env, 'configFile')
 
   // filter out configFile env vars if a non-configFile scope is passed
@@ -299,7 +298,6 @@ export const getEnvelopeEnv = async ({
   return {
     ...generalEnv,
     ...accountEnv,
-    ...(includeConfigEnvVars ? addonsEnv : {}),
     ...siteEnv,
     ...(includeConfigEnvVars ? configFileEnv : {}),
     ...internalEnv,
@@ -372,7 +370,7 @@ export const translateFromEnvelopeToMongo = (
     .sort((a, b) => (a.key.toLowerCase() < b.key.toLowerCase() ? -1 : 1))
     .reduce((acc, cur) => {
       const envVar = cur.values.find((val) => [context, 'all'].includes((val.context_parameter ?? '') || val.context))
-      if (envVar && envVar.value) {
+      if (envVar?.value) {
         return {
           ...acc,
           [cur.key]: envVar.value,

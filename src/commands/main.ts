@@ -3,7 +3,7 @@ import process from 'process'
 import { Option, CommanderError } from 'commander'
 import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 
 import { getGlobalConfigStore } from '@netlify/dev-utils'
 
@@ -39,6 +39,7 @@ import { createDevCommand } from './dev/index.js'
 import { createDevExecCommand } from './dev-exec/index.js'
 import { createEnvCommand } from './env/index.js'
 import { createFunctionsCommand } from './functions/index.js'
+import { createGitCredentialCommand } from './git-credential/index.js'
 import { createInitCommand } from './init/index.js'
 import { createLinkCommand } from './link/index.js'
 import { createLoginCommand } from './login/index.js'
@@ -216,24 +217,17 @@ const mainCommand = async function (options, command) {
     exit(EXIT_CODES.USAGE_ERROR)
   }
 
-  const applySuggestion = await new Promise((resolve) => {
-    const prompt = inquirer.prompt({
-      type: 'confirm',
-      name: 'suggestion',
-      message: `Did you mean ${chalk.blue(suggestion)}`,
-      default: false,
-    })
-
-    setTimeout(() => {
-      // @ts-expect-error TS(2445) FIXME: Property 'close' is protected and only accessible ... Remove this comment to see the full error message
-      prompt.ui.close()
-      resolve(false)
-    }, SUGGESTION_TIMEOUT)
-
-    prompt.then((value) => {
-      resolve(value.suggestion)
-    })
-  })
+  let applySuggestion = false
+  try {
+    applySuggestion = await confirm(
+      { message: `Did you mean ${chalk.blue(suggestion)}`, default: false },
+      { signal: AbortSignal.timeout(SUGGESTION_TIMEOUT) },
+    )
+  } catch (error) {
+    if (!(error instanceof Error && error.name === 'AbortPromptError')) {
+      throw error
+    }
+  }
   // create new log line
   log()
 
@@ -280,6 +274,7 @@ export const createMainCommand = (): BaseCommand => {
   createLogsCommand(program)
   createDatabaseCommand(program)
   createAgentsCommand(program)
+  createGitCredentialCommand(program)
 
   program.setAnalyticsPayload({ didEnableCompileCache })
 

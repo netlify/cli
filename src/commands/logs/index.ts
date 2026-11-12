@@ -1,9 +1,10 @@
-import { Argument, Option, OptionValues } from 'commander'
+import { Argument, Option } from 'commander'
 
 import { chalk, logAndThrowError, netlifyCommand } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 import { CLI_LOG_LEVEL_CHOICES_STRING } from './log-levels.js'
+import type { LogsOptionValues } from './option_values.js'
 
 const createDeprecatedFunctionCommand = (program: BaseCommand) => {
   const base = netlifyCommand()
@@ -102,11 +103,10 @@ export const createLogsCommand = (program: BaseCommand) => {
     .alias('log')
     .description('View logs from your project')
     .addOption(
-      new Option('-s, --source <type...>', 'Log sources to include. Defaults to functions and edge-functions').choices([
-        'functions',
-        'edge-functions',
-        'deploy',
-      ]),
+      new Option(
+        '-s, --source <type...>',
+        'Log sources to include. Defaults to functions, edge-functions and server',
+      ).choices(['functions', 'edge-functions', 'deploy', 'server']),
     )
     .addOption(new Option('--function <name...>', 'Filter to specific functions by name'))
     .addOption(new Option('--edge-function <name...>', 'Filter to specific edge functions by name or path'))
@@ -126,7 +126,13 @@ export const createLogsCommand = (program: BaseCommand) => {
     .addOption(
       new Option(
         '-u, --url <url>',
-        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains',
+        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains. Server logs support branch subdomains only.',
+      ),
+    )
+    .addOption(
+      new Option(
+        '-d, --deploy-id <deploy-id>',
+        'Show logs for a specific deploy by ID, including failed builds. Can be used with all sources except server.',
       ),
     )
     .addOption(
@@ -136,15 +142,19 @@ export const createLogsCommand = (program: BaseCommand) => {
     .addExamples([
       'netlify logs',
       'netlify logs --since 1h',
+      'netlify logs --source deploy --deploy-id <deploy-id> --since 7d',
+      'netlify logs --source functions --deploy-id <deploy-id>',
       'netlify logs --source functions --function checkout --since 24h',
       'netlify logs --source edge-functions --since 30m',
       'netlify logs --source deploy --source functions --since 1h',
+      'netlify logs --source server --since 30m',
+      'netlify logs --follow --source server',
       'netlify logs --follow',
       'netlify logs --follow --source functions --source edge-functions',
       'netlify logs --json --since 1h',
       'netlify logs --url https://my-branch--my-site.netlify.app --since 1h',
     ])
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: LogsOptionValues, command: BaseCommand) => {
       const { logsCommand } = await import('./logs.js')
       await logsCommand(options, command)
     })

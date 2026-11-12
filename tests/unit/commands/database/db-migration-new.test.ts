@@ -22,9 +22,7 @@ vi.mock('fs/promises', async (importOriginal) => {
   }
 })
 
-vi.mock('inquirer', () => ({
-  default: { prompt: vi.fn() },
-}))
+vi.mock('@inquirer/prompts')
 
 vi.mock('../../../../src/utils/scripted-commands.js', () => ({
   isInteractive: vi.fn(),
@@ -42,7 +40,7 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 
 import { join } from 'path'
 
-import inquirer from 'inquirer'
+import { input, select } from '@inquirer/prompts'
 import {
   migrationNew,
   generateSlug,
@@ -201,13 +199,13 @@ describe('migrationNew', () => {
 
   test('prompts for description when not provided', async () => {
     vi.mocked(isInteractive).mockReturnValue(true)
-    vi.mocked(inquirer.prompt)
-      .mockResolvedValueOnce({ description: 'create users table' })
-      .mockResolvedValueOnce({ scheme: 'sequential' })
+    vi.mocked(input).mockResolvedValueOnce('create users table')
+    vi.mocked(select).mockResolvedValueOnce('sequential')
 
     await migrationNew({}, createMockCommand())
 
-    expect(inquirer.prompt).toHaveBeenCalledTimes(2)
+    expect(input).toHaveBeenCalledOnce()
+    expect(select).toHaveBeenCalledOnce()
     expect(mockMkdir).toHaveBeenCalledWith(expect.stringContaining('create-users-table'), expect.any(Object))
   })
 
@@ -222,12 +220,11 @@ describe('migrationNew', () => {
   test('prompts for scheme with detected default when not provided', async () => {
     vi.mocked(isInteractive).mockReturnValue(true)
     mockReaddir.mockResolvedValue([dirEntry('0001_create-users'), dirEntry('0002_add-posts')])
-    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ scheme: 'sequential' })
+    vi.mocked(select).mockResolvedValueOnce('sequential')
 
     await migrationNew({ description: 'add comments' }, createMockCommand())
 
-    const promptCall = vi.mocked(inquirer.prompt).mock.calls[0][0] as { default?: string }[]
-    expect(promptCall[0].default).toBe('sequential')
+    expect(select).toHaveBeenCalledWith(expect.objectContaining({ default: 'sequential' }))
   })
 
   test('defaults to timestamp scheme in non-interactive mode when no migrations exist', async () => {
@@ -235,7 +232,8 @@ describe('migrationNew', () => {
 
     await migrationNew({ description: 'add posts table' }, createMockCommand())
 
-    expect(inquirer.prompt).not.toHaveBeenCalled()
+    expect(input).not.toHaveBeenCalled()
+    expect(select).not.toHaveBeenCalled()
     const mkdirCall = mockMkdir.mock.calls[0][0] as string
     const folderName = mkdirCall.split(/[/\\]/).pop() ?? ''
     expect(folderName).toMatch(/^\d{14}_add-posts-table$/)
@@ -247,7 +245,8 @@ describe('migrationNew', () => {
 
     await migrationNew({ description: 'add comments' }, createMockCommand())
 
-    expect(inquirer.prompt).not.toHaveBeenCalled()
+    expect(input).not.toHaveBeenCalled()
+    expect(select).not.toHaveBeenCalled()
     expect(mockMkdir).toHaveBeenCalledWith(join('/project/netlify/database/migrations', '0003_add-comments'), {
       recursive: true,
     })
@@ -259,7 +258,8 @@ describe('migrationNew', () => {
 
     await migrationNew({ description: 'add comments' }, createMockCommand())
 
-    expect(inquirer.prompt).not.toHaveBeenCalled()
+    expect(input).not.toHaveBeenCalled()
+    expect(select).not.toHaveBeenCalled()
     const mkdirCall = mockMkdir.mock.calls[0][0] as string
     const folderName = mkdirCall.split(/[/\\]/).pop() ?? ''
     expect(folderName).toMatch(/^\d{14}_add-comments$/)

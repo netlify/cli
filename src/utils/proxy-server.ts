@@ -7,7 +7,7 @@ import type { FunctionsRegistry } from '../lib/functions/registry.js'
 
 import { exit, log, NETLIFYDEVERR, type NormalizedCachedConfigConfig } from './command-helpers.js'
 import { startProxy } from './proxy.js'
-import type { LocalState } from './types.js'
+import type { LocalState, SiteInfo } from './types.js'
 import type { ServerSettings } from './types.js'
 
 interface InspectSettings {
@@ -43,7 +43,6 @@ export const generateInspectSettings = (
 
 export const startProxyServer = async ({
   accountId,
-  addonsUrls,
   aiGatewayContext,
   api,
   blobsContext,
@@ -69,7 +68,6 @@ export const startProxyServer = async ({
   deployEnvironment,
 }: {
   accountId: string | undefined
-  addonsUrls: $TSFixMe
   aiGatewayContext?: AIGatewayContext | null
   api?: NetlifyOptions['api']
   blobsContext?: BlobsContextWithEdgeAccess
@@ -87,7 +85,7 @@ export const startProxyServer = async ({
   settings: ServerSettings
   offline: boolean
   site: $TSFixMe
-  siteInfo: $TSFixMe
+  siteInfo: SiteInfo
   projectDir: string
   repositoryRoot?: string
   state: LocalState
@@ -96,7 +94,6 @@ export const startProxyServer = async ({
   deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
 }) => {
   const url = await startProxy({
-    addonsUrls,
     aiGatewayContext,
     blobsContext,
     command,

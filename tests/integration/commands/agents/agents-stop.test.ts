@@ -33,8 +33,8 @@ describe('agents:stop command', () => {
         response: runningAgent,
       },
       {
-        path: 'agent_runners/test_id',
-        method: 'DELETE' as const,
+        path: 'agent_runners/test_id/stop',
+        method: 'POST' as const,
         response: { success: true },
       },
     ]
@@ -107,8 +107,8 @@ describe('agents:stop command', () => {
         response: runningAgent,
       },
       {
-        path: 'agent_runners/test_id',
-        method: 'DELETE' as const,
+        path: 'agent_runners/test_id/stop',
+        method: 'POST' as const,
         response: { success: true },
       },
     ]

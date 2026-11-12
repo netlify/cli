@@ -16,10 +16,6 @@ const ENV_VAR_SOURCES = {
     name: 'shared',
     printFn: chalk.magenta,
   },
-  addons: {
-    name: 'addon',
-    printFn: chalk.yellow,
-  },
   configFile: {
     name: 'netlify.toml file',
     printFn: chalk.green,
@@ -78,31 +74,6 @@ const getAccounts = async ({ api }: { api: NetlifyAPI }) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const getAddons = async ({ api, site }) => {
-  try {
-    const addons = await api.listServiceInstancesForSite({ siteId: site.id })
-    return addons
-  } catch (error_) {
-    return logAndThrowError(
-      `Failed retrieving addons for site ${chalk.yellow(site.id)}: ${
-        (error_ as APIError).message
-      }. ${ERROR_CALL_TO_ACTION}`,
-    )
-  }
-}
-
-// @ts-expect-error TS(7031) FIXME: Binding element 'addons' implicitly has an 'any' t... Remove this comment to see the full error message
-const getAddonsInformation = ({ addons, siteInfo }) => {
-  const urls = Object.fromEntries(
-    // @ts-expect-error TS(7006) FIXME: Parameter 'addon' implicitly has an 'any' type.
-    addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]),
-  )
-  // @ts-expect-error TS(7006) FIXME: Parameter 'addon' implicitly has an 'any' type.
-  const env = Object.assign({}, ...addons.map((addon) => addon.env))
-  return { urls, env }
-}
-
 const getSiteAccount = ({ accounts, siteInfo }: { accounts: Account[]; siteInfo: SiteInfo }): Account | undefined => {
   const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
@@ -126,7 +97,6 @@ interface GetSiteInformationOptions {
 }
 
 export interface SiteInformationResult {
-  addonsUrls: Record<string, string>
   siteUrl: string
   accountId?: string
   capabilities: {
@@ -147,13 +117,11 @@ export const getSiteInformation = async ({
 }: GetSiteInformationOptions): Promise<SiteInformationResult> => {
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
-    const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
+    const accounts = await getAccounts({ api })
 
-    const { urls: addonsUrls } = getAddonsInformation({ siteInfo, addons })
     const account = getSiteAccount({ siteInfo, accounts })
 
     return {
-      addonsUrls,
       siteUrl: siteInfo.ssl_url,
       accountId: account?.id,
       capabilities: {
@@ -169,7 +137,6 @@ export const getSiteInformation = async ({
 
   // best defaults we can have without retrieving site information
   return {
-    addonsUrls: {},
     siteUrl: '',
     capabilities: {
       aiGatewayDisabled: false,

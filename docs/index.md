@@ -15,6 +15,15 @@ To get a list of available sub-commands, arguments & flags run
 netlify [command] help
 ```
 
+## Running the CLI from an AI agent
+
+Set `NETLIFY_AGENT` to the name of the AI agent or tool running the CLI, such as `claude-code` or `codex`, optionally with
+a version (`my-agent@1.2.0`). Netlify uses it to attribute CLI usage and signups to that agent, and it takes precedence
+over the markers agents set on their own, such as `AI_AGENT`.
+
+Use only a product name and version. Never put a token, session ID, or other sensitive value in it: the value is sent to
+Netlify and can appear in the login URL the CLI prints.
+
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
@@ -56,7 +65,7 @@ Claim an anonymously deployed site and link it to your account
 
 ### [clone](/commands/clone)
 
-Clone a remote repository and link it to an existing project on Netlify
+Clone a repository and link it to a Netlify project
 
 ### [completion](/commands/completion)
 
@@ -207,3 +216,25 @@ Watch for project deploy to finish
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->
+
+## Agent detection
+
+The CLI reads the `NETLIFY_AGENT` environment variable to learn which AI agent or tool is running it. Agents, MCP servers, and wrappers that invoke the CLI should set it to their name, optionally followed by `@` and a version:
+
+```bash
+NETLIFY_AGENT=claude-code@2.1.0 netlify deploy
+```
+
+Recognized values are `claude`, `codex`, `copilot`, `gemini`, `cursor`, `opencode`, `kiro`, `cline`, `amp`, `warp`, `claudeai`, and `chatgpt`, plus the aliases `claude-code`, `claude-ai`, `github-copilot`, `github-copilot-cli`, `github-copilot-vscode-agent`, `cursor-cli`, `gemini-cli`, `kiro-cli`, and `warp-oz`. Matching ignores case and treats `_` as `-`. Any other value is recorded as `other`. Characters other than letters, digits, `_`, `.`, and `-` are removed, and values are truncated to 64 characters.
+
+The CLI also recognizes markers that agent products set on their own, such as `AI_AGENT`, `CODEX_CI`, and `GEMINI_CLI`. `NETLIFY_AGENT` takes precedence over all of them, even when its value isn't recognized.
+
+### Login source
+
+A program that runs `netlify login` on a user’s behalf can set `NETLIFY_LOGIN_SOURCE` so a sign-up is credited to it rather than to the CLI. The only recognized value is `mcp`, which the Netlify MCP server sets. Any other value is ignored and the login URL keeps `utm_source=cli`.
+
+## Telemetry
+
+The CLI sends usage telemetry and error reports to `cli.netlify.com`. Usage telemetry covers which commands run, their flags with sensitive values masked, the CLI and Node.js versions, the detected framework and package manager, the AI agent running the CLI, and the CI platform.
+
+To disable telemetry, run `netlify --telemetry-disable`, or set `NETLIFY_TELEMETRY_DISABLED=1` or `DO_NOT_TRACK=1`. The environment variables also disable error reporting, and are the most reliable option in CI, where the setting saved by `--telemetry-disable` may not persist between runs.

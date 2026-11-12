@@ -451,6 +451,7 @@ describe('commands/env', () => {
           extendEnv: false,
           env: {
             PATH: process.env.PATH,
+            NETLIFY_TELEMETRY_DISABLED: 'true',
           },
         })) as string
 

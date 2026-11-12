@@ -1,9 +1,9 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 
-import { chalk, exit, log, netlifyCommand } from '../../utils/command-helpers.js'
-import getRepoData from '../../utils/get-repo-data.js'
+import { type APIError, chalk, exit, log, logAndThrowError, netlifyCommand, warn } from '../../utils/command-helpers.js'
+import getRepoData, { type RepoDataError } from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -11,6 +11,7 @@ import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { LocalState, SiteInfo } from '../../utils/types.js'
+import { setupAgentSkills } from '../../utils/init/agent-skills.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
 import { type InitExitCode, LINKED_EXISTING_SITE_EXIT_CODE, LINKED_NEW_SITE_EXIT_CODE } from './constants.js'
 
@@ -37,6 +38,87 @@ const logExistingAndExit = ({ siteInfo }: { siteInfo: SiteInfo }): never => {
   return exit()
 }
 
+const logLinkedWithoutGitAndExit = ({
+  siteInfo,
+  repoError,
+}: {
+  siteInfo: SiteInfo
+  repoError: RepoDataError
+}): never => {
+  if (repoError.reason !== 'no-remote') {
+    warn(`Could not read the git remote: ${repoError.error}`)
+    log(`Fix the git remote, then run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} again to connect it.`)
+  }
+  log()
+  log(`This folder is already linked to the Netlify project ${chalk.cyan(siteInfo.name)}`)
+  log()
+  log(`Project Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
+  log()
+  log(`To deploy to this project, run ${chalk.cyanBright.bold(`${netlifyCommand()} deploy`)}.`)
+  log(
+    `To link this folder to a different project, run ${chalk.cyanBright.bold(
+      `${netlifyCommand()} unlink`,
+    )}, then ${chalk.cyanBright.bold(`${netlifyCommand()} init`)}.`,
+  )
+  return exit()
+}
+
+const ignoreLinkedSiteForThisRun = (command: BaseCommand): void => {
+  const { site } = command.netlify
+  command.siteId = undefined
+  command.netlify.siteInfo = {} as SiteInfo
+  command.netlify.site = {
+    root: site.root,
+    configPath: site.configPath,
+    get id(): string | undefined {
+      return command.siteId
+    },
+    set id(id: string) {
+      site.id = id
+    },
+  }
+}
+
+const getLinkedSiteInfo = async (command: BaseCommand): Promise<SiteInfo | undefined> => {
+  const { api, siteInfo } = command.netlify
+  if (isEmpty(siteInfo)) {
+    return undefined
+  }
+  if (siteInfo.name) {
+    return siteInfo
+  }
+  try {
+    return (await api.getSite({ siteId: siteInfo.id })) as unknown as SiteInfo
+  } catch (error_) {
+    const { status, message } = error_ as APIError
+    const unusableLinks: Partial<Record<number, { reason: string; warning: string }>> = {
+      403: {
+        reason: 'forbidden',
+        warning: `You don't have access to the Netlify project ${siteInfo.id} linked to this folder. Continuing without it.`,
+      },
+      404: {
+        reason: 'not_found',
+        warning: `The Netlify project ${siteInfo.id} linked to this folder no longer exists. Continuing without it.`,
+      },
+    }
+    const unusableLink = unusableLinks[status]
+    if (unusableLink === undefined) {
+      return logAndThrowError(
+        `Could not load the Netlify project ${siteInfo.id} linked to this folder (${
+          status ? `status ${status.toString()}` : message
+        }). Try again, or run ${chalk.cyanBright.bold(`${netlifyCommand()} unlink`)} to start over.`,
+      )
+    }
+    warn(unusableLink.warning)
+    await track('sites_unlinked', { siteId: siteInfo.id, kind: 'init', reason: unusableLink.reason })
+    ignoreLinkedSiteForThisRun(command)
+    if (command.netlify.accounts.length === 0) {
+      await command.refreshAccounts()
+    }
+    return undefined
+  }
+}
+
 /**
  * Creates and new site and exits the process
  */
@@ -59,13 +141,9 @@ const createNewSiteAndExit = async ({
   persistState({ state, siteInfo })
 
   if (!disableLinking) {
-    const { shouldConfigureBuild } = await inquirer.prompt<{ shouldConfigureBuild: boolean }>([
-      {
-        type: 'confirm',
-        name: 'shouldConfigureBuild',
-        message: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
-      },
-    ])
+    const shouldConfigureBuild = await confirm({
+      message: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
+    })
     if (shouldConfigureBuild) {
       const {
         cachedConfig: { configPath },
@@ -154,14 +232,10 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   const NEW_SITE_NO_GIT = 'Yes, create and deploy project manually'
   const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
-  const { noGitRemoteChoice } = await inquirer.prompt<{ noGitRemoteChoice: typeof NEW_SITE_NO_GIT | typeof NO_ABORT }>([
-    {
-      type: 'list',
-      name: 'noGitRemoteChoice',
-      message: 'Do you want to create a Netlify project without a git repository?',
-      choices: [NEW_SITE_NO_GIT, NO_ABORT],
-    },
-  ])
+  const noGitRemoteChoice = await select({
+    message: 'Do you want to create a Netlify project without a git repository?',
+    choices: [NEW_SITE_NO_GIT, NO_ABORT],
+  })
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
     // TODO(ndhoule): Shove a custom error message in here
@@ -179,15 +253,10 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
 
   const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
-  // TODO(serhalp): inquirer should infer the choice type here, but doesn't. Fix.
-  const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
-    {
-      type: 'list',
-      name: 'initChoice',
-      message: 'What would you like to do?',
-      choices: initializeOpts,
-    },
-  ])
+  const initChoice = await select({
+    message: 'What would you like to do?',
+    choices: initializeOpts,
+  })
 
   // create site or search for one
   if (initChoice === NEW_SITE) {
@@ -223,17 +292,40 @@ type InitExitMessageCustomizer = (code: InitExitCode, defaultMessage: string) =>
 type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
+  setupAgentSkills?: boolean | undefined
+  resetContext?: boolean | undefined
+}
+
+const installAgentSkills = async (command: BaseCommand, reset: boolean): Promise<void> => {
+  log()
+  const result = await setupAgentSkills({ workingDir: command.netlify.repositoryRoot, reset })
+  await track('sites_agentSkillsSetup', {
+    installed: result.installed,
+    directories: result.directories,
+    skillsVersion: result.skillsVersion,
+    resetContext: reset,
+    ...result.summary,
+  })
 }
 
 export const init = async (
   options: OptionValues,
   command: BaseCommand,
-  { customizeExitMessage, exitAfterConfiguringRepo = false }: InitExtraOptions = {},
+  {
+    customizeExitMessage,
+    exitAfterConfiguringRepo = false,
+    setupAgentSkills: shouldSetupAgentSkills = false,
+    resetContext = false,
+  }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
-  command.setAnalyticsPayload({ manual: options.manual, force: options.force })
+  command.setAnalyticsPayload({
+    manual: options.manual,
+    force: options.force,
+    skipAgentSetup: options.skipAgentSetup,
+    resetContext: options.resetContext,
+  })
 
   const { repositoryRoot, state } = command.netlify
-  const { siteInfo: existingSiteInfo } = command.netlify
 
   // Check logged in status
   await command.authenticate()
@@ -241,14 +333,21 @@ export const init = async (
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
-  const repoUrl = getRepoUrl(existingSiteInfo)
-  if (repoUrl && !options.force) {
-    logExistingAndExit({ siteInfo: existingSiteInfo })
+  if (shouldSetupAgentSkills) {
+    await installAgentSkills(command, resetContext)
+  }
+
+  const linkedSiteInfo = await getLinkedSiteInfo(command)
+  if (linkedSiteInfo && getRepoUrl(linkedSiteInfo) && !options.force) {
+    logExistingAndExit({ siteInfo: linkedSiteInfo })
   }
 
   // Look for local repo
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
   if ('error' in repoData) {
+    if (linkedSiteInfo) {
+      return logLinkedWithoutGitAndExit({ siteInfo: linkedSiteInfo, repoError: repoData })
+    }
     // TODO(ndhoule): Custom error messaage here
     return await handleNoGitRemoteAndExit({
       command,
@@ -259,7 +358,7 @@ export const init = async (
     })
   }
 
-  const siteInfo = isEmpty(existingSiteInfo) ? await createOrLinkSiteToRepo(command) : existingSiteInfo
+  const siteInfo = linkedSiteInfo ?? (await createOrLinkSiteToRepo(command))
 
   log()
 

@@ -3,11 +3,12 @@ import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
 
 import { getGlobalConfigStore } from '@netlify/dev-utils'
-import { isCI } from 'ci-info'
+import { id as ciVendor, isPR } from 'ci-info'
 
+import { getDrivingAgent } from '../agent-detection.js'
 import execa from '../execa.js'
 
-import { isTelemetryDisabled, cliVersion } from './utils.js'
+import { isTelemetryDisabled, isTelemetryDisabledByEnv, cliVersion } from './utils.js'
 import isValidEventName from './validation.js'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
@@ -45,6 +46,25 @@ const eventConfig = {
   ],
 }
 
+// Every key is always present so a caller's payload can never supply its own agent attribution;
+// undefined values are dropped when the event is serialized.
+const getAgentProperties = () => {
+  const agent = getDrivingAgent()
+
+  return {
+    agent: agent?.name,
+    agent_source: agent?.source,
+    agent_version: agent?.version,
+    agent_markers: agent?.markers,
+    agent_other_value: agent?.otherValue,
+  }
+}
+
+const getCIProperties = () => ({
+  ci_vendor: ciVendor ?? undefined,
+  ci_is_pr: isPR ?? undefined,
+})
+
 /**
  * Tracks a custom event with the provided payload
  */
@@ -52,7 +72,7 @@ export async function track(
   eventName: string,
   payload: { status?: string; duration?: number; [key: string]: unknown } = {},
 ) {
-  if (isCI) {
+  if (isTelemetryDisabledByEnv()) {
     return
   }
 
@@ -82,14 +102,14 @@ export async function track(
     anonymousId: cliId,
     duration,
     status,
-    properties: { ...properties, nodejsVersion, cliVersion },
+    properties: { ...properties, nodejsVersion, cliVersion, ...getAgentProperties(), ...getCIProperties() },
   }
 
   return send('track', defaultData)
 }
 
 export async function identify(payload: { name?: string; email?: string; userId?: string }) {
-  if (isCI) {
+  if (isTelemetryDisabledByEnv()) {
     return
   }
 

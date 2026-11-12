@@ -2,7 +2,7 @@ import fs from 'fs'
 import { homedir } from 'os'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 
 import type { OptionValues } from 'commander'
 import { install, uninstall } from '@pnpm/tabtab'
@@ -56,14 +56,10 @@ export const completionGenerate = async (_options: OptionValues, command: BaseCo
   ) {
     log(`To enable Tabtab autocompletion with zsh, the following line may need to be added to your ~/.zshrc:`)
     log(chalk.bold.cyan(`\n${AUTOLOAD_COMPINIT}\n`))
-    const { compinitAdded } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'compinitAdded',
-        message: `Would you like to add it?`,
-        default: true,
-      },
-    ])
+    const compinitAdded = await confirm({
+      message: `Would you like to add it?`,
+      default: true,
+    })
     if (compinitAdded) {
       fs.readFile(zshConfigFilepath, 'utf8', (_err, data) => {
         const updatedZshFile = AUTOLOAD_COMPINIT + '\n' + data

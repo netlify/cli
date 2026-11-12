@@ -40,6 +40,8 @@ const DEFAULT_IGNORE_PATTERNS = [
   '.temp*',
 ]
 
+const isExecaError = (error: unknown): error is ExecaError => error instanceof Error && 'command' in error
+
 const createSourceZip = async ({
   sourceDir,
   filename,
@@ -79,13 +81,9 @@ const createSourceZip = async ({
       cwd: sourceDir,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
-  } catch (_baseErr) {
-    let message = 'zip command failed'
-    if (_baseErr instanceof Error && 'command' in _baseErr) {
-      const baseErr = _baseErr as ExecaError
-      message = `${baseErr.shortMessage}\n\n${baseErr.all ?? ''}`
-    }
-    throw new Error(message, { cause: _baseErr })
+  } catch (error) {
+    const message = isExecaError(error) ? `${error.shortMessage}\n\n${error.all ?? ''}` : 'zip command failed'
+    throw new Error(message, { cause: error })
   }
 
   return zipPath

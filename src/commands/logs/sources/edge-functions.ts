@@ -1,4 +1,5 @@
 import { getWebSocket } from '../../../utils/websockets/index.js'
+import { SOCKETEER_URL } from '../../../utils/socketeer.js'
 import { buildEdgeFunctionLogsUrl, debugFetch, fetchHistoricalLogs } from '../log-api.js'
 import type { LogEntry } from '../log-api.js'
 
@@ -47,15 +48,13 @@ export const fetchEdgeFunctionHistoricalLogs = async ({
       filterNames.map(async (filterName) => {
         const baseUrl = buildEdgeFunctionLogsUrl({ siteId, search: filterName })
         const entries = await fetchHistoricalLogs({ baseUrl, accessToken, from, to, deployId })
-        return entries.map(
-          (entry): LogEntry => ({
-            source: 'edge-function',
-            name: entry.name ?? entry.function ?? filterName,
-            ts: entry.ts,
-            level: entry.level || 'INFO',
-            message: entry.message,
-          }),
-        )
+        return entries.map((entry): LogEntry => ({
+          source: 'edge-function',
+          name: entry.name ?? entry.function ?? filterName,
+          ts: entry.ts,
+          level: entry.level || 'INFO',
+          message: entry.message,
+        }))
       }),
     )
     return results.flat()
@@ -63,15 +62,13 @@ export const fetchEdgeFunctionHistoricalLogs = async ({
 
   const baseUrl = buildEdgeFunctionLogsUrl({ siteId })
   const entries = await fetchHistoricalLogs({ baseUrl, accessToken, from, to, deployId })
-  return entries.map(
-    (entry): LogEntry => ({
-      source: 'edge-function',
-      name: entry.name ?? entry.function ?? 'edge-function',
-      ts: entry.ts,
-      level: entry.level || 'INFO',
-      message: entry.message,
-    }),
-  )
+  return entries.map((entry): LogEntry => ({
+    source: 'edge-function',
+    name: entry.name ?? entry.function ?? 'edge-function',
+    ts: entry.ts,
+    level: entry.level || 'INFO',
+    message: entry.message,
+  }))
 }
 
 export const streamEdgeFunctions = (
@@ -81,7 +78,7 @@ export const streamEdgeFunctions = (
   filterNames: string[],
   onEntry: (entry: LogEntry) => void,
 ): (() => void) => {
-  const ws = getWebSocket('wss://socketeer.services.netlify.com/edge-function/logs')
+  const ws = getWebSocket(`${SOCKETEER_URL}/edge-function/logs`)
 
   ws.on('open', () => {
     ws.send(

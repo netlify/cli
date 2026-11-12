@@ -32,10 +32,11 @@ const getErrorMessage = function ({ message }) {
   return message
 }
 
-// `netlify-redirector` does not handle the same shape as the backend:
-//  - `from` is called `origin`
+// `@netlify/redirect-matcher` reads a different rule shape from the backend's:
 //  - `query` is called `params`
 //  - `conditions.role|country|language` are capitalized
+//  - `signed` becomes `sign.jwt_secret`
+// The matcher reads the source path from `path`; `origin` is ignored.
 const normalizeRedirect = function ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'country' implicitly has an 'any' ... Remove this comment to see the full error message
   conditions: { country, language, role, ...conditions },

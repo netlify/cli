@@ -2,12 +2,12 @@
 import http from 'http'
 import process from 'process'
 
-import { Octokit } from '@octokit/rest'
+import { password, select } from '@inquirer/prompts'
 import getPort from 'get-port'
-import inquirer from 'inquirer'
 
 import { log } from './command-helpers.js'
 import createDeferred from './create-deferred.js'
+import { requestGitHub, type GitHubUser } from './github-api.js'
 import openBrowser from './open-browser.js'
 
 const SERVER_PORT = 3000
@@ -23,16 +23,12 @@ const promptForAuthMethod = async () => {
   const authChoiceToken = 'Authorize with a GitHub personal access token'
   const authChoices = [authChoiceNetlify, authChoiceToken] as const
 
-  const { authMethod } = await inquirer.prompt<{ authMethod: (typeof authChoices)[number] }>([
-    {
-      type: 'list',
-      name: 'authMethod',
-      message:
-        'Netlify CLI needs access to your GitHub account to configure Webhooks and Deploy Keys. ' +
-        'What would you like to do?',
-      choices: authChoices,
-    },
-  ])
+  const authMethod = await select({
+    message:
+      'Netlify CLI needs access to your GitHub account to configure Webhooks and Deploy Keys. ' +
+      'What would you like to do?',
+    choices: authChoices,
+  })
 
   return authMethod === authChoiceNetlify
 }
@@ -83,16 +79,9 @@ export const authWithNetlify = async (): Promise<Token> => {
 }
 
 const getPersonalAccessToken = async (): Promise<{ token: string }> => {
-  const { token } = await inquirer.prompt<{ token: string }>([
-    {
-      type: 'password',
-      name: 'token',
-      message: 'Your GitHub personal access token:',
-      filter: (input: string) => input.trim(),
-    },
-  ])
+  const token = await password({ message: 'Your GitHub personal access token:' })
 
-  return { token }
+  return { token: token.trim() }
 }
 
 /**
@@ -104,10 +93,7 @@ const authWithToken = async (): Promise<Token> => {
     throw new Error('GitHub authentication failed')
   }
 
-  const octokit = new Octokit({ auth: `token ${token}` })
-  const {
-    data: { login: user },
-  } = await octokit.users.getAuthenticated()
+  const { login: user } = await requestGitHub<GitHubUser>(token, 'GET', '/user')
 
   return { token, user, provider: 'github' }
 }

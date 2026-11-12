@@ -4,10 +4,9 @@ import { join } from 'path'
 import { describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
-import { getCLIOptions } from '../../utils/mock-api-vitest.js'
+import { getCLIOptions, type Route } from '../../utils/mock-api.js'
 import { startDeployMockApi } from './deploy-api-routes.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
-import type { Route } from '../../utils/mock-api-vitest.js'
 import type { NodeOptions } from 'execa'
 import type express from 'express'
 
@@ -28,6 +27,7 @@ const getUnauthenticatedCLIOptions = ({
     APPDATA: builder.directory,
     NETLIFY_API_URL: apiUrl,
     NETLIFY_AUTH_TOKEN: '',
+    NETLIFY_TELEMETRY_DISABLED: 'true',
     NETLIFY_SITE_ID: '',
     ...env,
   },

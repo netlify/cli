@@ -2,7 +2,7 @@ import ansiEscapes from 'ansi-escapes'
 import AsciiTable from 'ascii-table'
 import { isCI } from 'ci-info'
 import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 import logUpdate from 'log-update'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
@@ -101,14 +101,10 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   }
 
   logUpdate(getTable({ environment, hideValues: true, scopesColumn: true }))
-  const { showValues } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'showValues',
-      message: 'Show values?',
-      default: false,
-    },
-  ])
+  const showValues = await confirm({
+    message: 'Show values?',
+    default: false,
+  })
 
   if (showValues) {
     // since inquirer adds a prompt, we need to account for it when printing the table again

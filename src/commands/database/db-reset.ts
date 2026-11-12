@@ -1,6 +1,6 @@
 import { rm } from 'fs/promises'
 
-import inquirer from 'inquirer'
+import { confirm } from '@inquirer/prompts'
 
 import { resetDatabase } from '@netlify/dev'
 
@@ -25,14 +25,10 @@ const discardLocalDatabase = async (error: LocalDatabaseStartError, options: Res
 
     log(error.summary)
 
-    const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([
-      {
-        type: 'confirm',
-        name: 'confirmed',
-        message: `Delete ${directory} and start from an empty database?`,
-        default: false,
-      },
-    ])
+    const confirmed = await confirm({
+      message: `Delete ${directory} and start from an empty database?`,
+      default: false,
+    })
 
     if (!confirmed) {
       log('Reset cancelled.')

@@ -129,8 +129,7 @@ Environment variables are loaded from multiple sources with specific precedence:
 1. Process environment
 2. `.env` files (multiple variants supported)
 3. Netlify site settings (shared, project-specific)
-4. Addon-provided variables
-5. Build-time configuration
+4. Build-time configuration
 
 #### Function URL Routing
 

@@ -3,7 +3,7 @@ import { mkdir, readdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
 import { applyMigrations } from '@netlify/dev'
-import inquirer from 'inquirer'
+import { confirm, select } from '@inquirer/prompts'
 
 import { chalk, log, netlifyCommand } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
@@ -54,17 +54,10 @@ const success = (text: string): void => {
 
 const carefullyWriteFile = async (filePath: string, data: string, projectRoot: string) => {
   if (existsSync(filePath)) {
-    type Answers = {
-      overwrite: boolean
-    }
-    const answers = await inquirer.prompt<Answers>([
-      {
-        type: 'confirm',
-        name: 'overwrite',
-        message: `Overwrite existing file .${filePath.replace(projectRoot, '')}?`,
-      },
-    ])
-    if (answers.overwrite) {
+    const overwrite = await confirm({
+      message: `Overwrite existing file .${filePath.replace(projectRoot, '')}?`,
+    })
+    if (overwrite) {
       await writeFile(filePath, data)
     }
   } else {
@@ -87,20 +80,14 @@ const promptForQueryStyle = async (interactive: boolean): Promise<QueryStyle> =>
   }
 
   log('')
-  const { queryStyle } = await inquirer.prompt<{ queryStyle: QueryStyle }>([
-    {
-      type: 'list',
-      name: 'queryStyle',
-      message: 'What is your preferred style?',
-      default: 'drizzle',
-      choices: [
-        { name: 'Drizzle ORM (recommended)', value: 'drizzle' },
-        { name: 'Direct SQL', value: 'raw' },
-      ],
-    },
-  ])
-
-  return queryStyle
+  return await select<QueryStyle>({
+    message: 'What is your preferred style?',
+    default: 'drizzle',
+    choices: [
+      { name: 'Drizzle ORM (recommended)', value: 'drizzle' },
+      { name: 'Direct SQL', value: 'raw' },
+    ],
+  })
 }
 
 const promptForStarter = async (interactive: boolean): Promise<boolean> => {
@@ -113,15 +100,10 @@ const promptForStarter = async (interactive: boolean): Promise<boolean> => {
   log('and then query it. Alternatively, you can do this yourself at any time.')
 
   log('')
-  const { answer } = await inquirer.prompt<{ answer: boolean }>([
-    {
-      type: 'confirm',
-      name: 'answer',
-      message: 'Do you want to create sample data?',
-      default: true,
-    },
-  ])
-  return answer
+  return await confirm({
+    message: 'Do you want to create sample data?',
+    default: true,
+  })
 }
 
 const installDependencies = async (

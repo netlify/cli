@@ -1,5 +1,5 @@
 import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import { input, select } from '@inquirer/prompts'
 import { pick } from '../../utils/object-utilities.js'
 import prettyjson from 'prettyjson'
 
@@ -7,7 +7,7 @@ import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../.
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
-import { resolveTeamForNonInteractive } from '../../utils/team.js'
+import { requireTeams, resolveTeamForNonInteractive } from '../../utils/team.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import { MAX_SITE_NAME_LENGTH } from '../../utils/validation.js'
@@ -16,16 +16,11 @@ import { link } from '../link/link.js'
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {
-    const { name: nameInput } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'name',
-        message: 'Project name (leave blank for a random name; you can change it later):',
-        validate: (input) =>
-          /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
-      },
-    ])
-    name = typeof nameInput === 'string' ? nameInput : ''
+    name = await input({
+      message: 'Project name (leave blank for a random name; you can change it later):',
+      validate: (value) =>
+        !value || /^[a-zA-Z\d-]+$/.test(value) || 'Only alphanumeric characters and hyphens are allowed',
+    })
   }
 
   return { name }
@@ -46,20 +41,14 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       accountSlug = team.slug
       log(`Using team: ${team.name}`)
     } else {
-      const { accountSlug: accountSlugInput }: { accountSlug: string } = await inquirer.prompt<
-        Promise<{ accountSlug: string }>
-      >([
-        {
-          type: 'list',
-          name: 'accountSlug',
-          message: 'Team:',
-          choices: accounts.map((account) => ({
-            value: account.slug,
-            name: account.name,
-          })),
-        },
-      ])
-      accountSlug = accountSlugInput
+      const teams = requireTeams(accounts)
+      accountSlug = await select({
+        message: 'Team:',
+        choices: teams.map((account) => ({
+          value: account.slug,
+          name: account.name,
+        })),
+      })
     }
   }
 

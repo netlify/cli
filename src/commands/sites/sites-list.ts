@@ -28,7 +28,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
         account_name: site.account_name,
       }
 
-      if (site.build_settings && site.build_settings.repo_url) {
+      if (site.build_settings?.repo_url) {
         siteInfo.repo_url = site.build_settings.repo_url
       }
 

@@ -52,6 +52,80 @@ describe('link command', () => {
       )
     })
   })
+  test('should link to matching manual-provider project by owner/repo given a full `--git-remote-url`', async (t) => {
+    const siteInfo = {
+      id: 'site_id',
+      name: 'test-site',
+      ssl_url: 'https://test-site.netlify.app',
+      admin_url: 'https://app.netlify.com/projects/test-site',
+      build_settings: {
+        provider: 'manual',
+        repo_url: 'acme/widget',
+      },
+    }
+    const routes = [
+      {
+        path: 'sites',
+        response: [siteInfo],
+      },
+      {
+        path: 'sites/site_id',
+        response: siteInfo,
+      },
+    ]
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          const stdout = (await callCli(
+            ['link', '--git-remote-url', 'git@git.example-host.internal:acme/widget.git'],
+            getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+          )) as string
+
+          expect(stdout).toContain('Linked to test-site')
+        },
+        true,
+      )
+    })
+  })
+
+  test('should not fall back to owner/repo matching for non-manual providers', async (t) => {
+    const routes = [
+      {
+        path: 'sites',
+        response: [
+          {
+            id: 'site_id',
+            name: 'test-site',
+            build_settings: {
+              provider: 'github',
+              repo_url: 'acme/widget',
+            },
+          },
+        ],
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          await expect(
+            callCli(
+              ['link', '--git-remote-url', 'git@git.example-host.internal:acme/widget.git'],
+              getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+            ),
+          ).rejects.toThrow(/No matching project found|sites:search/)
+        },
+        true,
+      )
+    })
+  })
+
   test.todo('should print an error and exit when no project with given `--git-remote-url` is found')
 
   test.todo("should prompt user when a project matching the local git repo's remote origin HTTPS URL is found")

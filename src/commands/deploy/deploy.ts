@@ -1,12 +1,12 @@
 import { randomBytes } from 'crypto'
-import { type Stats } from 'fs'
+import type { Stats } from 'fs'
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 import { stdin, stdout } from 'process'
 
+import { confirm, input, select } from '@inquirer/prompts'
 import type { NetlifyAPI } from '@netlify/api'
 import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
-import inquirer from 'inquirer'
 import { parseAllHeaders } from '@netlify/headers-parser'
 import { parseAllRedirects } from '@netlify/redirect-parser'
 import prettyjson from 'prettyjson'
@@ -21,7 +21,7 @@ import {
 } from '../../lib/build.js'
 import { getBootstrapURL } from '../../lib/edge-functions/bootstrap.js'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.js'
-import { normalizeFunctionsConfig } from '../../lib/functions/config.js'
+import { type NormalizedFunctionsConfig, normalizeFunctionsConfig } from '../../lib/functions/config.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.js'
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
@@ -41,34 +41,54 @@ import {
 import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
 import { getDeploySourceFields } from '../../utils/deploy/deploy-source.js'
+import { getDeployUrls, type DeployUrls } from '../../utils/deploy/deploy-urls.js'
 import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { mergeDeployEnvVars } from '../../utils/env/deploy-env-vars.js'
-import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
+import {
+  getFunctionsManifestPath,
+  getInternalFunctionsDir,
+  getServerManifestPath,
+} from '../../utils/functions/index.js'
+import { getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import { isEmpty } from '../../utils/object-utilities.js'
 import openBrowser from '../../utils/open-browser.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { resolveTeamForNonInteractive } from '../../utils/team.js'
 import {
   type DropApiError,
-  type UploadListItem,
   getDropToken,
   createDropDeploy,
   uploadDropFiles,
   waitForDropDeploy,
 } from '../../utils/deploy/drop-api.js'
+import type { DeployConfig } from '../../utils/deploy/types.js'
 import { getUploadList } from '../../utils/deploy/util.js'
 import hashFiles from '../../utils/deploy/hash-files.js'
 import { deployFileNormalizer, getEdgeFunctionsDistPathIfExists } from '../../utils/deploy/process-files.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
-import type { $TSFixMe } from '../types.js'
-import { SiteInfo } from '../../utils/types.js'
+import type { NetlifyOptions, NetlifySite } from '../types.js'
+import type { SiteInfo } from '../../utils/types.js'
 import type { DeployOptionValues } from './option_values.js'
+import { remoteDeploy } from './remote-deploy.js'
 import boxen from 'boxen'
 import terminalLink from 'terminal-link'
 import { anyEdgeFunctionsDirectoryExists } from '../../lib/edge-functions/get-directories.js'
+
+// FIXME: `site.root` is typed as optional, but it is always set to the build directory by the time a deploy runs
+type DeploySite = NetlifySite & { root: string }
+
+// FIXME(@netlify/api): `SiteInfo['build_settings']` is missing `functions_dir`
+type DeploySiteData = { build_settings?: SiteInfo['build_settings'] & { functions_dir?: string } }
+
+// FIXME(@netlify/api): the `createSiteDeploy` types omit the source zip fields and make `id` optional
+type CreatedDeploy = Omit<Awaited<ReturnType<NetlifyAPI['createSiteDeploy']>>, 'id'> & {
+  id: string
+  source_zip_upload_url?: string
+  source_zip_filename?: string
+}
 
 const triggerDeploy = async ({
   api,
@@ -115,10 +135,10 @@ const getDeployFolder = async ({
   siteData,
 }: {
   command: BaseCommand
-  config: $TSFixMe
+  config: DeployConfig
   options: DeployOptionValues
-  site: $TSFixMe
-  siteData: $TSFixMe
+  site: DeploySite
+  siteData?: DeploySiteData
 }): Promise<string> => {
   let deployFolder: string | undefined
   // if the `--dir .` flag is provided we should resolve it to the working directory.
@@ -128,7 +148,7 @@ const getDeployFolder = async ({
     deployFolder = command.workspacePackage
       ? resolve(command.jsWorkspaceRoot || site.root, options.dir)
       : resolve(command.workingDir, options.dir)
-  } else if (config?.build?.publish) {
+  } else if (config.build.publish) {
     deployFolder = resolve(site.root, config.build.publish)
   } else if (siteData?.build_settings?.dir) {
     deployFolder = resolve(site.root, siteData.build_settings.dir)
@@ -150,16 +170,11 @@ const getDeployFolder = async ({
 
     log(`\nTo specify directory non-interactively, use: ${copyableCommand}\n`)
 
-    const { promptPath } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'promptPath',
-        message: 'Publish directory',
-        default: '.',
-        filter: (input) => resolve(command.workingDir, input),
-      },
-    ])
-    deployFolder = promptPath as string
+    const promptPath = await input({
+      message: 'Publish directory',
+      default: '.',
+    })
+    deployFolder = resolve(command.workingDir, promptPath)
   }
 
   return deployFolder
@@ -199,10 +214,10 @@ const getFunctionsFolder = ({
   siteData,
   workingDir,
 }: {
-  config: $TSFixMe
+  config: DeployConfig
   options: DeployOptionValues
-  site: $TSFixMe
-  siteData: $TSFixMe
+  site: DeploySite
+  siteData?: DeploySiteData
   /** The process working directory where the build command is executed  */
   workingDir: string
 }): string | undefined => {
@@ -260,23 +275,13 @@ const validateFolders = async ({
   return { deployFolderStat, functionsFolderStat }
 }
 
-/**
- * @param {object} config
- * @param {string} config.deployFolder
- * @param {*} config.site
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
-const getDeployFilesFilter = ({ deployFolder, site }) => {
+const getDeployFilesFilter = ({ deployFolder, site }: { deployFolder: string; site: DeploySite }) => {
   // site.root === deployFolder can happen when users run `netlify deploy --dir .`
   // in that specific case we don't want to publish the repo node_modules
   // when site.root !== deployFolder the behaviour matches our buildbot
   const skipNodeModules = site.root === deployFolder
 
   return (filename: string) => {
-    if (filename == null) {
-      return false
-    }
     if (filename === deployFolder) {
       return true
     }
@@ -369,13 +374,18 @@ const generateDeployCommand = (
   return parts.join(' ')
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
-  if (
-    typeof siteData.published_deploy === 'object' &&
-    siteData.published_deploy !== null &&
-    siteData.published_deploy.locked
-  ) {
+const prepareProductionDeploy = async ({
+  api,
+  siteData,
+  options,
+  command,
+}: {
+  api: NetlifyAPI
+  siteData: SiteInfo
+  options: DeployOptionValues
+  command: BaseCommand
+}) => {
+  if (siteData.published_deploy?.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
 
     const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [], command)
@@ -391,18 +401,46 @@ const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
     log(`  ${overrideCommand}`)
     log('\nWarning: Only use --prod-if-unlocked if you are absolutely sure you want to override the deployment lock.\n')
 
-    const { unlockChoice } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'unlockChoice',
-        message: 'Would you like to "unlock" deployments for production context to proceed?',
-        default: false,
-      },
-    ])
+    const unlockChoice = await confirm({
+      message: 'Would you like to "unlock" deployments for production context to proceed?',
+      default: false,
+    })
     if (!unlockChoice) exit(0)
     await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
     log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
   }
+}
+
+const createDeploy = async ({
+  alias,
+  api,
+  command,
+  deployToProduction,
+  options,
+  siteData,
+  siteId,
+}: {
+  alias: string | undefined
+  api: NetlifyAPI
+  command: BaseCommand
+  deployToProduction: boolean
+  options: DeployOptionValues
+  siteData: SiteInfo
+  siteId: string
+}): Promise<CreatedDeploy> => {
+  if (deployToProduction) {
+    await prepareProductionDeploy({ siteData, api, options, command })
+  }
+
+  const draft = options.draft || (!deployToProduction && !alias)
+  const createDeployBody = {
+    draft,
+    branch: alias,
+    include_upload_url: options.uploadSourceZip,
+    ...getDeploySourceFields(),
+  }
+
+  return (await api.createSiteDeploy({ siteId, title: options.message, body: createDeployBody })) as CreatedDeploy
 }
 
 const hasErrorMessage = (actual: unknown, expected: string): boolean => {
@@ -450,7 +488,7 @@ const reportDeployError = ({
 }
 
 const deployProgressCb = function () {
-  const spinnersByType: Record<DeployEvent['type'], Spinner> = {}
+  const spinnersByType: Partial<Record<DeployEvent['type'], Spinner>> = {}
   return (event: DeployEvent) => {
     switch (event.phase) {
       case 'start': {
@@ -472,7 +510,8 @@ const deployProgressCb = function () {
         return
       case 'stop':
       default: {
-        spinnersByType[event.type].success(event.msg)
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- FIXME: a `stop` event is assumed to follow a `start` event of the same type
+        spinnersByType[event.type]!.success(event.msg)
         delete spinnersByType[event.type]
       }
     }
@@ -510,7 +549,7 @@ const uploadDeployBlobs = async ({
     // We log our own progress so we don't want this as well. Plus, this logs much of the same
     // information as the build that (likely) came before this as part of the deploy build.
     quiet: options.debug ?? true,
-    // @ts-expect-error(serhalp) -- Untyped in `@netlify/build`
+    // @ts-expect-error FIXME(@netlify/build): the `cachedConfig` flag is typed `Record<string, unknown>`, rejecting `CachedConfig`
     cachedConfig,
     packagePath,
     deployId,
@@ -536,43 +575,41 @@ const uploadDeployBlobs = async ({
 }
 
 const runDeploy = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'alias' implicitly has an 'any' ty... Remove this comment to see the full error message
   alias,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
   api,
   command,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
   deployFolder,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployTimeout' implicitly has an ... Remove this comment to see the full error message
   deployTimeout,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployToProduction' implicitly ha... Remove this comment to see the full error message
   deployToProduction,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'functionsConfig' implicitly has a... Remove this comment to see the full error message
   functionsConfig,
   functionsFolder,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'a... Remove this comment to see the full error message
   options,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
   packagePath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'silent' implicitly has an 'any' t... Remove this comment to see the full error message
   silent,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
   site,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteData' implicitly has an 'any'... Remove this comment to see the full error message
   siteData,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
   siteId,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'skipFunctionsCache' implicitly ha... Remove this comment to see the full error message
   skipFunctionsCache,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
-  title,
   deployId: existingDeployId,
 }: {
-  functionsFolder?: string
+  alias: string | undefined
+  api: NetlifyAPI
   command: BaseCommand
-  deployId?: string
+  config: DeployConfig
+  deployFolder: string
+  deployId?: string | undefined
+  deployTimeout: number
+  deployToProduction: boolean
+  functionsConfig: NormalizedFunctionsConfig
+  functionsFolder?: string | undefined
+  options: DeployOptionValues
+  packagePath: string | undefined
+  silent: boolean
+  site: DeploySite
+  siteData: SiteInfo
+  siteId: string
+  skipFunctionsCache: boolean
 }): Promise<{
   siteId: string
   siteName: string
@@ -582,6 +619,7 @@ const runDeploy = async ({
   logsUrl: string
   functionLogsUrl: string
   edgeFunctionLogsUrl: string
+  serverLogsUrl?: string | undefined
   sourceZipFileName?: string
 }> => {
   let results
@@ -592,20 +630,16 @@ const runDeploy = async ({
     // We won't have a deploy ID if we run the command with `--no-build`.
     // In this case, we must create the deploy.
     if (!deployId) {
-      if (deployToProduction) {
-        await prepareProductionDeploy({ siteData, api, options, command })
-      }
-
-      const draft = options.draft || (!deployToProduction && !alias)
-      const createDeployBody = {
-        draft,
-        branch: alias,
-        include_upload_url: options.uploadSourceZip,
-        ...getDeploySourceFields(),
-      }
-
-      const createDeployResponse = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
-      deployId = createDeployResponse.id as string
+      const createDeployResponse = await createDeploy({
+        alias,
+        api,
+        command,
+        deployToProduction,
+        options,
+        siteData,
+        siteId,
+      })
+      deployId = createDeployResponse.id
 
       if (
         options.uploadSourceZip &&
@@ -633,12 +667,16 @@ const runDeploy = async ({
       command.netlify.frameworksAPIPaths.functions.path,
       functionsFolder,
     ].filter((folder): folder is string => Boolean(folder))
-    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
+    const manifestPath = skipFunctionsCache
+      ? undefined
+      : await getFunctionsManifestPath({ base: site.root, packagePath })
+    const serverManifestPath = await getServerManifestPath({ base: site.root, packagePath })
 
     const redirectsPath = `${deployFolder}/_redirects`
     const headersPath = `${deployFolder}/_headers`
 
     const { redirects } = await parseAllRedirects({
+      // @ts-expect-error FIXME(@netlify/redirect-parser): `configRedirects` is typed `string[]` but takes redirect objects
       configRedirects: config.redirects,
       redirectsFiles: [redirectsPath],
       minimal: true,
@@ -647,6 +685,7 @@ const runDeploy = async ({
     config.redirects = redirects
 
     const { headers } = await parseAllHeaders({
+      // @ts-expect-error FIXME(@netlify/headers-parser): `MinimalHeader` rejects the array values `NetlifyConfig['headers']` allows
       configHeaders: config.headers,
       headersFiles: [headersPath],
       minimal: true,
@@ -663,7 +702,6 @@ const runDeploy = async ({
     })
 
     results = await deploySite(command, api, siteId, deployFolder, {
-      // @ts-expect-error FIXME
       config,
       fnDir: functionDirectories,
       functionsConfig,
@@ -675,7 +713,9 @@ const runDeploy = async ({
       deployId,
       filter: getDeployFilesFilter({ site, deployFolder }),
       workingDir: command.workingDir,
-      manifestPath,
+      manifestPath: manifestPath ?? undefined,
+      packagePath,
+      serverManifestPath: serverManifestPath ?? undefined,
       skipFunctionsCache,
       siteRoot: site.root,
       environment: mergeDeployEnvVars(options.env, options.secretEnv),
@@ -688,27 +728,11 @@ const runDeploy = async ({
     return reportDeployError({ error: error as DeployError, failAndExit: logAndThrowError })
   }
 
-  const siteUrl = results.deploy.ssl_url || results.deploy.url
-  const deployUrl = results.deploy.deploy_ssl_url || results.deploy.deploy_url
-  const logsUrl = `${results.deploy.admin_url}/deploys/${results.deploy.id}`
-
-  let functionLogsUrl = `${results.deploy.admin_url}/logs/functions`
-  let edgeFunctionLogsUrl = `${results.deploy.admin_url}/logs/edge-functions`
-
-  if (!deployToProduction) {
-    functionLogsUrl += `?scope=deploy:${deployId}`
-    edgeFunctionLogsUrl += `?scope=deployid:${deployId}`
-  }
-
   return {
     siteId: results.deploy.site_id,
     siteName: results.deploy.name,
     deployId: results.deployId,
-    siteUrl,
-    deployUrl,
-    logsUrl,
-    functionLogsUrl,
-    edgeFunctionLogsUrl,
+    ...getDeployUrls(results.deploy, { deployToProduction }),
     sourceZipFileName: uploadSourceZipResult?.sourceZipFileName,
   }
 }
@@ -794,14 +818,15 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
     ...options,
     packagePath: command.workspacePackage,
     buffer: true,
-    featureFlags: edgeFunctionsFeatureFlags,
+    featureFlags: {
+      ...edgeFunctionsFeatureFlags,
+      ...getFeatureFlagsFromSiteInfo(command.netlify.cachedConfig.siteInfo),
+    },
     // We log our own progress so we don't want this as well. Plus, this logs much of the same
     // information as the build that (likely) came before this as part of the deploy build.
     quiet: options.debug ?? true,
-    // (cachedConfig type error hides this one, but it still is valid) @ts-expect-error FIXME(serhalp): This is missing from the `runCoreSteps` type in @netlify/build
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
-    // @ts-expect-error 'CachedConfig' is not assignable to type 'Record<string, unknown>'.
-    // Index signature for type 'string' is missing in type 'CachedConfig'.
+    // @ts-expect-error FIXME(@netlify/build): `cachedConfig` is typed `Record<string, unknown>` and `edgeFunctionsBootstrapURL` is missing from the flags
     cachedConfig: command.netlify.cachedConfig,
   })
 
@@ -830,8 +855,18 @@ interface JsonData {
   logs: string
   function_logs: string
   edge_function_logs: string
+  server_logs?: string
   url?: string
   source_zip_filename?: string
+  commit_sha?: string
+}
+
+interface DeployResults extends DeployUrls {
+  siteId: string
+  siteName: string
+  deployId: string
+  sourceZipFileName?: string
+  commitSha?: string
 }
 
 const printResults = ({
@@ -839,18 +874,21 @@ const printResults = ({
   uploadSourceZip,
   json,
   results,
-  runBuildCommand,
+  prodCommand,
 }: {
   deployToProduction: boolean
   uploadSourceZip: boolean
   json: boolean
-  results: Awaited<ReturnType<typeof prepAndRunDeploy>>
-  runBuildCommand: boolean
+  results: DeployResults
+  prodCommand: string
 }): void => {
   const msgData: Record<string, string> = {
     'Build logs': terminalLink(results.logsUrl, results.logsUrl, { fallback: false }),
     'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl, { fallback: false }),
     'Edge function Logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl, { fallback: false }),
+  }
+  if (results.serverLogsUrl) {
+    msgData['Server logs'] = terminalLink(results.serverLogsUrl, results.serverLogsUrl, { fallback: false })
   }
 
   log('')
@@ -868,12 +906,20 @@ const printResults = ({
       function_logs: results.functionLogsUrl,
       edge_function_logs: results.edgeFunctionLogsUrl,
     }
+    if (results.serverLogsUrl) {
+      jsonData.server_logs = results.serverLogsUrl
+    }
+
     if (deployToProduction) {
       jsonData.url = results.siteUrl
     }
 
     if (uploadSourceZip) {
       jsonData.source_zip_filename = results.sourceZipFileName
+    }
+
+    if (results.commitSha) {
+      jsonData.commit_sha = results.commitSha
     }
 
     logJson(jsonData)
@@ -888,11 +934,14 @@ const printResults = ({
     log(`\nBuild logs: <${results.logsUrl}>`)
     log(`Function logs: <${results.functionLogsUrl}>`)
     log(`Edge function logs: <${results.edgeFunctionLogsUrl}>`)
+    if (results.serverLogsUrl) {
+      log(`Server logs: <${results.serverLogsUrl}>`)
+    }
 
     if (!deployToProduction) {
       log()
       log('If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:')
-      log(`netlify deploy${runBuildCommand ? '' : ' --no-build'} --prod`)
+      log(prodCommand)
       log()
     }
   } else {
@@ -920,7 +969,7 @@ const printResults = ({
     if (!deployToProduction) {
       log()
       log('If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:')
-      log(chalk.cyanBright.bold(`netlify deploy${runBuildCommand ? '' : ' --no-build'} --prod`))
+      log(chalk.cyanBright.bold(prodCommand))
       log()
     }
   }
@@ -938,12 +987,16 @@ const prepAndRunDeploy = async ({
   workingDir,
   deployId,
 }: {
-  options: DeployOptionValues
+  api: NetlifyAPI
   command: BaseCommand
+  config: DeployConfig
+  deployToProduction: boolean
+  options: DeployOptionValues
+  site: DeploySite
+  siteData: SiteInfo
+  siteId: string
   workingDir: string
   deployId?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FIXME(serhalp)
-  [key: string]: any
 }) => {
   const alias = options.alias || options.branch
   // if a context is passed besides dev, we need to pull env vars from that specific context
@@ -1003,7 +1056,6 @@ const prepAndRunDeploy = async ({
   })
 
   const results = await runDeploy({
-    // @ts-expect-error FIXME
     alias,
     api,
     command,
@@ -1016,19 +1068,18 @@ const prepAndRunDeploy = async ({
     functionsFolder: functionsFolderStat && functionsFolder,
     options,
     packagePath: command.workspacePackage,
-    silent: options.json || options.silent,
+    silent: options.json || Boolean(options.silent),
     site,
     siteData,
     siteId,
     skipFunctionsCache: options.skipFunctionsCache,
-    title: options.message,
     deployId,
   })
 
   return results
 }
 
-const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
+const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCommand, site: NetlifySite) => {
   const { accounts } = command.netlify
   const siteName = typeof options.createSite === 'string' ? options.createSite : undefined
 
@@ -1057,24 +1108,26 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
   }
 
   try {
-    const siteData = await api.createSiteInTeam({
+    // FIXME(@netlify/api): the `site` response type makes every field optional, unlike `SiteInfo`
+    const siteData = (await api.createSiteInTeam({
       accountSlug: options.team,
       body,
-    })
+    })) as SiteInfo
     site.id = siteData.id
-    return siteData as SiteInfo
+    return siteData
   } catch (error_) {
     if ((error_ as APIError).status === 422 && siteName) {
       const suffix = randomBytes(4).toString('hex')
       const suffixedName = `${siteName.trim()}-${suffix}`
       log(`Site name "${siteName}" is taken. Retrying with "${suffixedName}"...`)
       try {
-        const siteData = await api.createSiteInTeam({
+        // FIXME(@netlify/api): the `site` response type makes every field optional, unlike `SiteInfo`
+        const siteData = (await api.createSiteInTeam({
           accountSlug: options.team,
           body: { name: suffixedName },
-        })
+        })) as SiteInfo
         site.id = siteData.id
-        return siteData as SiteInfo
+        return siteData
       } catch (retryError) {
         return logAndThrowError(
           `Failed to create site "${suffixedName}": ${(retryError as APIError).status}: ${
@@ -1090,7 +1143,7 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
   }
 }
 
-const promptForSiteAction = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
+const promptForSiteAction = async (options: DeployOptionValues, command: BaseCommand, site: NetlifySite) => {
   log("This folder isn't linked to a project yet")
 
   const { accounts } = command.netlify
@@ -1102,23 +1155,19 @@ const promptForSiteAction = async (options: DeployOptionValues, command: BaseCom
     log(`\nYou must pick a --team: ${availableTeams.map((team) => team.slug).join(', ')}`)
   }
 
-  const { initChoice } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'initChoice',
-      message: 'What would you like to do?',
-      choices: [
-        {
-          name: '⇄  Link this directory to an existing project',
-          value: 'link',
-        },
-        {
-          name: '+  Create & configure a new project',
-          value: 'create',
-        },
-      ],
-    },
-  ])
+  const initChoice = await select({
+    message: 'What would you like to do?',
+    choices: [
+      {
+        name: '⇄  Link this directory to an existing project',
+        value: 'link',
+      },
+      {
+        name: '+  Create & configure a new project',
+        value: 'create',
+      },
+    ],
+  })
 
   const siteData = initChoice === 'create' ? await sitesCreate({}, command) : await link({}, command)
 
@@ -1129,13 +1178,19 @@ const promptForSiteAction = async (options: DeployOptionValues, command: BaseCom
 const ensureSiteExists = async (
   options: DeployOptionValues,
   command: BaseCommand,
-  site: $TSFixMe,
+  site: NetlifySite,
   siteInfo: SiteInfo,
 ): Promise<SiteInfo> => {
   const hasSiteData = (site.id || options.site) && !isEmpty(siteInfo)
 
   if (hasSiteData) {
     return siteInfo
+  }
+
+  if (options.remote) {
+    return logAndThrowError(
+      '--remote needs an existing Netlify project connected to a git repository. Run netlify link to link this directory to one, or pass --site.',
+    )
   }
 
   if (options.createSite) {
@@ -1156,7 +1211,7 @@ const ensureSiteExists = async (
 
 const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand) => {
   const { workingDir } = command
-  const { site, config } = command.netlify
+  const { site, config } = command.netlify as NetlifyOptions & { site: DeploySite }
 
   const dirHasFiles = async (dir: string | undefined): Promise<boolean> => {
     if (!dir) return false
@@ -1172,7 +1227,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
   }
 
   const checkForFunctions = async () => {
-    const functionsFolder = getFunctionsFolder({ config, options, site, siteData: {}, workingDir })
+    const functionsFolder = getFunctionsFolder({ config, options, site, workingDir })
     const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
     const frameworksFunctionsDir = command.netlify.frameworksAPIPaths.functions.path
 
@@ -1212,10 +1267,9 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
 
   const deployFolder = await getDeployFolder({
     command,
-    config: command.netlify.config,
+    config,
     options,
     site,
-    siteData: {},
   })
   await validateDeployFolder(deployFolder)
 
@@ -1224,7 +1278,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
   const filter = getDeployFilesFilter({ site, deployFolder })
   const { files, filesShaMap } = await hashFiles({
     concurrentHash: DEFAULT_CONCURRENT_HASH,
-    directories: [deployFolder, edgeFunctionsDistPath].filter(Boolean),
+    directories: [deployFolder, edgeFunctionsDistPath].filter((dir): dir is string => Boolean(dir)),
     filter,
     normalizer: deployFileNormalizer.bind(null, workingDir),
     statusCb: options.json ? () => {} : deployProgressCb(),
@@ -1264,7 +1318,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
     throw error
   }
 
-  const uploadList = getUploadList(deployInfo.required, filesShaMap) as UploadListItem[]
+  const uploadList = getUploadList(deployInfo.required, filesShaMap)
 
   if (uploadList.length > 0) {
     await uploadDropFiles(dropApiOptions, deployInfo.deploy_id, uploadList, dropToken, {
@@ -1281,7 +1335,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
 
   site.id = deployInfo.id
 
-  const siteUrl = (deploy.ssl_url || deploy.url || `https://${deployInfo.subdomain}.netlify.app`) as string
+  const siteUrl = deploy.ssl_url || deploy.url || `https://${deployInfo.subdomain}.netlify.app`
   const isPasswordProtected = !options.createdVia || options.createdVia === 'drop'
   const claimUrl = `https://app.netlify.com/drop/${deployInfo.subdomain}#drop_token=${dropToken}`
 
@@ -1331,7 +1385,13 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch
 
-  command.setAnalyticsPayload({ open: options.open, prod: options.prod, json: options.json, alias: Boolean(alias) })
+  command.setAnalyticsPayload({
+    open: options.open,
+    prod: options.prod,
+    json: options.json,
+    alias: Boolean(alias),
+    remote: Boolean(options.remote),
+  })
 
   if (options.allowAnonymous) {
     const [token] = await getToken(options.auth)
@@ -1379,31 +1439,22 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   const deployToProduction =
     !options.draft && (options.prod || (options.prodIfUnlocked && !(siteData.published_deploy?.locked ?? false)))
 
-  let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
+  let results = {} as DeployResults
+  let prodCommand = `netlify deploy${options.build ? '' : ' --no-build'} --prod`
 
-  if (options.build) {
-    if (deployToProduction) {
-      await prepareProductionDeploy({ siteData, api, options, command })
-    }
-
-    const draft = options.draft || (!deployToProduction && !alias)
-    const createDeployBody = {
-      draft,
-      branch: alias,
-      include_upload_url: options.uploadSourceZip,
-      ...getDeploySourceFields(),
-    }
-
-    // TODO: Type this properly in `@netlify/api`.
-    const deployMetadata = (await api.createSiteDeploy({
-      siteId,
-      title: options.message,
-      body: createDeployBody,
-    })) as Awaited<ReturnType<typeof api.createSiteDeploy>> & {
-      source_zip_upload_url?: string
-      source_zip_filename?: string
-    }
-    const deployId = deployMetadata.id || ''
+  if (options.remote) {
+    results = await remoteDeploy({
+      api,
+      workingDir,
+      options,
+      siteData,
+      deployToProduction,
+      prepareProductionDeploy: () => prepareProductionDeploy({ siteData, api, options, command }),
+    })
+    prodCommand = 'netlify deploy --remote --prod'
+  } else if (options.build) {
+    const deployMetadata = await createDeploy({ alias, api, command, deployToProduction, options, siteData, siteId })
+    const deployId = deployMetadata.id
     const skewProtectionToken = deployMetadata.skew_protection_token
     let sourceZipFileName: string | undefined
 
@@ -1435,7 +1486,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
             options,
             workingDir,
             api,
-            site,
+            site: site as DeploySite,
             config: netlifyConfig,
             siteData,
             siteId,
@@ -1465,7 +1516,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
       options,
       workingDir,
       api,
-      site,
+      site: site as DeploySite,
       config: command.netlify.config,
       siteData,
       siteId,
@@ -1473,7 +1524,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     })
   }
   printResults({
-    runBuildCommand: options.build,
+    prodCommand,
     json: options.json,
     results,
     deployToProduction,

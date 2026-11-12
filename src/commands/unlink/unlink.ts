@@ -22,7 +22,7 @@ export const unlink = async (_options: OptionValues, command: BaseCommand) => {
     siteId: siteData.id || siteId,
   })
 
-  if (site && site.configPath) {
+  if (site?.configPath) {
     log(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
   } else {
     log(`Unlinked from ${siteData ? siteData.name : siteId}`)

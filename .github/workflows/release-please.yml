@@ -16,7 +16,7 @@ jobs:
           private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
           app-id: ${{ secrets.TOKENS_APP_ID }}
 
-      - uses: GoogleCloudPlatform/release-please-action@v4
+      - uses: GoogleCloudPlatform/release-please-action@v5
         id: release
         with:
           token: ${{ steps.get-token.outputs.token }}
@@ -44,9 +44,8 @@ jobs:
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
-      # Use npm@10 due to https://github.com/npm/cli/issues/8489 and https://github.com/npm/cli/issues/8767
-      - name: Setup npm version
-        run: npm install -g npm@10
+      - name: Install pinned npm version
+        run: npm install -g npm@11.19.1
 
       - name: Install core dependencies
         run: npm ci --no-audit
@@ -56,13 +55,9 @@ jobs:
 
       - name: Publish netlify-cli package
         run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Prepare netlify package
         run: node scripts/netlifyPackage.js
 
       - name: Publish netlify package
         run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

@@ -53,12 +53,13 @@ describe('rules-proxy', () => {
     const res = await fetch(`http://localhost:${(server?.address() as net.AddressInfo).port}/something`)
     const body = await res.json()
 
-    expect(body).toHaveProperty('from', '/something')
-    expect(body).toHaveProperty('to', '/ping')
-    expect(body).toHaveProperty('force', false)
-    expect(body).toHaveProperty('host', '')
-    expect(body).toHaveProperty('negative', false)
-    expect(body).toHaveProperty('scheme', '')
-    expect(body).toHaveProperty('status', 200)
+    expect(body).toEqual({
+      type: 'match',
+      status: 200,
+      to: '/ping',
+      force: false,
+      proxyHeaders: {},
+      netlifyVary: '',
+    })
   })
 })

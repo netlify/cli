@@ -14,6 +14,6 @@ describe('parseRepoURL', () => {
 
   test('should fail on GitLab URL', () => {
     const url = new URL('https://gitlab.com/netlify-labs/all-the-functions/-/blob/master/functions/9-using-middleware')
-    expect(() => parseRepoURL('GitLab', { path: url.pathname })).toThrowError('Unsupported host GitLab')
+    expect(() => parseRepoURL('GitLab', { path: url.pathname })).toThrow('Unsupported host GitLab')
   })
 })

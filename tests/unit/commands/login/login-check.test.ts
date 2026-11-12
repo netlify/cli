@@ -9,14 +9,17 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@netlify/api', () => ({
-  NetlifyAPI: vi.fn().mockImplementation(() => ({
-    showTicket: mocks.showTicket,
-    exchangeTicket: mocks.exchangeTicket,
-    getCurrentUser: mocks.getCurrentUser,
-    set accessToken(_val: string) {
-      // no-op for test
-    },
-  })),
+  // vitest 4 constructs mocks called with `new`, so the implementation cannot be an arrow function.
+  NetlifyAPI: vi.fn(function () {
+    return {
+      showTicket: mocks.showTicket,
+      exchangeTicket: mocks.exchangeTicket,
+      getCurrentUser: mocks.getCurrentUser,
+      set accessToken(_val: string) {
+        // no-op for test
+      },
+    }
+  }),
 }))
 
 import type { GlobalConfigStore } from '@netlify/dev-utils'

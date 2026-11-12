@@ -2,16 +2,23 @@ import process from 'process'
 
 import { getStore } from '@netlify/blobs'
 import chalk from 'chalk'
-import inquirer from 'inquirer'
 import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../.././../../src/utils/prompts/prompt-messages.js'
 import { reportError } from '../../../../src/utils/telemetry/report-error.js'
-import { Route } from '../../utils/mock-api-vitest.js'
-import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
+import {
+  type Route,
+  getEnvironmentVariables,
+  withMockApi,
+  setTTYMode,
+  setCI,
+  setTestingPrompts,
+} from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
-import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
+import { mockConfirm, spyOnConfirm } from '../../utils/inquirer-mock-prompt.js'
+
+vi.mock('@inquirer/prompts')
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -98,7 +105,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, value])
 
@@ -122,13 +129,11 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = mockPrompt({ confirm: true })
+          const promptSpy = mockConfirm(true)
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
 
           expect(promptSpy).toHaveBeenCalledWith({
-            type: 'confirm',
-            name: 'confirm',
             message: expect.stringContaining(overwriteConfirmation),
             default: false,
           })
@@ -152,7 +157,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = mockPrompt({ confirm: false })
+          const promptSpy = mockConfirm(false)
 
           try {
             await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
@@ -163,8 +168,6 @@ describe('blobs:set command', () => {
           }
 
           expect(promptSpy).toHaveBeenCalledWith({
-            type: 'confirm',
-            name: 'confirm',
             message: expect.stringContaining(overwriteConfirmation),
             default: false,
           })
@@ -188,7 +191,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
 
@@ -210,7 +213,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           try {
             await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
@@ -246,7 +249,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
 
@@ -272,7 +275,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnConfirm()
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
           expect(promptSpy).not.toHaveBeenCalled()

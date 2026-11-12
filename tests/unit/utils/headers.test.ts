@@ -89,11 +89,11 @@ describe('_headers', () => {
   })
 
   it('syntax validates as expected', async ({ builder }) => {
-    await expect(parseHeadersFile({ builder }, '_headers')).resolves.not.toThrowError()
+    await expect(parseHeadersFile({ builder }, '_headers')).resolves.not.toThrow()
   })
 
   it('does not throw on invalid syntax', async ({ builder }) => {
-    await expect(parseHeadersFile({ builder }, '_invalid_headers')).resolves.not.toThrowError()
+    await expect(parseHeadersFile({ builder }, '_invalid_headers')).resolves.not.toThrow()
   })
 
   it('validate rules', async ({ builder }) => {

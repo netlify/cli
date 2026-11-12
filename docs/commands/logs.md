@@ -17,6 +17,7 @@ netlify logs
 
 **Flags**
 
+- `deploy-id` (*string*) - Show logs for a specific deploy by ID, including failed builds. Can be used with all sources except server.
 - `edge-function` (*string*) - Filter to specific edge functions by name or path
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `follow` (*boolean*) - Stream logs in real time instead of showing historical logs
@@ -24,9 +25,9 @@ netlify logs
 - `json` (*boolean*) - Output logs as JSON Lines
 - `level` (*string*) - Log levels to include. Choices are: trace, debug, info, warn, error, fatal
 - `since` (*string*) - Start of the historical log window. Accepts a duration (e.g. 10m, 1h, 24h) or an ISO 8601 timestamp. Defaults to 10m
-- `source` (*functions | edge-functions | deploy*) - Log sources to include. Defaults to functions and edge-functions
+- `source` (*functions | edge-functions | deploy | server*) - Log sources to include. Defaults to functions, edge-functions and server
 - `until` (*string*) - End of the historical log window. Accepts a duration or an ISO 8601 timestamp (defaults to now)
-- `url` (*string*) - Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains
+- `url` (*string*) - Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains. Server logs support branch subdomains only.
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
@@ -35,9 +36,13 @@ netlify logs
 ```bash
 netlify logs
 netlify logs --since 1h
+netlify logs --source deploy --deploy-id <deploy-id> --since 7d
+netlify logs --source functions --deploy-id <deploy-id>
 netlify logs --source functions --function checkout --since 24h
 netlify logs --source edge-functions --since 30m
 netlify logs --source deploy --source functions --since 1h
+netlify logs --source server --since 30m
+netlify logs --follow --source server
 netlify logs --follow
 netlify logs --follow --source functions --source edge-functions
 netlify logs --json --since 1h
