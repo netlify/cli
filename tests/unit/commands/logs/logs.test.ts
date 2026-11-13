@@ -51,14 +51,24 @@ const A_VALID_DEPLOY_ID = 'a'.repeat(24)
 
 const API_BASE = 'https://api.example.test/api/v1'
 
-const makeCommand = () =>
+const makeCommand = (siteInfo: Record<string, unknown> = {}, api: Record<string, unknown> = {}) =>
   ({
     netlify: {
-      api: { accessToken: 'token-1', basePath: API_BASE },
+      api: { accessToken: 'token-1', basePath: API_BASE, ...api },
       site: { id: 'site-1' },
-      siteInfo: {},
+      siteInfo,
     },
   }) as never
+
+const NO_BRANCH_PRODUCTION = '__nf-no-branch-production-traffic'
+
+const siteWithServer = {
+  name: 'site-name',
+  published_deploy: { server: { region: 'iad', script_id: 'script-1' } },
+}
+
+const serverBranchesRequested = () =>
+  (fetchServerHistoricalLogsMock.mock.calls[0]?.[0] as { branches: string[] } | undefined)?.branches
 
 type FollowArgs = Parameters<typeof runFollowMode>[0]
 
@@ -71,6 +81,7 @@ const followArgs = (overrides: Partial<FollowArgs>): FollowArgs => ({
   functionNames: [],
   edgeFunctionNames: [],
   levelsToPrint: ['info', 'warn', 'error', 'debug', 'trace', 'fatal'],
+  serverBranches: [NO_BRANCH_PRODUCTION],
   json: false,
   ...overrides,
 })
@@ -203,6 +214,61 @@ describe('runFollowMode deploy targeting', () => {
   })
 })
 
+describe('logsCommand default sources', () => {
+  it('includes the server logs when the published deploy has a server', async () => {
+    await logsCommand({ since: '1h' }, makeCommand(siteWithServer))
+
+    expect(fetchFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchEdgeFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchServerHistoricalLogsMock).toHaveBeenCalledOnce()
+  })
+
+  it('streams the server logs in follow mode when the published deploy has a server', async () => {
+    await logsCommand({ follow: true }, makeCommand(siteWithServer))
+
+    expect(streamServerMock).toHaveBeenCalledOnce()
+  })
+
+  it.each([
+    ['no published deploy', {}],
+    ['a published deploy without a server', { published_deploy: { server: null } }],
+  ])('leaves out the server logs for a project with %s', async (_case, siteInfo) => {
+    await logsCommand({ since: '1h' }, makeCommand(siteInfo))
+
+    expect(fetchFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchEdgeFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchServerHistoricalLogsMock).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['--deploy-id', { deployId: A_VALID_DEPLOY_ID }],
+    ['a deploy permalink', { url: `https://${A_VALID_DEPLOY_ID}--site-name.netlify.app` }],
+  ])('leaves out the server logs when filtering by %s', async (_case, deployOptions) => {
+    await logsCommand({ since: '1h', ...deployOptions }, makeCommand(siteWithServer))
+
+    expect(fetchFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchServerHistoricalLogsMock).not.toHaveBeenCalled()
+  })
+
+  it("includes the branch's server logs when filtering by a branch URL", async () => {
+    const listSiteDeploys = vi.fn().mockResolvedValue([{ id: 'branch-deploy', state: 'ready', branch: 'feat/x' }])
+
+    await logsCommand(
+      { since: '1h', url: 'https://feat-x--site-name.netlify.app' },
+      makeCommand(siteWithServer, { listSiteDeploys }),
+    )
+
+    expect(serverBranchesRequested()).toEqual(['feat/x'])
+  })
+
+  it('leaves out the server logs when filtering by function', async () => {
+    await logsCommand({ since: '1h', function: ['test-function'] }, makeCommand(siteWithServer))
+
+    expect(fetchFunctionHistoricalLogsMock).toHaveBeenCalledOnce()
+    expect(fetchServerHistoricalLogsMock).not.toHaveBeenCalled()
+  })
+})
+
 describe('logsCommand --source server', () => {
   it('fetches the server logs for the --since window', async () => {
     const oneHourMs = 60 * 60 * 1000
@@ -219,12 +285,51 @@ describe('logsCommand --source server', () => {
 
   it.each([
     ['--deploy-id', { deployId: A_VALID_DEPLOY_ID }],
-    ['--url', { url: 'https://example.netlify.app' }],
+    ['a deploy permalink', { url: `https://${A_VALID_DEPLOY_ID}--site-name.netlify.app` }],
   ])('rejects %s, which server logs cannot be filtered by', async (_flag, deployOptions) => {
     await expect(
-      logsCommand({ source: ['functions', 'server'], since: '1h', ...deployOptions }, makeCommand()),
+      logsCommand({ source: ['functions', 'server'], since: '1h', ...deployOptions }, makeCommand(siteWithServer)),
     ).rejects.toThrow('Server logs cannot be filtered by deploy')
     expect(fetchServerHistoricalLogsMock).not.toHaveBeenCalled()
+  })
+
+  it('asks for the production branches of a project with a repository', async () => {
+    await logsCommand(
+      { source: ['server'], since: '1h' },
+      makeCommand({
+        build_settings: { provider: 'github', repo_branch: 'main' },
+        published_deploy: { branch: 'release' },
+      }),
+    )
+
+    expect(serverBranchesRequested()).toEqual(['main', 'release', NO_BRANCH_PRODUCTION])
+  })
+
+  it('asks for the production branches of a project without a repository', async () => {
+    await logsCommand({ source: ['server'], since: '1h' }, makeCommand())
+
+    expect(serverBranchesRequested()).toEqual(['main', NO_BRANCH_PRODUCTION])
+  })
+
+  it('asks for the branch of a branch URL', async () => {
+    const listSiteDeploys = vi.fn().mockResolvedValue([{ id: 'branch-deploy', state: 'ready', branch: 'feat/x' }])
+
+    await logsCommand(
+      { source: ['server'], since: '1h', url: 'https://feat-x--site-name.netlify.app' },
+      makeCommand(siteWithServer, { listSiteDeploys }),
+    )
+
+    expect(listSiteDeploys).toHaveBeenCalledWith(expect.objectContaining({ branch: 'feat-x' }))
+    expect(serverBranchesRequested()).toEqual(['feat/x'])
+  })
+
+  it("asks for the production branches for the project's own URL", async () => {
+    await logsCommand(
+      { source: ['server'], since: '1h', url: 'https://site-name.netlify.app' },
+      makeCommand(siteWithServer),
+    )
+
+    expect(serverBranchesRequested()).toEqual(['main', NO_BRANCH_PRODUCTION])
   })
 
   it('passes the --level levels to the server source', async () => {
@@ -251,6 +356,7 @@ describe('logsCommand --source server', () => {
       siteId: 'site-1',
       accessToken: 'token-1',
       levels: ['warn'],
+      branches: [NO_BRANCH_PRODUCTION],
     })
   })
 })

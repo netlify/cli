@@ -153,6 +153,7 @@ export interface SiteInfo {
         published_at: string
         required: string[]
         required_functions: string[]
+        server?: { region: string; script_id: string } | null
         review_id: number
         review_url: string
         screenshot_url: string

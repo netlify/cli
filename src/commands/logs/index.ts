@@ -103,12 +103,10 @@ export const createLogsCommand = (program: BaseCommand) => {
     .alias('log')
     .description('View logs from your project')
     .addOption(
-      new Option('-s, --source <type...>', 'Log sources to include. Defaults to functions and edge-functions').choices([
-        'functions',
-        'edge-functions',
-        'deploy',
-        'server',
-      ]),
+      new Option(
+        '-s, --source <type...>',
+        'Log sources to include. Defaults to functions, edge-functions and server',
+      ).choices(['functions', 'edge-functions', 'deploy', 'server']),
     )
     .addOption(new Option('--function <name...>', 'Filter to specific functions by name'))
     .addOption(new Option('--edge-function <name...>', 'Filter to specific edge functions by name or path'))
@@ -128,7 +126,7 @@ export const createLogsCommand = (program: BaseCommand) => {
     .addOption(
       new Option(
         '-u, --url <url>',
-        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains. Can be used with all sources except server.',
+        'Show logs for the deploy behind the given URL. Supports deploy permalinks and branch subdomains. Server logs support branch subdomains only.',
       ),
     )
     .addOption(

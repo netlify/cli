@@ -249,7 +249,9 @@ export const hostnamesForSite = (siteInfo: {
   return { canonicalHostnames: canonical, netlifyAppBaseHost }
 }
 
-export const resolveDeployIdFromUrl = async (
+// resolveDeployFromUrl returns nothing for the project's production URLs, a
+// deploy ID for a permalink, and a deploy ID with its branch for a branch subdomain.
+export const resolveDeployFromUrl = async (
   urlInput: string,
   client: NetlifyAPI,
   siteId: string,
@@ -260,7 +262,7 @@ export const resolveDeployIdFromUrl = async (
     url?: string
     ssl_url?: string
   },
-): Promise<string | undefined> => {
+): Promise<{ deployId?: string; branch?: string }> => {
   let parsed: URL
   try {
     parsed = new URL(urlInput.includes('://') ? urlInput : `https://${urlInput}`)
@@ -272,7 +274,7 @@ export const resolveDeployIdFromUrl = async (
   const { canonicalHostnames, netlifyAppBaseHost } = hostnamesForSite(siteInfo)
 
   if (canonicalHostnames.has(hostname)) {
-    return undefined
+    return {}
   }
 
   const mismatchError = new Error(
@@ -296,16 +298,18 @@ export const resolveDeployIdFromUrl = async (
   }
 
   if (DEPLOY_ID_RE.test(prefix)) {
-    return prefix
+    return { deployId: prefix }
   }
 
   const deploys = (await client.listSiteDeploys({ siteId, branch: prefix, per_page: 20 })) as {
     id: string
     state: string
+    branch?: string
   }[]
   const ready = deploys.find((deploy) => deploy.state === 'ready')
   if (!ready) {
     throw new Error(`No ready deploys found for branch ${prefix}`)
   }
-  return ready.id
+  // The subdomain holds a slug of the branch, so its name comes from the deploy.
+  return { deployId: ready.id, branch: ready.branch ?? prefix }
 }

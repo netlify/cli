@@ -763,7 +763,7 @@ const onRequest = async (
     rewriter: Rewriter
     settings: ServerSettings
     edgeFunctionsProxy?: EdgeFunctionsProxy
-    serverHandler?: ServerHandler
+    serverHandler: ServerHandler
   } & Record<string, $TSFixMe>,
   req: Request,
   res: ServerResponse,
@@ -809,50 +809,48 @@ const onRequest = async (
     return proxy.web(req, res, { headers, target: functionsServer })
   }
 
-  if (serverHandler) {
-    try {
-      const requestURL = reqToURL(req, req.url)
-      const serverMatch = await serverHandler.match(new Request(requestURL))
+  try {
+    const requestURL = reqToURL(req, req.url)
+    const serverMatch = await serverHandler.match(new Request(requestURL))
 
-      if (serverMatch) {
-        const staticFile = await getStatic(decodeURIComponent(requestURL.pathname), settings.dist ?? '')
+    if (serverMatch) {
+      const staticFile = await getStatic(decodeURIComponent(requestURL.pathname), settings.dist ?? '')
 
-        if (!staticFile) {
-          const headers = new Headers()
+      if (!staticFile) {
+        const headers = new Headers()
 
-          for (let index = 0; index < req.rawHeaders.length; index += 2) {
-            headers.append(req.rawHeaders[index], req.rawHeaders[index + 1])
-          }
-
-          // The server handler gets a `Request` with no socket, so it reads the
-          // client's address from this header to set `context.ip`.
-          headers.set('x-forwarded-for', req.socket.remoteAddress ?? '')
-
-          const response = await serverMatch.handle(
-            new Request(requestURL, {
-              body: req.originalBody,
-              headers,
-              method: req.method,
-            }),
-          )
-
-          await fromWebResponse(response, res)
-
-          return
+        for (let index = 0; index < req.rawHeaders.length; index += 2) {
+          headers.append(req.rawHeaders[index], req.rawHeaders[index + 1])
         }
-      }
-    } catch (error) {
-      // The response may have failed mid-stream, in which case the head is
-      // out and the only remaining option is dropping the connection.
-      if (res.headersSent) {
-        res.destroy()
-      } else {
-        res.writeHead(500)
-        res.end(error instanceof Error ? error.message : 'Failed to serve request from Netlify Server')
-      }
 
-      return
+        // The server handler gets a `Request` with no socket, so it reads the
+        // client's address from this header to set `context.ip`.
+        headers.set('x-forwarded-for', req.socket.remoteAddress ?? '')
+
+        const response = await serverMatch.handle(
+          new Request(requestURL, {
+            body: req.originalBody,
+            headers,
+            method: req.method,
+          }),
+        )
+
+        await fromWebResponse(response, res)
+
+        return
+      }
     }
+  } catch (error) {
+    // The response may have failed mid-stream, in which case the head is
+    // out and the only remaining option is dropping the connection.
+    if (res.headersSent) {
+      res.destroy()
+    } else {
+      res.writeHead(500)
+      res.end(error instanceof Error ? error.message : 'Failed to serve request from Netlify Server')
+    }
+
+    return
   }
 
   const match = await rewriter(req)
@@ -1000,32 +998,21 @@ export const startProxy = async function ({
     imagesConfig: config.images,
   })
 
-  const serverEntryEnabled =
-    process.env.EXPERIMENTAL_NETLIFY_SERVER === 'true' ||
-    Boolean(siteInfo?.feature_flags?.netlify_build_server_entry) ||
-    Boolean(siteInfo?.feature_flags?.netlify_build_server_standalone)
+  const serverFileWatcher = new FileWatcher()
+  const serverHandler = new ServerHandler({
+    accountID: siteInfo?.account_id,
+    fileWatcher: serverFileWatcher,
+    geolocation: mockLocation,
+    logger: { log, warn, error: logError },
+    projectRoot: projectDir,
+    siteID: siteInfo?.id,
+  })
 
-  let serverHandler: ServerHandler | undefined
+  runBeforeProcessExit(async () => {
+    await serverHandler.stop()
+    await serverFileWatcher.close()
+  })
 
-  if (serverEntryEnabled) {
-    const serverFileWatcher = new FileWatcher()
-
-    serverHandler = new ServerHandler({
-      accountID: siteInfo?.account_id,
-      fileWatcher: serverFileWatcher,
-      geolocation: mockLocation,
-      logger: { log, warn, error: logError },
-      projectRoot: projectDir,
-      siteID: siteInfo?.id,
-    })
-
-    const handlerToStop = serverHandler
-
-    runBeforeProcessExit(async () => {
-      await handlerToStop.stop()
-      await serverFileWatcher.close()
-    })
-  }
   const imageProxy = initializeImageProxy({
     settings,
     imageHandler,
@@ -1082,23 +1069,21 @@ export const startProxy = async function ({
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
   const onUpgrade = async function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
-    if (serverHandler) {
-      let handled = false
+    let handled = false
 
-      try {
-        handled = await serverHandler.handleUpgrade(req, socket, head)
-      } catch (error) {
-        logError(
-          `Failed to hand over upgrade request to server: ${error instanceof Error ? error.message : String(error)}`,
-        )
-        socket.destroy()
+    try {
+      handled = await serverHandler.handleUpgrade(req, socket, head)
+    } catch (error) {
+      logError(
+        `Failed to hand over upgrade request to server: ${error instanceof Error ? error.message : String(error)}`,
+      )
+      socket.destroy()
 
-        return
-      }
+      return
+    }
 
-      if (handled) {
-        return
-      }
+    if (handled) {
+      return
     }
 
     const match = await rewriter(req)
