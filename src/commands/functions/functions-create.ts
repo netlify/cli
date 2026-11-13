@@ -496,7 +496,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     try {
       await downloadFromURL(command, options, argumentName, functionsDir)
     } catch {
-      return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
+      return logAndThrowError(`${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
     }
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
