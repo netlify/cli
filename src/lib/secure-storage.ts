@@ -60,7 +60,9 @@ const attemptMigration = async (token: string, env: NodeJS.ProcessEnv): Promise<
 
   log()
   log(`Your Netlify auth token is stored in plaintext at ${chalk.cyanBright(getLegacyConfigFilePath())}.`)
-  log(`The CLI can move it to your operating system's keychain, which is more secure. You may be asked to allow access.`)
+  log(
+    `The CLI can move it to your operating system's keychain, which is more secure. You may be asked to allow access.`,
+  )
   log()
   let confirmed: boolean
   try {
