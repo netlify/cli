@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.js'
@@ -72,6 +72,59 @@ test('Populates build_data.bootstrapVersion for v2 functions on direct-zip path'
     expect(helloConfig.build_data?.runtimeAPIVersion).toBe(2)
     expect(helloConfig.build_data?.bootstrapVersion).toEqual(expect.any(String))
     expect(helloConfig.build_data?.bootstrapVersion).not.toBe('')
+  })
+})
+
+const hashWithFunctionsManifest = async (builder: { directory: string }, manifestFunction: Record<string, unknown>) => {
+  const cachedZip = path.join(builder.directory, 'hello.zip')
+  await fs.writeFile(cachedZip, 'cached function bundle')
+
+  const manifestPath = path.join(builder.directory, 'functions-manifest.json')
+  await fs.writeFile(
+    manifestPath,
+    JSON.stringify({
+      functions: [{ name: 'hello', path: cachedZip, runtime: 'js', ...manifestFunction }],
+      timestamp: Date.now(),
+    }),
+  )
+
+  return await hashFns(new BaseCommand(), [path.join(builder.directory, 'functions')], {
+    tmpDir: temporaryDirectory(),
+    concurrentHash: DEFAULT_CONCURRENT_HASH,
+    manifestPath,
+    statusCb: vi.fn(),
+  })
+}
+
+test('Sends the access of a function from the functions manifest', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const { fnConfig } = await hashWithFunctionsManifest(builder, {
+      routes: [{ pattern: '/hello', literal: '/hello', methods: [] }],
+      access: { public: true },
+    })
+
+    expect(fnConfig?.hello.access).toStrictEqual({ public: true })
+  })
+})
+
+test('Sends the public routes of a function from the functions manifest', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const access = {
+      public_routes: [
+        { pattern: '/api/*', expression: '^/api(?:/(.*))/?$' },
+        { pattern: '/health', literal: '/health' },
+      ],
+    }
+    const { fnConfig } = await hashWithFunctionsManifest(builder, {
+      routes: [{ pattern: '/*', expression: '^(?:/(.*))/?$', methods: [] }],
+      access,
+    })
+
+    expect(fnConfig?.hello.access).toStrictEqual(access)
   })
 })
 
@@ -266,6 +319,22 @@ test('Omits the scale when the server manifest has none', async (t) => {
 
     expect(server).not.toHaveProperty('scale')
     expect(serverFields(server)).toStrictEqual({ instance_size: 'large' })
+  })
+})
+
+test('Sends the access from the server manifest', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
+    await builder.withNetlifyToml({ config: {} }).build()
+
+    const access = {
+      public_routes: [
+        { pattern: '/api/public/*', expression: '^/api/public(?:/(.*))/?$' },
+        { pattern: '/health', literal: '/health' },
+      ],
+    }
+    const { server } = await hashWithServerManifest(builder, { access })
+
+    expect(serverFields(server)).toStrictEqual({ access })
   })
 })
 
