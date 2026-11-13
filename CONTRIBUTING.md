@@ -137,7 +137,8 @@ Every `track()` event includes these properties, which callers can't override:
 - `ci_is_pr`: whether the CI run is for a pull request, on platforms that expose it
 
 Properties with no value are omitted. The `cli:command` event sent after each command also includes `command`, `opts`
-(with sensitive values masked), `args`, `frameworks`, `buildSystem`, `packageManager`, and `monorepo`.
+(with sensitive values masked), `args`, `frameworks`, `buildSystem`, `packageManager`, `monorepo`, and
+`authTokenSource` (`flag`, `env`, `config`, `keychain`, or `not found`).
 
 The test suites set `NETLIFY_TELEMETRY_DISABLED` in their Vitest config, so tests never send real telemetry. Tests that
 spawn the CLI with `extendEnv: false` must pass it explicitly.

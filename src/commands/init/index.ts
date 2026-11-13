@@ -1,6 +1,7 @@
 import { Option, OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
+import { AUTO_UPDATE_ENV } from '../../utils/init/agent-skills-refresh.js'
 import BaseCommand from '../base-command.js'
 
 export const createInitCommand = (program: BaseCommand) =>
@@ -35,6 +36,9 @@ export const createInitCommand = (program: BaseCommand) =>
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/get-started/'
       return `
+Other commands keep the installed Netlify skills up to date in the background, checking at most once an hour.
+Set ${AUTO_UPDATE_ENV}=false to turn that off.
+
 For more information about getting started with Netlify CLI, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })

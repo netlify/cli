@@ -235,6 +235,6 @@ A program that runs `netlify login` on a user’s behalf can set `NETLIFY_LOGIN_
 
 ## Telemetry
 
-The CLI sends usage telemetry and error reports to `cli.netlify.com`. Usage telemetry covers which commands run, their flags with sensitive values masked, the CLI and Node.js versions, the detected framework and package manager, the AI agent running the CLI, and the CI platform.
+The CLI sends usage telemetry and error reports to `cli.netlify.com`. Usage telemetry covers which commands run, their flags with sensitive values masked, the CLI and Node.js versions, the detected framework and package manager, the AI agent running the CLI, the CI platform, and where the auth token is stored (never the token itself).
 
 To disable telemetry, run `netlify --telemetry-disable`, or set `NETLIFY_TELEMETRY_DISABLED=1` or `DO_NOT_TRACK=1`. The environment variables also disable error reporting, and are the most reliable option in CI, where the setting saved by `--telemetry-disable` may not persist between runs.
