@@ -296,6 +296,37 @@ describe('initDatabase (integration)', () => {
     expect(mockApplyMigrations).toHaveBeenCalledOnce()
   })
 
+  test('non-interactive keeps an existing drizzle.config.ts instead of blocking on a prompt', async () => {
+    mockIsInteractive.mockReturnValue(false)
+    await fs.writeFile(join(projectRoot(), 'drizzle.config.ts'), '// hand-written config')
+
+    await initDatabase({}, createCommand(projectRoot()))
+
+    expect(confirm).not.toHaveBeenCalled()
+    expect(await fs.readFile(join(projectRoot(), 'drizzle.config.ts'), 'utf-8')).toBe('// hand-written config')
+    expect(logMessages.join('\n')).toContain('already exists, leaving it unchanged')
+  })
+
+  test('--yes overwrites an existing drizzle.config.ts without prompting', async () => {
+    await fs.writeFile(join(projectRoot(), 'drizzle.config.ts'), '// hand-written config')
+
+    await initDatabase({ yes: true }, createCommand(projectRoot()))
+
+    expect(confirm).not.toHaveBeenCalled()
+    expect(await fs.readFile(join(projectRoot(), 'drizzle.config.ts'), 'utf-8')).toContain('defineConfig')
+  })
+
+  test('interactive still asks before overwriting an existing drizzle.config.ts', async () => {
+    vi.mocked(select).mockResolvedValueOnce('drizzle')
+    vi.mocked(confirm).mockResolvedValueOnce(false).mockResolvedValueOnce(false)
+    await fs.writeFile(join(projectRoot(), 'drizzle.config.ts'), '// hand-written config')
+
+    await initDatabase({}, createCommand(projectRoot()))
+
+    expect(vi.mocked(confirm).mock.calls[0][0].message).toContain('Overwrite existing file')
+    expect(await fs.readFile(join(projectRoot(), 'drizzle.config.ts'), 'utf-8')).toBe('// hand-written config')
+  })
+
   test('throws when project root cannot be determined', async () => {
     const command = {
       project: { root: undefined, baseDirectory: undefined, packageManager: null },
