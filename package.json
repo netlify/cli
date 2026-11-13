@@ -1,6 +1,6 @@
 {
   "name": "netlify-cli",
-  "version": "27.18.0",
+  "version": "27.19.0",
   "description": "Netlify command line tool",
   "keywords": [
     "api",
