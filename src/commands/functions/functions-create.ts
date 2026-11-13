@@ -144,11 +144,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
         return priorityDiff
       }
 
-      // This branch is needed because `Array.prototype.sort` was not stable
-      // until Node 11, so the original sorting order from `fs.readdirSync`
-      // was not respected. We can simplify this once we drop support for
-      // Node 10.
-      return templateA - templateB
+      return 0
     })
     .map((t) => {
       t.lang = lang
