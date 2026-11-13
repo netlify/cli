@@ -252,28 +252,25 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 36
+      "count": 33
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 38
+      "count": 34
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 8
+      "count": 5
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 47
+      "count": 34
     },
     "@typescript-eslint/no-unsafe-return": {
-      "count": 11
+      "count": 7
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 4
     },
-    "@typescript-eslint/restrict-plus-operands": {
-      "count": 6
-    },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 24
+      "count": 22
     },
     "n/no-process-exit": {
       "count": 2
@@ -281,25 +278,19 @@
   },
   "src/commands/functions/functions-invoke.ts": {
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 4
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 13
-    },
-    "@typescript-eslint/no-unsafe-call": {
       "count": 3
     },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 5
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 7
     },
     "@typescript-eslint/no-unsafe-return": {
-      "count": 7
+      "count": 3
     },
     "@typescript-eslint/prefer-nullish-coalescing": {
       "count": 3
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 3
+      "count": 2
     },
     "no-empty": {
       "count": 1
@@ -343,7 +334,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 7
+      "count": 6
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 1
@@ -781,7 +772,7 @@
       "count": 5
     },
     "@typescript-eslint/restrict-template-expressions": {
-      "count": 4
+      "count": 3
     }
   },
   "src/utils/command-helpers.ts": {
@@ -888,7 +879,7 @@
   },
   "src/utils/dev.ts": {
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 3
+      "count": 2
     },
     "@typescript-eslint/no-unsafe-assignment": {
       "count": 9

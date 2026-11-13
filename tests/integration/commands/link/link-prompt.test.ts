@@ -21,11 +21,6 @@ interface SelectQuestion {
   options: AskedOption[]
 }
 
-interface InquirerChoice {
-  name?: string
-  value: unknown
-}
-
 interface TextQuestion {
   message: string
 }
@@ -48,16 +43,10 @@ const { askedPrompts, exitCalls, logMessages, mockPromptSelect, mockPromptText, 
   }),
 )
 
-vi.mock('@inquirer/prompts', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@inquirer/prompts')>()),
-  select: ({ message, choices }: { message: string; choices: (string | InquirerChoice)[] }) =>
-    mockPromptSelect({
-      message,
-      options: choices.map((choice) =>
-        typeof choice === 'string' ? { value: choice, label: choice } : { value: choice.value, label: choice.name },
-      ),
-    }),
-  input: ({ message }: TextQuestion) => mockPromptText({ message }),
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
+  promptSelect: (question: SelectQuestion) => mockPromptSelect(question),
+  promptText: (question: TextQuestion) => mockPromptText(question),
 }))
 
 vi.mock('../../../../src/utils/scripted-commands.js', async (importOriginal) => ({
@@ -125,6 +114,8 @@ const askedMessages = () => askedPrompts.map((prompt) => prompt.message)
 const offeredOptions = (message: string) => askedPrompts.find((prompt) => prompt.message === message)?.options
 
 const offeredChoices = (message: string) => offeredOptions(message)?.map(optionLabel)
+
+const offeredHints = (message: string) => offeredOptions(message)?.map((option) => option.hint)
 
 const output = () => stripAnsi(logMessages.join('\n'))
 
@@ -389,16 +380,14 @@ describe('link command interactive prompts', () => {
           routesWithSites([connected[0], unrelatedSite, connected[1]]),
           async ({ apiUrl, requests }) => {
             useMockApi(apiUrl)
-            queuePromptAnswers(LINK_BY_GIT_REMOTE, `${connected[1].name} - ${connected[1].ssl_url}`)
+            queuePromptAnswers(LINK_BY_GIT_REMOTE, connected[1].name)
 
             await runLink(builder.directory)
 
             expect(askedMessages()).toEqual([HOW_TO_LINK, WHICH_PROJECT])
             expect(offeredChoices(HOW_TO_LINK)).toEqual([LINK_BY_GIT_REMOTE, LINK_BY_NAME, LINK_FROM_LIST, LINK_BY_ID])
-            expect(offeredChoices(WHICH_PROJECT)).toEqual([
-              `${connected[0].name} - ${connected[0].ssl_url}`,
-              `${connected[1].name} - ${connected[1].ssl_url}`,
-            ])
+            expect(offeredChoices(WHICH_PROJECT)).toEqual([connected[0].name, connected[1].name])
+            expect(offeredHints(WHICH_PROJECT)).toEqual([connected[0].ssl_url, connected[1].ssl_url])
             expect(getRequests(requests, 'sites')).toHaveLength(1)
             await expectLinkedTo(builder.directory, connected[1], 'gitRemote')
           },

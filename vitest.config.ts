@@ -2,9 +2,14 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    // Spawned CLI processes inherit this, so test runs never send real telemetry or error reports.
-    env: { NETLIFY_TELEMETRY_DISABLED: 'true' },
     include: ['tests/**/*.test.js', 'tests/**/*.test.ts'],
+    env: {
+      // Spawned CLI processes inherit this, so test runs never send real telemetry or error reports.
+      NETLIFY_TELEMETRY_DISABLED: 'true',
+      // Prompts fall back to ASCII glyphs when `TERM` is `linux`, which would make snapshots
+      // depend on the terminal the test run was recorded in.
+      TERM: 'xterm-256color',
+    },
     testTimeout: 90_000,
     hookTimeout: 90_000,
     server: {

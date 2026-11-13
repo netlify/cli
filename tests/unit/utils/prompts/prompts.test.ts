@@ -1,0 +1,287 @@
+// eslint-disable-next-line no-restricted-imports -- tests the wrapper itself
+import { CANCEL_SYMBOL } from '@clack/prompts'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+
+const { mockClack, mockExit } = vi.hoisted(() => ({
+  mockClack: {
+    text: vi.fn(),
+    password: vi.fn(),
+    confirm: vi.fn(),
+    select: vi.fn(),
+    autocomplete: vi.fn(),
+    cancel: vi.fn(),
+  },
+  mockExit: vi.fn((code?: number): never => {
+    throw new Error(`exit(${String(code)})`)
+  }),
+}))
+
+vi.mock('@clack/prompts', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@clack/prompts')>()),
+  ...mockClack,
+}))
+
+// Cancelling runs the command's registered shutdown work before exiting, so the real one would take
+// the test process down with it.
+vi.mock('../../../../src/utils/shell.js', () => ({
+  exitAfterCleanup: (code: number) => mockExit(code),
+}))
+
+import {
+  promptAutocomplete,
+  promptConfirm,
+  promptPassword,
+  promptSelect,
+  promptText,
+} from '../../../../src/utils/prompts/index.js'
+
+const originalIsTTY = process.stdin.isTTY
+const setStdinTTY = (isTTY: boolean | undefined) => {
+  Object.defineProperty(process.stdin, 'isTTY', { value: isTTY, configurable: true })
+}
+
+let resumeSpy: ReturnType<typeof vi.spyOn>
+let pauseSpy: ReturnType<typeof vi.spyOn>
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  resumeSpy = vi.spyOn(process.stdin, 'resume').mockReturnValue(process.stdin)
+  pauseSpy = vi.spyOn(process.stdin, 'pause').mockReturnValue(process.stdin)
+  setStdinTTY(true)
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  setStdinTTY(originalIsTTY)
+})
+
+describe('promptText', () => {
+  test('returns the submitted value and forwards options', async () => {
+    mockClack.text.mockResolvedValue('my-fn')
+
+    await expect(promptText({ message: 'Name your function', placeholder: 'hello' })).resolves.toBe('my-fn')
+
+    expect(mockClack.text.mock.calls[0]?.[0]).toMatchObject({ message: 'Name your function', placeholder: 'hello' })
+  })
+
+  test('shows the default value as the placeholder unless one is given', async () => {
+    mockClack.text.mockResolvedValue('')
+
+    await promptText({ message: 'Publish directory', defaultValue: '.' })
+    await promptText({ message: 'Publish directory', defaultValue: '.', placeholder: 'e.g. dist' })
+
+    expect(mockClack.text.mock.calls[0]?.[0]).toMatchObject({ placeholder: '.', defaultValue: '.' })
+    expect(mockClack.text.mock.calls[1]?.[0]).toMatchObject({ placeholder: 'e.g. dist', defaultValue: '.' })
+  })
+
+  test('validates the default value when the input is left empty', async () => {
+    const validate = vi.fn((value: string | undefined) => (value ? undefined : 'required'))
+    mockClack.text.mockResolvedValue('/test')
+
+    await promptText({ message: 'Route', defaultValue: '/test', validate })
+
+    const forwarded = mockClack.text.mock.calls[0]?.[0] as { validate: (value: string | undefined) => unknown }
+    expect(forwarded.validate('')).toBeUndefined()
+    expect(forwarded.validate(undefined)).toBeUndefined()
+    expect(validate).toHaveBeenLastCalledWith('/test')
+
+    expect(forwarded.validate('/typed')).toBeUndefined()
+    expect(validate).toHaveBeenLastCalledWith('/typed')
+  })
+
+  test('leaves the validator untouched when there is no default value', async () => {
+    const validate = () => undefined
+    mockClack.text.mockResolvedValue('x')
+
+    await promptText({ message: 'Anything', validate })
+
+    expect(mockClack.text.mock.calls[0]?.[0]).toMatchObject({ message: 'Anything', validate })
+  })
+
+  test('prints a cancel message and exits with 130 when the user cancels', async () => {
+    mockClack.text.mockResolvedValue(CANCEL_SYMBOL)
+
+    await expect(promptText({ message: 'Anything' })).rejects.toThrow('exit(130)')
+
+    expect(mockClack.cancel).toHaveBeenCalledWith('Cancelled.')
+    expect(mockExit).toHaveBeenCalledWith(130)
+  })
+})
+
+describe('promptConfirm', () => {
+  test('returns the boolean answer', async () => {
+    mockClack.confirm.mockResolvedValue(false)
+
+    await expect(promptConfirm({ message: 'Continue?', initialValue: false })).resolves.toBe(false)
+  })
+
+  test('treats a prompt left unanswered past its timeout as declining instead of exiting', async () => {
+    mockClack.confirm.mockImplementation(
+      ({ signal }: { signal: AbortSignal }) =>
+        new Promise((resolve) => {
+          signal.addEventListener('abort', () => {
+            resolve(CANCEL_SYMBOL)
+          })
+        }),
+    )
+
+    await expect(promptConfirm({ message: 'Did you mean?', timeout: 5 })).resolves.toBe(false)
+
+    expect(mockClack.cancel).not.toHaveBeenCalled()
+    expect(mockExit).not.toHaveBeenCalled()
+  })
+
+  test('exits when the user cancels a prompt that has a timeout', async () => {
+    mockClack.confirm.mockResolvedValue(CANCEL_SYMBOL)
+
+    await expect(promptConfirm({ message: 'Did you mean?', timeout: 10_000 })).rejects.toThrow('exit(130)')
+
+    expect(mockClack.cancel).toHaveBeenCalledWith('Cancelled.')
+  })
+
+  test('stops the timeout once answered, so the prompt is not closed a second time', async () => {
+    vi.useFakeTimers()
+    try {
+      let abortedAfterAnswer = false
+      mockClack.confirm.mockImplementation(({ signal }: { signal: AbortSignal }) => {
+        signal.addEventListener('abort', () => {
+          abortedAfterAnswer = true
+        })
+        return Promise.resolve(true)
+      })
+
+      await expect(promptConfirm({ message: 'Did you mean?', timeout: 10_000 })).resolves.toBe(true)
+      vi.advanceTimersByTime(60_000)
+
+      expect(abortedAfterAnswer).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+describe('promptSelect, promptAutocomplete, promptPassword', () => {
+  test('return the chosen value', async () => {
+    mockClack.select.mockResolvedValue({ id: 1 })
+    mockClack.autocomplete.mockResolvedValue('apps/web')
+    mockClack.password.mockResolvedValue('s3cret')
+
+    await expect(promptSelect({ message: 'Pick', options: [{ value: { id: 1 }, label: 'one' }] })).resolves.toEqual({
+      id: 1,
+    })
+    await expect(promptAutocomplete({ message: 'Search', options: [{ value: 'apps/web' }] })).resolves.toBe('apps/web')
+    await expect(promptPassword({ message: 'Token' })).resolves.toBe('s3cret')
+  })
+
+  test.each([
+    ['promptSelect', () => promptSelect({ message: 'Pick', options: [{ value: 'a' }] }), mockClack.select],
+    [
+      'promptAutocomplete',
+      () => promptAutocomplete({ message: 'Search', options: [{ value: 'a' }] }),
+      mockClack.autocomplete,
+    ],
+    ['promptPassword', () => promptPassword({ message: 'Token' }), mockClack.password],
+  ])('%s exits with 130 when cancelled', async (_name, run, mock) => {
+    mock.mockResolvedValue(CANCEL_SYMBOL)
+
+    await expect(run()).rejects.toThrow('exit(130)')
+
+    expect(mockExit).toHaveBeenCalledWith(130)
+  })
+})
+
+describe('promptAutocomplete filtering', () => {
+  const filterOf = async () => {
+    mockClack.autocomplete.mockResolvedValue('x')
+    await promptAutocomplete({
+      message: 'Pick a template',
+      options: [{ value: { name: 'hello-world' }, label: '[hello-world] Basic function', hint: 'starter' }],
+    })
+    const [{ filter }] = mockClack.autocomplete.mock.calls[0] as [
+      { filter: (search: string, option: { value: unknown; label?: string; hint?: string }) => boolean },
+    ]
+    return filter
+  }
+
+  test('matches the label and the hint', async () => {
+    const filter = await filterOf()
+    const option = { value: { name: 'hello-world' }, label: '[hello-world] Basic function', hint: 'starter' }
+
+    expect(filter('hello', option)).toBe(true)
+    expect(filter('BASIC', option)).toBe(true)
+    expect(filter('starter', option)).toBe(true)
+  })
+
+  test('does not match the stringified value, which is the same for every object option', async () => {
+    const filter = await filterOf()
+    const option = { value: { name: 'hello-world' }, label: '[hello-world] Basic function' }
+
+    expect(filter('j', option)).toBe(false)
+    expect(filter('object', option)).toBe(false)
+  })
+
+  test('matches a query spanning styled text, which the raw label would break apart', async () => {
+    const filter = await filterOf()
+    const styledLabel = "[\u001B[33mGatsby\u001B[39m] 'npm run develop'"
+
+    expect(filter('[gatsby', { value: { name: 'gatsby' }, label: styledLabel })).toBe(true)
+  })
+
+  test('lets a caller override the filter', async () => {
+    const filter = () => true
+    mockClack.autocomplete.mockResolvedValue('x')
+
+    await promptAutocomplete({ message: 'Pick', options: [{ value: 'a' }], filter })
+
+    expect(mockClack.autocomplete.mock.calls[0]?.[0]).toMatchObject({ filter })
+  })
+})
+
+describe('piped stdin', () => {
+  test('signals a pause after a prompt so a piped stdin does not keep the process alive', async () => {
+    setStdinTTY(undefined)
+    mockClack.text.mockResolvedValue('value')
+    const paused = vi.fn()
+    process.stdin.on('pause', paused)
+
+    try {
+      await promptText({ message: 'Anything' })
+
+      // Emitting the event is what makes Node stop reading; resuming first would flush input that a
+      // following prompt still has to read.
+      expect(paused).toHaveBeenCalledOnce()
+    } finally {
+      process.stdin.off('pause', paused)
+    }
+  })
+
+  test('submits on a line feed, which is what a pipe sends for Enter', async () => {
+    setStdinTTY(undefined)
+    const key = { name: 'enter' }
+    mockClack.text.mockImplementation(() => {
+      process.stdin.emit('keypress', '\n', key)
+      return Promise.resolve('value')
+    })
+
+    await promptText({ message: 'Anything' })
+
+    expect(key.name).toBe('return')
+  })
+
+  test('leaves a TTY stdin alone', async () => {
+    setStdinTTY(true)
+    mockClack.confirm.mockResolvedValue(true)
+    const paused = vi.fn()
+    process.stdin.on('pause', paused)
+
+    try {
+      await promptConfirm({ message: 'Continue?' })
+
+      expect(paused).not.toHaveBeenCalled()
+      expect(resumeSpy).not.toHaveBeenCalled()
+      expect(pauseSpy).not.toHaveBeenCalled()
+    } finally {
+      process.stdin.off('pause', paused)
+    }
+  })
+})

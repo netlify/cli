@@ -239,12 +239,4 @@ export const acquirePort = async ({
   return acquiredPort
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-export const processOnExit = (fn) => {
-  const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
-  signals.forEach((signal) => {
-    process.on(signal, fn)
-  })
-}
-
 export const UNLINKED_SITE_MOCK_ID = 'unlinked'

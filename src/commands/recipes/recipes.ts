@@ -2,10 +2,10 @@ import { basename } from 'path'
 
 import { OptionValues } from 'commander'
 import { closest } from 'fastest-levenshtein'
-import { confirm } from '@inquirer/prompts'
 
 import { chalk, exit, logError } from '../../utils/command-helpers.js'
 import { EXIT_CODES } from '../../utils/exit-codes.js'
+import { promptConfirm } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import BaseCommand from '../base-command.js'
 
@@ -58,14 +58,10 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
       logError(didYouMean)
       return exit(EXIT_CODES.USAGE_ERROR)
     }
-    const applySuggestion = await confirm(
-      { message: didYouMean, default: false },
-      { signal: AbortSignal.timeout(SUGGESTION_TIMEOUT) },
-    ).catch((error: unknown) => {
-      if (error instanceof Error && error.name === 'AbortPromptError') {
-        return false
-      }
-      throw error
+    const applySuggestion = await promptConfirm({
+      message: didYouMean,
+      initialValue: false,
+      timeout: SUGGESTION_TIMEOUT,
     })
 
     if (applySuggestion) {

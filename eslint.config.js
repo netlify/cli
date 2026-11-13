@@ -110,6 +110,11 @@ export default tseslint.config(
               message:
                 'Use the safe chalk import that handles colors for json output: `import { chalk } from "src/utils/command-helpers.js"`',
             },
+            {
+              name: '@clack/prompts',
+              message:
+                'Use the wrappers in `src/utils/prompts/index.js`, which handle cancellation and non-interactive input.',
+            },
           ],
         },
       ],

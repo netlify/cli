@@ -1,6 +1,5 @@
 import assert from 'node:assert'
 
-import { input, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 import type { NetlifyAPI } from '@netlify/api'
 
@@ -10,6 +9,7 @@ import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '..
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { matchesRepoUrl } from '../../utils/match-repo-url.js'
+import { promptSelect, promptText } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
@@ -65,19 +65,14 @@ To search for projects:
 
   spinner.warn({ text: `Found ${matchingSites.length} projects connected to ${repoUrl}` })
 
-  const selectedSite = await select<SiteInfo | undefined>({
+  return promptSelect({
     message: 'Which project do you want to link?',
-    choices: matchingSites.map((matchingSite) => ({
-      name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
+    options: matchingSites.map((matchingSite) => ({
       value: matchingSite,
+      label: matchingSite.name,
+      hint: matchingSite.ssl_url,
     })),
   })
-
-  if (!selectedSite) {
-    return logAndThrowError('No project selected')
-  }
-
-  return selectedSite
 }
 
 const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Promise<SiteInfo> => {
@@ -103,9 +98,9 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
   log()
   log(`${chalk.cyanBright(`${netlifyCommand()} link`)} will connect this folder to a project on Netlify`)
   log()
-  const linkType = await select<string | undefined>({
+  const linkType = await promptSelect({
     message: 'How do you want to link this folder to a project?',
-    choices: linkChoices,
+    options: linkChoices.map((choice) => ({ value: choice })),
   })
 
   let kind
@@ -120,9 +115,7 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
     }
     case SITE_NAME_PROMPT: {
       kind = 'byName'
-      const searchTerm = await input({
-        message: 'Enter the project name (or just part of it):',
-      })
+      const searchTerm = await promptText({ message: 'Enter the project name (or just part of it):' })
       log(`Looking for projects with names containing '${searchTerm}'...`)
       log()
 
@@ -155,14 +148,10 @@ To create a new project:
 
       if (matchingSites.length > 1) {
         log(`Found ${matchingSites.length} matching projects!`)
-        const selectedSite = await select<SiteInfo | undefined>({
+        site = await promptSelect({
           message: 'Which project do you want to link?',
-          choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
+          options: matchingSites.map((matchingSite) => ({ value: matchingSite, label: matchingSite.name })),
         })
-        if (!selectedSite) {
-          return logAndThrowError('No project selected')
-        }
-        site = selectedSite
       } else {
         const [firstSite] = matchingSites
         site = firstSite
@@ -189,21 +178,15 @@ To create a new project:
         )
       }
 
-      const selectedSite = await select<SiteInfo | undefined>({
+      site = await promptSelect({
         message: 'Which project do you want to link?',
-        choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
+        options: sites.map((matchingSite) => ({ value: matchingSite, label: matchingSite.name })),
       })
-      if (!selectedSite) {
-        return logAndThrowError('No project selected')
-      }
-      site = selectedSite
       break
     }
     case SITE_ID_PROMPT: {
       kind = 'bySiteId'
-      const siteId = await input({
-        message: 'What is the project ID?',
-      })
+      const siteId = await promptText({ message: 'What is the project ID?' })
 
       try {
         site = await api.getSite({ siteId })

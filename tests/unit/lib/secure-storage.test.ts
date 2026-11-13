@@ -35,7 +35,7 @@ vi.mock('@netlify/dev-utils', async () => ({
   storeTokenInKeychain: mocks.storeTokenInKeychain,
 }))
 
-vi.mock('@inquirer/prompts', () => ({ confirm: mocks.confirm }))
+vi.mock('../../../src/utils/prompts/index.js', () => ({ promptConfirm: mocks.confirm }))
 
 vi.mock('../../../src/utils/scripted-commands.js', () => ({ isInteractive: () => mocks.interactive }))
 
@@ -164,16 +164,6 @@ describe('plaintext token migration', () => {
     skipKeychainMigrationPrompt()
     await expect(getStoredAPIToken({})).resolves.toEqual({ token: 'plain-tok', fromKeychain: false })
     expect(mocks.confirm).not.toHaveBeenCalled()
-  })
-
-  test('lets Ctrl+C at the prompt abort the command', async () => {
-    mocks.interactive = true
-    mocks.confirm.mockRejectedValue(
-      Object.assign(new Error('User force closed the prompt'), { name: 'ExitPromptError' }),
-    )
-    const { getStoredAPIToken } = await loadSecureStorage()
-
-    await expect(getStoredAPIToken({})).rejects.toMatchObject({ name: 'ExitPromptError' })
   })
 })
 

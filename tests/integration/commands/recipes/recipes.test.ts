@@ -7,7 +7,7 @@ import { describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
-import { CONFIRM, NO, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
+import { CONFIRM, NO, handleQuestions } from '../../utils/handle-questions.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 import { normalize } from '../../utils/snapshots.js'
 
@@ -92,7 +92,7 @@ describe.concurrent('commands/recipes', () => {
       handleQuestions(childProcess, [
         {
           question: `A new VS Code settings file will be created at ${settingsPath}`,
-          answer: answerWithValue(NO),
+          answer: NO,
         },
       ])
 
@@ -132,7 +132,7 @@ describe.concurrent('commands/recipes', () => {
         },
         {
           question: 'The Deno VS Code extension is recommended. Would you like to install it now?',
-          answer: answerWithValue(NO),
+          answer: NO,
         },
       ])
 

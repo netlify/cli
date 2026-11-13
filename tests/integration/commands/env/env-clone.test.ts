@@ -9,9 +9,13 @@ import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingProm
 
 import { existingVar, routes, secondSiteInfo } from './api-routes.js'
 import { runMockProgram } from '../../utils/mock-program.js'
-import { mockConfirm, spyOnConfirm } from '../../utils/inquirer-mock-prompt.js'
+import { mockConfirmPrompt, spyOnConfirmPrompt } from '../../utils/mock-prompts.js'
 
-vi.mock('@inquirer/prompts')
+// vi.resetModules() would otherwise hand the dynamically imported subcommands a fresh copy of the prompt wrapper that
+// the spy from mock-prompts.js is not attached to; a mocked module keeps a single instance across resets.
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
+}))
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -60,14 +64,13 @@ describe('env:clone command', () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = mockConfirm(true)
+          const promptSpy = mockConfirmPrompt(true)
 
           await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
 
-          expect(promptSpy).toHaveBeenCalledWith({
-            message: expect.stringContaining(overwriteConfirmation),
-            default: false,
-          })
+          expect(promptSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ message: expect.stringContaining(overwriteConfirmation), initialValue: false }),
+          )
 
           expect(log).toHaveBeenCalledWith(warningMessage)
           expect(log).toHaveBeenCalledWith(noticeEnvVars)
@@ -83,7 +86,7 @@ describe('env:clone command', () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnConfirm()
+          const promptSpy = spyOnConfirmPrompt()
 
           await runMockProgram(['', '', 'env:clone', '--force', '-t', siteIdTwo])
 
@@ -103,7 +106,7 @@ describe('env:clone command', () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = mockConfirm(false)
+          const promptSpy = mockConfirmPrompt(false)
 
           try {
             await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
@@ -132,7 +135,7 @@ describe('env:clone command', () => {
             'site-name',
           )} to ${chalk.green('site-name-3')}`
 
-          const promptSpy = spyOnConfirm()
+          const promptSpy = spyOnConfirmPrompt()
 
           await runMockProgram(['', '', 'env:clone', '-t', 'site_id_3'])
 
@@ -156,7 +159,7 @@ describe('env:clone command', () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnConfirm()
+          const promptSpy = spyOnConfirmPrompt()
 
           await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
 
@@ -174,7 +177,7 @@ describe('env:clone command', () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          const promptSpy = spyOnConfirm()
+          const promptSpy = spyOnConfirmPrompt()
 
           await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
 

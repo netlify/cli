@@ -3,10 +3,10 @@ import { mkdir, readdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
 import { applyMigrations } from '@netlify/dev'
-import { confirm, select } from '@inquirer/prompts'
 
 import { chalk, log, netlifyCommand } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { promptConfirm, promptSelect } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import BaseCommand from '../base-command.js'
 import { generateNextPrefix } from './db-migration-new.js'
@@ -68,7 +68,7 @@ const carefullyWriteFile = async (
   const displayPath = `.${filePath.replace(projectRoot, '')}`
   const overwrite =
     onExisting === 'ask'
-      ? await confirm({ message: `Overwrite existing file ${displayPath}?` })
+      ? await promptConfirm({ message: `Overwrite existing file ${displayPath}?` })
       : onExisting === 'overwrite'
   if (overwrite) {
     await writeFile(filePath, data)
@@ -92,12 +92,12 @@ const promptForQueryStyle = async (interactive: boolean): Promise<QueryStyle> =>
   }
 
   log('')
-  return await select<QueryStyle>({
+  return await promptSelect<QueryStyle>({
     message: 'What is your preferred style?',
-    default: 'drizzle',
-    choices: [
-      { name: 'Drizzle ORM (recommended)', value: 'drizzle' },
-      { name: 'Direct SQL', value: 'raw' },
+    initialValue: 'drizzle',
+    options: [
+      { value: 'drizzle', label: 'Drizzle ORM (recommended)' },
+      { value: 'raw', label: 'Direct SQL' },
     ],
   })
 }
@@ -112,9 +112,9 @@ const promptForStarter = async (interactive: boolean): Promise<boolean> => {
   log('and then query it. Alternatively, you can do this yourself at any time.')
 
   log('')
-  return await confirm({
+  return await promptConfirm({
     message: 'Do you want to create sample data?',
-    default: true,
+    initialValue: true,
   })
 }
 

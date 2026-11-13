@@ -1,10 +1,9 @@
 import { rm } from 'fs/promises'
 
-import { confirm } from '@inquirer/prompts'
-
 import { resetDatabase } from '@netlify/dev'
 
 import { log, logJson } from '../../utils/command-helpers.js'
+import { promptConfirm } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import BaseCommand from '../base-command.js'
 import { connectToDatabase, LocalDatabaseStartError } from './util/db-connection.js'
@@ -25,9 +24,9 @@ const discardLocalDatabase = async (error: LocalDatabaseStartError, options: Res
 
     log(error.summary)
 
-    const confirmed = await confirm({
+    const confirmed = await promptConfirm({
       message: `Delete ${directory} and start from an empty database?`,
-      default: false,
+      initialValue: false,
     })
 
     if (!confirmed) {
