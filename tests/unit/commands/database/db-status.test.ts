@@ -1,6 +1,7 @@
 import { relative, sep } from 'path'
 
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
+import stripAnsi from 'strip-ansi'
 
 const {
   mockReaddir,
@@ -615,12 +616,12 @@ describe('statusDb', () => {
       await statusDb({}, createMockCommand())
 
       const output = logMessages.join('\n')
-      expect(output).toContain('Install the @netlify/database package and deploy your site')
+      expect(stripAnsi(output)).toContain('Install the @netlify/database package and deploy your site')
     })
 
     test('renders an installed statement under Package when installed', async () => {
       await statusDb({}, createMockCommand())
-      expect(logMessages.join('\n')).toContain('The @netlify/database package is installed')
+      expect(stripAnsi(logMessages.join('\n'))).toContain('The @netlify/database package is installed')
     })
 
     test('renders an API-reference link under Package when installed', async () => {
