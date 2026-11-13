@@ -45,6 +45,7 @@ For more information about getting started with Netlify CLI, see ${terminalLink(
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { init } = await import('./init.js')
       await init(options, command, {
+        skipPromptsWithoutTerminal: true,
         setupAgentSkills: !options.skipAgentSetup,
         setupAgentMcp: !options.skipAgentSetup && !options.skipMcpSetup,
         resetMcpSetup: Boolean(options.resetMcpSetup),
