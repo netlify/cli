@@ -16,6 +16,9 @@ import { withSiteBuilder } from '../../utils/site-builder.js'
 
 const defaultFunctionsDirectory = 'netlify/functions'
 
+const answersPrompts = { TESTING_PROMPTS: 'true' }
+const noTerminal = { TESTING_PROMPTS: 'false' }
+
 const SKILL_CONTENT = '# netlify-functions\n'
 
 const sha256 = (content: string) => `sha256:${createHash('sha256').update(content).digest('hex')}`
@@ -187,7 +190,12 @@ describe.concurrent('commands/init', () => {
         const childProcess = execa(cliPath, ['init', '--force', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           // NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN are required for @netlify/config to retrieve site info
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: {
+            ...answersPrompts,
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -282,7 +290,7 @@ describe.concurrent('commands/init', () => {
         // --manual is used to avoid the config-github flow that uses GitHub API
         const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
           encoding: 'utf8',
         })
 
@@ -361,7 +369,7 @@ describe.concurrent('commands/init', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const childProcess = execa(cliPath, ['init', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
           encoding: 'utf8',
         })
 
@@ -469,7 +477,7 @@ describe.concurrent('commands/init', () => {
         // --manual is used to avoid the config-github flow that uses GitHub API
         const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -574,7 +582,7 @@ describe.concurrent('commands/init', () => {
         // --manual is used to avoid the config-github flow that uses GitHub API
         const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -666,7 +674,12 @@ describe.concurrent('commands/init', () => {
         const childProcess = execa(cliPath, ['init', '--force', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           // NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN are required for @netlify/config to retrieve site info
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: {
+            ...answersPrompts,
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -771,7 +784,7 @@ describe.concurrent('commands/init', () => {
         // --manual is used to avoid the config-github flow that uses GitHub API
         const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -843,6 +856,7 @@ describe.concurrent('commands/init', () => {
     }) =>
     async (...flags: string[]) => {
       const env = {
+        ...answersPrompts,
         NETLIFY_API_URL: apiUrl,
         NETLIFY_SITE_ID: 'site_id',
         NETLIFY_AUTH_TOKEN: 'fake-token',
@@ -854,7 +868,7 @@ describe.concurrent('commands/init', () => {
         ...(home ? { HOME: home, USERPROFILE: home } : {}),
       }
       const mcpFlags = claudeBin || agent ? [] : ['--skip-mcp-setup']
-      const childProcess = execa(cliPath, ['init', '--manual', ...mcpFlags, ...flags], { cwd, env })
+      const childProcess = execa(cliPath, ['init', '--force', '--manual', ...mcpFlags, ...flags], { cwd, env })
       if (process.env.DEBUG_TESTS) {
         childProcess.stdout?.on('data', (data: Buffer) => {
           process.stderr.write(data)
@@ -1111,10 +1125,11 @@ describe.concurrent('commands/init', () => {
     apiUrl: string,
     questions: { question: string; answer: string | string[] }[],
     flags: string[] = [],
+    promptEnv: Record<string, string> = answersPrompts,
   ) => {
     const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup', ...flags], {
       cwd,
-      env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+      env: { ...promptEnv, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
       encoding: 'utf8',
     })
     handleQuestions(childProcess, questions)
@@ -1311,6 +1326,59 @@ describe.concurrent('commands/init', () => {
         },
         true,
       )
+    })
+  })
+
+  test('netlify init without a terminal skips the project prompts, prints the next commands and exits cleanly', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().build()
+
+      await withMockApi(noGitRoutes, async ({ apiUrl, requests }) => {
+        const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], noTerminal)
+
+        t.expect(exitCode).toBe(0)
+        t.expect(stdout).not.toContain('What would you like to do?')
+        t.expect(stdout).toContain('This folder is not linked to a Netlify project yet')
+        t.expect(stdout).toMatch(/netlify link --git-remote-url https:\/\/github\.com\/owner\/repo/)
+        t.expect(stdout).toMatch(/netlify sites:create --name <name> --account-slug test-account/)
+        t.expect(stdout).toMatch(/Then run (npx )?netlify deploy to deploy\./)
+        t.expect(countSiteCreations(requests)).toBe(0)
+      })
+    })
+  })
+
+  test('netlify init without a terminal says to unlink first when the linked project no longer exists', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().withStateFile({ siteId: 'deleted_site_id' }).build()
+
+      await withMockApi(
+        [deletedSiteRoute, ...noGitRoutes],
+        async ({ apiUrl, requests }) => {
+          const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], noTerminal)
+
+          t.expect(exitCode).toBe(0)
+          t.expect(stdout).toMatch(/run (npx )?netlify unlink to remove the saved link/)
+          t.expect(stdout).not.toContain('This folder is not linked to a Netlify project yet')
+          t.expect(countSiteCreations(requests)).toBe(0)
+          await t.expect(readStateSiteId(builder.directory)).resolves.toBe('deleted_site_id')
+        },
+        true,
+      )
+    })
+  })
+
+  test('netlify init without a terminal reports a linked project instead of configuring its repo', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().withStateFile({ siteId: 'site_id' }).build()
+
+      await withMockApi(noGitRoutes, async ({ apiUrl, requests }) => {
+        const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], noTerminal)
+
+        t.expect(exitCode).toBe(0)
+        t.expect(stdout).toContain('This folder is linked to the Netlify project test-site-name')
+        t.expect(stdout).toMatch(/To deploy to it, run (npx )?netlify deploy\./)
+        t.expect(requests.some(({ method }) => method === 'PATCH' || method === 'POST')).toBe(false)
+      })
     })
   })
 

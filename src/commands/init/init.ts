@@ -3,9 +3,10 @@ import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 
 import { type APIError, chalk, exit, log, logAndThrowError, netlifyCommand, warn } from '../../utils/command-helpers.js'
-import getRepoData, { type RepoDataError } from '../../utils/get-repo-data.js'
+import getRepoData, { type RepoData, type RepoDataError } from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
@@ -62,6 +63,53 @@ const logLinkedWithoutGitAndExit = ({
       `${netlifyCommand()} unlink`,
     )}, then ${chalk.cyanBright.bold(`${netlifyCommand()} init`)}.`,
   )
+  return exit()
+}
+
+const canAnswerPrompts = (): boolean => isInteractive() || process.env.TESTING_PROMPTS === 'true'
+
+const logNextStepsAndExit = ({
+  command,
+  linkedSiteInfo,
+  repoData,
+}: {
+  command: BaseCommand
+  linkedSiteInfo: SiteInfo | undefined
+  repoData: RepoData | RepoDataError
+}): never => {
+  const run = (args: string): string => chalk.cyanBright.bold(`${netlifyCommand()} ${args}`)
+  const teams = command.netlify.accounts
+  const teamSlug = teams.length === 1 ? teams[0].slug : '<team-slug>'
+
+  log()
+  log('Project setup asks questions and there is no terminal to answer them in, so it was skipped.')
+  log()
+  if (linkedSiteInfo) {
+    log(`This folder is linked to the Netlify project ${chalk.cyan(linkedSiteInfo.name)}.`)
+    log()
+    log(`To deploy to it, run ${run('deploy')}.`)
+  } else {
+    if (command.netlify.state.get('siteId') === undefined) {
+      log('This folder is not linked to a Netlify project yet. To continue without a terminal, run one of:')
+    } else {
+      log('The Netlify project saved as the link for this folder could not be used. See the warning above.')
+      log(`If you are logged in to the right account, run ${run('unlink')} to remove the saved link. Then run one of:`)
+    }
+    log()
+    if (!('error' in repoData)) {
+      log(`  ${run(`link --git-remote-url ${repoData.httpsUrl}`)}  links the project connected to this repository`)
+    }
+    log(`  ${run('link --id <project-id>')}  links an existing project`)
+    log(`  ${run(`sites:create --name <name> --account-slug ${teamSlug}`)}  creates a project and links it`)
+    if (teams.length > 1) {
+      log()
+      log(`Teams: ${teams.map(({ slug }) => slug).join(', ')}`)
+      log('Ask the user which team a new project belongs in.')
+    }
+    log()
+    log(`Then run ${run('deploy')} to deploy.`)
+  }
+  log(`To deploy on every push, run ${run('init')} in a terminal. It asks for access to the Git provider.`)
   return exit()
 }
 
@@ -294,6 +342,7 @@ type InitExitMessageCustomizer = (code: InitExitCode, defaultMessage: string) =>
 type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
+  skipPromptsWithoutTerminal?: boolean | undefined
   setupAgentSkills?: boolean | undefined
   setupAgentMcp?: boolean | undefined
   resetContext?: boolean | undefined
@@ -369,6 +418,7 @@ export const init = async (
   {
     customizeExitMessage,
     exitAfterConfiguringRepo = false,
+    skipPromptsWithoutTerminal = false,
     setupAgentSkills: shouldSetupAgentSkills = false,
     setupAgentMcp: shouldSetupAgentMcp = false,
     resetContext = false,
@@ -402,17 +452,21 @@ export const init = async (
     mcpScope,
   })
 
+  const promptsSkipped = skipPromptsWithoutTerminal && !canAnswerPrompts()
   const linkedSiteInfo = await getLinkedSiteInfo(command)
-  if (linkedSiteInfo && getRepoUrl(linkedSiteInfo) && !options.force) {
+  if (linkedSiteInfo && getRepoUrl(linkedSiteInfo) && (!options.force || promptsSkipped)) {
     logExistingAndExit({ siteInfo: linkedSiteInfo })
   }
 
   // Look for local repo
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
+  if ('error' in repoData && linkedSiteInfo) {
+    return logLinkedWithoutGitAndExit({ siteInfo: linkedSiteInfo, repoError: repoData })
+  }
+  if (promptsSkipped) {
+    return logNextStepsAndExit({ command, linkedSiteInfo, repoData })
+  }
   if ('error' in repoData) {
-    if (linkedSiteInfo) {
-      return logLinkedWithoutGitAndExit({ siteInfo: linkedSiteInfo, repoError: repoData })
-    }
     // TODO(ndhoule): Custom error messaage here
     return await handleNoGitRemoteAndExit({
       command,
