@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
-import { select } from '@inquirer/prompts'
 
 import { chalk, log } from '../../utils/command-helpers.js'
+import { promptSelect } from '../../utils/prompts/index.js'
 import BaseCommand from '../base-command.js'
 import { login } from '../login/login.js'
 
@@ -30,9 +30,9 @@ export const switchCommand = async (options: OptionValues, command: BaseCommand)
     log('')
   }
 
-  const accountSwitchChoice = await select({
-    message: 'Please select the account you want to use:',
-    choices: [...Object.entries(availableUsersChoices).map(([, val]) => val), LOGIN_NEW],
+  const accountSwitchChoice = await promptSelect({
+    message: 'Please select the account you want to use',
+    options: [...Object.entries(availableUsersChoices).map(([, val]) => ({ value: val })), { value: LOGIN_NEW }],
   })
 
   if (accountSwitchChoice === LOGIN_NEW) {

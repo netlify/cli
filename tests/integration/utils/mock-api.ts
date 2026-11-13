@@ -22,14 +22,23 @@ interface MockApiOptions {
 export interface MockApi {
   apiUrl: string
   clearRequests: () => void
-  requests: { path: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
+  requests: {
+    path: string
+    query: express.Request['query']
+    body: unknown
+    method: string
+    headers: IncomingHttpHeaders
+  }[]
   server: Server
   close: () => Promise<void>
 }
 
+export type MockApiTestContext = Pick<MockApi, 'apiUrl' | 'requests'>
+
 const addRequest = (requests: MockApi['requests'], request: express.Request) => {
   requests.push({
     path: request.path,
+    query: request.query,
     body: request.body,
     method: request.method,
     headers: request.headers,
@@ -131,10 +140,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
 
 export const withMockApi = async (
   routes: Route[],
-  testHandler: (options: {
-    apiUrl: string
-    requests: { path: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
-  }) => Promise<void>,
+  testHandler: (options: MockApiTestContext) => Promise<void>,
   silent = false,
 ) => {
   let mockApi: Awaited<ReturnType<typeof startMockApi>> | undefined

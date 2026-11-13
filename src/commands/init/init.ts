@@ -1,11 +1,11 @@
 import { OptionValues } from 'commander'
-import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 
 import { type APIError, chalk, exit, log, logAndThrowError, netlifyCommand, warn } from '../../utils/command-helpers.js'
 import getRepoData, { type RepoDataError } from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
+import { promptConfirm, promptSelect } from '../../utils/prompts/index.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
@@ -143,7 +143,7 @@ const createNewSiteAndExit = async ({
   persistState({ state, siteInfo })
 
   if (!disableLinking) {
-    const shouldConfigureBuild = await confirm({
+    const shouldConfigureBuild = await promptConfirm({
       message: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
     })
     if (shouldConfigureBuild) {
@@ -234,9 +234,9 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   const NEW_SITE_NO_GIT = 'Yes, create and deploy project manually'
   const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
-  const noGitRemoteChoice = await select({
+  const noGitRemoteChoice = await promptSelect({
     message: 'Do you want to create a Netlify project without a git repository?',
-    choices: [NEW_SITE_NO_GIT, NO_ABORT],
+    options: [{ value: NEW_SITE_NO_GIT }, { value: NO_ABORT }],
   })
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
@@ -253,11 +253,9 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
   const NEW_SITE = '+  Create & configure a new project'
   const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify project'
 
-  const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
-
-  const initChoice = await select({
+  const initChoice = await promptSelect({
     message: 'What would you like to do?',
-    choices: initializeOpts,
+    options: [{ value: EXISTING_SITE }, { value: NEW_SITE }],
   })
 
   // create site or search for one

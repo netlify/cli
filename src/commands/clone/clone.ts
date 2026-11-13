@@ -1,10 +1,10 @@
 import { resolve } from 'path'
 
 import { LocalState } from '@netlify/dev-utils'
-import { input } from '@inquirer/prompts'
 
 import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js'
 import { chalk, logAndThrowError, log, getToken, netlifyCommand, type APIError } from '../../utils/command-helpers.js'
+import { promptText } from '../../utils/prompts/index.js'
 import { runGit } from '../../utils/run-git.js'
 import execa from '../../utils/execa.js'
 import type BaseCommand from '../base-command.js'
@@ -14,12 +14,11 @@ import type { CloneOptionValues } from './option_values.js'
 import { startSpinner } from '../../lib/spinner.js'
 import type { SiteInfo } from '../../utils/types.js'
 
-const getTargetDir = async (defaultDir: string): Promise<string> => {
-  return await input({
+const getTargetDir = async (defaultDir: string): Promise<string> =>
+  promptText({
     message: 'Where should we clone the repository?',
-    default: defaultDir,
+    defaultValue: defaultDir,
   })
-}
 
 const cloneRepo = async (repoUrl: string, targetDir: string, debug: boolean): Promise<void> => {
   try {

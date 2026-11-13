@@ -9,7 +9,6 @@ import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
-import { search } from '@inquirer/prompts'
 import { Command, CommanderError, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
 import { findUp } from 'find-up'
@@ -36,7 +35,6 @@ import {
   logError,
 } from '../utils/command-helpers.js'
 import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
-import { EXIT_CODES } from '../utils/exit-codes.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
@@ -44,6 +42,7 @@ import { showAgentSkillsRefreshNotice, startAgentSkillsRefresh } from '../utils/
 import { getLocalApiTestOpts } from '../utils/local-api-test-opts.js'
 import { buildAuthorizeUrl } from '../utils/login-url.js'
 import openBrowser from '../utils/open-browser.js'
+import { promptAutocomplete } from '../utils/prompts/index.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
@@ -170,17 +169,13 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
       )
     }
 
-    return await search({
+    return await promptAutocomplete({
       message: 'Select the project you want to work with',
-      source: (input = '') =>
-        (project.workspace?.packages || [])
-          .filter((pkg) => pkg.path.includes(input))
-          .map((pkg) => ({
-            name: `${pkg.name ? `${chalk.bold(pkg.name)}  ` : ''}${pkg.path}  ${chalk.dim(
-              `--filter ${pkg.name || pkg.path}`,
-            )}`,
-            value: pkg.path,
-          })),
+      options: (project.workspace?.packages || []).map((pkg) => ({
+        value: pkg.path,
+        label: pkg.name ? `${chalk.bold(pkg.name)}  ${pkg.path}` : pkg.path,
+        hint: `--filter ${pkg.name || pkg.path}`,
+      })),
     })
   }
   return selected.path
@@ -497,11 +492,6 @@ export default class BaseCommand extends Command {
       debug(`${this.name()}:onEnd`)(
         `Command: ${command}. Telemetry tracking failed: ${err instanceof Error ? err.message : err?.toString()}`,
       )
-    }
-
-    // Inquirer prompts reject with this on Ctrl+C, but the error class isn't exported.
-    if (error_ instanceof Error && error_.name === 'ExitPromptError') {
-      return exit(EXIT_CODES.INTERRUPTED)
     }
 
     if (error_ !== undefined) {

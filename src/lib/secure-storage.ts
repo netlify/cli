@@ -1,4 +1,3 @@
-import { confirm } from '@inquirer/prompts'
 import {
   getGlobalConfigStore,
   getLegacyConfigFilePath,
@@ -9,8 +8,9 @@ import {
 } from '@netlify/dev-utils'
 
 import { chalk, isLogSuppressed, log, warn } from '../utils/command-helpers.js'
+import { promptConfirm } from '../utils/prompts/index.js'
 import { isInteractive } from '../utils/scripted-commands.js'
-import { reportError, track } from '../utils/telemetry/index.js'
+import { track } from '../utils/telemetry/index.js'
 
 export type TokenStorageMode = 'keychain' | 'legacy'
 
@@ -41,8 +41,6 @@ export const skipKeychainMigrationPrompt = (): void => {
 const canUseKeychainInteractively = (env: NodeJS.ProcessEnv): boolean =>
   isInteractive() || env.TESTING_PROMPTS === 'true'
 
-const isPromptExit = (error: unknown): boolean => error instanceof Error && error.name === 'ExitPromptError'
-
 const attemptMigration = async (token: string, env: NodeJS.ProcessEnv): Promise<boolean> => {
   if (
     isLegacyAuthStorageForced(env) ||
@@ -64,15 +62,7 @@ const attemptMigration = async (token: string, env: NodeJS.ProcessEnv): Promise<
     `The CLI can move it to your operating system's keychain, which is more secure. You may be asked to allow access.`,
   )
   log()
-  let confirmed: boolean
-  try {
-    confirmed = await confirm({ message: 'Move the token to the keychain now?', default: true })
-  } catch (error) {
-    if (isPromptExit(error)) throw error
-    void reportError(error, { severity: 'error' })
-    return false
-  }
-
+  const confirmed = await promptConfirm({ message: 'Move the token to the keychain now?', initialValue: true })
   if (!confirmed) {
     globalConfig.set(skipMigrationKey(userId), true)
     log(

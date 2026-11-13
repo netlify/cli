@@ -3,10 +3,10 @@ import { mkdir, readdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
 import { applyMigrations } from '@netlify/dev'
-import { confirm, select } from '@inquirer/prompts'
 
 import { chalk, log, netlifyCommand } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { promptConfirm, promptSelect } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import BaseCommand from '../base-command.js'
 import { generateNextPrefix } from './db-migration-new.js'
@@ -52,16 +52,28 @@ const success = (text: string): void => {
   log(chalk.green(`✓ ${text}`))
 }
 
-const carefullyWriteFile = async (filePath: string, data: string, projectRoot: string) => {
-  if (existsSync(filePath)) {
-    const overwrite = await confirm({
-      message: `Overwrite existing file .${filePath.replace(projectRoot, '')}?`,
-    })
-    if (overwrite) {
-      await writeFile(filePath, data)
-    }
-  } else {
+// `--yes` accepts the overwrite prompt's default (yes); a plain non-TTY run must not clobber user files.
+type ExistingFilePolicy = 'ask' | 'overwrite' | 'keep'
+
+const carefullyWriteFile = async (
+  filePath: string,
+  data: string,
+  projectRoot: string,
+  onExisting: ExistingFilePolicy,
+) => {
+  if (!existsSync(filePath)) {
     await writeFile(filePath, data)
+    return
+  }
+  const displayPath = `.${filePath.replace(projectRoot, '')}`
+  const overwrite =
+    onExisting === 'ask'
+      ? await promptConfirm({ message: `Overwrite existing file ${displayPath}?` })
+      : onExisting === 'overwrite'
+  if (overwrite) {
+    await writeFile(filePath, data)
+  } else if (onExisting === 'keep') {
+    info(`${displayPath} already exists, leaving it unchanged`)
   }
 }
 
@@ -80,12 +92,12 @@ const promptForQueryStyle = async (interactive: boolean): Promise<QueryStyle> =>
   }
 
   log('')
-  return await select<QueryStyle>({
+  return await promptSelect<QueryStyle>({
     message: 'What is your preferred style?',
-    default: 'drizzle',
-    choices: [
-      { name: 'Drizzle ORM (recommended)', value: 'drizzle' },
-      { name: 'Direct SQL', value: 'raw' },
+    initialValue: 'drizzle',
+    options: [
+      { value: 'drizzle', label: 'Drizzle ORM (recommended)' },
+      { value: 'raw', label: 'Direct SQL' },
     ],
   })
 }
@@ -100,9 +112,9 @@ const promptForStarter = async (interactive: boolean): Promise<boolean> => {
   log('and then query it. Alternatively, you can do this yourself at any time.')
 
   log('')
-  return await confirm({
+  return await promptConfirm({
     message: 'Do you want to create sample data?',
-    default: true,
+    initialValue: true,
   })
 }
 
@@ -111,6 +123,7 @@ const installDependencies = async (
   projectRoot: string,
   migrationsDirectory: string,
   queryStyle: QueryStyle,
+  onExistingFile: ExistingFilePolicy,
 ): Promise<void> => {
   sectionHeading('Install dependencies')
   info("We'll install the dependencies you need to use Netlify Database")
@@ -145,7 +158,7 @@ const installDependencies = async (
 
   if (queryStyle === 'drizzle') {
     const out = relativeToProject(projectRoot, migrationsDirectory)
-    await carefullyWriteFile(join(projectRoot, 'drizzle.config.ts'), drizzleConfigTs(out), projectRoot)
+    await carefullyWriteFile(join(projectRoot, 'drizzle.config.ts'), drizzleConfigTs(out), projectRoot, onExistingFile)
     success('drizzle.config.ts ready')
   }
 }
@@ -157,6 +170,7 @@ const scaffoldStarter = async (
   projectRoot: string,
   migrationsDirectory: string,
   queryStyle: QueryStyle,
+  onExistingFile: ExistingFilePolicy,
 ): Promise<void> => {
   sectionHeading('Create a starter migration')
 
@@ -166,7 +180,7 @@ const scaffoldStarter = async (
 
     const schemaDir = join(projectRoot, 'db')
     await mkdir(schemaDir, { recursive: true })
-    await carefullyWriteFile(join(schemaDir, 'schema.ts'), DRIZZLE_SCHEMA_TS, projectRoot)
+    await carefullyWriteFile(join(schemaDir, 'schema.ts'), DRIZZLE_SCHEMA_TS, projectRoot, onExistingFile)
     success('db/schema.ts ready')
 
     log('')
@@ -307,6 +321,7 @@ export const initDatabase = async (options: DatabaseInitOptions, command: BaseCo
   }
   const yes = options.yes ?? false
   const interactive = isInteractive() && !yes
+  const onExistingFile: ExistingFilePolicy = interactive ? 'ask' : yes ? 'overwrite' : 'keep'
   const pm = getPackageManager(command)
 
   log(chalk.bold('Netlify Database'))
@@ -339,12 +354,12 @@ export const initDatabase = async (options: DatabaseInitOptions, command: BaseCo
 
   const queryStyle = await promptForQueryStyle(interactive)
 
-  await installDependencies(pm, projectRoot, migrationsDirectory, queryStyle)
+  await installDependencies(pm, projectRoot, migrationsDirectory, queryStyle, onExistingFile)
 
   const withStarter = await promptForStarter(interactive)
 
   if (withStarter) {
-    await scaffoldStarter(pm, projectRoot, migrationsDirectory, queryStyle)
+    await scaffoldStarter(pm, projectRoot, migrationsDirectory, queryStyle, onExistingFile)
 
     sectionHeading('Apply the migration')
     info(

@@ -2,12 +2,12 @@ import fs from 'fs'
 import { createRequire } from 'module'
 import path from 'path'
 
-import { select } from '@inquirer/prompts'
 import { OptionValues } from 'commander'
 import fetch from 'node-fetch'
 
 import { APIError, NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
+import { promptSelect } from '../../utils/prompts/index.js'
 import BaseCommand from '../base-command.js'
 
 const require = createRequire(import.meta.url)
@@ -95,10 +95,12 @@ const processPayloadFromFlag = function (payloadString, workingDir) {
  * @param {string} [argumentName] The name that might be provided as argument (optional argument)
  * @returns {Promise<string>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functions' implicitly has an 'any' type... Remove this comment to see the full error message
-const getNameFromArgs = async function (functions, options, argumentName) {
+const getNameFromArgs = async function (
+  functions: { name: string }[],
+  options: OptionValues,
+  argumentName?: string,
+): Promise<string> {
   const functionToTrigger = getFunctionToTrigger(options, argumentName)
-  // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
   const functionNames = functions.map(({ name }) => name)
 
   if (functionToTrigger) {
@@ -113,9 +115,9 @@ const getNameFromArgs = async function (functions, options, argumentName) {
     )
   }
 
-  return await select({
+  return await promptSelect({
     message: 'Pick a function to trigger',
-    choices: functionNames,
+    options: functionNames.map((name) => ({ value: name })),
   })
 }
 
@@ -125,15 +127,14 @@ const getNameFromArgs = async function (functions, options, argumentName) {
  * @param {string} [argumentName] The name that might be provided as argument (optional argument)
  * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const getFunctionToTrigger = function (options, argumentName) {
+const getFunctionToTrigger = function (options: OptionValues, argumentName?: string): string | undefined {
   if (options.name) {
     if (argumentName) {
       console.error('function name specified in both flag and arg format, pick one')
       exit(1)
     }
 
-    return options.name
+    return options.name as string
   }
 
   return argumentName

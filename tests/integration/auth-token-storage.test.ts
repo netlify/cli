@@ -276,7 +276,7 @@ describe('migration prompt interactive flow', () => {
         timeout: 60_000,
       })
 
-      handleQuestions(childProcess, [{ question: 'Move the token to the keychain', answer: NO + CONFIRM }])
+      handleQuestions(childProcess, [{ question: 'Move the token to the keychain', answer: NO }])
 
       await childProcess
 

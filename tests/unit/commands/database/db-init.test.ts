@@ -15,6 +15,8 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 const {
   mockSpawnAsync,
   mockConnectRawClient,
+  mockPromptConfirm,
+  mockPromptSelect,
   mockIsInteractive,
   mockFormatQueryResult,
   mockApplyMigrations,
@@ -24,6 +26,8 @@ const {
 } = vi.hoisted(() => ({
   mockSpawnAsync: vi.fn(),
   mockConnectRawClient: vi.fn(),
+  mockPromptConfirm: vi.fn<(...args: unknown[]) => Promise<boolean>>(),
+  mockPromptSelect: vi.fn<(...args: unknown[]) => Promise<string>>(),
   mockIsInteractive: vi.fn().mockReturnValue(true),
   mockFormatQueryResult: vi.fn(),
   mockApplyMigrations: vi.fn(),
@@ -32,7 +36,11 @@ const {
   logMessages: [] as string[],
 }))
 
-vi.mock('@inquirer/prompts')
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
+  promptConfirm: (...args: unknown[]) => mockPromptConfirm(...args),
+  promptSelect: (...args: unknown[]) => mockPromptSelect(...args),
+}))
 
 vi.mock('../../../../src/commands/database/util/spawn-async.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/commands/database/util/spawn-async.js')>()),
@@ -72,8 +80,6 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   },
 }))
 
-import { confirm, select } from '@inquirer/prompts'
-
 import { initDatabase } from '../../../../src/commands/database/db-init.js'
 import { utcTimestampPrefix } from '../../../../src/commands/database/util/timestamp.js'
 
@@ -94,9 +100,9 @@ function createCommand(projectRoot: string) {
   } as unknown as Parameters<typeof initDatabase>[1]
 }
 
-const answerPrompts = ({ queryStyle, createSampleData }: { queryStyle: string; createSampleData: boolean }) => {
-  vi.mocked(select).mockResolvedValueOnce(queryStyle)
-  vi.mocked(confirm).mockResolvedValueOnce(createSampleData)
+const setPrompts = (queryStyle: 'raw' | 'drizzle', withStarter: boolean) => {
+  mockPromptSelect.mockResolvedValueOnce(queryStyle)
+  mockPromptConfirm.mockResolvedValueOnce(withStarter)
 }
 
 const exists = async (path: string): Promise<boolean> => {
@@ -122,8 +128,6 @@ beforeEach(async () => {
 
   logMessages.length = 0
   vi.clearAllMocks()
-  vi.mocked(select).mockReset().mockRejectedValue(new Error('Unexpected select prompt — no answer queued'))
-  vi.mocked(confirm).mockReset().mockRejectedValue(new Error('Unexpected confirm prompt — no answer queued'))
 
   // Simulate `drizzle-kit generate` by writing a timestamp-prefixed directory
   // with a migration.sql under the configured out dir. Anything else (package
@@ -168,7 +172,7 @@ afterEach(async () => {
 
 describe('initDatabase (integration)', () => {
   test('raw SQL + starter writes a timestamp-prefixed migration with a CREATE TABLE and seed data', async () => {
-    answerPrompts({ queryStyle: 'raw', createSampleData: true })
+    setPrompts('raw', true)
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -192,7 +196,7 @@ describe('initDatabase (integration)', () => {
   })
 
   test('Drizzle + starter writes schema/config, runs drizzle-kit generate, and seeds after it', async () => {
-    answerPrompts({ queryStyle: 'drizzle', createSampleData: true })
+    setPrompts('drizzle', true)
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -235,7 +239,7 @@ describe('initDatabase (integration)', () => {
   })
 
   test('Drizzle without starter scaffolds drizzle.config.ts only (no schema, no migration, no generate)', async () => {
-    answerPrompts({ queryStyle: 'drizzle', createSampleData: false })
+    setPrompts('drizzle', false)
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -253,7 +257,7 @@ describe('initDatabase (integration)', () => {
   })
 
   test('raw without starter writes nothing extra; next steps point at `database migrations new`', async () => {
-    answerPrompts({ queryStyle: 'raw', createSampleData: false })
+    setPrompts('raw', false)
 
     await initDatabase({}, createCommand(projectRoot()))
 
@@ -275,8 +279,8 @@ describe('initDatabase (integration)', () => {
     await initDatabase({}, createCommand(projectRoot()))
 
     expect(await readMigrations(projectRoot())).toEqual(['0001_existing.sql'])
-    expect(select).not.toHaveBeenCalled()
-    expect(confirm).not.toHaveBeenCalled()
+    expect(mockPromptSelect).not.toHaveBeenCalled()
+    expect(mockPromptConfirm).not.toHaveBeenCalled()
     expect(mockSpawnAsync).not.toHaveBeenCalled()
     expect(mockConnectRawClient).not.toHaveBeenCalled()
     expect(logMessages.join('\n')).toContain('you already have migrations set up')
@@ -287,13 +291,46 @@ describe('initDatabase (integration)', () => {
 
     await initDatabase({}, createCommand(projectRoot()))
 
-    expect(select).not.toHaveBeenCalled()
-    expect(confirm).not.toHaveBeenCalled()
+    expect(mockPromptSelect).not.toHaveBeenCalled()
+    expect(mockPromptConfirm).not.toHaveBeenCalled()
     expect(await exists(join(projectRoot(), 'drizzle.config.ts'))).toBe(true)
     expect(await exists(join(projectRoot(), 'db', 'schema.ts'))).toBe(true)
     expect((await readMigrations(projectRoot())).some((name) => name.includes('seed_planets'))).toBe(true)
     expect(mockConnectRawClient).toHaveBeenCalledOnce()
     expect(mockApplyMigrations).toHaveBeenCalledOnce()
+  })
+
+  test('non-interactive keeps an existing drizzle.config.ts instead of blocking on a prompt', async () => {
+    mockIsInteractive.mockReturnValue(false)
+    await fs.writeFile(join(projectRoot(), 'drizzle.config.ts'), '// hand-written config')
+
+    await initDatabase({}, createCommand(projectRoot()))
+
+    expect(mockPromptConfirm).not.toHaveBeenCalled()
+    expect(await fs.readFile(join(projectRoot(), 'drizzle.config.ts'), 'utf-8')).toBe('// hand-written config')
+    expect(logMessages.join('\n')).toContain('already exists, leaving it unchanged')
+  })
+
+  test('--yes overwrites an existing drizzle.config.ts without prompting', async () => {
+    mockIsInteractive.mockReturnValue(true)
+    await fs.writeFile(join(projectRoot(), 'drizzle.config.ts'), '// hand-written config')
+
+    await initDatabase({ yes: true }, createCommand(projectRoot()))
+
+    expect(mockPromptConfirm).not.toHaveBeenCalled()
+    expect(await fs.readFile(join(projectRoot(), 'drizzle.config.ts'), 'utf-8')).toContain('defineConfig')
+  })
+
+  test('interactive still asks before overwriting an existing drizzle.config.ts', async () => {
+    setPrompts('drizzle', false)
+    mockPromptConfirm.mockResolvedValueOnce(false)
+    await fs.writeFile(join(projectRoot(), 'drizzle.config.ts'), '// hand-written config')
+
+    await initDatabase({}, createCommand(projectRoot()))
+
+    const [{ message }] = mockPromptConfirm.mock.calls[0] as [{ message: string }]
+    expect(message).toContain('Overwrite existing file')
+    expect(await fs.readFile(join(projectRoot(), 'drizzle.config.ts'), 'utf-8')).toBe('// hand-written config')
   })
 
   test('throws when project root cannot be determined', async () => {

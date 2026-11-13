@@ -1,6 +1,5 @@
-import { confirm, input } from '@inquirer/prompts'
-
 import { exit, log } from '../command-helpers.js'
+import { promptConfirm, promptText } from '../prompts/index.js'
 import type BaseCommand from '../../commands/base-command.js'
 import type { RepoData } from '../get-repo-data.js'
 
@@ -15,27 +14,26 @@ const addDeployKey = async (deployKey: DeployKey) => {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   log(`\n${deployKey.public_key}\n\n`)
 
-  const sshKeyAdded = await confirm({ message: 'Continue?', default: true })
+  const sshKeyAdded = await promptConfirm({ message: 'Continue?' })
 
   if (!sshKeyAdded) {
     return exit()
   }
 }
 
-const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string> => {
-  return await input({
+const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string> =>
+  promptText({
     message: 'The SSH URL of the remote git repo:',
-    default: repoData.url,
-    validate: (url: string) => (SSH_URL_REGEXP.test(url) ? true : 'The URL provided does not use the SSH protocol'),
+    defaultValue: repoData.url,
+    validate: (url) => (SSH_URL_REGEXP.test(url ?? '') ? undefined : 'The URL provided does not use the SSH protocol'),
   })
-}
 
 const addDeployHook = async (deployHook: string | undefined): Promise<boolean> => {
   log('\nConfigure the following webhook for your repository:\n')
   // FIXME(serhalp): Handle nullish `deployHook` by throwing user-facing error or fixing upstream type.
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   log(`\n${deployHook}\n\n`)
-  return await confirm({ message: 'Continue?', default: true })
+  return promptConfirm({ message: 'Continue?' })
 }
 
 const isSupportedProvider = (provider: string | null): provider is 'github' | 'gitlab' =>
