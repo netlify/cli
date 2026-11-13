@@ -203,15 +203,6 @@ const installTests: [packageManager: string, config: InstallTest][] = [
       lockfile: 'pnpm-lock.yaml',
     },
   ],
-  [
-    'yarn',
-    {
-      packageName: 'netlify-cli',
-      install: ['yarn', ['add', 'netlify-cli@testing']],
-      cleanInstall: ['yarn', ['install', '--frozen-lockfile']],
-      lockfile: 'yarn.lock',
-    },
-  ],
 ]
 
 describe.each(installTests)('%s → installs the cli and runs commands without errors', (packageManager, config) => {

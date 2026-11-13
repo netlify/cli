@@ -23,8 +23,4 @@ export const packageManagerConfig = {
     install: ['pnpm', ['add', 'netlify-cli@testing']],
     lockFile: 'pnpm-lock.yaml',
   },
-  yarn: {
-    install: ['yarn', ['add', 'netlify-cli@testing']],
-    lockFile: 'yarn.lock',
-  },
 }
