@@ -4,6 +4,7 @@ import { stripVTControlCharacters } from 'util'
 // eslint-disable-next-line no-restricted-imports -- this module is the wrapper everything else uses
 import * as clack from '@clack/prompts'
 
+import { logError } from '../command-helpers.js'
 import { EXIT_CODES } from '../exit-codes.js'
 import { exitAfterCleanup } from '../shell.js'
 
@@ -29,18 +30,43 @@ const cancelAndExit = async (): Promise<never> => {
   return exitAfterCleanup(EXIT_CODES.INTERRUPTED)
 }
 
-const ask = async <T>(prompt: Prompt<T>, timeout?: { after: number; answer: T }): Promise<T> => {
+const exitOnClosedInput = async (message: string): Promise<never> => {
+  logError(
+    `Input ended before "${stripVTControlCharacters(message)}" was answered. Run this command in an interactive terminal, or pass the value with a flag if it has one.`,
+  )
+  return exitAfterCleanup(EXIT_CODES.NON_INTERACTIVE_PROMPT)
+}
+
+const ask = async <T>(message: string, prompt: Prompt<T>, timeout?: { after: number; answer: T }): Promise<T> => {
   const controller = new AbortController()
+  let abortReason: 'timeout' | 'input-ended' | undefined
+  const abort = (reason: NonNullable<typeof abortReason>) => {
+    abortReason = reason
+    controller.abort()
+  }
 
   const timer =
     timeout &&
     setTimeout(() => {
-      controller.abort()
+      abort('timeout')
     }, timeout.after)
+  let inputEnded: NodeJS.Immediate | undefined
+  // clack ignores the end of input, so without this a closed stdin leaves the prompt waiting forever.
+  // Deferred because `end` can fire before an answer in the same final chunk settles the prompt.
+  const onInputEnd = () => {
+    inputEnded = setImmediate(() => {
+      abort('input-ended')
+    })
+  }
 
   const piped = !process.stdin.isTTY
   if (piped) {
     process.stdin.prependListener('keypress', treatLineFeedAsEnter)
+    if (process.stdin.readableEnded) {
+      onInputEnd()
+    } else {
+      process.stdin.once('end', onInputEnd)
+    }
   }
 
   let value: Cancellable<T>
@@ -50,14 +76,17 @@ const ask = async <T>(prompt: Prompt<T>, timeout?: { after: number; answer: T })
     // clack never removes its abort listener, so a late abort would close the settled prompt again and
     // reset the terminal under whatever runs next.
     clearTimeout(timer)
+    clearImmediate(inputEnded)
     if (piped) {
       process.stdin.removeListener('keypress', treatLineFeedAsEnter)
+      process.stdin.removeListener('end', onInputEnd)
       releaseStdin()
     }
   }
 
   if (!clack.isCancel(value)) return value
-  if (timeout && controller.signal.aborted) return timeout.answer
+  if (timeout && abortReason === 'timeout') return timeout.answer
+  if (abortReason === 'input-ended') return exitOnClosedInput(message)
   return cancelAndExit()
 }
 
@@ -79,10 +108,10 @@ const withDefaultValue = (options: clack.TextOptions): clack.TextOptions => {
 }
 
 export const promptText = (options: clack.TextOptions): Promise<string> =>
-  ask((signal) => clack.text({ ...withDefaultValue(options), signal }))
+  ask(options.message, (signal) => clack.text({ ...withDefaultValue(options), signal }))
 
 export const promptPassword = (options: clack.PasswordOptions): Promise<string> =>
-  ask((signal) => clack.password({ ...options, signal }))
+  ask(options.message, (signal) => clack.password({ ...options, signal }))
 
 export type ConfirmOptions = Omit<clack.ConfirmOptions, 'signal'> & {
   /** Treat the prompt as declined when it goes unanswered for this many milliseconds. */
@@ -91,15 +120,16 @@ export type ConfirmOptions = Omit<clack.ConfirmOptions, 'signal'> & {
 
 export const promptConfirm = ({ timeout, ...options }: ConfirmOptions): Promise<boolean> =>
   ask(
+    options.message,
     (signal) => clack.confirm({ ...options, signal }),
     timeout === undefined ? undefined : { after: timeout, answer: false },
   )
 
 export const promptMultiselect = <Value>(options: clack.MultiSelectOptions<Value>): Promise<Value[]> =>
-  ask((signal) => clack.multiselect({ ...options, signal }))
+  ask(options.message, (signal) => clack.multiselect({ ...options, signal }))
 
 export const promptSelect = <Value>(options: clack.SelectOptions<Value>): Promise<Value> =>
-  ask((signal) => clack.select({ ...options, signal }))
+  ask(options.message, (signal) => clack.select({ ...options, signal }))
 
 // clack's default filter also matches `String(value)`, so every object option matches "[object Object]",
 // and it matches the label with its ANSI styling, so a query spanning a colour change never matches.
@@ -109,4 +139,4 @@ const matchesLabelOrHint = <Value>(search: string, option: clack.Option<Value>):
     .includes(search.toLowerCase())
 
 export const promptAutocomplete = <Value>(options: clack.AutocompleteOptions<Value>): Promise<Value> =>
-  ask((signal) => clack.autocomplete({ filter: matchesLabelOrHint, ...options, signal }))
+  ask(options.message, (signal) => clack.autocomplete({ filter: matchesLabelOrHint, ...options, signal }))
