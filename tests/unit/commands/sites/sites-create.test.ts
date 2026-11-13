@@ -4,9 +4,9 @@ const { mockSelect } = vi.hoisted(() => ({
   mockSelect: vi.fn(),
 }))
 
-vi.mock('@inquirer/prompts', () => ({
-  input: vi.fn(),
-  select: mockSelect,
+vi.mock('../../../../src/utils/prompts/index.js', () => ({
+  promptText: vi.fn(),
+  promptSelect: mockSelect,
 }))
 
 vi.mock('../../../../src/utils/scripted-commands.js', () => ({

@@ -6,6 +6,7 @@ const {
   mockConnectToDatabase,
   mockExecutor,
   mockRm,
+  mockPromptConfirm,
   mockIsInteractive,
   logMessages,
   jsonMessages,
@@ -15,6 +16,7 @@ const {
   const mockExecutor = {}
   const mockConnectToDatabase = vi.fn()
   const mockRm = vi.fn().mockResolvedValue(undefined)
+  const mockPromptConfirm = vi.fn<(...args: unknown[]) => Promise<boolean>>()
   const mockIsInteractive = vi.fn().mockReturnValue(true)
   const logMessages: string[] = []
   const jsonMessages: unknown[] = []
@@ -24,6 +26,7 @@ const {
     mockConnectToDatabase,
     mockExecutor,
     mockRm,
+    mockPromptConfirm,
     mockIsInteractive,
     logMessages,
     jsonMessages,
@@ -47,7 +50,10 @@ vi.mock('fs/promises', async () => ({
   rm: (...args: unknown[]) => mockRm(...args),
 }))
 
-vi.mock('@inquirer/prompts')
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
+  promptConfirm: (...args: unknown[]) => mockPromptConfirm(...args),
+}))
 
 vi.mock('../../../../src/utils/scripted-commands.js', () => ({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -63,8 +69,6 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
     jsonMessages.push(message)
   },
 }))
-
-import { confirm } from '@inquirer/prompts'
 
 import { reset } from '../../../../src/commands/database/db-reset.js'
 import { LocalDatabaseStartError } from '../../../../src/commands/database/util/db-connection.js'
@@ -138,15 +142,21 @@ describe('reset', () => {
     })
 
     test('discards the data directory once the user confirms', async () => {
-      vi.mocked(confirm).mockResolvedValue(true)
+      mockPromptConfirm.mockResolvedValue(true)
 
       await reset({}, createMockCommand())
 
+      expect(mockPromptConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining(DB_DIRECTORY) as unknown as string,
+          initialValue: false,
+        }),
+      )
       expect(mockRm).toHaveBeenCalledWith(DB_DIRECTORY, { recursive: true, force: true })
     })
 
     test('explains the underlying startup failure before prompting', async () => {
-      vi.mocked(confirm).mockResolvedValue(true)
+      mockPromptConfirm.mockResolvedValue(true)
 
       await reset({}, createMockCommand())
 
@@ -154,7 +164,7 @@ describe('reset', () => {
     })
 
     test('keeps the data directory when the user declines', async () => {
-      vi.mocked(confirm).mockResolvedValue(false)
+      mockPromptConfirm.mockResolvedValue(false)
 
       await reset({}, createMockCommand())
 
@@ -165,7 +175,7 @@ describe('reset', () => {
     test('discards without prompting when --force is set', async () => {
       await reset({ force: true }, createMockCommand())
 
-      expect(confirm).not.toHaveBeenCalled()
+      expect(mockPromptConfirm).not.toHaveBeenCalled()
       expect(mockRm).toHaveBeenCalledWith(DB_DIRECTORY, { recursive: true, force: true })
     })
 
@@ -186,7 +196,7 @@ describe('reset', () => {
     test('refuses to prompt when --json is set without --force', async () => {
       await expect(reset({ json: true }, createMockCommand())).rejects.toThrow('--force')
 
-      expect(confirm).not.toHaveBeenCalled()
+      expect(mockPromptConfirm).not.toHaveBeenCalled()
       expect(mockRm).not.toHaveBeenCalled()
     })
 

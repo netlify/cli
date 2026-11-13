@@ -2,7 +2,7 @@ import execa from 'execa'
 import { describe, expect, test } from 'vitest'
 
 import { cliPath } from '../../utils/cli-path.js'
-import { CONFIRM, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
+import { CONFIRM, YES, handleQuestions } from '../../utils/handle-questions.js'
 import { getCLIOptions, withMockApi, type MockApiTestContext, type Route } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
@@ -57,7 +57,7 @@ describe('sites:delete command', () => {
           getCLIOptions({ apiUrl, builder, env: promptingEnv }),
         )
 
-        handleQuestions(childProcess, [{ question: CONFIRM_QUESTION, answer: answerWithValue('y') }])
+        handleQuestions(childProcess, [{ question: CONFIRM_QUESTION, answer: YES }])
 
         const { stdout } = await childProcess
 
@@ -87,6 +87,30 @@ describe('sites:delete command', () => {
         expect(exitCode).toBe(0)
         expect(stdout).toContain(CONFIRM_QUESTION)
         expect(stdout).not.toContain('Deleting project')
+        expect(stdout).not.toContain(DELETED_MESSAGE)
+        expect(deleteRequests(requests)).toHaveLength(0)
+      })
+    })
+  })
+
+  // Not `y\n`: the `y` submits on its own, so only a bare line feed exercises submitting the default ("No").
+  test('submits a prompt answered with a bare line feed, as a pipe sends it', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
+        const childProcess = execa(
+          cliPath,
+          ['sites:delete', 'site_id'],
+          getCLIOptions({ apiUrl, builder, env: promptingEnv }),
+        )
+
+        handleQuestions(childProcess, [{ question: CONFIRM_QUESTION, answer: '\n' }])
+
+        const { exitCode, stdout } = await childProcess
+
+        expect(exitCode).toBe(0)
+        expect(stdout).toContain(CONFIRM_QUESTION)
         expect(stdout).not.toContain(DELETED_MESSAGE)
         expect(deleteRequests(requests)).toHaveLength(0)
       })
@@ -139,8 +163,8 @@ describe('sites:delete command', () => {
         )
 
         handleQuestions(childProcess, [
-          { question: CONFIRM_QUESTION, answer: answerWithValue('y') },
-          { question: VERIFY_QUESTION, answer: answerWithValue('y') },
+          { question: CONFIRM_QUESTION, answer: YES },
+          { question: VERIFY_QUESTION, answer: YES },
         ])
 
         const { stdout } = await childProcess
@@ -167,7 +191,7 @@ describe('sites:delete command', () => {
         )
 
         handleQuestions(childProcess, [
-          { question: CONFIRM_QUESTION, answer: answerWithValue('y') },
+          { question: CONFIRM_QUESTION, answer: YES },
           { question: VERIFY_QUESTION, answer: CONFIRM },
         ])
 
