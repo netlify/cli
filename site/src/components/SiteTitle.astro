@@ -34,6 +34,13 @@ const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute;
 </a>
 
 <style>
+  @font-face {
+    font-family: "Instrument Sans";
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    src: url("../assets/fonts/instrument-sans-latin-variable.woff2") format("woff2");
+  }
   .site-title {
     align-items: center;
     gap: 0.375rem;
@@ -50,6 +57,7 @@ const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute;
     object-position: 0 50%;
   }
   .product {
+    font-family: "Instrument Sans", system-ui, Helvetica, sans-serif;
     font-size: 1.25rem;
     font-weight: 600;
     line-height: 1;
