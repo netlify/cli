@@ -89,7 +89,7 @@ export const getBuildSettings = async ({
   const baseDir =
     defaultBaseDir === ''
       ? undefined
-      : await input({ message: 'Base directory `(blank for current dir):', default: defaultBaseDir })
+      : await input({ message: 'Base directory (blank for current dir):', default: defaultBaseDir })
   const buildCmdInput = await input({
     message: 'Your build command (hugo build/yarn run build/etc):',
     default: defaultBuildCmd,
