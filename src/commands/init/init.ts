@@ -89,7 +89,12 @@ const logNextStepsAndExit = ({
     log()
     log(`To deploy to it, run ${run('deploy')}.`)
   } else {
-    log('This folder is not linked to a Netlify project yet. To continue without a terminal, run one of:')
+    if (command.netlify.state.get('siteId') === undefined) {
+      log('This folder is not linked to a Netlify project yet. To continue without a terminal, run one of:')
+    } else {
+      log('The Netlify project saved as the link for this folder could not be used. See the warning above.')
+      log(`If you are logged in to the right account, run ${run('unlink')} to remove the saved link. Then run one of:`)
+    }
     log()
     if (!('error' in repoData)) {
       log(`  ${run(`link --git-remote-url ${repoData.httpsUrl}`)}  links the project connected to this repository`)

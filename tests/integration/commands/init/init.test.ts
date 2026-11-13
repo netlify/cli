@@ -1347,6 +1347,26 @@ describe.concurrent('commands/init', () => {
     })
   })
 
+  test('netlify init without a terminal says to unlink first when the linked project no longer exists', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().withStateFile({ siteId: 'deleted_site_id' }).build()
+
+      await withMockApi(
+        [deletedSiteRoute, ...noGitRoutes],
+        async ({ apiUrl, requests }) => {
+          const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], noTerminal)
+
+          t.expect(exitCode).toBe(0)
+          t.expect(stdout).toMatch(/run (npx )?netlify unlink to remove the saved link/)
+          t.expect(stdout).not.toContain('This folder is not linked to a Netlify project yet')
+          t.expect(countSiteCreations(requests)).toBe(0)
+          await t.expect(readStateSiteId(builder.directory)).resolves.toBe('deleted_site_id')
+        },
+        true,
+      )
+    })
+  })
+
   test('netlify init without a terminal reports a linked project instead of configuring its repo', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withGit().withStateFile({ siteId: 'site_id' }).build()
