@@ -245,9 +245,6 @@
     }
   },
   "src/commands/functions/functions-create.ts": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    },
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 2
     },

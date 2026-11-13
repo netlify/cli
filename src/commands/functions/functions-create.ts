@@ -605,7 +605,7 @@ const registerEFInToml = async (funcName, options) => {
   const functionRegister = `\n\n[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
 
   try {
-    fs.promises.appendFile(configFilePath, functionRegister)
+    await fs.promises.appendFile(configFilePath, functionRegister)
     log(
       `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`${relConfigFilePath}\` file.`,
     )
