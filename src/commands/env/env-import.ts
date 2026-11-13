@@ -7,7 +7,7 @@ import dotenv from 'dotenv'
 import { exit, log, logJson } from '../../utils/command-helpers.js'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
-import { getSiteInfo } from './utils.js'
+import { failNotLinked, getEnvSiteId, getSiteInfo } from './utils.js'
 
 /**
  * Saves the imported env in the Envelope service
@@ -51,12 +51,11 @@ const importDotEnv = async ({ api, importedEnv, options, siteInfo }) => {
 }
 
 export const envImport = async (fileName: string, options: OptionValues, command: BaseCommand) => {
-  const { api, cachedConfig, site } = command.netlify
-  const siteId = site.id
+  const { api, cachedConfig } = command.netlify
+  const siteId = getEnvSiteId(options, command)
 
   if (!siteId) {
-    log('No project id found, please run inside a project folder or `netlify link`')
-    return false
+    return failNotLinked(options)
   }
 
   const siteInfo = await getSiteInfo(api, siteId, cachedConfig)

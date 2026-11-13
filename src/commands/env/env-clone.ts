@@ -3,6 +3,7 @@ import { OptionValues } from 'commander'
 import { chalk, log, logAndThrowError } from '../../utils/command-helpers.js'
 import { promptEnvCloneOverwrite } from '../../utils/prompts/env-clone-prompt.js'
 import BaseCommand from '../base-command.js'
+import { failNotLinked } from './utils.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
 const safeGetSite = async (api, siteId) => {
@@ -60,10 +61,10 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
   const { force } = options
 
   if (!site.id && !options.from) {
-    log(
+    return failNotLinked(
+      options,
       'Please include the source project ID as the `--from` option, or run `netlify link` to link this folder to a Netlify project',
     )
-    return false
   }
 
   const sourceId = options.from || site.id
