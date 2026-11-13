@@ -4,6 +4,7 @@ import { stripVTControlCharacters } from 'util'
 // eslint-disable-next-line no-restricted-imports -- this module is the wrapper everything else uses
 import * as clack from '@clack/prompts'
 
+import { logError } from '../command-helpers.js'
 import { EXIT_CODES } from '../exit-codes.js'
 import { exitAfterCleanup } from '../shell.js'
 
@@ -32,20 +33,46 @@ const cancelAndExit = async (): Promise<never> => {
   return exitAfterCleanup(EXIT_CODES.INTERRUPTED)
 }
 
-const ask = async <T>(prompt: Prompt<T>, timeout?: { after: number; answer: T }): Promise<T> => {
+// Without this, a script or agent whose stdin closes would leave the prompt waiting forever.
+const exitOnClosedInput = async (message: string): Promise<never> => {
+  logError(
+    `Input ended before "${stripVTControlCharacters(message)}" was answered. Run this command in an interactive terminal, or pass the value with a flag if it has one.`,
+  )
+  return exitAfterCleanup(EXIT_CODES.NON_INTERACTIVE_PROMPT)
+}
+
+const ask = async <T>(message: string, prompt: Prompt<T>, timeout?: { after: number; answer: T }): Promise<T> => {
   const controller = new AbortController()
+  let abortReason: 'timeout' | 'input-ended' | undefined
+  const abort = (reason: NonNullable<typeof abortReason>) => {
+    abortReason = reason
+    controller.abort()
+  }
 
   // The prompt keeps its abort listener after it settles, so a late abort would close it a second time
-  // and reset the terminal under whatever runs next. The timer is therefore cleared on settling.
+  // and reset the terminal under whatever runs next. Both triggers are therefore cleared on settling.
   const timer =
     timeout &&
     setTimeout(() => {
-      controller.abort()
+      abort('timeout')
     }, timeout.after)
+  let inputEnded: NodeJS.Immediate | undefined
+  // `end` can fire before an answer decoded from the same final chunk has settled the prompt; deferring
+  // lets that answer win.
+  const onInputEnd = () => {
+    inputEnded = setImmediate(() => {
+      abort('input-ended')
+    })
+  }
 
   const piped = !process.stdin.isTTY
   if (piped) {
     process.stdin.prependListener('keypress', treatLineFeedAsEnter)
+    if (process.stdin.readableEnded) {
+      onInputEnd()
+    } else {
+      process.stdin.once('end', onInputEnd)
+    }
   }
 
   let value: Cancellable<T>
@@ -53,14 +80,17 @@ const ask = async <T>(prompt: Prompt<T>, timeout?: { after: number; answer: T })
     value = await prompt(controller.signal)
   } finally {
     clearTimeout(timer)
+    clearImmediate(inputEnded)
     if (piped) {
       process.stdin.removeListener('keypress', treatLineFeedAsEnter)
+      process.stdin.removeListener('end', onInputEnd)
       releaseStdin()
     }
   }
 
   if (!clack.isCancel(value)) return value
-  if (timeout && controller.signal.aborted) return timeout.answer
+  if (timeout && abortReason === 'timeout') return timeout.answer
+  if (abortReason === 'input-ended') return exitOnClosedInput(message)
   return cancelAndExit()
 }
 
@@ -82,10 +112,10 @@ const withDefaultValue = (options: clack.TextOptions): clack.TextOptions => {
 }
 
 export const promptText = (options: clack.TextOptions): Promise<string> =>
-  ask((signal) => clack.text({ ...withDefaultValue(options), signal }))
+  ask(options.message, (signal) => clack.text({ ...withDefaultValue(options), signal }))
 
 export const promptPassword = (options: clack.PasswordOptions): Promise<string> =>
-  ask((signal) => clack.password({ ...options, signal }))
+  ask(options.message, (signal) => clack.password({ ...options, signal }))
 
 export type ConfirmOptions = Omit<clack.ConfirmOptions, 'signal'> & {
   /** Treat the prompt as declined when it goes unanswered for this many milliseconds. */
@@ -94,15 +124,16 @@ export type ConfirmOptions = Omit<clack.ConfirmOptions, 'signal'> & {
 
 export const promptConfirm = ({ timeout, ...options }: ConfirmOptions): Promise<boolean> =>
   ask(
+    options.message,
     (signal) => clack.confirm({ ...options, signal }),
     timeout === undefined ? undefined : { after: timeout, answer: false },
   )
 
 export const promptMultiselect = <Value>(options: clack.MultiSelectOptions<Value>): Promise<Value[]> =>
-  ask((signal) => clack.multiselect({ ...options, signal }))
+  ask(options.message, (signal) => clack.multiselect({ ...options, signal }))
 
 export const promptSelect = <Value>(options: clack.SelectOptions<Value>): Promise<Value> =>
-  ask((signal) => clack.select({ ...options, signal }))
+  ask(options.message, (signal) => clack.select({ ...options, signal }))
 
 // Matches what the option shows: the default filter also searches the stringified value, so options
 // holding objects all match any substring of "[object Object]", and it searches the styled label, so
@@ -113,4 +144,4 @@ const matchesLabelOrHint = <Value>(search: string, option: clack.Option<Value>):
     .includes(search.toLowerCase())
 
 export const promptAutocomplete = <Value>(options: clack.AutocompleteOptions<Value>): Promise<Value> =>
-  ask((signal) => clack.autocomplete({ filter: matchesLabelOrHint, ...options, signal }))
+  ask(options.message, (signal) => clack.autocomplete({ filter: matchesLabelOrHint, ...options, signal }))

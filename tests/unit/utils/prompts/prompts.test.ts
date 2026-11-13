@@ -2,7 +2,8 @@
 import { CANCEL_SYMBOL } from '@clack/prompts'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-const { mockClack, mockExit } = vi.hoisted(() => ({
+const { mockClack, mockExit, mockLogError } = vi.hoisted(() => ({
+  mockLogError: vi.fn(),
   mockClack: {
     text: vi.fn(),
     password: vi.fn(),
@@ -19,6 +20,13 @@ const { mockClack, mockExit } = vi.hoisted(() => ({
 vi.mock('@clack/prompts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@clack/prompts')>()),
   ...mockClack,
+}))
+
+vi.mock('../../../../src/utils/command-helpers.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/command-helpers.js')>()),
+  logError: (message: unknown) => {
+    mockLogError(message)
+  },
 }))
 
 // Cancelling runs the command's registered shutdown work before exiting, so the real one would take
@@ -266,6 +274,41 @@ describe('piped stdin', () => {
     await promptText({ message: 'Anything' })
 
     expect(key.name).toBe('return')
+  })
+
+  test('exits with the non-interactive code instead of hanging when stdin ends unanswered', async () => {
+    setStdinTTY(undefined)
+    mockClack.select.mockImplementation(
+      ({ signal }: { signal: AbortSignal }) =>
+        new Promise((resolve) => {
+          signal.addEventListener('abort', () => {
+            resolve(CANCEL_SYMBOL)
+          })
+          process.stdin.emit('end')
+        }),
+    )
+
+    await expect(promptSelect({ message: 'Pick a team', options: [{ value: 'a' }] })).rejects.toThrow('exit(4)')
+
+    expect(mockLogError).toHaveBeenCalledWith(expect.stringContaining('"Pick a team"'))
+    expect(mockClack.cancel).not.toHaveBeenCalled()
+  })
+
+  test('lets an answer in the final chunk win over the end of input that follows it', async () => {
+    setStdinTTY(undefined)
+    let aborted = false
+    mockClack.text.mockImplementation(({ signal }: { signal: AbortSignal }) => {
+      signal.addEventListener('abort', () => {
+        aborted = true
+      })
+      process.stdin.emit('end')
+      return Promise.resolve('last answer')
+    })
+
+    await expect(promptText({ message: 'Anything' })).resolves.toBe('last answer')
+    await new Promise((resolve) => setImmediate(resolve))
+
+    expect(aborted).toBe(false)
   })
 
   test('leaves a TTY stdin alone', async () => {
