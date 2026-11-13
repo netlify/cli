@@ -1,4 +1,5 @@
 import clean from 'clean-deep'
+import { getLegacyConfigFilePath } from '@netlify/dev-utils'
 import type { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
@@ -13,6 +14,7 @@ import {
   type APIError,
 } from '../../utils/command-helpers.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
+import type { TokenLocation } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 
 // TODO: centralize these in a shared error-code dictionary alongside the exit codes.
@@ -21,10 +23,25 @@ export const STATUS_ERROR_CODES = {
   NOT_LINKED: 'NOT_LINKED',
 } as const
 
+const formatTokenStorage = (location: TokenLocation): string => {
+  switch (location) {
+    case 'keychain':
+      return "operating system's keychain"
+    case 'config':
+      return `plaintext config file (${getLegacyConfigFilePath()})`
+    case 'env':
+      return 'NETLIFY_AUTH_TOKEN environment variable'
+    case 'flag':
+      return '--auth flag'
+    default:
+      return 'not stored'
+  }
+}
+
 export const status = async (options: OptionValues, command: BaseCommand) => {
   const { accounts, api, globalConfig, site, siteInfo } = command.netlify
   const currentUserId = globalConfig.get('userId') as string | undefined
-  const [accessToken] = await getToken()
+  const [accessToken, tokenLocation] = await getToken(options.auth as string | undefined)
 
   if (!accessToken) {
     if (options.json) {
@@ -98,7 +115,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     // another lib.
     (clean as unknown as <T extends Record<string | number | symbol, unknown>>(obj: T) => Partial<T>)(accountData)
 
-  log(prettyjson.render(cleanAccountData))
+  log(prettyjson.render({ ...cleanAccountData, 'Auth token storage': formatTokenStorage(tokenLocation) }))
 
   if (!siteId) {
     if (options.json) {
@@ -121,6 +138,10 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   if (options.json) {
     logJson({
       account: cleanAccountData,
+      authTokenStorage: {
+        source: tokenLocation,
+        ...(tokenLocation === 'config' ? { configPath: getLegacyConfigFilePath() } : {}),
+      },
       siteData: {
         'site-name': siteInfo.name,
         'config-path': site.configPath,

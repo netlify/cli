@@ -16,6 +16,7 @@ import { findUp } from 'find-up'
 import { deepMerge, pick } from '../utils/object-utilities.js'
 
 import { getAgent } from '../lib/http-agent.js'
+import { skipKeychainMigrationPrompt, writeAuthTokenForStorage } from '../lib/secure-storage.js'
 import {
   NETLIFY_CYAN,
   USER_AGENT,
@@ -202,11 +203,14 @@ export type BaseOptionValues = {
   verbose?: boolean
 }
 
-export function storeToken(
+export async function storeToken(
   globalConfig: Awaited<ReturnType<typeof getGlobalConfigStore>>,
   { userId, name, email, accessToken }: { userId: string; name?: string; email?: string; accessToken: string },
-) {
-  const userData = deepMerge(globalConfig.get(`users.${userId}`), {
+): Promise<void> {
+  globalConfig.set('userId', userId)
+  const mode = await writeAuthTokenForStorage(userId, accessToken)
+
+  const userData = deepMerge(globalConfig.get(`users.${userId}`) as { auth?: { token?: string } } | undefined, {
     id: userId,
     name,
     email,
@@ -218,7 +222,7 @@ export function storeToken(
       },
     },
   })
-  globalConfig.set('userId', userId)
+  if (mode === 'keychain') delete userData.auth?.token
   globalConfig.set(`users.${userId}`, userData)
 }
 
@@ -586,13 +590,12 @@ export default class BaseCommand extends Command {
       return logAndThrowError('Could not retrieve user ID from Netlify API')
     }
 
-    storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
-
     await identify({
       name,
       email,
       userId,
     })
+    await storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
     await track('user_login', {
       email,
     })
@@ -689,7 +692,11 @@ export default class BaseCommand extends Command {
     // Retrieve Site id and build state from the state.json
     // ==================================================
     const state = new LocalState(this.workingDir)
-    const [token] = await getToken(flags.auth)
+    const isDiscardingStoredToken =
+      actionCommand.name() === 'logout' || (actionCommand.name() === 'login' && Boolean(flags.new))
+    if (isDiscardingStoredToken) skipKeychainMigrationPrompt()
+    const [token, tokenLocation] = await getToken(flags.auth)
+    this.setAnalyticsPayload({ authTokenSource: tokenLocation })
 
     const apiUrlOpts: {
       userAgent: string
