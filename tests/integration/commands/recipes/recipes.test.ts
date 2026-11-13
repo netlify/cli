@@ -150,8 +150,9 @@ describe.concurrent('commands/recipes', () => {
   })
 
   test('Suggests closest matching recipe on typo', async (t) => {
-    const cliResponse = (await callCli(['recipes', 'vsc'])) as string
+    const error = await (callCli(['recipes', 'vsc']) as Promise<string>).catch((error_: unknown) => error_)
 
-    t.expect(normalize(cliResponse)).toMatchSnapshot()
+    t.expect(error).toHaveProperty('exitCode', 2)
+    t.expect(normalize((error as { stderr: string }).stderr)).toMatchSnapshot()
   })
 })
