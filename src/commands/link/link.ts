@@ -65,7 +65,7 @@ To search for projects:
 
   spinner.warn({ text: `Found ${matchingSites.length} projects connected to ${repoUrl}` })
 
-  if (!isInteractive()) {
+  if (!isInteractive() && process.env.TESTING_PROMPTS !== 'true') {
     return logAndThrowError(`More than one project is connected to ${repoUrl}. Link the one you want by ID:
 
 ${matchingSites
