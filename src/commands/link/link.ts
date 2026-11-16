@@ -65,6 +65,14 @@ To search for projects:
 
   spinner.warn({ text: `Found ${matchingSites.length} projects connected to ${repoUrl}` })
 
+  if (!isInteractive()) {
+    return logAndThrowError(`More than one project is connected to ${repoUrl}. Link the one you want by ID:
+
+${matchingSites
+  .map(({ id, name }) => `  ${chalk.cyanBright(`${netlifyCommand()} link --id ${id}`)}  ${name}`)
+  .join('\n')}`)
+  }
+
   const selectedSite = await select<SiteInfo | undefined>({
     message: 'Which project do you want to link?',
     choices: matchingSites.map((matchingSite) => ({

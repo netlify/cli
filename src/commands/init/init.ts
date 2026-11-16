@@ -68,6 +68,8 @@ const logLinkedWithoutGitAndExit = ({
 
 const canAnswerPrompts = (): boolean => isInteractive() || process.env.TESTING_PROMPTS === 'true'
 
+const SHELL_SAFE_URL = /^https:\/\/[\w.-]+(:\d+)?\/[\w./-]+$/
+
 const logNextStepsAndExit = ({
   command,
   linkedSiteInfo,
@@ -89,14 +91,17 @@ const logNextStepsAndExit = ({
     log()
     log(`To deploy to it, run ${run('deploy')}.`)
   } else {
-    if (command.netlify.state.get('siteId') === undefined) {
+    if (process.env.NETLIFY_SITE_ID) {
+      log('NETLIFY_SITE_ID names a Netlify project that could not be used. See the warning above.')
+      log('Set it to a project this account can access, or unset it. Then run one of:')
+    } else if (command.netlify.state.get('siteId') === undefined) {
       log('This folder is not linked to a Netlify project yet. To continue without a terminal, run one of:')
     } else {
       log('The Netlify project saved as the link for this folder could not be used. See the warning above.')
       log(`If you are logged in to the right account, run ${run('unlink')} to remove the saved link. Then run one of:`)
     }
     log()
-    if (!('error' in repoData)) {
+    if (!('error' in repoData) && SHELL_SAFE_URL.test(repoData.httpsUrl)) {
       log(`  ${run(`link --git-remote-url ${repoData.httpsUrl}`)}  links the project connected to this repository`)
     }
     log(`  ${run('link --id <project-id>')}  links an existing project`)

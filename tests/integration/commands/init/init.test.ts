@@ -1367,6 +1367,42 @@ describe.concurrent('commands/init', () => {
     })
   })
 
+  test('netlify init without a terminal points at NETLIFY_SITE_ID when the project it names no longer exists', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().build()
+
+      await withMockApi(
+        [deletedSiteRoute, ...noGitRoutes],
+        async ({ apiUrl }) => {
+          const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], {
+            ...noTerminal,
+            NETLIFY_SITE_ID: 'deleted_site_id',
+          })
+
+          t.expect(exitCode).toBe(0)
+          t.expect(stdout).toContain('NETLIFY_SITE_ID names a Netlify project that could not be used')
+          t.expect(stdout).not.toContain('unlink')
+        },
+        true,
+      )
+    })
+  })
+
+  test('netlify init without a terminal leaves a git remote with shell characters out of the next commands', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit({ repoUrl: 'https://github.com/owner/repo$(id)' }).build()
+
+      await withMockApi(noGitRoutes, async ({ apiUrl }) => {
+        const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], noTerminal)
+
+        t.expect(exitCode).toBe(0)
+        t.expect(stdout).not.toContain('--git-remote-url')
+        t.expect(stdout).not.toContain('$(id)')
+        t.expect(stdout).toMatch(/netlify link --id <project-id>/)
+      })
+    })
+  })
+
   test('netlify init without a terminal reports a linked project instead of configuring its repo', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withGit().withStateFile({ siteId: 'site_id' }).build()
