@@ -28,6 +28,9 @@ export default defineConfig({
         { icon: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/@NetlifyApp' },
       ],
       favicon: 'favicon.svg',
+      components: {
+        SiteTitle: './src/components/SiteTitle.astro',
+      },
       logo: {
         light: './src/assets/logo-light.svg',
         dark: './src/assets/logo-dark.svg',
