@@ -27,10 +27,10 @@ describe('deploy context', () => {
     expect(parseDeploy(args).getContext()).toBe(expected)
   })
 
-  test('the CONTEXT env var wins over --prod', () => {
+  test.each([{ args: [] }, { args: ['--prod'] }])('the CONTEXT env var wins over the default for $args', ({ args }) => {
     vi.stubEnv('CONTEXT', 'branch-deploy')
 
-    expect(parseDeploy(['--prod']).getContext()).toBe('branch-deploy')
+    expect(parseDeploy(args).getContext()).toBe('branch-deploy')
   })
 
   test('--context wins over the CONTEXT env var', () => {

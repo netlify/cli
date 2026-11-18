@@ -912,10 +912,6 @@ export default class BaseCommand extends Command {
     return join(this.workspacePackage || '', '.netlify', ...paths)
   }
 
-  /**
-   * Returns the context config and env vars are resolved with: `--context`,
-   * then the `CONTEXT` env var, then the command's default context.
-   */
   getContext(): string {
     return this.opts<{ context?: string }>().context || process.env.CONTEXT || this.getDefaultContext()
   }
