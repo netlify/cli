@@ -16,6 +16,7 @@ import { findUp } from 'find-up'
 import { deepMerge, pick } from '../utils/object-utilities.js'
 
 import { getAgent } from '../lib/http-agent.js'
+import { skipKeychainMigrationPrompt, writeAuthTokenForStorage } from '../lib/secure-storage.js'
 import {
   NETLIFY_CYAN,
   USER_AGENT,
@@ -39,6 +40,7 @@ import { EXIT_CODES } from '../utils/exit-codes.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
+import { showAgentSkillsRefreshNotice, startAgentSkillsRefresh } from '../utils/init/agent-skills-refresh.js'
 import { getLocalApiTestOpts } from '../utils/local-api-test-opts.js'
 import { buildAuthorizeUrl } from '../utils/login-url.js'
 import openBrowser from '../utils/open-browser.js'
@@ -86,6 +88,26 @@ const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set([
  * A list of commands where we need to fetch featureflags for config resolution
  */
 const COMMANDS_WITH_FEATURE_FLAGS = new Set(['build', 'dev', 'deploy'])
+
+/**
+ * Commands that skip the background refresh of Netlify skills. `init` syncs them itself.
+ */
+const COMMANDS_WITHOUT_SKILLS_REFRESH = new Set(['init', 'completion'])
+
+const refreshAgentSkillsInBackground = async (command: BaseCommand): Promise<void> => {
+  const { repositoryRoot } = command.netlify
+  if (!repositoryRoot || COMMANDS_WITHOUT_SKILLS_REFRESH.has(command.name())) {
+    return
+  }
+  try {
+    if (!process.argv.includes('--silent')) {
+      await showAgentSkillsRefreshNotice({ repositoryRoot })
+    }
+    await startAgentSkillsRefresh({ repositoryRoot })
+  } catch (error) {
+    debug(`${command.name()}:skills`)(error)
+  }
+}
 
 /**
  * Names of options whose values should be scrubbed
@@ -181,11 +203,14 @@ export type BaseOptionValues = {
   verbose?: boolean
 }
 
-export function storeToken(
+export async function storeToken(
   globalConfig: Awaited<ReturnType<typeof getGlobalConfigStore>>,
   { userId, name, email, accessToken }: { userId: string; name?: string; email?: string; accessToken: string },
-) {
-  const userData = deepMerge(globalConfig.get(`users.${userId}`), {
+): Promise<void> {
+  globalConfig.set('userId', userId)
+  const mode = await writeAuthTokenForStorage(userId, accessToken)
+
+  const userData = deepMerge(globalConfig.get(`users.${userId}`) as { auth?: { token?: string } } | undefined, {
     id: userId,
     name,
     email,
@@ -197,7 +222,7 @@ export function storeToken(
       },
     },
   })
-  globalConfig.set('userId', userId)
+  if (mode === 'keychain') delete userData.auth?.token
   globalConfig.set(`users.${userId}`, userData)
 }
 
@@ -271,6 +296,7 @@ export default class BaseCommand extends Command {
       debug(`${commandName}:preAction`)('start')
       this.analytics.startTime = process.hrtime.bigint()
       await this.init(actionCommand as BaseCommand)
+      await refreshAgentSkillsInBackground(actionCommand as BaseCommand)
       debug(`${commandName}:preAction`)('end')
     })
 
@@ -564,13 +590,12 @@ export default class BaseCommand extends Command {
       return logAndThrowError('Could not retrieve user ID from Netlify API')
     }
 
-    storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
-
     await identify({
       name,
       email,
       userId,
     })
+    await storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
     await track('user_login', {
       email,
     })
@@ -667,7 +692,11 @@ export default class BaseCommand extends Command {
     // Retrieve Site id and build state from the state.json
     // ==================================================
     const state = new LocalState(this.workingDir)
-    const [token] = await getToken(flags.auth)
+    const isDiscardingStoredToken =
+      actionCommand.name() === 'logout' || (actionCommand.name() === 'login' && Boolean(flags.new))
+    if (isDiscardingStoredToken) skipKeychainMigrationPrompt()
+    const [token, tokenLocation] = await getToken(flags.auth)
+    this.setAnalyticsPayload({ authTokenSource: tokenLocation })
 
     const apiUrlOpts: {
       userAgent: string

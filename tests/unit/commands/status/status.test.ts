@@ -1,4 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
+import { getLegacyConfigFilePath } from '@netlify/dev-utils'
 
 const { mockGetToken, mockGetCurrentUser, logMessages, jsonMessages, exitCalls } = vi.hoisted(() => {
   const mockGetToken = vi.fn()
@@ -140,6 +141,10 @@ describe('status', () => {
           Name: 'Test User',
           Email: 'test@example.com',
           Teams: ['My Team'],
+        },
+        authTokenStorage: {
+          source: 'config',
+          configPath: getLegacyConfigFilePath(),
         },
         siteData: {
           'site-name': 'my-site',

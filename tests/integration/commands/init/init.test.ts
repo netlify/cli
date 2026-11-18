@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
+import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import path from 'node:path'
@@ -15,6 +15,9 @@ import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
 const defaultFunctionsDirectory = 'netlify/functions'
+
+const answersPrompts = { TESTING_PROMPTS: 'true' }
+const noTerminal = { TESTING_PROMPTS: 'false' }
 
 const SKILL_CONTENT = '# netlify-functions\n'
 
@@ -187,7 +190,12 @@ describe.concurrent('commands/init', () => {
         const childProcess = execa(cliPath, ['init', '--force', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           // NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN are required for @netlify/config to retrieve site info
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: {
+            ...answersPrompts,
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -282,7 +290,7 @@ describe.concurrent('commands/init', () => {
         // --manual is used to avoid the config-github flow that uses GitHub API
         const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
           encoding: 'utf8',
         })
 
@@ -361,7 +369,7 @@ describe.concurrent('commands/init', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const childProcess = execa(cliPath, ['init', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
           encoding: 'utf8',
         })
 
@@ -469,7 +477,7 @@ describe.concurrent('commands/init', () => {
         // --manual is used to avoid the config-github flow that uses GitHub API
         const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -574,7 +582,7 @@ describe.concurrent('commands/init', () => {
         // --manual is used to avoid the config-github flow that uses GitHub API
         const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -666,7 +674,12 @@ describe.concurrent('commands/init', () => {
         const childProcess = execa(cliPath, ['init', '--force', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
           // NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN are required for @netlify/config to retrieve site info
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: {
+            ...answersPrompts,
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -771,7 +784,7 @@ describe.concurrent('commands/init', () => {
         // --manual is used to avoid the config-github flow that uses GitHub API
         const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup'], {
           cwd: builder.directory,
-          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          env: { ...answersPrompts, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         })
 
         handleQuestions(childProcess, initQuestions)
@@ -806,16 +819,56 @@ describe.concurrent('commands/init', () => {
     { question: 'The SSH URL of the remote git repo', answer: CONFIRM },
     { question: 'Configure the following webhook for your repository', answer: CONFIRM },
   ]
+  const writeFakeClaude = async (directory: string) => {
+    const dir = path.join(directory, '.fake-bin')
+    const calls = path.join(dir, 'calls.log')
+    await mkdir(dir, { recursive: true })
+    await writeFile(
+      path.join(dir, 'claude'),
+      [
+        '#!/bin/sh',
+        `echo "$*" >> "${calls}"`,
+        `if [ "$2" = "list" ]; then echo "No MCP servers configured."; exit 0; fi`,
+        `if [ "$2" = "add" ]; then exit 0; fi`,
+        'exit 2',
+        '',
+      ].join('\n'),
+    )
+    await chmod(path.join(dir, 'claude'), 0o755)
+    return { dir, calls }
+  }
+
   const initOnLinkedSite =
-    ({ apiUrl, cwd, skillsHost }: { apiUrl: string; cwd: string; skillsHost: string }) =>
+    ({
+      apiUrl,
+      cwd,
+      skillsHost,
+      claudeBin,
+      agent,
+      home,
+    }: {
+      apiUrl: string
+      cwd: string
+      skillsHost: string
+      claudeBin?: string
+      agent?: string
+      home?: string
+    }) =>
     async (...flags: string[]) => {
       const env = {
+        ...answersPrompts,
         NETLIFY_API_URL: apiUrl,
         NETLIFY_SITE_ID: 'site_id',
         NETLIFY_AUTH_TOKEN: 'fake-token',
         NETLIFY_SKILLS_HOST: skillsHost,
+        ...(claudeBin
+          ? { PATH: `${claudeBin}${path.delimiter}${process.env.PATH ?? ''}`, NETLIFY_AGENT: 'claude-code' }
+          : {}),
+        ...(agent ? { NETLIFY_AGENT: agent } : {}),
+        ...(home ? { HOME: home, USERPROFILE: home } : {}),
       }
-      const childProcess = execa(cliPath, ['init', '--manual', ...flags], { cwd, env })
+      const mcpFlags = claudeBin || agent ? [] : ['--skip-mcp-setup']
+      const childProcess = execa(cliPath, ['init', '--force', '--manual', ...mcpFlags, ...flags], { cwd, env })
       if (process.env.DEBUG_TESTS) {
         childProcess.stdout?.on('data', (data: Buffer) => {
           process.stderr.write(data)
@@ -851,6 +904,149 @@ describe.concurrent('commands/init', () => {
       })
     })
   })
+
+  test.skipIf(process.platform === 'win32')(
+    'netlify init adds the Netlify MCP server for the project to the agent running it, and both skip flags silence it',
+    async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.withGit().build()
+        const { dir: claudeBin, calls: callsFile } = await writeFakeClaude(builder.directory)
+
+        await withMockApi(linkedSiteRoutes, async ({ apiUrl }) => {
+          await withSkillsHost(async (skillsHost) => {
+            const runInit = initOnLinkedSite({ apiUrl, cwd: builder.directory, skillsHost: skillsHost.url, claudeBin })
+
+            const projectScoped = await runInit()
+            t.expect(projectScoped.stdout).toContain('Added the Netlify MCP server to Claude Code for this project')
+
+            const userWide = await runInit('--mcp-scope', 'user')
+            t.expect(userWide.stdout).toContain('Added the Netlify MCP server to Claude Code for all your projects')
+
+            const skippedMcp = await runInit('--skip-mcp-setup')
+            t.expect(skippedMcp.stdout).not.toContain('MCP server')
+
+            const skippedAll = await runInit('--skip-agent-setup')
+            t.expect(skippedAll.stdout).not.toContain('MCP server')
+
+            const calls = (await readFile(callsFile, 'utf8')).trim().split('\n')
+            t.expect(calls).toEqual([
+              'mcp list',
+              'mcp add --transport http --scope local netlify https://mcp.netlify.com/mcp',
+              'mcp list',
+              'mcp add --transport http --scope user netlify https://mcp.netlify.com/mcp',
+            ])
+          })
+        })
+      })
+    },
+  )
+
+  test('netlify init writes the project MCP config for an agent that has no CLI to run', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().build()
+
+      await withMockApi(linkedSiteRoutes, async ({ apiUrl }) => {
+        await withSkillsHost(async (skillsHost) => {
+          const runInit = initOnLinkedSite({
+            apiUrl,
+            cwd: builder.directory,
+            skillsHost: skillsHost.url,
+            agent: 'gemini',
+          })
+          const settings = path.join(builder.directory, '.gemini', 'settings.json')
+
+          const first = await runInit()
+          t.expect(first.stdout).toContain(
+            `Added the Netlify MCP server to Gemini CLI for this project in ${path.join('.gemini', 'settings.json')}`,
+          )
+          t.expect(JSON.parse(await readFile(settings, 'utf8'))).toEqual({
+            mcpServers: { netlify: { type: 'http', url: 'https://mcp.netlify.com/mcp' } },
+          })
+
+          const again = await runInit()
+          t.expect(again.stdout).toContain('Gemini CLI already has the Netlify MCP server')
+        })
+      })
+    })
+  })
+
+  test.skipIf(process.platform === 'win32')(
+    'netlify init skips skills and the MCP server when run from the home directory',
+    async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.withGit().ensureDirectoryExists(path.join(builder.directory, '.agents')).build()
+        const claudeBin = await writeFakeClaude(builder.directory)
+
+        await withMockApi(linkedSiteRoutes, async ({ apiUrl }) => {
+          await withSkillsHost(async (skillsHost) => {
+            const runInit = initOnLinkedSite({
+              apiUrl,
+              cwd: builder.directory,
+              skillsHost: skillsHost.url,
+              claudeBin: claudeBin.dir,
+              home: builder.directory,
+            })
+
+            const { stdout } = await runInit()
+
+            t.expect(stdout).toContain('Skipped setting up Netlify skills and the Netlify MCP server')
+            t.expect(stdout).toContain('this is your home directory')
+            await t
+              .expect(readFile(path.join(builder.directory, '.agents', 'skills', 'netlify-functions', 'SKILL.md')))
+              .rejects.toThrow(/ENOENT/)
+            await t.expect(readFile(claudeBin.calls, 'utf8')).rejects.toThrow(/ENOENT/)
+
+            const userWide = await runInit('--mcp-scope', 'user')
+            t.expect(userWide.stdout).toContain('Skipped setting up Netlify skills: this is your home directory')
+            t.expect(userWide.stdout).toContain('Added the Netlify MCP server to Claude Code for all your projects')
+            t.expect((await readFile(claudeBin.calls, 'utf8')).trim().split('\n')).toEqual([
+              'mcp list',
+              'mcp add --transport http --scope user netlify https://mcp.netlify.com/mcp',
+            ])
+          })
+        })
+      })
+    },
+  )
+
+  test.skipIf(process.platform === 'win32')(
+    'netlify init honors a saved no in an agent run until --reset-mcp-setup',
+    async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.withGit().build()
+        const claudeBin = await writeFakeClaude(builder.directory)
+        await mkdir(path.join(builder.directory, '.netlify'), { recursive: true })
+        await writeFile(
+          path.join(builder.directory, '.netlify', 'state.json'),
+          JSON.stringify({
+            agentMcpSetup: { project: { 'claude-code': { url: 'https://mcp.netlify.com/mcp', choice: 'declined' } } },
+          }),
+        )
+
+        await withMockApi(linkedSiteRoutes, async ({ apiUrl }) => {
+          await withSkillsHost(async (skillsHost) => {
+            const runInit = initOnLinkedSite({
+              apiUrl,
+              cwd: builder.directory,
+              skillsHost: skillsHost.url,
+              claudeBin: claudeBin.dir,
+            })
+
+            const declined = await runInit()
+            t.expect(declined.stdout).toContain('You chose not to add the Netlify MCP server to Claude Code')
+            await t.expect(readFile(claudeBin.calls, 'utf8')).rejects.toThrow(/ENOENT/)
+
+            const reset = await runInit('--reset-mcp-setup')
+            t.expect(reset.stdout).toContain('Added the Netlify MCP server to Claude Code for this project')
+            t.expect((await readFile(claudeBin.calls, 'utf8')).trim().split('\n')).toEqual([
+              'mcp list',
+              'mcp add --transport http --scope local netlify https://mcp.netlify.com/mcp',
+            ])
+          })
+        })
+      })
+    },
+  )
 
   test('netlify init syncs installed skills: updates stale copies, removes deprecated ones, keeps edits until --reset-context', async (t) => {
     await withSiteBuilder(t, async (builder) => {
@@ -929,10 +1125,11 @@ describe.concurrent('commands/init', () => {
     apiUrl: string,
     questions: { question: string; answer: string | string[] }[],
     flags: string[] = [],
+    promptEnv: Record<string, string> = answersPrompts,
   ) => {
     const childProcess = execa(cliPath, ['init', '--manual', '--skip-agent-setup', ...flags], {
       cwd,
-      env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+      env: { ...promptEnv, NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
       encoding: 'utf8',
     })
     handleQuestions(childProcess, questions)
@@ -1129,6 +1326,95 @@ describe.concurrent('commands/init', () => {
         },
         true,
       )
+    })
+  })
+
+  test('netlify init without a terminal skips the project prompts, prints the next commands and exits cleanly', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().build()
+
+      await withMockApi(noGitRoutes, async ({ apiUrl, requests }) => {
+        const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], noTerminal)
+
+        t.expect(exitCode).toBe(0)
+        t.expect(stdout).not.toContain('What would you like to do?')
+        t.expect(stdout).toContain('This folder is not linked to a Netlify project yet')
+        t.expect(stdout).toMatch(/netlify link --git-remote-url https:\/\/github\.com\/owner\/repo/)
+        t.expect(stdout).toMatch(/netlify sites:create --name <name> --account-slug test-account/)
+        t.expect(stdout).toMatch(/Then run (npx )?netlify deploy to deploy\./)
+        t.expect(countSiteCreations(requests)).toBe(0)
+      })
+    })
+  })
+
+  test('netlify init without a terminal says to unlink first when the linked project no longer exists', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().withStateFile({ siteId: 'deleted_site_id' }).build()
+
+      await withMockApi(
+        [deletedSiteRoute, ...noGitRoutes],
+        async ({ apiUrl, requests }) => {
+          const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], noTerminal)
+
+          t.expect(exitCode).toBe(0)
+          t.expect(stdout).toMatch(/run (npx )?netlify unlink to remove the saved link/)
+          t.expect(stdout).not.toContain('This folder is not linked to a Netlify project yet')
+          t.expect(countSiteCreations(requests)).toBe(0)
+          await t.expect(readStateSiteId(builder.directory)).resolves.toBe('deleted_site_id')
+        },
+        true,
+      )
+    })
+  })
+
+  test('netlify init without a terminal points at NETLIFY_SITE_ID when the project it names no longer exists', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().build()
+
+      await withMockApi(
+        [deletedSiteRoute, ...noGitRoutes],
+        async ({ apiUrl }) => {
+          const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], {
+            ...noTerminal,
+            NETLIFY_SITE_ID: 'deleted_site_id',
+          })
+
+          t.expect(exitCode).toBe(0)
+          t.expect(stdout).toContain('NETLIFY_SITE_ID names a Netlify project that could not be used')
+          t.expect(stdout).not.toContain('unlink')
+        },
+        true,
+      )
+    })
+  })
+
+  test('netlify init without a terminal leaves a git remote with shell characters out of the next commands', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit({ repoUrl: 'https://github.com/owner/repo$(id)' }).build()
+
+      await withMockApi(noGitRoutes, async ({ apiUrl }) => {
+        const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], noTerminal)
+
+        t.expect(exitCode).toBe(0)
+        t.expect(stdout).not.toContain('--git-remote-url')
+        t.expect(stdout).not.toContain('$(id)')
+        t.expect(stdout).toMatch(/netlify link --id <project-id>/)
+      })
+    })
+  })
+
+  test('netlify init without a terminal reports a linked project instead of configuring its repo', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().withStateFile({ siteId: 'site_id' }).build()
+
+      await withMockApi(noGitRoutes, async ({ apiUrl, requests }) => {
+        const { exitCode, stdout } = await runInitIn(builder.directory, apiUrl, [], [], noTerminal)
+
+        t.expect(exitCode).toBe(0)
+        t.expect(stdout).toContain('This folder is linked to the Netlify project test-site-name')
+        t.expect(stdout).toMatch(/To deploy to it, run (npx )?netlify deploy\./)
+        t.expect(requests.some(({ method }) => method === 'PATCH' || method === 'POST')).toBe(false)
+      })
     })
   })
 

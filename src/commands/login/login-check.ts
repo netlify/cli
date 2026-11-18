@@ -45,7 +45,7 @@ export const loginCheck = async (
     return logAndThrowError('Could not retrieve user ID from Netlify API')
   }
 
-  storeToken(globalConfig, {
+  await storeToken(globalConfig, {
     userId: user.id,
     name: user.full_name,
     email: user.email,

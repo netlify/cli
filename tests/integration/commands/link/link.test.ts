@@ -310,4 +310,34 @@ describe('link command non-interactive mode', () => {
       )
     })
   })
+
+  test('should list the projects by ID when several match the git remote', async (t) => {
+    const repoUrl = 'https://github.com/test/monorepo'
+    const routes = [
+      {
+        path: 'sites',
+        response: [
+          { id: 'site_id1', name: 'web', build_settings: { repo_url: repoUrl } },
+          { id: 'site_id2', name: 'docs', build_settings: { repo_url: repoUrl } },
+        ],
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          await expect(
+            callCli(
+              ['link', '--git-remote-url', repoUrl],
+              getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+            ),
+          ).rejects.toThrow(/link --id site_id1 {2}web[\s\S]*link --id site_id2 {2}docs/)
+        },
+        true,
+      )
+    })
+  })
 })

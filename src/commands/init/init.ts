@@ -3,14 +3,17 @@ import { confirm, select } from '@inquirer/prompts'
 import { isEmpty } from '../../utils/object-utilities.js'
 
 import { type APIError, chalk, exit, log, logAndThrowError, netlifyCommand, warn } from '../../utils/command-helpers.js'
-import getRepoData, { type RepoDataError } from '../../utils/get-repo-data.js'
+import getRepoData, { type RepoData, type RepoDataError } from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { LocalState, SiteInfo } from '../../utils/types.js'
+import { findProjectSetupBlocker } from '../../utils/init/agent-location.js'
+import { type McpScope, setupAgentMcp } from '../../utils/init/agent-mcp.js'
 import { setupAgentSkills } from '../../utils/init/agent-skills.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
 import { type InitExitCode, LINKED_EXISTING_SITE_EXIT_CODE, LINKED_NEW_SITE_EXIT_CODE } from './constants.js'
@@ -60,6 +63,58 @@ const logLinkedWithoutGitAndExit = ({
       `${netlifyCommand()} unlink`,
     )}, then ${chalk.cyanBright.bold(`${netlifyCommand()} init`)}.`,
   )
+  return exit()
+}
+
+const canAnswerPrompts = (): boolean => isInteractive() || process.env.TESTING_PROMPTS === 'true'
+
+const SHELL_SAFE_URL = /^https:\/\/[\w.-]+(:\d+)?\/[\w./-]+$/
+
+const logNextStepsAndExit = ({
+  command,
+  linkedSiteInfo,
+  repoData,
+}: {
+  command: BaseCommand
+  linkedSiteInfo: SiteInfo | undefined
+  repoData: RepoData | RepoDataError
+}): never => {
+  const run = (args: string): string => chalk.cyanBright.bold(`${netlifyCommand()} ${args}`)
+  const teams = command.netlify.accounts
+  const teamSlug = teams.length === 1 ? teams[0].slug : '<team-slug>'
+
+  log()
+  log('Project setup asks questions and there is no terminal to answer them in, so it was skipped.')
+  log()
+  if (linkedSiteInfo) {
+    log(`This folder is linked to the Netlify project ${chalk.cyan(linkedSiteInfo.name)}.`)
+    log()
+    log(`To deploy to it, run ${run('deploy')}.`)
+  } else {
+    if (process.env.NETLIFY_SITE_ID) {
+      log('NETLIFY_SITE_ID names a Netlify project that could not be used. See the warning above.')
+      log('Set it to a project this account can access, or unset it. Then run one of:')
+    } else if (command.netlify.state.get('siteId') === undefined) {
+      log('This folder is not linked to a Netlify project yet. To continue without a terminal, run one of:')
+    } else {
+      log('The Netlify project saved as the link for this folder could not be used. See the warning above.')
+      log(`If you are logged in to the right account, run ${run('unlink')} to remove the saved link. Then run one of:`)
+    }
+    log()
+    if (!('error' in repoData) && SHELL_SAFE_URL.test(repoData.httpsUrl)) {
+      log(`  ${run(`link --git-remote-url ${repoData.httpsUrl}`)}  links the project connected to this repository`)
+    }
+    log(`  ${run('link --id <project-id>')}  links an existing project`)
+    log(`  ${run(`sites:create --name <name> --account-slug ${teamSlug}`)}  creates a project and links it`)
+    if (teams.length > 1) {
+      log()
+      log(`Teams: ${teams.map(({ slug }) => slug).join(', ')}`)
+      log('Ask the user which team a new project belongs in.')
+    }
+    log()
+    log(`Then run ${run('deploy')} to deploy.`)
+  }
+  log(`To deploy on every push, run ${run('init')} in a terminal. It asks for access to the Git provider.`)
   return exit()
 }
 
@@ -292,13 +347,16 @@ type InitExitMessageCustomizer = (code: InitExitCode, defaultMessage: string) =>
 type InitExtraOptions = {
   customizeExitMessage?: InitExitMessageCustomizer | undefined
   exitAfterConfiguringRepo?: boolean | undefined
+  skipPromptsWithoutTerminal?: boolean | undefined
   setupAgentSkills?: boolean | undefined
+  setupAgentMcp?: boolean | undefined
   resetContext?: boolean | undefined
+  resetMcpSetup?: boolean | undefined
+  mcpScope?: McpScope | undefined
 }
 
-const installAgentSkills = async (command: BaseCommand, reset: boolean): Promise<void> => {
-  log()
-  const result = await setupAgentSkills({ workingDir: command.netlify.repositoryRoot, reset })
+const installAgentSkills = async (workingDir: string, reset: boolean): Promise<void> => {
+  const result = await setupAgentSkills({ workingDir, reset })
   await track('sites_agentSkillsSetup', {
     installed: result.installed,
     directories: result.directories,
@@ -308,21 +366,79 @@ const installAgentSkills = async (command: BaseCommand, reset: boolean): Promise
   })
 }
 
+const addAgentMcp = async (command: BaseCommand, reset: boolean, scope: McpScope): Promise<void> => {
+  const { repositoryRoot, state } = command.netlify
+  const {
+    selection,
+    agents,
+    failed = false,
+  } = await setupAgentMcp({
+    workingDir: repositoryRoot,
+    store: state,
+    scope,
+    reset,
+  })
+  await track('sites_agentMcpSetup', { selection, agents, failed, scope, resetMcpSetup: reset })
+}
+
+const setUpAgents = async (
+  command: BaseCommand,
+  {
+    skills,
+    mcp,
+    reset,
+    resetMcp,
+    mcpScope,
+  }: { skills: boolean; mcp: boolean; reset: boolean; resetMcp: boolean; mcpScope: McpScope },
+): Promise<void> => {
+  if (!skills && !mcp) {
+    return
+  }
+  const { repositoryRoot } = command.netlify
+  log()
+  const blocker = await findProjectSetupBlocker(repositoryRoot)
+  const skillsBlocked = skills && blocker !== undefined
+  const mcpBlocked = mcp && blocker !== undefined && (blocker.place === 'root' || mcpScope === 'project')
+  if (blocker && (skillsBlocked || mcpBlocked)) {
+    const skipped = [skillsBlocked && 'Netlify skills', mcpBlocked && 'the Netlify MCP server']
+      .filter(Boolean)
+      .join(' and ')
+    log(`Skipped setting up ${skipped}: ${blocker.reason}.`)
+    log(
+      `  Run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} from your project folder to set up ${skipped} there.`,
+    )
+    await track('sites_agentSetupSkipped', { skills: skillsBlocked, mcp: mcpBlocked })
+  }
+  if (skills && !skillsBlocked) {
+    await installAgentSkills(repositoryRoot, reset)
+  }
+  if (mcp && !mcpBlocked) {
+    await addAgentMcp(command, resetMcp, mcpScope)
+  }
+}
+
 export const init = async (
   options: OptionValues,
   command: BaseCommand,
   {
     customizeExitMessage,
     exitAfterConfiguringRepo = false,
+    skipPromptsWithoutTerminal = false,
     setupAgentSkills: shouldSetupAgentSkills = false,
+    setupAgentMcp: shouldSetupAgentMcp = false,
     resetContext = false,
+    resetMcpSetup = false,
+    mcpScope = 'project',
   }: InitExtraOptions = {},
 ): Promise<SiteInfo> => {
   command.setAnalyticsPayload({
     manual: options.manual,
     force: options.force,
     skipAgentSetup: options.skipAgentSetup,
+    skipMcpSetup: options.skipMcpSetup,
     resetContext: options.resetContext,
+    resetMcpSetup: options.resetMcpSetup,
+    mcpScope,
   })
 
   const { repositoryRoot, state } = command.netlify
@@ -333,21 +449,29 @@ export const init = async (
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
-  if (shouldSetupAgentSkills) {
-    await installAgentSkills(command, resetContext)
-  }
+  await setUpAgents(command, {
+    skills: shouldSetupAgentSkills,
+    mcp: shouldSetupAgentMcp,
+    reset: resetContext,
+    resetMcp: resetMcpSetup,
+    mcpScope,
+  })
 
+  const promptsSkipped = skipPromptsWithoutTerminal && !canAnswerPrompts()
   const linkedSiteInfo = await getLinkedSiteInfo(command)
-  if (linkedSiteInfo && getRepoUrl(linkedSiteInfo) && !options.force) {
+  if (linkedSiteInfo && getRepoUrl(linkedSiteInfo) && (!options.force || promptsSkipped)) {
     logExistingAndExit({ siteInfo: linkedSiteInfo })
   }
 
   // Look for local repo
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
+  if ('error' in repoData && linkedSiteInfo) {
+    return logLinkedWithoutGitAndExit({ siteInfo: linkedSiteInfo, repoError: repoData })
+  }
+  if (promptsSkipped) {
+    return logNextStepsAndExit({ command, linkedSiteInfo, repoData })
+  }
   if ('error' in repoData) {
-    if (linkedSiteInfo) {
-      return logLinkedWithoutGitAndExit({ siteInfo: linkedSiteInfo, repoError: repoData })
-    }
     // TODO(ndhoule): Custom error messaage here
     return await handleNoGitRemoteAndExit({
       command,

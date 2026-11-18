@@ -410,6 +410,7 @@ To unlink this project, run: netlify unlink`)
             env: {
               NETLIFY_API_URL: apiUrl,
               NETLIFY_AUTH_TOKEN: 'fake-token',
+              TESTING_PROMPTS: 'true',
               ...execaMock,
             },
           })

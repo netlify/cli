@@ -1,5 +1,5 @@
 // Only markers an agent product sets on its own count as a signal; never infer from process names, terminals, or the process tree.
-// The result is untrusted attribution from the environment, for telemetry and labeling only, never for authorization.
+// The result is untrusted attribution from the environment. It may label telemetry or pick which agent's config to write, never authorize an action.
 
 export const CANONICAL_AGENT_NAMES = [
   'claude',

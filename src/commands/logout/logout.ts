@@ -16,7 +16,7 @@ export const logout = async (_options: OptionValues, command: BaseCommand) => {
 
   await track('user_logout')
 
-  // unset userID without deleting key
+  // Keep stored tokens so `netlify switch` can return to this account without logging in again
   command.netlify.globalConfig.set('userId', null)
 
   if (location === 'env') {
