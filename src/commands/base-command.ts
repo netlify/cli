@@ -48,6 +48,7 @@ import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
+import type { DeployOptionValues } from './deploy/option_values.js'
 import type { MinimalAccount } from '../utils/types.js'
 
 type Analytics = {
@@ -867,7 +868,7 @@ export default class BaseCommand extends Command {
         packagePath: packagePath,
         repositoryRoot: repositoryRoot,
         cwd: cwd,
-        context: flags.context || process.env.CONTEXT || this.getDefaultContext(),
+        context: this.getContext(),
         debug: flags.debug,
         siteId: this.siteId,
         token: token,
@@ -913,12 +914,29 @@ export default class BaseCommand extends Command {
   }
 
   /**
+   * Returns the context config and env vars are resolved with: `--context`,
+   * then the `CONTEXT` env var, then the command's default context.
+   */
+  getContext(): string {
+    return this.opts<{ context?: string }>().context || process.env.CONTEXT || this.getDefaultContext()
+  }
+
+  /**
    * Returns the context that should be used in case one hasn't been explicitly
-   * set. The default context is `dev` most of the time, but some commands may
-   * wish to override that.
+   * set. The default context is `dev` most of the time, but `serve` and
+   * production deploys use `production`.
    */
   getDefaultContext(): 'production' | 'dev' {
-    return this.name() === 'serve' ? 'production' : 'dev'
+    if (this.name() === 'serve') {
+      return 'production'
+    }
+    if (this.name() === 'deploy') {
+      const { prod, prodIfUnlocked } = this.opts<Partial<Pick<DeployOptionValues, 'prod' | 'prodIfUnlocked'>>>()
+      if (prod || prodIfUnlocked) {
+        return 'production'
+      }
+    }
+    return 'dev'
   }
 
   /**

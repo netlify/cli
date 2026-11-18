@@ -1042,7 +1042,7 @@ const prepAndRunDeploy = async ({
 
   const siteEnv = await getEnvelopeEnv({
     api,
-    context: options.context,
+    context: command.netlify.cachedConfig.context,
     env: command.netlify.cachedConfig.env,
     raw: true,
     scope: 'functions',
