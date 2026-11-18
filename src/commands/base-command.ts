@@ -918,8 +918,8 @@ export default class BaseCommand extends Command {
 
   /**
    * Returns the context that should be used in case one hasn't been explicitly
-   * set. The default context is `dev` most of the time, but `serve` and
-   * production deploys use `production`.
+   * set. The default context is `dev` most of the time, but some commands may
+   * wish to override that.
    */
   getDefaultContext(): 'production' | 'dev' {
     if (this.name() === 'serve') {
