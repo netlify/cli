@@ -91,7 +91,7 @@ For detailed configuration options, see the Netlify documentation.`,
     )
     .option(
       '--context <context>',
-      'Specify a deploy context for environment variables read during the build ("production", "deploy-preview", "branch-deploy", "dev") or `branch:your-branch` where `your-branch` is the name of a branch (default: production with --prod or --prod-if-unlocked, otherwise dev)',
+      'Specify a deploy context for environment variables read during the build ("production", "deploy-preview", "branch-deploy", "dev") or `branch:your-branch` where `your-branch` is the name of a branch (default: value of CONTEXT, otherwise production; draft deploys resolve project config and function env vars with dev)',
       normalizeContext,
     )
     .option(

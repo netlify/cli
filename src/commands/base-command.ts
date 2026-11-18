@@ -48,7 +48,6 @@ import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, setCommandForErrorReporting, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
-import type { DeployOptionValues } from './deploy/option_values.js'
 import type { MinimalAccount } from '../utils/types.js'
 
 type Analytics = {
@@ -931,7 +930,7 @@ export default class BaseCommand extends Command {
       return 'production'
     }
     if (this.name() === 'deploy') {
-      const { prod, prodIfUnlocked } = this.opts<Partial<Pick<DeployOptionValues, 'prod' | 'prodIfUnlocked'>>>()
+      const { prod, prodIfUnlocked } = this.opts<{ prod?: boolean; prodIfUnlocked?: boolean }>()
       if (prod || prodIfUnlocked) {
         return 'production'
       }

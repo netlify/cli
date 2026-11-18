@@ -30,7 +30,7 @@ netlify deploy
 
 - `alias` (*string*) - Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.
 - `allow-anonymous` (*boolean*) - If not logged in, deploy anonymously and create a claimable site instead of requiring authentication
-- `context` (*string*) - Specify a deploy context for environment variables read during the build ("production", "deploy-preview", "branch-deploy", "dev") or `branch:your-branch` where `your-branch` is the name of a branch (default: production with --prod or --prod-if-unlocked, otherwise dev)
+- `context` (*string*) - Specify a deploy context for environment variables read during the build ("production", "deploy-preview", "branch-deploy", "dev") or `branch:your-branch` where `your-branch` is the name of a branch (default: value of CONTEXT, otherwise production; draft deploys resolve project config and function env vars with dev)
 - `created-via` (*string*) - Specify the source of the deploy (e.g., "cli", "drop")
 - `dir` (*string*) - Specify a folder to deploy
 - `env` (*string*) - Set an environment variable for this deploy only. Applies to deployed functions only. Can be specified multiple times.

@@ -20,6 +20,7 @@ describe('deploy context', () => {
     { args: ['--prod'], expected: 'production' },
     { args: ['--prod-if-unlocked'], expected: 'production' },
     { args: ['--prod', '--context', 'deploy-preview'], expected: 'deploy-preview' },
+    { args: ['--prod', '--context', 'dev'], expected: 'dev' },
   ])('$args resolves to $expected', ({ args, expected }) => {
     vi.stubEnv('CONTEXT', '')
 
@@ -30,5 +31,11 @@ describe('deploy context', () => {
     vi.stubEnv('CONTEXT', 'branch-deploy')
 
     expect(parseDeploy(['--prod']).getContext()).toBe('branch-deploy')
+  })
+
+  test('--context wins over the CONTEXT env var', () => {
+    vi.stubEnv('CONTEXT', 'branch-deploy')
+
+    expect(parseDeploy(['--prod', '--context', 'deploy-preview']).getContext()).toBe('deploy-preview')
   })
 })
