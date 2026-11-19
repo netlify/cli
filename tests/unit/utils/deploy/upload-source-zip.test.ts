@@ -192,7 +192,7 @@ describe('uploadSourceZip', () => {
 
     expect(mockExeca.default).toHaveBeenCalledWith(
       'zip',
-      expect.arrayContaining(['-x', 'node_modules*', '-x', '.git*', '-x', '.netlify*', '-x', '.env']),
+      expect.arrayContaining(['-x', 'node_modules/*', '-x', '.git/*', '-x', '.netlify/*', '-x', '.env']),
       expect.objectContaining({ cwd: '/test/source' }),
     )
   })
