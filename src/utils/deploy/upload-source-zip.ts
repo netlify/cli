@@ -24,6 +24,8 @@ const DEFAULT_IGNORE_PATTERNS = [
   '.git-credentials',
   '.git-credentials.lock',
   '.gitconfig',
+  '.gitconfig.lock',
+  '.gitcookies',
   '.netlify/*',
   '.next/*',
   'dist/*',

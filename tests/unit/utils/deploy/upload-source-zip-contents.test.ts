@@ -89,6 +89,8 @@ describe.skipIf(process.platform === 'win32')('uploadSourceZip contents', () => 
       '.git-credentials',
       '.git-credentials.lock',
       '.gitconfig',
+      '.gitconfig.lock',
+      '.gitcookies',
       '.netlify/state.json',
       '.next/server.js',
       'dist/app.js',
