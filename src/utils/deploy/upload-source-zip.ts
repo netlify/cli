@@ -19,8 +19,10 @@ interface UploadSourceZipOptions {
 
 const DEFAULT_IGNORE_PATTERNS = [
   'node_modules/*',
+  '.git',
   '.git/*',
   '.git-credentials',
+  '.git-credentials.lock',
   '.netlify/*',
   '.next/*',
   'dist/*',

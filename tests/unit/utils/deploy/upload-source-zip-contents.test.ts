@@ -87,6 +87,7 @@ describe.skipIf(process.platform === 'win32')('uploadSourceZip contents', () => 
       'node_modules/pkg/index.js',
       '.git/HEAD',
       '.git-credentials',
+      '.git-credentials.lock',
       '.netlify/state.json',
       '.next/server.js',
       'dist/app.js',
@@ -97,5 +98,11 @@ describe.skipIf(process.platform === 'win32')('uploadSourceZip contents', () => 
     ])
 
     expect(paths).toEqual(['index.html'])
+  })
+
+  test('leaves out the .git file of a linked worktree', async () => {
+    const paths = await zippedPaths(workDir, ['index.html', '.git', '.gitignore'])
+
+    expect(paths.sort()).toEqual(['.gitignore', 'index.html'])
   })
 })
