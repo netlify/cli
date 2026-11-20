@@ -23,7 +23,7 @@ netlify create
 **Flags**
 
 - `account-slug` (*string*) - account slug to create the project under
-- `agent` (*string*) - agent type (claude, codex, gemini)
+- `agent` (*string*) - agent type (claude, codex, antigravity)
 - `dir` (*string*) - directory to create the project in (defaults to current directory)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `git` (*string*) - create a git repository and push source code (e.g. github)

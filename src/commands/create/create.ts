@@ -9,7 +9,7 @@ export const createCreateCommand = (program: BaseCommand) => {
     .description('Create a new Netlify project using an AI agent')
     .argument('[prompt]', 'description of the site to create')
     .option('-p, --prompt <prompt>', 'description of the site to create')
-    .option('--agent <agent>', 'agent type (claude, codex, gemini)')
+    .option('--agent <agent>', 'agent type (claude, codex, antigravity)')
     .option('-m, --model <model>', 'model to use for the agent')
     .option('-n, --name <name>', 'project name (subdomain)', validateSiteName)
     .option('-d, --dir <path>', 'directory to create the project in (defaults to current directory)')

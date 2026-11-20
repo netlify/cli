@@ -58,7 +58,7 @@ netlify agents:create
 
 **Flags**
 
-- `agent` (*string*) - agent type (claude, codex, gemini)
+- `agent` (*string*) - agent type (claude, codex, antigravity)
 - `branch` (*string*) - git branch to work on
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON

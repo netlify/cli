@@ -24,7 +24,7 @@ import { track } from '../../utils/telemetry/index.js'
 import { extractZip } from '../../utils/zip.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from '../agents/types.js'
-import { validatePrompt, validateAgent, formatStatus } from '../agents/utils.js'
+import { validatePrompt, validateAgent, formatStatus, resolveAgentAlias } from '../agents/utils.js'
 import type { SiteInfo } from '../../utils/types.js'
 
 const execFile = promisify(execFileCb)
@@ -266,7 +266,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   }
 
   // Resolve agent (default to claude)
-  const agent = initialAgent ?? 'claude'
+  const agent = resolveAgentAlias(initialAgent ?? 'claude')
   const agentIsValid = validateAgent(agent)
   if (agentIsValid !== true) {
     return logAndThrowError(agentIsValid)

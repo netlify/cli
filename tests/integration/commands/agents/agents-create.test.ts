@@ -149,6 +149,72 @@ describe('agents:create command', () => {
     })
   })
 
+  test('should list the available agents when the agent is invalid', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(baseRoutes, async ({ apiUrl }) => {
+        await expect(
+          callCli(['agents:create', 'Create a form', '--agent', 'nonsense'], getCLIOptions({ apiUrl, builder })),
+        ).rejects.toThrow(/Invalid agent\. Available agents: claude, codex, antigravity$/m)
+      })
+    })
+  })
+
+  test('should send the antigravity agent in the create request', async (t) => {
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners',
+        method: 'POST' as const,
+        response: mockAgentRunner,
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
+        const cliResponse = (await callCli(
+          ['agents:create', 'Create a login form', '--agent', 'antigravity', '--branch', 'main'],
+          getCLIOptions({ apiUrl, builder }),
+        )) as string
+
+        expect(cliResponse).toContain('Agent task created successfully!')
+        expect(cliResponse).not.toContain('deprecated')
+        const createRequest = requests.find((r) => r.path === '/api/v1/agent_runners' && r.method === 'POST')
+        expect(createRequest?.body).toEqual(expect.objectContaining({ agent: 'antigravity' }))
+      })
+    })
+  })
+
+  test('should map the deprecated gemini agent to antigravity with a warning', async (t) => {
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners',
+        method: 'POST' as const,
+        response: mockAgentRunner,
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl, requests }) => {
+        const cliResponse = (await callCli(
+          ['agents:create', 'Create a login form', '--agent', 'gemini', '--branch', 'main'],
+          getCLIOptions({ apiUrl, builder }),
+        )) as string
+
+        expect(cliResponse).toContain('The "gemini" agent is deprecated, using "antigravity" instead')
+        expect(cliResponse).toContain('Agent task created successfully!')
+        const createRequest = requests.find((r) => r.path === '/api/v1/agent_runners' && r.method === 'POST')
+        expect(createRequest?.body).toEqual(expect.objectContaining({ agent: 'antigravity' }))
+      })
+    })
+  })
+
   test('should handle authentication errors', async (t) => {
     const routes = [
       ...baseRoutes,

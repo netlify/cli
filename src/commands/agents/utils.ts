@@ -1,5 +1,5 @@
-import { AVAILABLE_AGENTS, STATUS_COLORS } from './constants.js'
-import { chalk } from '../../utils/command-helpers.js'
+import { AVAILABLE_AGENTS, DEPRECATED_AGENT_ALIASES, STATUS_COLORS } from './constants.js'
+import { chalk, warn } from '../../utils/command-helpers.js'
 
 export const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) return text
@@ -42,6 +42,15 @@ export const validatePrompt = (input: string): boolean | string => {
     return 'Please provide a more detailed prompt (at least 5 characters)'
   }
   return true
+}
+
+export const resolveAgentAlias = (agent: string): string => {
+  if (!Object.hasOwn(DEPRECATED_AGENT_ALIASES, agent)) {
+    return agent
+  }
+  const replacement = DEPRECATED_AGENT_ALIASES[agent]
+  warn(`The "${agent}" agent is deprecated, using "${replacement}" instead.`)
+  return replacement
 }
 
 export const validateAgent = (agent: string): boolean | string => {
