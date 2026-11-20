@@ -6,8 +6,15 @@ import { chalk } from '../../utils/command-helpers.js'
 export const AVAILABLE_AGENTS = [
   { name: 'Claude', value: 'claude' },
   { name: 'Codex', value: 'codex' },
-  { name: 'Gemini', value: 'gemini' },
+  { name: 'Antigravity', value: 'antigravity' },
 ] as const
+
+/**
+ * Agent names that are still accepted and mapped to their replacement
+ */
+export const DEPRECATED_AGENT_ALIASES: Record<string, AvailableAgent> = {
+  gemini: 'antigravity',
+}
 
 /**
  * Valid agent task states

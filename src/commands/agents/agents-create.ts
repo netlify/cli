@@ -5,7 +5,7 @@ import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpe
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
-import { validatePrompt, validateAgent, formatStatus, getAgentName } from './utils.js'
+import { validatePrompt, validateAgent, formatStatus, getAgentName, resolveAgentAlias } from './utils.js'
 import { AVAILABLE_AGENTS } from './constants.js'
 
 interface AgentCreateOptions extends OptionValues {
@@ -51,6 +51,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
       default: 'claude',
     })
   } else {
+    agent = resolveAgentAlias(agent)
     const agentIsValid = validateAgent(agent)
     if (agentIsValid !== true) {
       return logAndThrowError(agentIsValid)

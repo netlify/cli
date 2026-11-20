@@ -15,7 +15,7 @@ export const createAgentsCommand = (program: BaseCommand) => {
     .argument('[prompt]', 'the prompt for the agent to execute')
     .description('Create and run a new agent task on your site')
     .option('-p, --prompt <prompt>', 'agent prompt')
-    .option('-a, --agent <agent>', 'agent type (claude, codex, gemini)')
+    .option('-a, --agent <agent>', 'agent type (claude, codex, antigravity)')
     .option('-m, --model <model>', 'model to use for the agent')
     .option('-b, --branch <branch>', 'git branch to work on')
     .option('--project <project>', 'project ID or name (if not in a linked directory)')

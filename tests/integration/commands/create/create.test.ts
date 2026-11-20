@@ -260,6 +260,54 @@ describe('create command', () => {
     })
   })
 
+  describe('--agent flag', () => {
+    test('should send the antigravity agent in the agent runner request', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          const cliResponse = (await callCli(
+            ['create', 'Build a site', '--agent', 'antigravity', '--no-wait', '--account-slug', 'test-account'],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )) as string
+
+          expect(cliResponse).not.toContain('deprecated')
+          const agentRunnerRequest = requests.find((r) => r.path === '/api/v1/agent_runners' && r.method === 'POST')
+          expect(agentRunnerRequest?.body).toEqual(expect.objectContaining({ agent: 'antigravity' }))
+        })
+      })
+    })
+
+    test('should map the deprecated gemini agent to antigravity with a warning', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          const cliResponse = (await callCli(
+            ['create', 'Build a site', '--agent', 'gemini', '--no-wait', '--account-slug', 'test-account'],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )) as string
+
+          expect(cliResponse).toContain('The "gemini" agent is deprecated, using "antigravity" instead')
+          const agentRunnerRequest = requests.find((r) => r.path === '/api/v1/agent_runners' && r.method === 'POST')
+          expect(agentRunnerRequest?.body).toEqual(expect.objectContaining({ agent: 'antigravity' }))
+        })
+      })
+    })
+  })
+
   describe('interactive prompts', () => {
     test('should prompt for input when no prompt argument given', async (t) => {
       const routes = [
