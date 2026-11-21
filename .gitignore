@@ -36,3 +36,6 @@ tests/unit/utils/tmp
 
 # Used in local dev by tsc: https://www.typescriptlang.org/tsconfig/#tsBuildInfoFile
 *.tsbuildinfo
+
+# Size metrics written by scripts/measure-size.js, uploaded as CI artifacts
+.delta.*
