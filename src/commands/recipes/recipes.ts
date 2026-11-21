@@ -2,9 +2,11 @@ import { basename } from 'path'
 
 import { OptionValues } from 'commander'
 import { closest } from 'fastest-levenshtein'
-import { confirm } from '@inquirer/prompts'
 
-import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.js'
+import { chalk, exit, logError } from '../../utils/command-helpers.js'
+import { EXIT_CODES } from '../../utils/exit-codes.js'
+import { promptConfirm } from '../../utils/prompts/index.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import BaseCommand from '../base-command.js'
 
 import { getRecipe, listRecipes } from './common.js'
@@ -46,23 +48,25 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
       throw error
     }
 
-    log(`${NETLIFYDEVERR} ${chalk.yellow(recipeName)} is not a valid recipe name.`)
-
     const recipes = await listRecipes()
-    const recipeNames = recipes.map(({ name }) => name)
-    const suggestion = closest(recipeName, recipeNames)
-    const applySuggestion = await confirm(
-      { message: `Did you mean ${chalk.blue(suggestion)}`, default: false },
-      { signal: AbortSignal.timeout(SUGGESTION_TIMEOUT) },
-    ).catch((error: unknown) => {
-      if (error instanceof Error && error.name === 'AbortPromptError') {
-        return false
-      }
-      throw error
+    const suggestion = closest(
+      recipeName,
+      recipes.map(({ name }) => name),
+    )
+    const didYouMean = `${chalk.yellow(recipeName)} is not a valid recipe name. Did you mean ${chalk.blue(suggestion)}?`
+    if (!isInteractive()) {
+      logError(didYouMean)
+      return exit(EXIT_CODES.USAGE_ERROR)
+    }
+    const applySuggestion = await promptConfirm({
+      message: didYouMean,
+      initialValue: false,
+      timeout: SUGGESTION_TIMEOUT,
     })
 
     if (applySuggestion) {
       return recipesCommand(suggestion, options, command)
     }
+    return exit(EXIT_CODES.USAGE_ERROR)
   }
 }

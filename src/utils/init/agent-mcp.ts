@@ -2,12 +2,12 @@ import { promises as fs } from 'node:fs'
 import { homedir } from 'node:os'
 import path from 'node:path'
 
-import { checkbox } from '@inquirer/prompts'
 import { isexe } from 'isexe'
 
 import { type CanonicalAgentName, getDrivingAgent } from '../agent-detection.js'
 import { chalk, log, netlifyCommand, warn } from '../command-helpers.js'
 import execa from '../execa.js'
+import { promptMultiselect } from '../prompts/index.js'
 import { isInteractive } from '../scripted-commands.js'
 import { type ProjectConfigFile, addToProjectConfig, readProjectConfig } from './agent-mcp-config.js'
 
@@ -212,9 +212,11 @@ const where = (scope: McpScope): string => (scope === 'project' ? 'this project'
 const chooseWithPrompt =
   (scope: McpScope): ChooseAgents =>
   async (candidates) =>
-    await checkbox({
+    await promptMultiselect({
       message: `Add the Netlify MCP server for ${where(scope)} to which AI agents?`,
-      choices: candidates.map(({ agent, detected }) => ({ name: agent.label, value: agent, checked: detected })),
+      options: candidates.map(({ agent }) => ({ label: agent.label, value: agent })),
+      initialValues: candidates.filter(({ detected }) => detected).map(({ agent }) => agent),
+      required: false,
     })
 
 const pathExists = async (target: string): Promise<boolean> => {
@@ -735,9 +737,6 @@ export const setupAgentMcp = async ({
     }
     log(`Your choices are saved for this project. ${resetHint()}`)
   } catch (error) {
-    if (error instanceof Error && error.name === 'ExitPromptError') {
-      throw error
-    }
     warn(`Could not set up the Netlify MCP server: ${error instanceof Error ? error.message : String(error)}`)
     summary.failed = true
   }

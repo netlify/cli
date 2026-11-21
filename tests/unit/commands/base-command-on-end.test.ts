@@ -15,12 +15,6 @@ vi.mock('../../../src/utils/telemetry/index.js', async () => ({
   track: vi.fn(),
 }))
 
-const createExitPromptError = () => {
-  const error = new Error('User force closed the prompt with SIGINT')
-  error.name = 'ExitPromptError'
-  return error
-}
-
 describe('BaseCommand.onEnd', () => {
   beforeEach(() => {
     vi.mocked(exit).mockClear()
@@ -29,13 +23,6 @@ describe('BaseCommand.onEnd', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-  })
-
-  test('exits with the interrupted code without logging when a prompt is cancelled with Ctrl+C', async () => {
-    await new BaseCommand('netlify').onEnd(createExitPromptError())
-
-    expect(logError).not.toHaveBeenCalled()
-    expect(exit).toHaveBeenCalledWith(EXIT_CODES.INTERRUPTED)
   })
 
   test('logs other errors and exits with code 1', async () => {

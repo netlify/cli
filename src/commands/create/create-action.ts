@@ -10,7 +10,6 @@ import { promisify } from 'util'
 import type { OptionValues } from 'commander'
 import fetch from 'node-fetch'
 
-import { select } from '@inquirer/prompts'
 import type { NetlifyAPI } from '@netlify/api'
 import { LocalState } from '@netlify/dev-utils'
 
@@ -18,6 +17,7 @@ import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../.
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getGitHubToken as promptForGitHubToken } from '../../utils/gh-auth.js'
 import { requestGitHub, type GitHubUser } from '../../utils/github-api.js'
+import { promptSelect } from '../../utils/prompts/index.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -150,14 +150,14 @@ const selectRepoOwner = async (ghToken: string, repoOwnerFlag?: string): Promise
     return user.login
   }
 
-  const choices = [
-    { name: `${user.login} (personal)`, value: user.login },
-    ...orgs.map((org) => ({ name: org.login, value: org.login })),
+  const options = [
+    { value: user.login, label: `${user.login} (personal)` },
+    ...orgs.map((org) => ({ value: org.login, label: org.login })),
   ]
 
-  return await select({
+  return await promptSelect({
     message: 'Where should the GitHub repo be created?',
-    choices,
+    options,
   })
 }
 
@@ -277,12 +277,9 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   if (accountSlugFlag) {
     accountSlug = accountSlugFlag
   } else if (accounts.length > 1) {
-    accountSlug = await select({
-      message: 'Team:',
-      choices: accounts.map((account) => ({
-        value: account.slug,
-        name: account.name,
-      })),
+    accountSlug = await promptSelect({
+      message: 'Team',
+      options: accounts.map((account) => ({ value: account.slug, label: account.name })),
     })
   } else {
     accountSlug = accounts[0]?.slug

@@ -1,4 +1,8 @@
 const baseNormalizers: Normalizer[] = [
+  // Node < 22.15 `styleText` ignores disabled colours for array formats, which clack uses for its cursor.
+  // Remove once the Node floor is 22.15+.
+  // eslint-disable-next-line no-control-regex
+  { pattern: /\u001B\[[\d;]*m/g, value: '' },
   // Information about the package and the OS
   { pattern: /netlify-cli\/.+node-.+/g, value: 'netlify-cli/test-version test-os test-node-version' },
   { pattern: /@netlify\/build (\d+\.\d+\.\d+)/g, value: '@netlify/build 0.0.0' },

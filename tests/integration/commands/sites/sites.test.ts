@@ -4,6 +4,7 @@ import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createSitesCommand, createSitesCreateCommand } from '../../../../src/commands/sites/sites.js'
+import * as prompts from '../../../../src/utils/prompts/index.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -11,10 +12,15 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   log: () => {},
 }))
 
-vi.mock('@inquirer/prompts', () => ({
-  input: vi.fn().mockResolvedValue(''),
-  select: vi.fn().mockResolvedValue('test-account'),
+// vi.resetModules() would otherwise hand the dynamically imported subcommand a fresh copy of the prompt
+// wrapper that these spies are not attached to; a mocked module keeps a single instance across resets.
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
 }))
+
+// No test here should reach a prompt; these make an accidental regression fail instead of hang.
+vi.spyOn(prompts, 'promptSelect').mockRejectedValue(new Error('unexpected prompt: promptSelect'))
+vi.spyOn(prompts, 'promptText').mockRejectedValue(new Error('unexpected prompt: promptText'))
 
 const siteInfo = {
   admin_url: 'https://app.netlify.com/projects/site-name/overview',

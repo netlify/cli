@@ -828,15 +828,6 @@ describe('setupAgentMcp', () => {
       expect(execaMock).not.toHaveBeenCalled()
     })
 
-    test('rethrows a cancelled prompt so init stops like any other prompt', async () => {
-      await install('claude')
-      const cancelled = Object.assign(new Error('User force closed the prompt'), { name: 'ExitPromptError' })
-
-      await expect(run({}, { interactive: true, choose: vi.fn(() => Promise.reject(cancelled)) })).rejects.toBe(
-        cancelled,
-      )
-    })
-
     test('prints the generic command without a prompt when no terminal is attached', async () => {
       await install('claude')
 

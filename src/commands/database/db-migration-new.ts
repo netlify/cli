@@ -1,9 +1,8 @@
 import { readdir, mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
-import { input, select } from '@inquirer/prompts'
-
 import { log, logJson } from '../../utils/command-helpers.js'
+import { promptSelect, promptText } from '../../utils/prompts/index.js'
 import BaseCommand from '../base-command.js'
 import { resolveMigrationsDirectory } from './util/migrations-path.js'
 import { utcTimestampPrefix } from './util/timestamp.js'
@@ -91,9 +90,9 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
 
   if (!description) {
     if (isInteractive()) {
-      description = await input({
+      description = await promptText({
         message: 'What is the purpose of this migration?',
-        validate: (value: string) => (value.trim().length > 0 ? true : 'Description cannot be empty'),
+        validate: (input) => (input?.trim() ? undefined : 'Description cannot be empty'),
       })
     } else {
       throw new Error(
@@ -106,13 +105,13 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
     const defaultScheme = detectedScheme ?? 'timestamp'
 
     if (isInteractive()) {
-      scheme = await select<NumberingScheme>({
-        message: 'Numbering scheme:',
-        choices: [
-          { name: 'Timestamp (e.g. 20260312143000) [Recommended]', value: 'timestamp' },
-          { name: 'Sequential (e.g. 0001, 0002, ...)', value: 'sequential' },
+      scheme = await promptSelect<NumberingScheme>({
+        message: 'Numbering scheme',
+        options: [
+          { value: 'timestamp', label: 'Timestamp (e.g. 20260312143000) [Recommended]' },
+          { value: 'sequential', label: 'Sequential (e.g. 0001, 0002, ...)' },
         ],
-        default: defaultScheme,
+        initialValue: defaultScheme,
       })
     } else {
       scheme = defaultScheme
