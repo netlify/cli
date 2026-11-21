@@ -867,7 +867,7 @@ export default class BaseCommand extends Command {
         packagePath: packagePath,
         repositoryRoot: repositoryRoot,
         cwd: cwd,
-        context: flags.context || process.env.CONTEXT || this.getDefaultContext(),
+        context: this.getContext(),
         debug: flags.debug,
         siteId: this.siteId,
         token: token,
@@ -912,13 +912,26 @@ export default class BaseCommand extends Command {
     return join(this.workspacePackage || '', '.netlify', ...paths)
   }
 
+  getContext(): string {
+    return this.opts<{ context?: string }>().context || process.env.CONTEXT || this.getDefaultContext()
+  }
+
   /**
    * Returns the context that should be used in case one hasn't been explicitly
    * set. The default context is `dev` most of the time, but some commands may
    * wish to override that.
    */
   getDefaultContext(): 'production' | 'dev' {
-    return this.name() === 'serve' ? 'production' : 'dev'
+    if (this.name() === 'serve') {
+      return 'production'
+    }
+    if (this.name() === 'deploy') {
+      const { prod, prodIfUnlocked } = this.opts<{ prod?: boolean; prodIfUnlocked?: boolean }>()
+      if (prod || prodIfUnlocked) {
+        return 'production'
+      }
+    }
+    return 'dev'
   }
 
   /**
