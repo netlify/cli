@@ -196,4 +196,14 @@ describe('global proxy support', () => {
 
     expect(proxy.proxiedRequests).toEqual([])
   })
+
+  test('does not send any requests through the proxy when NO_PROXY is *', async () => {
+    process.env.NO_PROXY = '*'
+    await getAgent({ httpProxy: proxy.httpProxy, certificateFile: undefined })
+
+    await fetch('http://netlify-cli-test.invalid/path').catch(() => undefined)
+    await nodeFetch('https://netlify-cli-test.invalid/path').catch(() => undefined)
+
+    expect(proxy.proxiedRequests).toEqual([])
+  })
 })

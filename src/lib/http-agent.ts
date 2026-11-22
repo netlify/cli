@@ -41,8 +41,14 @@ const AGENT_PORT_TIMEOUT = 50_000
 const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
 // Like undici, `no_proxy` takes precedence over `NO_PROXY`
-const getNoProxy = (): string =>
-  [process.env.no_proxy ?? process.env.NO_PROXY, ...LOOPBACK_HOSTS].filter(Boolean).join(',')
+const getNoProxy = (): string => {
+  const noProxy = process.env.no_proxy ?? process.env.NO_PROXY
+  // undici only bypasses the proxy for every host when the whole value is `*`
+  if (noProxy === '*') {
+    return noProxy
+  }
+  return [noProxy, ...LOOPBACK_HOSTS].filter(Boolean).join(',')
+}
 
 const normalizeHostname = (hostname: string): string => hostname.toLowerCase().replace(/^\[(.*)\]$/, '$1')
 
@@ -51,16 +57,16 @@ const normalizeHostname = (hostname: string): string => hostname.toLowerCase().r
  * `EnvHttpProxyAgent`, so `fetch()` and `http`/`https` requests behave the same.
  */
 const shouldProxy = (hostname: string, port: number, noProxy: string): boolean => {
+  if (noProxy === '*') {
+    return false
+  }
+
   const host = normalizeHostname(hostname)
 
   return noProxy
     .split(/[,\s]/)
     .filter(Boolean)
     .every((entry) => {
-      if (entry === '*') {
-        return false
-      }
-
       const parsed = /^(.+):(\d+)$/.exec(entry)
       const entryHost = normalizeHostname((parsed ? parsed[1] : entry).replace(/^\*?\./, ''))
       if (parsed && Number.parseInt(parsed[2], 10) !== port) {
