@@ -40,8 +40,9 @@ const AGENT_PORT_TIMEOUT = 50_000
 // should never go through the proxy
 const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
+// Like undici, `no_proxy` takes precedence over `NO_PROXY`
 const getNoProxy = (): string =>
-  [process.env.NO_PROXY ?? process.env.no_proxy, ...LOOPBACK_HOSTS].filter(Boolean).join(',')
+  [process.env.no_proxy ?? process.env.NO_PROXY, ...LOOPBACK_HOSTS].filter(Boolean).join(',')
 
 const normalizeHostname = (hostname: string): string => hostname.toLowerCase().replace(/^\[(.*)\]$/, '$1')
 
