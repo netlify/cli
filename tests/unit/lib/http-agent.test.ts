@@ -1,6 +1,7 @@
 import net from 'node:net'
 import http from 'node:http'
 import https from 'node:https'
+import tls from 'node:tls'
 
 import ProxyServer from 'http-proxy'
 import { HttpsProxyAgent } from 'https-proxy-agent'
@@ -204,6 +205,33 @@ describe('global proxy support', () => {
     await fetch('http://netlify-cli-test.invalid/path').catch(() => undefined)
     await nodeFetch('https://netlify-cli-test.invalid/path').catch(() => undefined)
 
+    expect(proxy.proxiedRequests).toEqual([])
+  })
+
+  test('keeps the servername of https requests that bypass the proxy', async () => {
+    const serverNames: string[] = []
+    // Records the SNI name, then aborts the handshake
+    const tlsServer = tls.createServer({
+      SNICallback: (serverName, callback) => {
+        serverNames.push(serverName)
+        callback(new Error('test server'))
+      },
+    })
+    const port = await listen(tlsServer)
+    await getAgent({ httpProxy: proxy.httpProxy, certificateFile: undefined })
+
+    await new Promise<void>((resolve) => {
+      https
+        .get({ host: 'localhost', port, servername: 'dev.netlify-cli-test.invalid' }, () => {
+          resolve()
+        })
+        .on('error', () => {
+          resolve()
+        })
+    })
+    await close(tlsServer)
+
+    expect(serverNames).toEqual(['dev.netlify-cli-test.invalid'])
     expect(proxy.proxiedRequests).toEqual([])
   })
 })

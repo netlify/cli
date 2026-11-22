@@ -99,7 +99,7 @@ class HttpsProxyAgentWithNoProxy extends HttpsProxyAgent<string> {
   async connect(req: ClientRequest, opts: ConnectOpts): Promise<net.Socket> {
     if (!shouldProxy(opts.host ?? 'localhost', opts.port, this.noProxy)) {
       return opts.secureEndpoint
-        ? tls.connect({ ...opts, servername: net.isIP(opts.host ?? '') ? undefined : opts.host })
+        ? tls.connect({ ...opts, servername: opts.servername ?? (net.isIP(opts.host ?? '') ? undefined : opts.host) })
         : net.connect(opts)
     }
 
