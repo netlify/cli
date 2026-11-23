@@ -162,7 +162,7 @@ describe.skipIf(isWindows)('edge functions', async () => {
       test<FixtureTestContext>('should set environment variables from the `dev` context in `netlify.toml`', async ({
         devServer,
       }) => {
-        const body = (await fetch(`http://localhost:${devServer!.port}/echo-env`).then((res) => res.json())) as Record<
+        const body = (await fetch(new URL('/echo-env', devServer?.url)).then((res) => res.json())) as Record<
           string,
           string
         >
