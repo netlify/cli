@@ -385,8 +385,11 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
   ) {
     const env = Object.create(null)
 
+    // Variables from `netlify.toml` are included, because `[context.dev.environment]` is the
+    // documented way to set variables for local development. Functions get them too.
     Object.entries(envConfig).forEach(([key, variable]) => {
       if (
+        variable.sources.includes('configFile') ||
         variable.sources.includes('ui') ||
         variable.sources.includes('account') ||
         variable.sources.includes('internal') ||
