@@ -3,9 +3,8 @@ import path, { join } from 'path'
 import { pipeline } from 'stream/promises'
 import { Readable } from 'stream'
 
-import { SERVER_DIRECTORY } from '@netlify/build'
+import { getServerEntry } from '@netlify/build'
 import {
-  findServerEntry,
   zipFunctions,
   zipServer,
   type Config as FunctionsConfig,
@@ -137,13 +136,13 @@ const getServerBundle = async ({
     }
   }
 
-  const entryPath = rootDir ? await findServerEntry(join(rootDir, packagePath ?? '', SERVER_DIRECTORY)) : undefined
+  const serverEntry = rootDir ? await getServerEntry({ buildDir: rootDir, packagePath }) : undefined
 
-  if (entryPath === undefined) {
+  if (serverEntry === undefined) {
     return undefined
   }
 
-  return await zipServer(entryPath, join(tmpDir, 'server'), { basePath: rootDir, config: serverConfig })
+  return await zipServer(serverEntry.entryPath, join(tmpDir, 'server'), { basePath: rootDir, config: serverConfig })
 }
 
 const trafficRulesConfig = (trafficRules?: TrafficRules) => {
