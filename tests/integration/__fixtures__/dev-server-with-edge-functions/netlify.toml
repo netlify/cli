@@ -1,6 +1,12 @@
 [build]
 publish = "public"
 
+[context.dev.environment]
+FROM_TOML_DEV = "value from dev context"
+
+[context.production.environment]
+FROM_TOML_PRODUCTION = "value from production context"
+
 [[edge_functions]]
 path = "/ordertest"
 function = "user-tomlB"

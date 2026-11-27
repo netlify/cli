@@ -158,6 +158,18 @@ describe.skipIf(isWindows)('edge functions', async () => {
         expect(body.SITE_NAME).toBe('site-name')
         expect(body.URL).toBe(`http://localhost:${devServer!.port}`)
       })
+
+      test<FixtureTestContext>('should set environment variables from the `dev` context in `netlify.toml`', async ({
+        devServer,
+      }) => {
+        const body = (await fetch(new URL('/echo-env', devServer?.url)).then((res) => res.json())) as Record<
+          string,
+          string
+        >
+
+        expect(body.FROM_TOML_DEV).toBe('value from dev context')
+        expect(body).not.toHaveProperty('FROM_TOML_PRODUCTION')
+      })
     },
   )
 
