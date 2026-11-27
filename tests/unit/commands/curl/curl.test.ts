@@ -1,8 +1,9 @@
-import { mkdtemp, readdir, readFile, rm, writeFile } from 'fs/promises'
-import { tmpdir } from 'os'
+import { mkdtemp, readdir, rm } from 'fs/promises'
+import { createServer } from 'http'
+import type { AddressInfo } from 'net'
+import { devNull, tmpdir } from 'os'
 import { join } from 'path'
 import process from 'process'
-import { pathToFileURL } from 'url'
 
 import { NetlifyAPI } from '@netlify/api'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -196,35 +197,35 @@ describe('getAccessTokens', () => {
 })
 
 describe('runCurl', () => {
-  let directory: string | undefined
+  // Sends a request to a local HTTP server and returns the Cookie header it received. The cookie isn't marked as
+  // secure, unlike the ones `formatCookieJar` writes, so curl sends it over plain HTTP.
+  const runCurlAndGetCookie = async () => {
+    let cookie: string | undefined
+    const server = createServer((req, res) => {
+      cookie = req.headers.cookie
+      res.end()
+    })
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+    const { port } = server.address() as AddressInfo
 
-  afterEach(async () => {
-    if (directory) {
-      await rm(directory, { recursive: true, force: true })
+    try {
+      const exitCode = await runCurl(
+        ['--silent', '--output', devNull, `http://127.0.0.1:${port.toString()}/`],
+        '127.0.0.1\tFALSE\t/\tFALSE\t0\tnf_edge\tjwt\n',
+      )
+
+      expect(exitCode).toBe(0)
+      return cookie
+    } finally {
+      server.close()
     }
-  })
-
-  // curl saves the cookies it loaded to the `--cookie-jar` file, so this checks the jar without a server.
-  const runCurlAndReadCookies = async () => {
-    directory = await mkdtemp(join(tmpdir(), 'curl-command-test-'))
-    const target = join(directory, 'target.txt')
-    const cookiesOut = join(directory, 'cookies-out.txt')
-    await writeFile(target, '')
-
-    const exitCode = await runCurl(
-      ['--silent', '--output', join(directory, 'body.txt'), '--cookie-jar', cookiesOut, pathToFileURL(target).href],
-      formatCookieJar(new Map([['mysitename.netlify.app', 'jwt']])),
-    )
-
-    expect(exitCode).toBe(0)
-    return readFile(cookiesOut, 'utf8')
   }
 
   const listJarDirectories = async () =>
     (await readdir(tmpdir())).filter((name) => name.startsWith('netlify-curl-')).sort()
 
   test('passes the cookie jar to curl', async () => {
-    expect(await runCurlAndReadCookies()).toContain('mysitename.netlify.app\tFALSE\t/\tTRUE\t0\tnf_edge\tjwt')
+    expect(await runCurlAndGetCookie()).toBe('nf_edge=jwt')
   })
 
   test('passes the cookie jar to curl in a temporary file on Windows, and deletes it', async () => {
@@ -233,7 +234,7 @@ describe('runCurl', () => {
     Object.defineProperty(process, 'platform', { value: 'win32' })
 
     try {
-      expect(await runCurlAndReadCookies()).toContain('mysitename.netlify.app\tFALSE\t/\tTRUE\t0\tnf_edge\tjwt')
+      expect(await runCurlAndGetCookie()).toBe('nf_edge=jwt')
     } finally {
       if (platform) {
         Object.defineProperty(process, 'platform', platform)
