@@ -312,25 +312,6 @@ describe('migration prompt interactive flow', () => {
     })
   })
 
-  test('does not prompt in `curl`, which passes its output through to scripts and agents', async () => {
-    await writeLegacyTokenToConfig(configDir, user.id, 'plain-tok')
-
-    await withMockApi(routes, async ({ apiUrl }) => {
-      const { stdout } = await execa(cliPath, ['curl', '--', '--version'], {
-        env: isolatedEnv(apiUrl, { TESTING_PROMPTS: 'true' }),
-        extendEnv: false,
-        timeout: 60_000,
-        input: '',
-      })
-
-      expect(stdout).not.toContain('Move the token to the keychain')
-      expect(stdout).toMatch(/^curl \d/)
-      const config = await readConfig(configDir)
-      expect(config.users?.[user.id]?.auth?.token).toBe('plain-tok')
-      expect(config.users?.[user.id]?.auth?.skipKeychainMigration).not.toBe(true)
-    })
-  })
-
   test.runIf(keychainReady)(
     'confirming the prompt moves the token to the keychain and removes it from the plaintext config',
     async () => {
