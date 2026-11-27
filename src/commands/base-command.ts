@@ -34,6 +34,7 @@ import {
   sortOptions,
   warn,
   logError,
+  netlifyCommand,
 } from '../utils/command-helpers.js'
 import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
 import { EXIT_CODES } from '../utils/exit-codes.js'
@@ -561,17 +562,18 @@ export default class BaseCommand extends Command {
 
     if (!browserOpened && !isInteractive() && ticket.id) {
       const ticketId = ticket.id
+      const checkCommand = `${netlifyCommand()} login --check ${ticketId}`
       logJson({
         ticket_id: ticketId,
         url: authLink,
-        check_command: `netlify login --check ${ticketId}`,
+        check_command: checkCommand,
         agent_next_steps:
           'Give the URL to the user so they can authorize. Then poll the check_command for up to ten minutes to see if the user has logged in, or wait for them to tell you and then use check_command after.',
       })
       log(`Ticket ID: ${ticketId}`)
       log(`Authorize URL: ${authLink}`)
       log()
-      log(`After authorizing, run: netlify login --check ${ticketId}`)
+      log(`After authorizing, run: ${checkCommand}`)
       log()
       log('After user opens the authorization URL and approves, the login will be complete.')
       return exit()

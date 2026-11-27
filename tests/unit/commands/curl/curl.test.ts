@@ -3,17 +3,21 @@ import { createServer } from 'http'
 import type { AddressInfo } from 'net'
 import { devNull, tmpdir } from 'os'
 import { join } from 'path'
+import process from 'process'
 
 import { NetlifyAPI } from '@netlify/api'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
+import type BaseCommand from '../../../../src/commands/base-command.js'
 import {
+  curl,
   formatCookieJar,
   getAccessTokens,
   getTargetHosts,
   mintAccessToken,
   runCurl,
 } from '../../../../src/commands/curl/curl.js'
+import { EXIT_CODES } from '../../../../src/utils/exit-codes.js'
 
 describe('getTargetHosts', () => {
   test('returns the hosts of http and https URLs, once each', () => {
@@ -82,7 +86,7 @@ describe('mintAccessToken', () => {
     await expect(mintAccessToken(api, 'www.example.com')).resolves.toBeNull()
   })
 
-  test("returns the API's message and a way to log in again on HTTP 401", async () => {
+  test("returns an error with the API's message and a way to log in again on HTTP 401", async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(Response.json({ code: 401, message: 'Access Denied' }, { status: 401 })),
@@ -91,17 +95,17 @@ describe('mintAccessToken', () => {
     const result = await mintAccessToken(api, 'mysitename.netlify.app')
 
     expect(result).toHaveProperty(
-      'warning',
+      'error',
       expect.stringContaining('Netlify did not grant access to mysitename.netlify.app: Access Denied. To log in again'),
     )
-    expect(result).toHaveProperty('warning', expect.stringContaining('netlify login --new'))
+    expect(result).toHaveProperty('error', expect.stringContaining('netlify login --new'))
   })
 
-  test('returns the status code on HTTP 401 without a message', async () => {
+  test('returns an error with the status code on HTTP 401 without a message', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 401 })))
 
     await expect(mintAccessToken(api, 'mysitename.netlify.app')).resolves.toHaveProperty(
-      'warning',
+      'error',
       expect.stringContaining('mysitename.netlify.app: HTTP 401. To log in again'),
     )
   })
@@ -241,5 +245,39 @@ describe('runCurl', () => {
   test("resolves with curl's exit code", async () => {
     // curl exits with 2 for an unknown option.
     await expect(runCurl(['--silent', '--not-a-curl-option'])).resolves.toBe(2)
+  })
+})
+
+describe('curl', () => {
+  const createCommand = (accessToken?: string) =>
+    ({
+      netlify: { api: new NetlifyAPI(accessToken, { scheme: 'https', host: 'api.example.test' }) },
+      parent: { opts: () => ({}) },
+    }) as unknown as BaseCommand
+
+  afterEach(() => {
+    process.exitCode = undefined
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
+  test('fails with the steps to log in when not logged in outside a terminal', async () => {
+    const stderr = vi.spyOn(process.stderr, 'write').mockReturnValue(true)
+
+    await curl(['https://mysitename.netlify.app/'], {}, createCommand())
+
+    expect(process.exitCode).toBe(EXIT_CODES.NON_INTERACTIVE_PROMPT)
+    expect(stderr).toHaveBeenCalledWith(expect.stringContaining('netlify login --request'))
+  })
+
+  test('fails when Netlify does not grant access', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ code: 401, message: 'Access Denied' }, { status: 401 })),
+    )
+
+    await expect(curl(['https://mysitename.netlify.app/'], {}, createCommand('user-token'))).rejects.toThrow(
+      'Netlify did not grant access to mysitename.netlify.app: Access Denied.',
+    )
   })
 })

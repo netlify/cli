@@ -8,7 +8,9 @@ import process from 'process'
 import type { NetlifyAPI } from '@netlify/api'
 import type { OptionValues } from 'commander'
 
-import { BANG, chalk } from '../../utils/command-helpers.js'
+import { BANG, chalk, logAndThrowError, logError, netlifyCommand } from '../../utils/command-helpers.js'
+import { EXIT_CODES } from '../../utils/exit-codes.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import type BaseCommand from '../base-command.js'
 
 import {
@@ -90,7 +92,7 @@ export const formatCookieJar = (tokens: Map<string, string>): string =>
 export const mintAccessToken = async (
   api: NetlifyAPI,
   host: string,
-): Promise<{ token: string } | { warning: string } | null> => {
+): Promise<{ token: string } | { warning: string } | { error: string } | null> => {
   let response: Response
   try {
     response = await fetch(`${api.scheme}://${api.host}/auth/edge-access`, {
@@ -116,8 +118,8 @@ export const mintAccessToken = async (
     const { message } = (await response.json().catch(() => ({}))) as { message?: unknown }
     const reason = typeof message === 'string' && message !== '' ? message.replace(/\.?$/, '.') : 'HTTP 401.'
     return {
-      warning: `Netlify did not grant access to ${host}: ${reason} To log in again, run ${chalk.cyanBright(
-        'netlify login --new',
+      error: `Netlify did not grant access to ${host}: ${reason} To log in again, run ${chalk.cyanBright(
+        `${netlifyCommand()} login --new`,
       )}.`,
     }
   }
@@ -135,13 +137,13 @@ export const mintAccessToken = async (
 }
 
 /**
- * Returns access tokens for the hosts the user can access, and warnings for requests that failed.
+ * Returns access tokens for the hosts the user can access, along with errors and warnings for requests that failed.
  */
 export const getAccessTokens = async (
   api: NetlifyAPI,
   hosts: string[],
   cachePath = getDefaultAccessTokenCachePath(),
-): Promise<{ tokens: Map<string, string>; warnings: string[] }> => {
+): Promise<{ tokens: Map<string, string>; errors: string[]; warnings: string[] }> => {
   const apiToken = api.accessToken ?? ''
   const cache = await readAccessTokenCache(cachePath, apiToken)
   const results = await Promise.all(
@@ -152,11 +154,16 @@ export const getAccessTokens = async (
     }),
   )
   const tokens = new Map<string, string>()
+  const errors: string[] = []
   const warnings: string[] = []
   let cacheChanged = false
 
   for (const [host, result] of results) {
     if (result === null) {
+      continue
+    }
+    if ('error' in result) {
+      errors.push(result.error)
       continue
     }
     if ('warning' in result) {
@@ -179,7 +186,7 @@ export const getAccessTokens = async (
     await writeAccessTokenCache(cachePath, apiToken, cache).catch(() => undefined)
   }
 
-  return { tokens, warnings }
+  return { tokens, errors, warnings }
 }
 
 /**
@@ -267,18 +274,23 @@ export const curl = async (args: string[], options: OptionValues, command: BaseC
   }
 
   if (!api.accessToken) {
-    if (!silent) {
-      warn(
-        `You're not logged in to Netlify, so the request is sent without access to protected projects. Run ${chalk.cyanBright(
-          'netlify login',
-        )}, or ${chalk.cyanBright('netlify login --request "<message>"')} to ask a person to log in for you.`,
+    if (!isInteractive()) {
+      logError(
+        `Accessing protected projects needs a Netlify login. Run ${chalk.cyanBright(
+          `${netlifyCommand()} login --request "<message>"`,
+        )}, give the authorization URL it prints to a person with access to the project, and follow the steps it shows to finish logging in. Then run this command again. In CI, set NETLIFY_AUTH_TOKEN instead.`,
       )
+      process.exitCode = EXIT_CODES.NON_INTERACTIVE_PROMPT
+      return
     }
-    process.exitCode = await runCurl(curlArgs)
-    return
+
+    await command.authenticate()
   }
 
-  const { tokens, warnings } = await getAccessTokens(api, hosts)
+  const { tokens, errors, warnings } = await getAccessTokens(api, hosts)
+  if (errors.length !== 0) {
+    return logAndThrowError(errors.join('\n'))
+  }
   if (!silent) {
     warnings.forEach(warn)
   }
