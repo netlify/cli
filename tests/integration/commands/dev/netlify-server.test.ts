@@ -245,18 +245,23 @@ describe.concurrent('command/dev Netlify Server', () => {
     })
   })
 
-  test.runIf(unsupportedNodeVersion)('fails requests with a clear error on Node.js versions below 24', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      withServerEntry(builder)
+  test.runIf(unsupportedNodeVersion)(
+    'logs a clear error and skips the server on Node.js versions below 24',
+    async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        withServerEntry(builder)
 
-      await builder.build()
+        await builder.build()
 
-      await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await fetch(`${server.url}/some/path`)
+        await withDevServer({ cwd: builder.directory }, async (server) => {
+          const response = await fetch(`${server.url}/some/path`)
 
-        t.expect(response.status).toBe(500)
-        t.expect(await response.text()).toContain('Netlify Server requires Node.js 24 or above')
+          t.expect(response.status).toBe(404)
+          await t.expect
+            .poll(() => server.errorBuffer.join(''))
+            .toContain('Netlify Server requires Node.js 24 or above')
+        })
       })
-    })
-  })
+    },
+  )
 })
