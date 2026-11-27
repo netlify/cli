@@ -767,6 +767,26 @@ describe('statusDb', () => {
       expect(jsonMessages[0]).toMatchObject({ target: 'feature-x' })
     })
 
+    test('does not fetch branch connection string or remote applied migrations when database is not enabled', async () => {
+      setupFetchRouter({ siteDatabase: null })
+
+      await expect(statusDb({ branch: 'feature-x' }, createMockCommand())).resolves.toBeUndefined()
+
+      const fetchedUrls = mockFetch.mock.calls.map((c) => {
+        const u = c[0] as URL | string
+        return typeof u === 'string' ? u : u.toString()
+      })
+      expect(fetchedUrls.some((u) => u.includes('/database/branch/'))).toBe(false)
+      expect(fetchedUrls.some((u) => u.includes('/database/migrations'))).toBe(false)
+      expect(mockConnectToDatabase).not.toHaveBeenCalled()
+
+      const output = logMessages.join('\n')
+      expect(output).toContain('Netlify Database is not enabled for this project')
+      expect(output).toContain('Applied migrations (0)')
+      expect(output).toContain('Pending migrations (0)')
+      expect(output).not.toContain('Connected to database branch')
+    })
+
     test('throws a helpful error when the branch endpoint 404s', async () => {
       setupFetchRouter({ siteDatabase: { connection_string: PROD_CONN } })
 
