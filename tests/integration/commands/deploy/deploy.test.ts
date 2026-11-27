@@ -133,6 +133,36 @@ describe.concurrent('deploy command', () => {
     })
   })
 
+  test.for([
+    { args: ['--prod'], published: 'production.html', skipped: 'draft.html' },
+    { args: [], published: 'draft.html', skipped: 'production.html' },
+  ])('should resolve config with the deploy context ($args)', async ({ args, published, skipped }, t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({ path: 'public/draft.html', content: 'draft' })
+          .withContentFile({ path: 'public-production/production.html', content: 'production' })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+              context: { production: { publish: 'public-production' } },
+            },
+          })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', ...args],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder, env: { CONTEXT: '' } }),
+        )
+
+        const files = Object.keys(deployState.getDeployBody()?.files ?? {})
+        expect(files).toContain(published)
+        expect(files).not.toContain(skipped)
+      })
+    })
+  })
+
   test('should deploy Edge Functions when directory exists after running a build', async (t) => {
     await withMockDeploy(async (mockApi, deployState) => {
       await withSiteBuilder(t, async (builder) => {
