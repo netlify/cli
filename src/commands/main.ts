@@ -3,7 +3,6 @@ import process from 'process'
 import { Option, CommanderError } from 'commander'
 import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
-import { confirm } from '@inquirer/prompts'
 
 import { getGlobalConfigStore } from '@netlify/dev-utils'
 
@@ -22,6 +21,7 @@ import { EXIT_CODES } from '../utils/exit-codes.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
 import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
+import { promptConfirm } from '../utils/prompts/index.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
@@ -217,17 +217,11 @@ const mainCommand = async function (options, command) {
     exit(EXIT_CODES.USAGE_ERROR)
   }
 
-  let applySuggestion = false
-  try {
-    applySuggestion = await confirm(
-      { message: `Did you mean ${chalk.blue(suggestion)}`, default: false },
-      { signal: AbortSignal.timeout(SUGGESTION_TIMEOUT) },
-    )
-  } catch (error) {
-    if (!(error instanceof Error && error.name === 'AbortPromptError')) {
-      throw error
-    }
-  }
+  const applySuggestion = await promptConfirm({
+    message: `Did you mean ${chalk.blue(suggestion)}?`,
+    initialValue: false,
+    timeout: SUGGESTION_TIMEOUT,
+  })
   // create new log line
   log()
 
@@ -296,7 +290,7 @@ export const createMainCommand = (): BaseCommand => {
       return `To get started run: ${NETLIFY_CYAN('netlify login')}
 To ask a human for credentials: ${NETLIFY_CYAN('netlify login --request <msg>')}
 
-Exit codes: 0 ok, 1 error, 2 usage, 4 needs-input
+Exit codes: 0 ok, 1 error, 2 usage, 4 needs-input, 130 cancelled
 
 → For more help with the CLI, visit ${NETLIFY_CYAN(
         terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl, { fallback: false }),

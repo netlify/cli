@@ -20,7 +20,7 @@ export const EXIT_CODES = {
   USAGE_ERROR: 2,
   /** An interactive prompt was required but the session is non-interactive (CI or `--non-interactive`) */
   NON_INTERACTIVE_PROMPT: 4,
-  /** The user cancelled an interactive prompt with Ctrl+C, matching a SIGINT-terminated process */
+  /** The user cancelled an interactive prompt (Ctrl+C / Esc), matching a SIGINT-terminated process */
   INTERRUPTED: 130,
 } as const
 

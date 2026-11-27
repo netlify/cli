@@ -221,6 +221,7 @@ export const startDeployMockApi = ({ routes }: { routes: Route[] }): Promise<Moc
         }
         requests.push({
           path: req.path,
+          query: req.query,
           body: req.body,
           method: req.method,
           headers: req.headers,
@@ -240,6 +241,7 @@ export const startDeployMockApi = ({ routes }: { routes: Route[] }): Promise<Moc
   app.all('{*splat}', function onRequest(req, res) {
     requests.push({
       path: req.path,
+      query: req.query,
       body: req.body,
       method: req.method,
       headers: req.headers,

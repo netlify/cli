@@ -1,4 +1,3 @@
-import { confirm } from '@inquirer/prompts'
 import type { NetlifyAPI } from '@netlify/api'
 import { TimeoutError } from 'p-wait-for'
 import terminalLink from 'terminal-link'
@@ -18,6 +17,7 @@ import {
 } from './remote/source.js'
 import { followDeploy } from './remote/follow.js'
 import { DeployStateError } from '../../utils/deploy/util.js'
+import { promptConfirm } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type { DeployOptionValues } from './option_values.js'
@@ -113,7 +113,7 @@ export const remoteDeploy = async ({
 
   if (source.untracked.length !== 0) {
     warn(describeUntracked(source.untracked, shortSha, source.repoUrl))
-    if (isInteractive() && !quiet && !(await confirm({ message: 'Deploy anyway?', default: true }))) {
+    if (isInteractive() && !quiet && !(await promptConfirm({ message: 'Deploy anyway?', initialValue: true }))) {
       exit(0)
     }
   }

@@ -1,11 +1,11 @@
 import type { OptionValues } from 'commander'
-import { input, select } from '@inquirer/prompts'
 import { pick } from '../../utils/object-utilities.js'
 import prettyjson from 'prettyjson'
 
 import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
+import { promptSelect, promptText } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { requireTeams, resolveTeamForNonInteractive } from '../../utils/team.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -16,10 +16,10 @@ import { link } from '../link/link.js'
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {
-    name = await input({
-      message: 'Project name (leave blank for a random name; you can change it later):',
+    name = await promptText({
+      message: 'Project name (leave blank for a random name; you can change it later)',
       validate: (value) =>
-        !value || /^[a-zA-Z\d-]+$/.test(value) || 'Only alphanumeric characters and hyphens are allowed',
+        !value || /^[a-zA-Z\d-]+$/.test(value) ? undefined : 'Only alphanumeric characters and hyphens are allowed',
     })
   }
 
@@ -42,11 +42,11 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       log(`Using team: ${team.name}`)
     } else {
       const teams = requireTeams(accounts)
-      accountSlug = await select({
-        message: 'Team:',
-        choices: teams.map((account) => ({
+      accountSlug = await promptSelect({
+        message: 'Team',
+        options: teams.map((account) => ({
           value: account.slug,
-          name: account.name,
+          label: account.name,
         })),
       })
     }
@@ -57,7 +57,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   const MAX_NAME_RETRIES = 2
 
   const tryCreateSiteInteractive = async (nameToTry: string | undefined): Promise<void> => {
-    const { name: attemptName } = await getSiteNameInput(nameToTry)
+    const attemptName = nameToTry ?? (await getSiteNameInput(undefined)).name
     const body: { name?: string } = {}
     if (attemptName.trim()) {
       body.name = attemptName.trim()

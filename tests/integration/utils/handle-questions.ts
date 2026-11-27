@@ -1,6 +1,8 @@
 import { Buffer } from 'node:buffer'
+import { stripVTControlCharacters } from 'node:util'
 
 interface Stdin {
+  writable: boolean
   write(data: Buffer): boolean
 }
 
@@ -12,6 +14,12 @@ interface Process {
   stdin: Stdin | null
   stdout: Stdout | null
 }
+
+// clack wraps long messages and prefixes each continuation line with its guide bar.
+const CLACK_LINE_CONTINUATION = /\r?\n[│|] {2}/g
+
+const normalize = (output: string): string =>
+  stripVTControlCharacters(output).replace(CLACK_LINE_CONTINUATION, '').replace(/\r?\n/g, '')
 
 /**
  * Utility to mock the stdin of the cli. You must provide the correct number of
@@ -30,9 +38,10 @@ export const handleQuestions = (
 
   let buffer = ''
   process.stdout.on('data', (data: Buffer) => {
-    buffer = (buffer + data.toString()).replace(/\n/g, '')
+    buffer += data.toString()
+    const normalized = normalize(buffer)
     const index = questions.findIndex(
-      ({ question }, questionIndex) => buffer.includes(question) && !prompts.includes(questionIndex),
+      ({ question }, questionIndex) => normalized.includes(question) && !prompts.includes(questionIndex),
     )
     if (index >= 0) {
       prompts.push(index)
@@ -50,7 +59,8 @@ const writeResponse = (process: Process, responses: string[]) => {
   }
 
   const response = responses.shift()
-  if (response) process.stdin.write(Buffer.from(response))
+  // The CLI may already have exited (a `y`/`n` answer submits on its own); writing then would crash the test.
+  if (response && process.stdin.writable) process.stdin.write(Buffer.from(response))
   if (responses.length !== 0)
     setTimeout(() => {
       writeResponse(process, responses)
@@ -59,6 +69,10 @@ const writeResponse = (process: Process, responses: string[]) => {
 
 export const answerWithValue = (value = '') => [value, CONFIRM].flat()
 
-export const CONFIRM = '\n'
+/** Enter, as a terminal sends it. */
+export const CONFIRM = '\r'
 export const DOWN = '\u001B[B'
+/** Answers a confirm prompt with "No" and submits immediately; do not follow it with CONFIRM. */
 export const NO = 'n'
+/** Answers a confirm prompt with "Yes" and submits immediately; do not follow it with CONFIRM. */
+export const YES = 'y'

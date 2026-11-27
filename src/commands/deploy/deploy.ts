@@ -4,7 +4,6 @@ import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 import { stdin, stdout } from 'process'
 
-import { confirm, input, select } from '@inquirer/prompts'
 import type { NetlifyAPI } from '@netlify/api'
 import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
 import { parseAllHeaders } from '@netlify/headers-parser'
@@ -53,6 +52,7 @@ import {
 import { getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import { isEmpty } from '../../utils/object-utilities.js'
 import openBrowser from '../../utils/open-browser.js'
+import { promptConfirm, promptSelect, promptText } from '../../utils/prompts/index.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { resolveTeamForNonInteractive } from '../../utils/team.js'
 import {
@@ -170,9 +170,9 @@ const getDeployFolder = async ({
 
     log(`\nTo specify directory non-interactively, use: ${copyableCommand}\n`)
 
-    const promptPath = await input({
+    const promptPath = await promptText({
       message: 'Publish directory',
-      default: '.',
+      defaultValue: '.',
     })
     deployFolder = resolve(command.workingDir, promptPath)
   }
@@ -401,9 +401,9 @@ const prepareProductionDeploy = async ({
     log(`  ${overrideCommand}`)
     log('\nWarning: Only use --prod-if-unlocked if you are absolutely sure you want to override the deployment lock.\n')
 
-    const unlockChoice = await confirm({
+    const unlockChoice = await promptConfirm({
       message: 'Would you like to "unlock" deployments for production context to proceed?',
-      default: false,
+      initialValue: false,
     })
     if (!unlockChoice) exit(0)
     await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
@@ -1155,17 +1155,11 @@ const promptForSiteAction = async (options: DeployOptionValues, command: BaseCom
     log(`\nYou must pick a --team: ${availableTeams.map((team) => team.slug).join(', ')}`)
   }
 
-  const initChoice = await select({
+  const initChoice = await promptSelect({
     message: 'What would you like to do?',
-    choices: [
-      {
-        name: '⇄  Link this directory to an existing project',
-        value: 'link',
-      },
-      {
-        name: '+  Create & configure a new project',
-        value: 'create',
-      },
+    options: [
+      { value: 'link', label: '⇄  Link this directory to an existing project' },
+      { value: 'create', label: '+  Create & configure a new project' },
     ],
   })
 

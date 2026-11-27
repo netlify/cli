@@ -86,30 +86,20 @@ exports[`frameworks/framework-detection > should print specific error when comma
 `;
 
 exports[`frameworks/framework-detection > should prompt when multiple frameworks are detected 1`] = `
-"? Multiple possible dev commands found
-
-↑↓ navigate • ⏎ select[2A[39G[2B[2K[1A[2K[1A[2K[G? Multiple possible dev commands found
-> [Gatsby] 'npm run develop'
-  [Create React App] 'npm run start'
-
-↑↓ navigate • ⏎ select[4A[39G[4B[2K[1A[2K[1A[2K[1A[2K[1A[2K[G? Multiple possible dev commands found
-> [Gatsby] 'npm run develop'
-  [Create React App] 'npm run start'
-
-↑↓ navigate • ⏎ select[4A[39G[4B[2K[1A[2K[1A[2K[1A[2K[1A[2K[G? Multiple possible dev commands found
-  [Gatsby] 'npm run develop'
-> [Create React App] 'npm run start'
-
-↑↓ navigate • ⏎ select[4A[39G[4B[2K[1A[2K[1A[2K[1A[2K[1A[2K[G? Multiple possible dev commands found
-  [Gatsby] 'npm run develop'
-> [Create React App] 'npm run start'
-
-↑↓ navigate • ⏎ select[4A[39G[4B[2K[1A[2K[1A[2K[1A[2K[1A[2K[G? Multiple possible dev commands found
-  [Gatsby] 'npm run develop'
-> [Create React App] 'npm run start'
-
-↑↓ navigate • ⏎ select[4A[39G[4B[2K[1A[2K[1A[2K[1A[2K[1A[2K[G√ Multiple possible dev commands found Create React App-npm run start[70G
-[G[?25h
+"[?25l│
+◆  Multiple possible dev commands found
+│
+│  Search: _
+│  ● [Gatsby] 'npm run develop'
+│  ○ [Create React App] 'npm run start'
+│  ↑/↓ to select • Enter: confirm • Type: to search
+└[999D[7A[3B[J│  Search:
+│  ○ [Gatsby] 'npm run develop'
+│  ● [Create React App] 'npm run start'
+│  ↑/↓ to select • Enter: confirm • Type: to search
+└[999D[7A[1B[J◇  Multiple possible dev commands found
+│  [Create React App] 'npm run start'
+[?25h
 Update your netlify.toml to avoid this selection prompt next time:
 
 [build]

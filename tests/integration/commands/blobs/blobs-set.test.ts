@@ -16,9 +16,7 @@ import {
   setTestingPrompts,
 } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
-import { mockConfirm, spyOnConfirm } from '../../utils/inquirer-mock-prompt.js'
-
-vi.mock('@inquirer/prompts')
+import { mockConfirmPrompt, spyOnConfirmPrompt } from '../../utils/mock-prompts.js'
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -29,6 +27,12 @@ const siteInfo = {
   },
   functions_config: { timeout: 1 },
 }
+
+// vi.resetModules() would otherwise hand the dynamically imported subcommands a fresh copy of the prompt wrapper that
+// the spy from mock-prompts.js is not attached to; a mocked module keeps a single instance across resets.
+vi.mock('../../../../src/utils/prompts/index.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/prompts/index.js')>()),
+}))
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -105,7 +109,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = spyOnConfirm()
+          const promptSpy = spyOnConfirmPrompt()
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, value])
 
@@ -129,14 +133,13 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = mockConfirm(true)
+          const promptSpy = mockConfirmPrompt(true)
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
 
-          expect(promptSpy).toHaveBeenCalledWith({
-            message: expect.stringContaining(overwriteConfirmation),
-            default: false,
-          })
+          expect(promptSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ message: expect.stringContaining(overwriteConfirmation), initialValue: false }),
+          )
 
           expect(log).toHaveBeenCalledWith(successMessage)
           expect(log).toHaveBeenCalledWith(warningMessage)
@@ -157,7 +160,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = mockConfirm(false)
+          const promptSpy = mockConfirmPrompt(false)
 
           try {
             await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
@@ -167,10 +170,9 @@ describe('blobs:set command', () => {
             expect((error as Error).message).toContain('process.exit unexpectedly called with "0"')
           }
 
-          expect(promptSpy).toHaveBeenCalledWith({
-            message: expect.stringContaining(overwriteConfirmation),
-            default: false,
-          })
+          expect(promptSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ message: expect.stringContaining(overwriteConfirmation), initialValue: false }),
+          )
 
           expect(log).toHaveBeenCalledWith(warningMessage)
           expect(log).toHaveBeenCalledWith(overwriteNotice)
@@ -191,7 +193,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = spyOnConfirm()
+          const promptSpy = spyOnConfirmPrompt()
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
 
@@ -213,7 +215,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = spyOnConfirm()
+          const promptSpy = spyOnConfirmPrompt()
 
           try {
             await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
@@ -249,7 +251,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = spyOnConfirm()
+          const promptSpy = spyOnConfirmPrompt()
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
 
@@ -275,7 +277,7 @@ describe('blobs:set command', () => {
             set: mockSet,
           })
 
-          const promptSpy = spyOnConfirm()
+          const promptSpy = spyOnConfirmPrompt()
 
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
           expect(promptSpy).not.toHaveBeenCalled()

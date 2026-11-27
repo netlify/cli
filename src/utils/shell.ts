@@ -6,8 +6,7 @@ import execa from 'execa'
 
 import { type Spinner } from '../lib/spinner.js'
 
-import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
-import { processOnExit } from './dev.js'
+import { chalk, exit, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 
 const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
   value instanceof Error && Object.hasOwn(value, 'code')
@@ -86,10 +85,22 @@ const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined }
 const ensureCleanupOnExit = () => {
   if (!cleanupRegistered) {
     cleanupRegistered = true
-    processOnExit(async () => {
-      await cleanupBeforeExit({})
-    })
+    for (const signal of ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']) {
+      process.on(signal, () => {
+        void cleanupBeforeExit({})
+      })
+    }
   }
+}
+
+/**
+ * Runs the work registered with `runBeforeProcessExit`, then exits with `exitCode`.
+ * `process.exit` would abandon that work, such as stopping a dev server.
+ */
+export const exitAfterCleanup = async (exitCode: number): Promise<never> => {
+  await cleanupBeforeExit({ exitCode })
+  // Reached only when cleanup is already running elsewhere; exiting here cuts it short.
+  return exit(exitCode)
 }
 
 /**
