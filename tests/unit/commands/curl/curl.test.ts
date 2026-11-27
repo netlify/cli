@@ -3,7 +3,6 @@ import { createServer } from 'http'
 import type { AddressInfo } from 'net'
 import { devNull, tmpdir } from 'os'
 import { join } from 'path'
-import process from 'process'
 
 import { NetlifyAPI } from '@netlify/api'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -224,23 +223,10 @@ describe('runCurl', () => {
   const listJarDirectories = async () =>
     (await readdir(tmpdir())).filter((name) => name.startsWith('netlify-curl-')).sort()
 
-  test('passes the cookie jar to curl', async () => {
-    expect(await runCurlAndGetCookie()).toBe('nf_edge=jwt')
-  })
-
-  test('passes the cookie jar to curl in a temporary file on Windows, and deletes it', async () => {
-    const platform = Object.getOwnPropertyDescriptor(process, 'platform')
+  test('passes the cookie jar to curl in a temporary file, and deletes it', async () => {
     const jarDirectoriesBefore = await listJarDirectories()
-    Object.defineProperty(process, 'platform', { value: 'win32' })
 
-    try {
-      expect(await runCurlAndGetCookie()).toBe('nf_edge=jwt')
-    } finally {
-      if (platform) {
-        Object.defineProperty(process, 'platform', platform)
-      }
-    }
-
+    expect(await runCurlAndGetCookie()).toBe('nf_edge=jwt')
     expect(await listJarDirectories()).toEqual(jarDirectoriesBefore)
   })
 

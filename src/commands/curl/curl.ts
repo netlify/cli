@@ -21,6 +21,8 @@ import {
 
 const MINT_TIMEOUT_MS = 10_000
 
+const FORWARDED_SIGNALS: NodeJS.Signals[] = ['SIGINT', 'SIGTERM', 'SIGHUP']
+
 // Name of the cookie that holds the team login access token.
 const ACCESS_COOKIE_NAME = 'nf_edge'
 
@@ -188,12 +190,7 @@ export const runCurl = async (args: string[], cookieJar?: string): Promise<numbe
     return spawnCurl(args)
   }
 
-  if (process.platform !== 'win32') {
-    // curl reads the jar from a pipe on file descriptor 3, so it's never written to disk.
-    return spawnCurl(['--cookie', '/dev/fd/3', ...args], cookieJar)
-  }
-
-  // Windows has no /dev/fd, so the jar goes in a temporary file that only the user can read.
+  // curl only reads a cookie jar from a path, so the jar goes in a temporary file that only the user can read.
   const directory = await mkdtemp(join(tmpdir(), 'netlify-curl-'))
   try {
     const jarPath = join(directory, 'cookies.txt')
@@ -204,13 +201,26 @@ export const runCurl = async (args: string[], cookieJar?: string): Promise<numbe
   }
 }
 
-const spawnCurl = (args: string[], cookieJarPipe?: string): Promise<number> =>
+const spawnCurl = (args: string[]): Promise<number> =>
   new Promise((resolve, reject) => {
-    const child = spawn('curl', args, {
-      stdio: ['inherit', 'inherit', 'inherit', cookieJarPipe === undefined ? 'ignore' : 'pipe'],
-    })
+    const child = spawn('curl', args, { stdio: 'inherit' })
+
+    // Without a listener, Node exits at once on these signals and the temporary cookie jar is never deleted. Passing
+    // them on to curl and waiting for it to exit lets the cleanup run.
+    const forwardSignal = (signal: NodeJS.Signals) => {
+      child.kill(signal)
+    }
+    for (const signal of FORWARDED_SIGNALS) {
+      process.on(signal, forwardSignal)
+    }
+    const stopForwarding = () => {
+      for (const signal of FORWARDED_SIGNALS) {
+        process.off(signal, forwardSignal)
+      }
+    }
 
     child.on('error', (error: NodeJS.ErrnoException) => {
+      stopForwarding()
       if (error.code === 'ENOENT') {
         reject(new Error('curl is not installed, or is not on your PATH.'))
         return
@@ -219,6 +229,7 @@ const spawnCurl = (args: string[], cookieJarPipe?: string): Promise<number> =>
     })
 
     child.on('close', (code, signal) => {
+      stopForwarding()
       if (code !== null) {
         resolve(code)
         return
@@ -226,13 +237,6 @@ const spawnCurl = (args: string[], cookieJarPipe?: string): Promise<number> =>
       // Match the shell's exit code for a process killed by a signal.
       resolve(128 + (signal ? constants.signals[signal] : 0))
     })
-
-    const pipe = child.stdio[3]
-    if (cookieJarPipe !== undefined && pipe && 'end' in pipe) {
-      // curl may exit before reading the jar, for example on a usage error.
-      pipe.on('error', () => undefined)
-      pipe.end(cookieJarPipe)
-    }
   })
 
 const warn = (message: string) => {
