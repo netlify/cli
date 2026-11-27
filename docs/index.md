@@ -80,6 +80,10 @@ Generate shell completion script
 
 Create a new Netlify project using an AI agent
 
+### [curl](/commands/curl)
+
+Run curl with access to projects behind Netlify team login protection
+
 ### [database](/commands/database)
 
 Provision a production ready Postgres database with a single command

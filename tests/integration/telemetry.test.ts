@@ -219,3 +219,14 @@ test('should scrub values of sensitive `opts`', async () => {
     )
   })
 })
+
+test('should not send the arguments of `curl`, which can hold credentials', async () => {
+  await withMockApi(routes, async ({ apiUrl, requests }) => {
+    await callCli(['curl', '--', '-H', 'Authorization: Bearer my-sensitive-token', '--version'], getCLIOptions(apiUrl))
+    const body = requests.find(({ path }) => path === '/api/v1/track')?.body
+
+    expect(body).toHaveProperty('properties.command', 'curl')
+    expect(body).not.toHaveProperty('properties.args')
+    expect(JSON.stringify(body)).not.toContain('my-sensitive-token')
+  })
+})

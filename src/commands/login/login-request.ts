@@ -1,6 +1,6 @@
 import { NetlifyAPI } from '@netlify/api'
 
-import { log, logAndThrowError, logJson } from '../../utils/command-helpers.js'
+import { log, logAndThrowError, logJson, netlifyCommand } from '../../utils/command-helpers.js'
 import { buildAuthorizeUrl } from '../../utils/login-url.js'
 import { CLIENT_ID } from '../base-command.js'
 import type { NetlifyOptions } from '../types.js'
@@ -15,11 +15,12 @@ export const loginRequest = async (message: string, apiOpts: NetlifyOptions['api
   }
   const ticketId = ticket.id
   const url = buildAuthorizeUrl(ticketId)
+  const checkCommand = `${netlifyCommand()} login --check ${ticketId}`
 
   logJson({
     ticket_id: ticketId,
     url,
-    check_command: `netlify login --check ${ticketId}`,
+    check_command: checkCommand,
     agent_next_steps:
       'Give the URL to the user so they can authorize. Then poll the check_command for up to ten minutes to see if the user has logged in, or wait for them to tell you and then use check_command after.',
   })
@@ -27,7 +28,7 @@ export const loginRequest = async (message: string, apiOpts: NetlifyOptions['api
   log(`Ticket ID: ${ticketId}`)
   log(`Authorize URL: ${url}`)
   log()
-  log(`After authorizing, run: netlify login --check ${ticketId}`)
+  log(`After authorizing, run: ${checkCommand}`)
   log()
   log('After user opens the authorization URL and approves, the login will be complete.')
 }

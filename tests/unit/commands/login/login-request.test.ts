@@ -45,6 +45,14 @@ describe('loginRequest', () => {
     expect(output).toContain('After user opens the authorization URL and approves, the login will be complete.')
   })
 
+  test('suggests the check command with npx when run through npx', async () => {
+    process.env.npm_lifecycle_event = 'npx'
+
+    await loginRequest('test message', apiOpts)
+
+    expect(stdoutOutput.join('')).toContain('After authorizing, run: npx netlify login --check test-ticket-123')
+  })
+
   test('passes message to createTicket', async () => {
     await loginRequest('Grant access to deploy site', apiOpts)
 

@@ -23,6 +23,8 @@ COMMANDS
   $ clone        Clone a repository and link it to a Netlify project
   $ completion   Generate shell completion script
   $ create       Create a new Netlify project using an AI agent
+  $ curl         Run curl with access to projects behind Netlify team login
+                 protection
   $ database     Provision a production ready Postgres database with a single
                  command
   $ deploy       Deploy your project to Netlify
@@ -84,6 +86,8 @@ COMMANDS
   $ clone        Clone a repository and link it to a Netlify project
   $ completion   Generate shell completion script
   $ create       Create a new Netlify project using an AI agent
+  $ curl         Run curl with access to projects behind Netlify team login
+                 protection
   $ database     Provision a production ready Postgres database with a single
                  command
   $ deploy       Deploy your project to Netlify
@@ -145,6 +149,8 @@ COMMANDS
   $ clone        Clone a repository and link it to a Netlify project
   $ completion   Generate shell completion script
   $ create       Create a new Netlify project using an AI agent
+  $ curl         Run curl with access to projects behind Netlify team login
+                 protection
   $ database     Provision a production ready Postgres database with a single
                  command
   $ deploy       Deploy your project to Netlify
@@ -206,6 +212,8 @@ COMMANDS
   $ clone        Clone a repository and link it to a Netlify project
   $ completion   Generate shell completion script
   $ create       Create a new Netlify project using an AI agent
+  $ curl         Run curl with access to projects behind Netlify team login
+                 protection
   $ database     Provision a production ready Postgres database with a single
                  command
   $ deploy       Deploy your project to Netlify

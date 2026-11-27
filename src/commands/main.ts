@@ -33,6 +33,7 @@ import { createBlobsCommand } from './blobs/blobs.js'
 import { createBuildCommand } from './build/index.js'
 import { createCloneCommand } from './clone/index.js'
 import { createCreateCommand } from './create/index.js'
+import { createCurlCommand } from './curl/index.js'
 import { createCompletionCommand } from './completion/index.js'
 import { createDeployCommand } from './deploy/index.js'
 import { createDevCommand } from './dev/index.js'
@@ -251,6 +252,7 @@ export const createMainCommand = (): BaseCommand => {
   createBuildCommand(program)
   createClaimCommand(program)
   createCompletionCommand(program)
+  createCurlCommand(program)
   createDeployCommand(program)
   createDevExecCommand(program)
   createDevCommand(program)
