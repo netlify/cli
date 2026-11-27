@@ -114,6 +114,14 @@ describe('mintAccessToken', () => {
     })
   })
 
+  test('returns a warning when the response is not JSON', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html></html>', { status: 200 })))
+
+    await expect(mintAccessToken(api, 'mysitename.netlify.app')).resolves.toEqual({
+      warning: 'Could not request access to mysitename.netlify.app: the response had no token.',
+    })
+  })
+
   test('returns a warning when the response has no token', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ edge_access: null })))
 

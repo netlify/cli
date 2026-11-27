@@ -1,4 +1,4 @@
-import { spawn } from 'child_process'
+import { spawn, type ChildProcess } from 'child_process'
 import { mkdtemp, rm, writeFile } from 'fs/promises'
 import { isIP } from 'net'
 import { constants, tmpdir } from 'os'
@@ -126,7 +126,7 @@ export const mintAccessToken = async (
     return { warning: `Could not request access to ${host} (HTTP ${response.status.toString()}).` }
   }
 
-  const { edge_access: token } = (await response.json()) as { edge_access?: unknown }
+  const { edge_access: token } = (await response.json().catch(() => ({}))) as { edge_access?: unknown }
   if (typeof token !== 'string' || token === '') {
     return { warning: `Could not request access to ${host}: the response had no token.` }
   }
@@ -186,41 +186,51 @@ export const getAccessTokens = async (
  * Runs curl, with `cookieJar` as an extra cookie source, and resolves with its exit code.
  */
 export const runCurl = async (args: string[], cookieJar?: string): Promise<number> => {
-  if (cookieJar === undefined) {
-    return spawnCurl(args)
+  let child: ChildProcess | undefined
+  let receivedSignal: NodeJS.Signals | undefined
+
+  // Without a listener, Node exits at once on these signals, which would leave the temporary cookie jar behind. They're
+  // passed on to curl while it runs, and stop it from starting if they arrive first.
+  const onSignal = (signal: NodeJS.Signals) => {
+    receivedSignal ??= signal
+    child?.kill(signal)
+  }
+  for (const signal of FORWARDED_SIGNALS) {
+    process.on(signal, onSignal)
   }
 
-  // curl only reads a cookie jar from a path, so the jar goes in a temporary file that only the user can read.
-  const directory = await mkdtemp(join(tmpdir(), 'netlify-curl-'))
+  const runChild = (curlArgs: string[]) => {
+    if (receivedSignal) {
+      return Promise.resolve(128 + constants.signals[receivedSignal])
+    }
+    child = spawn('curl', curlArgs, { stdio: 'inherit' })
+    return waitForExit(child)
+  }
+
   try {
-    const jarPath = join(directory, 'cookies.txt')
-    await writeFile(jarPath, cookieJar, { mode: 0o600 })
-    return await spawnCurl(['--cookie', jarPath, ...args])
+    if (cookieJar === undefined) {
+      return await runChild(args)
+    }
+
+    // curl only reads a cookie jar from a path, so the jar goes in a temporary file that only the user can read.
+    const directory = await mkdtemp(join(tmpdir(), 'netlify-curl-'))
+    try {
+      const jarPath = join(directory, 'cookies.txt')
+      await writeFile(jarPath, cookieJar, { mode: 0o600 })
+      return await runChild(['--cookie', jarPath, ...args])
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
   } finally {
-    await rm(directory, { recursive: true, force: true })
+    for (const signal of FORWARDED_SIGNALS) {
+      process.off(signal, onSignal)
+    }
   }
 }
 
-const spawnCurl = (args: string[]): Promise<number> =>
+const waitForExit = (child: ChildProcess): Promise<number> =>
   new Promise((resolve, reject) => {
-    const child = spawn('curl', args, { stdio: 'inherit' })
-
-    // Without a listener, Node exits at once on these signals and the temporary cookie jar is never deleted. Passing
-    // them on to curl and waiting for it to exit lets the cleanup run.
-    const forwardSignal = (signal: NodeJS.Signals) => {
-      child.kill(signal)
-    }
-    for (const signal of FORWARDED_SIGNALS) {
-      process.on(signal, forwardSignal)
-    }
-    const stopForwarding = () => {
-      for (const signal of FORWARDED_SIGNALS) {
-        process.off(signal, forwardSignal)
-      }
-    }
-
     child.on('error', (error: NodeJS.ErrnoException) => {
-      stopForwarding()
       if (error.code === 'ENOENT') {
         reject(new Error('curl is not installed, or is not on your PATH.'))
         return
@@ -229,7 +239,6 @@ const spawnCurl = (args: string[]): Promise<number> =>
     })
 
     child.on('close', (code, signal) => {
-      stopForwarding()
       if (code !== null) {
         resolve(code)
         return
