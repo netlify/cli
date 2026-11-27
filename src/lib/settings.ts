@@ -18,6 +18,11 @@ export const getLegacyPathInHome = (paths: string[]) => path.join(os.homedir(), 
 export const getPathInHome = (paths: string[]) => path.join(OSBasedPaths.config, ...paths)
 
 /**
+ * get a path in the OS cache directory
+ */
+export const getPathInCache = (paths: string[]) => path.join(OSBasedPaths.cache, ...paths)
+
+/**
  * get a path inside the project folder "NOT WORKSPACE AWARE"
  */
 export const getPathInProject = (paths: string[]) => path.join(NETLIFY_HOME, ...paths)

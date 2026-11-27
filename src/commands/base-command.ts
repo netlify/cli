@@ -78,6 +78,7 @@ const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set([
   'api',
   'recipes',
   'completion',
+  'curl',
   'status',
   'switch',
   'login',
@@ -694,7 +695,9 @@ export default class BaseCommand extends Command {
     const state = new LocalState(this.workingDir)
     const isDiscardingStoredToken =
       actionCommand.name() === 'logout' || (actionCommand.name() === 'login' && Boolean(flags.new))
-    if (isDiscardingStoredToken) skipKeychainMigrationPrompt()
+    // A prompt would hold up `curl`, which passes its output through to scripts and agents.
+    const isPassThroughCommand = actionCommand.name() === 'curl'
+    if (isDiscardingStoredToken || isPassThroughCommand) skipKeychainMigrationPrompt()
     const [token, tokenLocation] = await getToken(flags.auth)
     this.setAnalyticsPayload({ authTokenSource: tokenLocation })
 
