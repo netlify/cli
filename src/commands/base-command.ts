@@ -790,7 +790,8 @@ export default class BaseCommand extends Command {
       packageManager: this.project.packageManager?.name,
       buildSystem: this.project.buildSystems.map(({ id }) => id),
       opts: getScrubbedOptions(actionCommand),
-      args: actionCommand.args,
+      // `curl` passes its arguments through to curl, so they can hold credentials like headers, passwords and tokens.
+      args: actionCommand.name() === 'curl' ? undefined : actionCommand.args,
     })
 
     // set the project and the netlify api object on the command,
