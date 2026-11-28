@@ -59,46 +59,65 @@ To delete it from this device, run ${forgetCommand}.`)
   }
 }
 
+const handleStoredTokens = async (
+  options: OptionValues,
+  globalConfig: GlobalConfig,
+  currentUserId: string | undefined,
+  location: TokenLocation,
+): Promise<void> => {
+  if (options.all) {
+    await forgetAccounts(
+      globalConfig,
+      getSavedAccountIds(globalConfig),
+      `run ${chalk.cyanBright('netlify logout --all')} again`,
+    )
+    return
+  }
+  if (!currentUserId) return
+  if (!options.forget) {
+    explainKeptToken(globalConfig, currentUserId, location)
+    return
+  }
+  await forgetAccounts(
+    globalConfig,
+    [currentUserId],
+    `run ${chalk.cyanBright('netlify switch')} to select the account and ${chalk.cyanBright(
+      'netlify logout --forget',
+    )} again`,
+  )
+  warnAboutRemainingAccounts(globalConfig, currentUserId)
+}
+
+const exitAlreadyLoggedOut = (options: OptionValues, globalConfig: GlobalConfig): never => {
+  log(`Already logged out`)
+  log()
+  log('To login run "netlify login"')
+  if (options.forget) warnAboutRemainingAccounts(globalConfig)
+  return exit()
+}
+
+const exitWithEnvTokenStillSet = (): never => {
+  log('The "process.env.NETLIFY_AUTH_TOKEN" is still set in your terminal session')
+  log()
+  log('To logout completely, unset the environment variable')
+  log()
+  return exit()
+}
+
 export const logout = async (options: OptionValues, command: BaseCommand) => {
   const { globalConfig } = command.netlify
   const [accessToken, location] = await getToken()
-  const currentUserId = (globalConfig.get('userId') as string | null | undefined) ?? undefined
-  const savedAccountIds = getSavedAccountIds(globalConfig)
+  const hasTokensToDelete = Boolean(options.all) && getSavedAccountIds(globalConfig).length > 0
 
-  if (!accessToken && !(options.all && savedAccountIds.length > 0)) {
-    log(`Already logged out`)
-    log()
-    log('To login run "netlify login"')
-    if (options.forget) warnAboutRemainingAccounts(globalConfig)
-    exit()
-  }
+  if (!accessToken && !hasTokensToDelete) exitAlreadyLoggedOut(options, globalConfig)
 
   await track('user_logout', { forget: Boolean(options.forget), all: Boolean(options.all) })
 
-  if (options.all) {
-    await forgetAccounts(globalConfig, savedAccountIds, `run ${chalk.cyanBright('netlify logout --all')} again`)
-  } else if (options.forget && currentUserId) {
-    await forgetAccounts(
-      globalConfig,
-      [currentUserId],
-      `run ${chalk.cyanBright('netlify switch')} to select the account and ${chalk.cyanBright(
-        'netlify logout --forget',
-      )} again`,
-    )
-    warnAboutRemainingAccounts(globalConfig, currentUserId)
-  } else if (currentUserId) {
-    explainKeptToken(globalConfig, currentUserId, location)
-  }
-
+  const currentUserId = (globalConfig.get('userId') as string | null | undefined) ?? undefined
+  await handleStoredTokens(options, globalConfig, currentUserId, location)
   globalConfig.set('userId', null)
 
-  if (location === 'env') {
-    log('The "process.env.NETLIFY_AUTH_TOKEN" is still set in your terminal session')
-    log()
-    log('To logout completely, unset the environment variable')
-    log()
-    exit()
-  }
+  if (location === 'env') exitWithEnvTokenStillSet()
 
   log(`Logging you out of Netlify. Come back soon!`)
 }
