@@ -101,7 +101,7 @@ describe('logout', () => {
     await runLogout({}, config)
 
     expect(output()).toContain('Warning: Your auth token is still stored in plaintext')
-    expect(output()).toContain('netlify logout --forget')
+    expect(output()).toContain('run netlify switch to select this account again, then run netlify logout --forget')
   })
 
   test('mentions that a keychain token is kept and how to delete it', async () => {
@@ -109,7 +109,41 @@ describe('logout', () => {
 
     expect(output()).not.toContain('Warning')
     expect(output()).toContain('still saved in your keychain')
-    expect(output()).toContain('netlify logout --forget')
+    expect(output()).toContain(
+      'run netlify switch --email one@example.com to select this account again, then run netlify logout --forget',
+    )
+  })
+
+  describe('when the keychain is locked and the token cannot be read', () => {
+    beforeEach(() => {
+      mocks.getToken.mockResolvedValue([undefined, 'not found'])
+    })
+
+    test('still logs the selected account out', async () => {
+      const config = threeAccounts()
+
+      await runLogout({}, config)
+
+      expect(config.data.userId).toBeNull()
+      expect(output()).not.toContain('Already logged out')
+      expect(output()).toContain('Logging you out')
+    })
+
+    test('still deletes the token with --forget', async () => {
+      const config = threeAccounts()
+
+      await runLogout({ forget: true }, config)
+
+      expect(mocks.deleteTokenFromKeychain).toHaveBeenCalledExactlyOnceWith('user-1')
+      expect(config.get('users.user-1')).toBeUndefined()
+    })
+
+    test('says already logged out when the selected account is not saved', async () => {
+      const config = createConfig({ userId: 'gone', users: {} })
+
+      await expect(runLogout({}, config)).rejects.toThrow('exit(0)')
+      expect(output()).toContain('Already logged out')
+    })
   })
 
   test('does not mention a kept token after --forget', async () => {
@@ -171,6 +205,32 @@ describe('logout', () => {
 
       expect(mocks.deleteTokenFromKeychain).toHaveBeenCalledExactlyOnceWith('user-1')
       expect(config.data.users).toEqual({})
+    })
+
+    test('deletes the keychain copy of a marked plaintext account even in a non-interactive session', async () => {
+      const config = createConfig({
+        userId: 'user-1',
+        users: { 'user-1': { id: 'user-1', auth: { token: 'plain-1', keychainCopy: true } } },
+      })
+
+      await runLogout({ forget: true }, config)
+
+      expect(mocks.deleteTokenFromKeychain).toHaveBeenCalledExactlyOnceWith('user-1')
+      expect(config.data.users).toEqual({})
+    })
+
+    test('keeps a marked account, without its plaintext token, when its keychain copy cannot be deleted', async () => {
+      mocks.deleteTokenFromKeychain.mockResolvedValue({ status: 'error', error: new Error('Keychain is locked') })
+      const config = createConfig({
+        userId: 'user-1',
+        users: { 'user-1': { id: 'user-1', auth: { token: 'plain-1', keychainCopy: true } } },
+      })
+
+      await runLogout({ forget: true }, config)
+
+      expect(config.get('users.user-1.auth')).toEqual({ keychainCopy: true })
+      expect(output()).toContain('Keychain is locked')
+      expect(output()).not.toContain('Deleted the saved auth token')
     })
 
     test('keeps the account and explains how to retry when its keychain token cannot be deleted', async () => {

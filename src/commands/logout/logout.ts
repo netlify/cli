@@ -46,16 +46,17 @@ To delete ${isOne ? 'it' : 'them'}${asWell}, run ${chalk.cyanBright('netlify log
 
 // Stored tokens are kept by default so `netlify switch` can return to the account without logging in again
 const explainKeptToken = (globalConfig: GlobalConfig, userId: string, location: TokenLocation): void => {
-  const forgetCommand = chalk.cyanBright('netlify logout --forget')
+  const email = globalConfig.get(`users.${userId}.email`) as string | undefined
+  const switchCommand = chalk.cyanBright(email ? `netlify switch --email ${email}` : 'netlify switch')
+  const deleteSteps = `run ${switchCommand} to select this account again, then run ${chalk.cyanBright(
+    'netlify logout --forget',
+  )}`
   if (globalConfig.get(`users.${userId}.auth.token`)) {
     warn(`Your auth token is still stored in plaintext at ${getLegacyConfigFilePath()}.
-To delete it from this device, run ${forgetCommand}.`)
+To delete it from this device, ${deleteSteps}.`)
   } else if (location === 'keychain') {
-    log(
-      `Your auth token is still saved in your keychain so ${chalk.cyanBright(
-        'netlify switch',
-      )} can return to this account. To delete it, run ${forgetCommand}.`,
-    )
+    log(`Your auth token is still saved in your keychain so you can switch back to this account later.
+To delete it, ${deleteSteps}.`)
   }
 }
 
@@ -107,13 +108,16 @@ const exitWithEnvTokenStillSet = (): never => {
 export const logout = async (options: OptionValues, command: BaseCommand) => {
   const { globalConfig } = command.netlify
   const [accessToken, location] = await getToken()
-  const hasTokensToDelete = Boolean(options.all) && getSavedAccountIds(globalConfig).length > 0
+  const currentUserId = (globalConfig.get('userId') as string | null | undefined) ?? undefined
+  const savedAccountIds = getSavedAccountIds(globalConfig)
+  // A locked keychain hides the token without logging the account out, so a selected account still counts
+  const hasSelectedAccount = currentUserId != null && savedAccountIds.includes(currentUserId)
+  const hasTokensToDelete = Boolean(options.all) && savedAccountIds.length > 0
 
-  if (!accessToken && !hasTokensToDelete) exitAlreadyLoggedOut(options, globalConfig)
+  if (!accessToken && !hasSelectedAccount && !hasTokensToDelete) exitAlreadyLoggedOut(options, globalConfig)
 
   await track('user_logout', { forget: Boolean(options.forget), all: Boolean(options.all) })
 
-  const currentUserId = (globalConfig.get('userId') as string | null | undefined) ?? undefined
   await handleStoredTokens(options, globalConfig, currentUserId, location)
   globalConfig.set('userId', null)
 

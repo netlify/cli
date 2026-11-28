@@ -132,12 +132,14 @@ describe('plaintext token migration', () => {
 
   test('moves the token to the keychain and removes the plaintext copy when confirmed', async () => {
     mocks.interactive = true
+    mocks.setPath('users.user-1.auth.keychainCopy', true)
     mocks.confirm.mockResolvedValue(true)
     const { getStoredAPIToken } = await loadSecureStorage()
 
     await expect(getStoredAPIToken({})).resolves.toEqual({ token: 'plain-tok', fromKeychain: true })
     expect(mocks.storeTokenInKeychain).toHaveBeenCalledWith('user-1', 'plain-tok')
     expect(mocks.getPath('users.user-1.auth.token')).toBeUndefined()
+    expect(mocks.getPath('users.user-1.auth.keychainCopy')).toBeUndefined()
   })
 
   test('after moving the token, warns only about the other accounts that still store their token in plaintext', async () => {

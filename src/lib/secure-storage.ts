@@ -36,10 +36,26 @@ If your keychain is locked or access was denied, unlock it or allow access and t
   )
 }
 
-interface StoredUser {
+export interface StoredUser {
   name?: string
   email?: string
-  auth?: { token?: string }
+  auth?: { token?: string; keychainCopy?: boolean }
+}
+
+// The keychain can't be read in every session, so whether it still holds an older copy is recorded at write time:
+// a plaintext write over an account whose token was in the keychain leaves that copy behind
+export const recordTokenStorage = (
+  userData: StoredUser,
+  previous: StoredUser | undefined,
+  mode: TokenStorageMode,
+): void => {
+  if (!userData.auth) return
+  if (mode === 'keychain') {
+    delete userData.auth.token
+    delete userData.auth.keychainCopy
+  } else if (previous && !previous.auth?.token) {
+    userData.auth.keychainCopy = true
+  }
 }
 
 interface ConfigReader {
@@ -117,19 +133,20 @@ const deleteFromKeychainUnlessFailedBefore = async (userId: string): Promise<Err
   return keychainDeleteError
 }
 
-// A keychain error only matters when the keychain was the sole copy: plaintext-only accounts often
+// A keychain error only matters when the keychain is known to hold a copy: plaintext-only accounts often
 // live on machines with no keychain at all, and would otherwise never be forgettable there
 export const forgetStoredAccount = async (
   globalConfig: ConfigStore,
   userId: string,
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<Error | undefined> => {
-  const hadPlaintextToken = Boolean(getStoredUsers(globalConfig)[userId]?.auth?.token)
+  const { auth } = getStoredUsers(globalConfig)[userId] ?? {}
+  const keychainHoldsCopy = !auth?.token || auth.keychainCopy === true
   globalConfig.set(`users.${userId}.auth.token`, undefined)
 
-  if (!hadPlaintextToken || canUseKeychainInteractively(env)) {
+  if (keychainHoldsCopy || canUseKeychainInteractively(env)) {
     const keychainError = await deleteFromKeychainUnlessFailedBefore(userId)
-    if (keychainError && !hadPlaintextToken) return keychainError
+    if (keychainError && keychainHoldsCopy) return keychainError
   }
 
   globalConfig.set(`users.${userId}`, undefined)
@@ -192,6 +209,7 @@ It stays in plaintext and the CLI won't ask again. To retry, unlock your keychai
     return false
   }
   globalConfig.set(`users.${userId}.auth.token`, undefined)
+  globalConfig.set(`users.${userId}.auth.keychainCopy`, undefined)
   log(chalk.green('Auth token moved to your keychain.'))
   warnAboutPlaintextAccounts(globalConfig, userId)
   trackStored('keychain', true)
