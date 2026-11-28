@@ -4,7 +4,6 @@ const mocks = vi.hoisted(() => ({
   getToken: vi.fn(),
   deleteTokenFromKeychain: vi.fn(),
   output: [] as string[],
-  interactive: false,
 }))
 
 vi.mock('@netlify/dev-utils', async () => ({
@@ -27,8 +26,6 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 }))
 
 vi.mock('../../../../src/utils/telemetry/index.js', () => ({ track: vi.fn() }))
-
-vi.mock('../../../../src/utils/scripted-commands.js', () => ({ isInteractive: () => mocks.interactive }))
 
 type Tree = Record<string, unknown>
 
@@ -75,7 +72,6 @@ const threeAccounts = () =>
 
 beforeEach(() => {
   mocks.output.length = 0
-  mocks.interactive = false
   mocks.getToken.mockReset().mockResolvedValue(['tok', 'keychain'])
   mocks.deleteTokenFromKeychain.mockReset().mockResolvedValue({ status: 'deleted' })
 })
@@ -181,21 +177,7 @@ describe('logout', () => {
       expect(mocks.deleteTokenFromKeychain).not.toHaveBeenCalled()
     })
 
-    test('removes a plaintext token without touching the keychain in a non-interactive session', async () => {
-      const config = createConfig({
-        userId: 'user-1',
-        users: { 'user-1': { id: 'user-1', auth: { token: 'plain-1' } } },
-      })
-
-      await runLogout({ forget: true }, config)
-
-      expect(config.data.users).toEqual({})
-      expect(mocks.deleteTokenFromKeychain).not.toHaveBeenCalled()
-      expect(output()).not.toContain('Warning')
-    })
-
-    test('also clears any keychain copy of a plaintext token in an interactive session', async () => {
-      mocks.interactive = true
+    test('removes a plaintext token and checks the keychain for an older unmarked copy', async () => {
       const config = createConfig({
         userId: 'user-1',
         users: { 'user-1': { id: 'user-1', auth: { token: 'plain-1' } } },
@@ -205,9 +187,11 @@ describe('logout', () => {
 
       expect(mocks.deleteTokenFromKeychain).toHaveBeenCalledExactlyOnceWith('user-1')
       expect(config.data.users).toEqual({})
+      expect(output()).toContain('Deleted the saved auth token for user-1.')
+      expect(output()).not.toContain('Warning')
     })
 
-    test('deletes the keychain copy of a marked plaintext account even in a non-interactive session', async () => {
+    test('deletes the keychain copy of a marked plaintext account', async () => {
       const config = createConfig({
         userId: 'user-1',
         users: { 'user-1': { id: 'user-1', auth: { token: 'plain-1', keychainCopy: true } } },
@@ -258,24 +242,26 @@ describe('logout', () => {
       expect(remainingWarning).toContain('three@example.com')
     })
 
-    test('still removes a plaintext token when the keychain is unavailable', async () => {
-      mocks.interactive = true
+    test('removes an unmarked plaintext account when the keychain is unavailable, without claiming full success', async () => {
       mocks.deleteTokenFromKeychain.mockResolvedValue({ status: 'error', error: new Error('No keychain') })
       const config = createConfig({
         userId: 'user-1',
-        users: { 'user-1': { id: 'user-1', auth: { token: 'plain-1' } } },
+        users: { 'user-1': { id: 'user-1', email: 'one@example.com', auth: { token: 'plain-1' } } },
       })
 
       await runLogout({ forget: true }, config)
 
       expect(config.data.users).toEqual({})
-      expect(output()).not.toContain('No keychain')
+      expect(output()).not.toContain('Deleted the saved auth token')
+      expect(output()).toContain(
+        "Deleted the plaintext auth token for one@example.com, but couldn't check your keychain for an older copy: No keychain",
+      )
+      expect(output()).toContain('delete the "netlify-cli" keychain entry for user-1 yourself')
     })
   })
 
   describe('--all', () => {
     test('stops calling the keychain after its first failure', async () => {
-      mocks.interactive = true
       mocks.deleteTokenFromKeychain.mockResolvedValue({ status: 'error', error: new Error('Timed out') })
       const config = threeAccounts()
 
@@ -285,7 +271,10 @@ describe('logout', () => {
       expect(Object.keys(config.data.users as Tree)).toEqual(['user-1', 'user-3'])
       expect(output()).toContain('one@example.com from your keychain: Timed out')
       expect(output()).toContain('three@example.com from your keychain: Timed out')
-      expect(output()).toContain('Deleted the saved auth token for two@example.com.')
+      expect(output()).toContain(
+        "Deleted the plaintext auth token for two@example.com, but couldn't check your keychain",
+      )
+      expect(output()).not.toContain('Deleted the saved auth token')
     })
 
     test('deletes the saved tokens for every account', async () => {
@@ -293,7 +282,7 @@ describe('logout', () => {
 
       await runLogout({ all: true }, config)
 
-      expect(mocks.deleteTokenFromKeychain.mock.calls).toEqual([['user-1'], ['user-3']])
+      expect(mocks.deleteTokenFromKeychain.mock.calls).toEqual([['user-1'], ['user-2'], ['user-3']])
       expect(config.data.users).toEqual({})
       expect(config.data.userId).toBeNull()
       expect(output()).toContain('Deleted the saved auth tokens for 3 accounts.')

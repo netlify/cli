@@ -133,24 +133,24 @@ const deleteFromKeychainUnlessFailedBefore = async (userId: string): Promise<Err
   return keychainDeleteError
 }
 
-// A keychain error only matters when the keychain is known to hold a copy: plaintext-only accounts often
-// live on machines with no keychain at all, and would otherwise never be forgettable there
-export const forgetStoredAccount = async (
-  globalConfig: ConfigStore,
-  userId: string,
-  env: NodeJS.ProcessEnv = process.env,
-): Promise<Error | undefined> => {
+export type ForgetResult =
+  | { status: 'forgotten' }
+  | { status: 'kept'; error: Error }
+  | { status: 'keychainUnchecked'; error: Error }
+
+// Accounts saved before the keychainCopy marker existed may hide an older keychain copy behind a plaintext token,
+// so the keychain is always tried. Only a known copy keeps the account: plaintext-only accounts often live on
+// machines with no keychain at all, and would otherwise never be forgettable there
+export const forgetStoredAccount = async (globalConfig: ConfigStore, userId: string): Promise<ForgetResult> => {
   const { auth } = getStoredUsers(globalConfig)[userId] ?? {}
   const keychainHoldsCopy = !auth?.token || auth.keychainCopy === true
   globalConfig.set(`users.${userId}.auth.token`, undefined)
 
-  if (keychainHoldsCopy || canUseKeychainInteractively(env)) {
-    const keychainError = await deleteFromKeychainUnlessFailedBefore(userId)
-    if (keychainError && keychainHoldsCopy) return keychainError
-  }
+  const keychainError = await deleteFromKeychainUnlessFailedBefore(userId)
+  if (keychainError && keychainHoldsCopy) return { status: 'kept', error: keychainError }
 
   globalConfig.set(`users.${userId}`, undefined)
-  return undefined
+  return keychainError ? { status: 'keychainUnchecked', error: keychainError } : { status: 'forgotten' }
 }
 
 const isPromptExit = (error: unknown): boolean => error instanceof Error && error.name === 'ExitPromptError'

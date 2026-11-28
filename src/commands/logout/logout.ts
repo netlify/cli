@@ -14,21 +14,37 @@ import BaseCommand from '../base-command.js'
 
 type GlobalConfig = BaseCommand['netlify']['globalConfig']
 
+const warnKeychainUnchecked = (unchecked: { account: string; userId: string }[], error: Error): void => {
+  const isOne = unchecked.length === 1
+  warn(`Deleted the plaintext auth token${isOne ? '' : 's'} for ${unchecked
+    .map(({ account }) => account)
+    .join(', ')}, but couldn't check your keychain for an older copy: ${error.message}
+If you used the keychain with ${isOne ? 'this account' : 'these accounts'} before, delete the "netlify-cli" keychain ${
+    isOne ? 'entry' : 'entries'
+  } for ${unchecked.map(({ userId }) => userId).join(', ')} yourself.`)
+}
+
 const forgetAccounts = async (globalConfig: GlobalConfig, userIds: string[], retryHint: string): Promise<void> => {
   const forgotten: string[] = []
+  const unchecked: { account: string; userId: string }[] = []
+  let uncheckedError: Error | undefined
   // One at a time, so the OS shows at most one keychain dialog at once
   for (const userId of userIds) {
     const account = describeSavedAccount(globalConfig, userId)
-    const error = await forgetStoredAccount(globalConfig, userId)
-    if (error) {
-      warn(`Could not delete the auth token for ${account} from your keychain: ${error.message}
+    const result = await forgetStoredAccount(globalConfig, userId)
+    if (result.status === 'kept') {
+      warn(`Could not delete the auth token for ${account} from your keychain: ${result.error.message}
 Unlock your keychain or allow access, then ${retryHint}.`)
+    } else if (result.status === 'keychainUnchecked') {
+      unchecked.push({ account, userId })
+      uncheckedError = result.error
     } else {
       forgotten.push(account)
     }
   }
   if (forgotten.length === 1) log(`Deleted the saved auth token for ${forgotten[0]}.`)
   if (forgotten.length > 1) log(`Deleted the saved auth tokens for ${forgotten.length.toString()} accounts.`)
+  if (uncheckedError) warnKeychainUnchecked(unchecked, uncheckedError)
 }
 
 const warnAboutRemainingAccounts = (globalConfig: GlobalConfig, handledUserId?: string): void => {
