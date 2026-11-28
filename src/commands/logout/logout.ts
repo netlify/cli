@@ -31,14 +31,16 @@ Unlock your keychain or allow access, then ${retryHint}.`)
   if (forgotten.length > 1) log(`Deleted the saved auth tokens for ${forgotten.length.toString()} accounts.`)
 }
 
-const warnAboutRemainingAccounts = (globalConfig: GlobalConfig): void => {
-  const remaining = getSavedAccountIds(globalConfig)
+const warnAboutRemainingAccounts = (globalConfig: GlobalConfig, handledUserId?: string): void => {
+  const remaining = getSavedAccountIds(globalConfig).filter((userId) => userId !== handledUserId)
   if (remaining.length === 0) return
-  const noun = remaining.length === 1 ? 'account on this device still has a' : 'accounts on this device still have'
+  const isOne = remaining.length === 1
+  const other = handledUserId ? 'other ' : ''
+  const asWell = handledUserId ? ' as well' : ''
   warn(
-    `${remaining.length.toString()} other ${noun} saved auth token${remaining.length === 1 ? '' : 's'}:
+    `${remaining.length.toString()} ${other}account${isOne ? ' on this device still has a' : 's on this device still have'} saved auth token${isOne ? '' : 's'}:
 ${formatAccountList(globalConfig, remaining)}
-To delete ${remaining.length === 1 ? 'it' : 'them'} as well, run ${chalk.cyanBright('netlify logout --all')}.`,
+To delete ${isOne ? 'it' : 'them'}${asWell}, run ${chalk.cyanBright('netlify logout --all')}.`,
   )
 }
 
@@ -83,7 +85,7 @@ export const logout = async (options: OptionValues, command: BaseCommand) => {
         'netlify logout --forget',
       )} again`,
     )
-    warnAboutRemainingAccounts(globalConfig)
+    warnAboutRemainingAccounts(globalConfig, currentUserId)
   } else if (currentUserId) {
     explainKeptToken(globalConfig, currentUserId, location)
   }

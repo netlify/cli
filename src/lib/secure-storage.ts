@@ -17,6 +17,7 @@ export type TokenStorageMode = 'keychain' | 'legacy'
 
 let skipMigrationThisSession = false
 let keychainReadFailureWarned = false
+let keychainDeleteError: Error | undefined
 
 const skipMigrationKey = (userId: string) => `users.${userId}.auth.skipKeychainMigration`
 
@@ -62,42 +63,43 @@ export const getSavedAccountIds = (globalConfig: ConfigReader): string[] => Obje
 export const formatAccountList = (globalConfig: ConfigReader, userIds: string[]): string =>
   userIds.map((userId) => `  - ${describeSavedAccount(globalConfig, userId)}`).join('\n')
 
-export const getOtherAccountsWithPlaintextTokens = (
-  globalConfig: ConfigReader,
-  currentUserId: string | undefined,
-): string[] =>
+export const getAccountsWithPlaintextTokens = (globalConfig: ConfigReader): string[] =>
   Object.entries(getStoredUsers(globalConfig))
-    .filter(([id, user]) => id !== currentUserId && Boolean(user?.auth?.token))
+    .filter(([, user]) => Boolean(user?.auth?.token))
     .map(([id]) => id)
 
-export const warnAboutOtherPlaintextAccounts = (
+export const warnAboutPlaintextAccounts = (
   globalConfig: ConfigReader,
   currentUserId: string | undefined,
+  env: NodeJS.ProcessEnv = process.env,
 ): void => {
-  const userIds = getOtherAccountsWithPlaintextTokens(globalConfig, currentUserId)
+  if (isLegacyAuthStorageForced(env)) return
+  const userIds = getAccountsWithPlaintextTokens(globalConfig)
   if (userIds.length === 0) return
-  const noun =
-    userIds.length === 1 ? 'account on this device still stores its' : 'accounts on this device still store their'
+
+  const accountList = userIds
+    .map((userId) => {
+      const label = describeSavedAccount(globalConfig, userId)
+      return `  - ${userId === currentUserId ? `${label} (current)` : label}`
+    })
+    .join('\n')
+  const includesCurrent = currentUserId != null && userIds.includes(currentUserId)
+  const subject = `${userIds.length.toString()} ${includesCurrent ? '' : 'other '}account${
+    userIds.length === 1 ? ' on this device stores its' : 's on this device store their'
+  }`
+  const cmd = chalk.cyanBright
+  const selectStep = includesCurrent
+    ? `run ${cmd('netlify switch')} to select its account (not needed for the current one)`
+    : `run ${cmd('netlify switch')} to select its account`
+
   warn(
-    `${userIds.length.toString()} other ${noun} auth token in plaintext:
-${formatAccountList(globalConfig, userIds)}
-Only the current account's token is moved to the keychain. To move the others, run ${chalk.cyanBright(
-      'netlify switch',
-    )} to select each account, then run ${chalk.cyanBright('netlify status')} and accept the prompt.`,
+    `${subject} auth token in plaintext:
+${accountList}
+To move a token to your keychain, ${selectStep}, then run ${cmd('netlify status')} and accept the prompt.
+If you aren't asked (because you declined before, or the session isn't interactive), run ${cmd(
+      'netlify logout --forget',
+    )} and then ${cmd('netlify login')} instead.`,
   )
-}
-
-// A keychain error only matters when the keychain was the sole copy: plaintext-only accounts often
-// live on machines with no keychain at all, and would otherwise never be forgettable there
-export const forgetStoredAccount = async (globalConfig: ConfigStore, userId: string): Promise<Error | undefined> => {
-  const hadPlaintextToken = Boolean(getStoredUsers(globalConfig)[userId]?.auth?.token)
-  globalConfig.set(`users.${userId}.auth.token`, undefined)
-
-  const keychainDelete = await deleteTokenFromKeychain(userId)
-  if (keychainDelete.status === 'error' && !hadPlaintextToken) return keychainDelete.error
-
-  globalConfig.set(`users.${userId}`, undefined)
-  return undefined
 }
 
 export const skipKeychainMigrationPrompt = (): void => {
@@ -106,6 +108,33 @@ export const skipKeychainMigrationPrompt = (): void => {
 
 const canUseKeychainInteractively = (env: NodeJS.ProcessEnv): boolean =>
   isInteractive() || env.TESTING_PROMPTS === 'true'
+
+// Each keychain call can wait up to 30s on an unanswered OS dialog, so one failure skips the rest of this run
+const deleteFromKeychainUnlessFailedBefore = async (userId: string): Promise<Error | undefined> => {
+  if (keychainDeleteError) return keychainDeleteError
+  const result = await deleteTokenFromKeychain(userId)
+  if (result.status === 'error') keychainDeleteError = result.error
+  return keychainDeleteError
+}
+
+// A keychain error only matters when the keychain was the sole copy: plaintext-only accounts often
+// live on machines with no keychain at all, and would otherwise never be forgettable there
+export const forgetStoredAccount = async (
+  globalConfig: ConfigStore,
+  userId: string,
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<Error | undefined> => {
+  const hadPlaintextToken = Boolean(getStoredUsers(globalConfig)[userId]?.auth?.token)
+  globalConfig.set(`users.${userId}.auth.token`, undefined)
+
+  if (!hadPlaintextToken || canUseKeychainInteractively(env)) {
+    const keychainError = await deleteFromKeychainUnlessFailedBefore(userId)
+    if (keychainError && !hadPlaintextToken) return keychainError
+  }
+
+  globalConfig.set(`users.${userId}`, undefined)
+  return undefined
+}
 
 const isPromptExit = (error: unknown): boolean => error instanceof Error && error.name === 'ExitPromptError'
 
@@ -164,7 +193,7 @@ It stays in plaintext and the CLI won't ask again. To retry, unlock your keychai
   }
   globalConfig.set(`users.${userId}.auth.token`, undefined)
   log(chalk.green('Auth token moved to your keychain.'))
-  warnAboutOtherPlaintextAccounts(globalConfig, userId)
+  warnAboutPlaintextAccounts(globalConfig, userId)
   trackStored('keychain', true)
   return true
 }

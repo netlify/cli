@@ -166,26 +166,31 @@ describe('status', () => {
       expect(jsonMessages).toHaveLength(0)
     })
 
-    test('warns about other accounts that still store their token in plaintext', async () => {
+    test('warns about every account whose token is in plaintext, marking the current one', async () => {
       const command = createMockCommand({ siteId: 'site-123' })
       const config: Record<string, unknown> = {
         userId: 'user-1',
         users: {
-          'user-1': { id: 'user-1', auth: {} },
+          'user-1': { id: 'user-1', email: 'one@example.com', auth: { token: 'plain' } },
           'user-2': { id: 'user-2', email: 'two@example.com', auth: { token: 'plain' } },
-          'user-3': { id: 'user-3', email: 'three@example.com', auth: { token: 'plain' } },
+          'user-3': { id: 'user-3', email: 'three@example.com', auth: {} },
         },
       }
       command.netlify.globalConfig.get = (key: string) => config[key]
       const stdoutWrite = vi.spyOn(process.stdout, 'write').mockReturnValue(true)
 
-      await status({}, command)
+      let output: string
+      try {
+        await status({}, command)
+      } finally {
+        output = stdoutWrite.mock.calls.map(([chunk]) => String(chunk)).join('')
+        stdoutWrite.mockRestore()
+      }
 
-      const output = stdoutWrite.mock.calls.map(([chunk]) => String(chunk)).join('')
-      stdoutWrite.mockRestore()
-      expect(output).toContain('2 other accounts on this device still store their auth token in plaintext')
+      expect(output).toContain('2 accounts on this device store their auth token in plaintext')
+      expect(output).toContain('one@example.com (current)')
       expect(output).toContain('two@example.com')
-      expect(output).toContain('three@example.com')
+      expect(output).not.toContain('three@example.com')
     })
   })
 

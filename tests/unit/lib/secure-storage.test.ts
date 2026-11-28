@@ -15,7 +15,25 @@ const mocks = vi.hoisted(() => {
     interactive: false,
     logSuppressed: false,
   }
+  type Tree = Record<string, unknown>
+  const getPath = (key: string): unknown =>
+    key.split('.').reduce<unknown>((node, part) => (node as Tree | undefined)?.[part], state.config)
+  const setPath = (key: string, value: unknown) => {
+    const parts = key.split('.')
+    const last = parts.at(-1) ?? key
+    const parent = parts.slice(0, -1).reduce<Tree>((node, part) => {
+      node[part] ??= {}
+      return node[part] as Tree
+    }, state.config)
+    if (value === undefined) {
+      Reflect.deleteProperty(parent, last)
+    } else {
+      parent[last] = value
+    }
+  }
   return Object.assign(state, {
+    getPath,
+    setPath,
     confirm: vi.fn(),
     storeTokenInKeychain: vi.fn(),
     warn: vi.fn(),
@@ -26,10 +44,8 @@ vi.mock('@netlify/dev-utils', async () => ({
   ...(await vi.importActual('@netlify/dev-utils')),
   getGlobalConfigStore: () =>
     Promise.resolve({
-      get: (key: string) => mocks.config[key],
-      set: (key: string, value: unknown) => {
-        mocks.config[key] = value
-      },
+      get: mocks.getPath,
+      set: mocks.setPath,
     }),
   readStoredAPIToken: () => Promise.resolve(mocks.stored),
   storeTokenInKeychain: mocks.storeTokenInKeychain,
@@ -55,7 +71,7 @@ const loadSecureStorage = async () => {
 }
 
 beforeEach(() => {
-  mocks.config = { userId: 'user-1', 'users.user-1.auth.token': 'plain-tok' }
+  mocks.config = { userId: 'user-1', users: { 'user-1': { id: 'user-1', auth: { token: 'plain-tok' } } } }
   mocks.stored = { source: 'none' }
   mocks.interactive = false
   mocks.logSuppressed = false
@@ -121,10 +137,10 @@ describe('plaintext token migration', () => {
 
     await expect(getStoredAPIToken({})).resolves.toEqual({ token: 'plain-tok', fromKeychain: true })
     expect(mocks.storeTokenInKeychain).toHaveBeenCalledWith('user-1', 'plain-tok')
-    expect(mocks.config['users.user-1.auth.token']).toBeUndefined()
+    expect(mocks.getPath('users.user-1.auth.token')).toBeUndefined()
   })
 
-  test('after moving the token, warns about other accounts that still store their token in plaintext', async () => {
+  test('after moving the token, warns only about the other accounts that still store their token in plaintext', async () => {
     mocks.interactive = true
     mocks.confirm.mockResolvedValue(true)
     mocks.config.users = {
@@ -137,17 +153,17 @@ describe('plaintext token migration', () => {
     await getStoredAPIToken({})
     expect(mocks.warn).toHaveBeenCalledTimes(1)
     const [message] = mocks.warn.mock.calls[0] as [string]
-    expect(message).toContain('1 other account')
+    expect(message).toContain('1 other account on this device stores its auth token in plaintext')
     expect(message).toContain('Two (two@example.com)')
     expect(message).not.toContain('one@example.com')
     expect(message).not.toContain('three@example.com')
+    expect(message).not.toContain('(current)')
     expect(message).toContain('netlify switch')
   })
 
   test('does not warn about other accounts when there are none with a plaintext token', async () => {
     mocks.interactive = true
     mocks.confirm.mockResolvedValue(true)
-    mocks.config.users = { 'user-1': { id: 'user-1', auth: { token: 'plain-tok' } } }
     const { getStoredAPIToken } = await loadSecureStorage()
 
     await getStoredAPIToken({})
@@ -161,8 +177,8 @@ describe('plaintext token migration', () => {
     const { getStoredAPIToken } = await loadSecureStorage()
 
     await expect(getStoredAPIToken({})).resolves.toEqual({ token: 'plain-tok', fromKeychain: false })
-    expect(mocks.config['users.user-1.auth.token']).toBe('plain-tok')
-    expect(mocks.config['users.user-1.auth.skipKeychainMigration']).toBe(true)
+    expect(mocks.getPath('users.user-1.auth.token')).toBe('plain-tok')
+    expect(mocks.getPath('users.user-1.auth.skipKeychainMigration')).toBe(true)
     const [message] = mocks.warn.mock.calls[0] as [string]
     expect(message).toContain('Keychain is locked')
     expect(message).toContain('netlify login --new')
@@ -174,7 +190,7 @@ describe('plaintext token migration', () => {
     const { getStoredAPIToken } = await loadSecureStorage()
 
     await getStoredAPIToken({})
-    expect(mocks.config['users.user-1.auth.skipKeychainMigration']).toBe(true)
+    expect(mocks.getPath('users.user-1.auth.skipKeychainMigration')).toBe(true)
     expect(mocks.storeTokenInKeychain).not.toHaveBeenCalled()
   })
 
@@ -233,5 +249,68 @@ describe('writeAuthTokenForStorage', () => {
     expect(message).toContain('Keychain is locked')
     expect(message).toContain('netlify login --new')
     expect(message).toContain('NETLIFY_USE_LEGACY_AUTH_STORAGE=1')
+  })
+})
+
+describe('warnAboutPlaintextAccounts', () => {
+  const configWith = (users: Record<string, unknown>) => ({
+    get: (key: string) => (key === 'users' ? users : undefined),
+  })
+
+  test('marks the current account when its own token is also in plaintext', async () => {
+    const { warnAboutPlaintextAccounts } = await loadSecureStorage()
+
+    warnAboutPlaintextAccounts(
+      configWith({
+        'user-1': { id: 'user-1', email: 'one@example.com', auth: { token: 'plain-1' } },
+        'user-2': { id: 'user-2', email: 'two@example.com', auth: { token: 'plain-2' } },
+      }),
+      'user-1',
+      {},
+    )
+
+    const [message] = mocks.warn.mock.calls[0] as [string]
+    expect(message).toContain('2 accounts on this device store their auth token in plaintext')
+    expect(message).toContain('one@example.com (current)')
+    expect(message).toContain('two@example.com')
+    expect(message).toContain('not needed for the current one')
+  })
+
+  test('says "other" when only other accounts are in plaintext', async () => {
+    const { warnAboutPlaintextAccounts } = await loadSecureStorage()
+
+    warnAboutPlaintextAccounts(
+      configWith({
+        'user-1': { id: 'user-1', auth: {} },
+        'user-2': { id: 'user-2', email: 'two@example.com', auth: { token: 'plain-2' } },
+      }),
+      'user-1',
+      {},
+    )
+
+    const [message] = mocks.warn.mock.calls[0] as [string]
+    expect(message).toContain('1 other account on this device stores its auth token in plaintext')
+    expect(message).not.toContain('(current)')
+    expect(message).not.toContain('not needed for the current one')
+  })
+
+  test('explains what to do when the migration prompt does not appear', async () => {
+    const { warnAboutPlaintextAccounts } = await loadSecureStorage()
+
+    warnAboutPlaintextAccounts(configWith({ 'user-2': { id: 'user-2', auth: { token: 'plain-2' } } }), 'user-1', {})
+
+    const [message] = mocks.warn.mock.calls[0] as [string]
+    expect(message).toContain("If you aren't asked")
+    expect(message).toContain('netlify logout --forget')
+    expect(message).toContain('netlify login')
+  })
+
+  test('stays quiet when plaintext storage is forced, since those tokens cannot be moved', async () => {
+    const { warnAboutPlaintextAccounts } = await loadSecureStorage()
+
+    warnAboutPlaintextAccounts(configWith({ 'user-2': { id: 'user-2', auth: { token: 'plain-2' } } }), 'user-1', {
+      NETLIFY_USE_LEGACY_AUTH_STORAGE: '1',
+    })
+    expect(mocks.warn).not.toHaveBeenCalled()
   })
 })
