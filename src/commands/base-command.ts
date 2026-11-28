@@ -16,7 +16,12 @@ import { findUp } from 'find-up'
 import { deepMerge, pick } from '../utils/object-utilities.js'
 
 import { getAgent } from '../lib/http-agent.js'
-import { skipKeychainMigrationPrompt, writeAuthTokenForStorage } from '../lib/secure-storage.js'
+import {
+  recordTokenStorage,
+  skipKeychainMigrationPrompt,
+  writeAuthTokenForStorage,
+  type StoredUser,
+} from '../lib/secure-storage.js'
 import {
   NETLIFY_CYAN,
   USER_AGENT,
@@ -208,9 +213,10 @@ export async function storeToken(
   { userId, name, email, accessToken }: { userId: string; name?: string; email?: string; accessToken: string },
 ): Promise<void> {
   globalConfig.set('userId', userId)
+  const previous = globalConfig.get(`users.${userId}`) as (StoredUser & Record<string, unknown>) | undefined
   const mode = await writeAuthTokenForStorage(userId, accessToken)
 
-  const userData = deepMerge(globalConfig.get(`users.${userId}`) as { auth?: { token?: string } } | undefined, {
+  const userData = deepMerge(previous, {
     id: userId,
     name,
     email,
@@ -222,7 +228,7 @@ export async function storeToken(
       },
     },
   })
-  if (mode === 'keychain') delete userData.auth?.token
+  recordTokenStorage(userData, previous, mode)
   globalConfig.set(`users.${userId}`, userData)
 }
 

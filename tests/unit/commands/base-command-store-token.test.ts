@@ -62,4 +62,64 @@ describe('storeToken', () => {
 
     expect(globalConfig.get('users.user-1.auth.token')).toBe('new-token')
   })
+
+  describe('keychain copy marker', () => {
+    const userWithKeychainToken = {
+      userId: 'user-1',
+      users: { 'user-1': { id: 'user-1', email: 'one@example.com', auth: {} } },
+    }
+
+    test('marks an account whose keychain token is left behind by a plaintext write', async () => {
+      mocks.writeAuthTokenForStorage.mockResolvedValue('legacy')
+      const globalConfig = createGlobalConfig(userWithKeychainToken)
+
+      await storeToken(globalConfig, { userId: 'user-1', accessToken: 'new-token' })
+
+      expect(globalConfig.get('users.user-1.auth.token')).toBe('new-token')
+      expect(globalConfig.get('users.user-1.auth.keychainCopy')).toBe(true)
+    })
+
+    test('does not mark an account that only ever had a plaintext token', async () => {
+      mocks.writeAuthTokenForStorage.mockResolvedValue('legacy')
+      const globalConfig = createGlobalConfig(userWithPlaintextToken)
+
+      await storeToken(globalConfig, { userId: 'user-1', accessToken: 'new-token' })
+
+      expect(globalConfig.get('users.user-1.auth.keychainCopy')).toBeUndefined()
+    })
+
+    test('does not mark a new account', async () => {
+      mocks.writeAuthTokenForStorage.mockResolvedValue('legacy')
+      const globalConfig = createGlobalConfig({})
+
+      await storeToken(globalConfig, { userId: 'user-1', accessToken: 'new-token' })
+
+      expect(globalConfig.get('users.user-1.auth.keychainCopy')).toBeUndefined()
+    })
+
+    test('keeps the mark across later plaintext writes', async () => {
+      mocks.writeAuthTokenForStorage.mockResolvedValue('legacy')
+      const globalConfig = createGlobalConfig({
+        userId: 'user-1',
+        users: { 'user-1': { id: 'user-1', auth: { token: 'plain', keychainCopy: true } } },
+      })
+
+      await storeToken(globalConfig, { userId: 'user-1', accessToken: 'new-token' })
+
+      expect(globalConfig.get('users.user-1.auth.keychainCopy')).toBe(true)
+    })
+
+    test('clears the mark once the keychain is written again, since that replaces the old copy', async () => {
+      mocks.writeAuthTokenForStorage.mockResolvedValue('keychain')
+      const globalConfig = createGlobalConfig({
+        userId: 'user-1',
+        users: { 'user-1': { id: 'user-1', auth: { token: 'plain', keychainCopy: true } } },
+      })
+
+      await storeToken(globalConfig, { userId: 'user-1', accessToken: 'new-token' })
+
+      expect(globalConfig.get('users.user-1.auth.token')).toBeUndefined()
+      expect(globalConfig.get('users.user-1.auth.keychainCopy')).toBeUndefined()
+    })
+  })
 })

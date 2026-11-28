@@ -13,6 +13,7 @@ import {
   warn,
   type APIError,
 } from '../../utils/command-helpers.js'
+import { warnAboutPlaintextAccounts } from '../../lib/secure-storage.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import type { TokenLocation } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
@@ -116,6 +117,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     (clean as unknown as <T extends Record<string | number | symbol, unknown>>(obj: T) => Partial<T>)(accountData)
 
   log(prettyjson.render({ ...cleanAccountData, 'Auth token storage': formatTokenStorage(tokenLocation) }))
+  warnAboutPlaintextAccounts(globalConfig, currentUserId)
 
   if (!siteId) {
     if (options.json) {
