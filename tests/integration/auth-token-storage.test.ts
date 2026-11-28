@@ -369,6 +369,42 @@ describe('migration prompt interactive flow', () => {
       })
     },
   )
+
+  test('`logout --forget` deletes a plaintext token from the config file', async () => {
+    await writeLegacyTokenToConfig(configDir, user.id, 'plain-tok')
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const stdout = (await callCli(['logout', '--forget'], {
+        env: isolatedEnv(apiUrl),
+        extendEnv: false,
+      })) as string
+
+      expect(stdout).toContain('Deleted the saved auth token')
+      const config = await readConfig(configDir)
+      expect(config.userId).toBeNull()
+      expect(config.users).toEqual({})
+    })
+  })
+
+  test.runIf(keychainReady)('`logout --forget` deletes a token from the keychain', async () => {
+    accountsToCleanup.push(user.id)
+    await mkdir(configDir, { recursive: true })
+    const config: StoredConfig = {
+      telemetryDisabled: true,
+      cliId: 'test-cli-id',
+      userId: user.id,
+      users: { [user.id]: { id: user.id, auth: {} } },
+    }
+    await writeFile(path.join(configDir, 'config.json'), JSON.stringify(config))
+    await writeKeychainEntry(tmpHome, user.id, 'keychain-tok')
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      await callCli(['logout', '--forget'], { env: isolatedEnv(apiUrl, { TESTING_PROMPTS: 'true' }), extendEnv: false })
+
+      expect(await readKeychainEntry(tmpHome, user.id)).toBeNull()
+      expect((await readConfig(configDir)).users).toEqual({})
+    })
+  })
 })
 
 test('integration tests never touch the real netlify config', async () => {

@@ -1,5 +1,6 @@
 import { confirm } from '@inquirer/prompts'
 import {
+  deleteTokenFromKeychain,
   getGlobalConfigStore,
   getLegacyConfigFilePath,
   isLegacyAuthStorageForced,
@@ -40,34 +41,63 @@ interface StoredUser {
   auth?: { token?: string }
 }
 
-const describeUser = (id: string, { name, email }: StoredUser): string =>
-  name && email ? `${name} (${email})` : (email ?? name ?? id)
-
-export const getOtherAccountsWithPlaintextTokens = (
-  globalConfig: { get: (key: string) => unknown },
-  currentUserId: string | undefined,
-): string[] => {
-  const users = (globalConfig.get('users') ?? {}) as Record<string, StoredUser | undefined>
-  return Object.entries(users)
-    .filter(([id, user]) => id !== currentUserId && Boolean(user?.auth?.token))
-    .map(([id, user]) => describeUser(id, user ?? {}))
+interface ConfigReader {
+  get: (key: string) => unknown
 }
 
+interface ConfigStore extends ConfigReader {
+  set: (key: string, value: unknown) => void
+}
+
+const getStoredUsers = (globalConfig: ConfigReader): Record<string, StoredUser | undefined> =>
+  (globalConfig.get('users') ?? {}) as Record<string, StoredUser | undefined>
+
+export const describeSavedAccount = (globalConfig: ConfigReader, userId: string): string => {
+  const { name, email } = getStoredUsers(globalConfig)[userId] ?? {}
+  return name && email ? `${name} (${email})` : (email ?? name ?? userId)
+}
+
+export const getSavedAccountIds = (globalConfig: ConfigReader): string[] => Object.keys(getStoredUsers(globalConfig))
+
+export const formatAccountList = (globalConfig: ConfigReader, userIds: string[]): string =>
+  userIds.map((userId) => `  - ${describeSavedAccount(globalConfig, userId)}`).join('\n')
+
+export const getOtherAccountsWithPlaintextTokens = (
+  globalConfig: ConfigReader,
+  currentUserId: string | undefined,
+): string[] =>
+  Object.entries(getStoredUsers(globalConfig))
+    .filter(([id, user]) => id !== currentUserId && Boolean(user?.auth?.token))
+    .map(([id]) => id)
+
 export const warnAboutOtherPlaintextAccounts = (
-  globalConfig: { get: (key: string) => unknown },
+  globalConfig: ConfigReader,
   currentUserId: string | undefined,
 ): void => {
-  const accounts = getOtherAccountsWithPlaintextTokens(globalConfig, currentUserId)
-  if (accounts.length === 0) return
+  const userIds = getOtherAccountsWithPlaintextTokens(globalConfig, currentUserId)
+  if (userIds.length === 0) return
   const noun =
-    accounts.length === 1 ? 'account on this device still stores its' : 'accounts on this device still store their'
+    userIds.length === 1 ? 'account on this device still stores its' : 'accounts on this device still store their'
   warn(
-    `${accounts.length.toString()} other ${noun} auth token in plaintext:
-${accounts.map((account) => `  - ${account}`).join('\n')}
+    `${userIds.length.toString()} other ${noun} auth token in plaintext:
+${formatAccountList(globalConfig, userIds)}
 Only the current account's token is moved to the keychain. To move the others, run ${chalk.cyanBright(
       'netlify switch',
     )} to select each account, then run ${chalk.cyanBright('netlify status')} and accept the prompt.`,
   )
+}
+
+// A keychain error only matters when the keychain was the sole copy: plaintext-only accounts often
+// live on machines with no keychain at all, and would otherwise never be forgettable there
+export const forgetStoredAccount = async (globalConfig: ConfigStore, userId: string): Promise<Error | undefined> => {
+  const hadPlaintextToken = Boolean(getStoredUsers(globalConfig)[userId]?.auth?.token)
+  globalConfig.set(`users.${userId}.auth.token`, undefined)
+
+  const keychainDelete = await deleteTokenFromKeychain(userId)
+  if (keychainDelete.status === 'error' && !hadPlaintextToken) return keychainDelete.error
+
+  globalConfig.set(`users.${userId}`, undefined)
+  return undefined
 }
 
 export const skipKeychainMigrationPrompt = (): void => {
