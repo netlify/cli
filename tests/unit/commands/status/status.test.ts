@@ -165,6 +165,28 @@ describe('status', () => {
 
       expect(jsonMessages).toHaveLength(0)
     })
+
+    test('warns about other accounts that still store their token in plaintext', async () => {
+      const command = createMockCommand({ siteId: 'site-123' })
+      const config: Record<string, unknown> = {
+        userId: 'user-1',
+        users: {
+          'user-1': { id: 'user-1', auth: {} },
+          'user-2': { id: 'user-2', email: 'two@example.com', auth: { token: 'plain' } },
+          'user-3': { id: 'user-3', email: 'three@example.com', auth: { token: 'plain' } },
+        },
+      }
+      command.netlify.globalConfig.get = (key: string) => config[key]
+      const stdoutWrite = vi.spyOn(process.stdout, 'write').mockReturnValue(true)
+
+      await status({}, command)
+
+      const output = stdoutWrite.mock.calls.map(([chunk]) => String(chunk)).join('')
+      stdoutWrite.mockRestore()
+      expect(output).toContain('2 other accounts on this device still store their auth token in plaintext')
+      expect(output).toContain('two@example.com')
+      expect(output).toContain('three@example.com')
+    })
   })
 
   describe('expired session', () => {

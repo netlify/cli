@@ -34,6 +34,42 @@ If your keychain is locked or access was denied, unlock it or allow access and t
   )
 }
 
+interface StoredUser {
+  name?: string
+  email?: string
+  auth?: { token?: string }
+}
+
+const describeUser = (id: string, { name, email }: StoredUser): string =>
+  name && email ? `${name} (${email})` : (email ?? name ?? id)
+
+export const getOtherAccountsWithPlaintextTokens = (
+  globalConfig: { get: (key: string) => unknown },
+  currentUserId: string | undefined,
+): string[] => {
+  const users = (globalConfig.get('users') ?? {}) as Record<string, StoredUser | undefined>
+  return Object.entries(users)
+    .filter(([id, user]) => id !== currentUserId && Boolean(user?.auth?.token))
+    .map(([id, user]) => describeUser(id, user ?? {}))
+}
+
+export const warnAboutOtherPlaintextAccounts = (
+  globalConfig: { get: (key: string) => unknown },
+  currentUserId: string | undefined,
+): void => {
+  const accounts = getOtherAccountsWithPlaintextTokens(globalConfig, currentUserId)
+  if (accounts.length === 0) return
+  const noun =
+    accounts.length === 1 ? 'account on this device still stores its' : 'accounts on this device still store their'
+  warn(
+    `${accounts.length.toString()} other ${noun} auth token in plaintext:
+${accounts.map((account) => `  - ${account}`).join('\n')}
+Only the current account's token is moved to the keychain. To move the others, run ${chalk.cyanBright(
+      'netlify switch',
+    )} to select each account, then run ${chalk.cyanBright('netlify status')} and accept the prompt.`,
+  )
+}
+
 export const skipKeychainMigrationPrompt = (): void => {
   skipMigrationThisSession = true
 }
@@ -98,6 +134,7 @@ It stays in plaintext and the CLI won't ask again. To retry, unlock your keychai
   }
   globalConfig.set(`users.${userId}.auth.token`, undefined)
   log(chalk.green('Auth token moved to your keychain.'))
+  warnAboutOtherPlaintextAccounts(globalConfig, userId)
   trackStored('keychain', true)
   return true
 }

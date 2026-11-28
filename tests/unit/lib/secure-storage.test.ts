@@ -124,6 +124,36 @@ describe('plaintext token migration', () => {
     expect(mocks.config['users.user-1.auth.token']).toBeUndefined()
   })
 
+  test('after moving the token, warns about other accounts that still store their token in plaintext', async () => {
+    mocks.interactive = true
+    mocks.confirm.mockResolvedValue(true)
+    mocks.config.users = {
+      'user-1': { id: 'user-1', email: 'one@example.com', auth: { token: 'plain-tok' } },
+      'user-2': { id: 'user-2', name: 'Two', email: 'two@example.com', auth: { token: 'plain-tok-2' } },
+      'user-3': { id: 'user-3', email: 'three@example.com', auth: {} },
+    }
+    const { getStoredAPIToken } = await loadSecureStorage()
+
+    await getStoredAPIToken({})
+    expect(mocks.warn).toHaveBeenCalledTimes(1)
+    const [message] = mocks.warn.mock.calls[0] as [string]
+    expect(message).toContain('1 other account')
+    expect(message).toContain('Two (two@example.com)')
+    expect(message).not.toContain('one@example.com')
+    expect(message).not.toContain('three@example.com')
+    expect(message).toContain('netlify switch')
+  })
+
+  test('does not warn about other accounts when there are none with a plaintext token', async () => {
+    mocks.interactive = true
+    mocks.confirm.mockResolvedValue(true)
+    mocks.config.users = { 'user-1': { id: 'user-1', auth: { token: 'plain-tok' } } }
+    const { getStoredAPIToken } = await loadSecureStorage()
+
+    await getStoredAPIToken({})
+    expect(mocks.warn).not.toHaveBeenCalled()
+  })
+
   test('stops asking after a failed keychain write and explains how to retry', async () => {
     mocks.interactive = true
     mocks.confirm.mockResolvedValue(true)
