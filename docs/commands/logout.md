@@ -23,6 +23,4 @@ netlify logout
 - `forget` (*boolean*) - Also delete the current account's saved auth token from this device
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-
-
 <!-- AUTO-GENERATED-CONTENT:END -->
