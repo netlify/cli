@@ -111,10 +111,12 @@ export const warnAboutPlaintextAccounts = (
   warn(
     `${subject} auth token in plaintext:
 ${accountList}
-To move a token to your keychain, ${selectStep}, then run ${cmd('netlify status')} and accept the prompt.
-If you aren't asked (because you declined before, or the session isn't interactive), run ${cmd(
-      'netlify logout --forget',
-    )} and then ${cmd('netlify login')} instead.`,
+To move a token to your keychain, open an interactive terminal, ${selectStep}, then run ${cmd(
+      'netlify status',
+    )} and accept the prompt.
+If you aren't asked because you declined before, run ${cmd('netlify logout --forget')} and then ${cmd(
+      'netlify login',
+    )} in that terminal instead.`,
   )
 }
 

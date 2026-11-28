@@ -307,6 +307,17 @@ describe('warnAboutPlaintextAccounts', () => {
     expect(message).toContain('netlify login')
   })
 
+  test('asks for an interactive terminal, since a non-interactive login stores the token in plaintext again', async () => {
+    const { warnAboutPlaintextAccounts } = await loadSecureStorage()
+
+    warnAboutPlaintextAccounts(configWith({ 'user-2': { id: 'user-2', auth: { token: 'plain-2' } } }), 'user-1', {})
+
+    const [message] = mocks.warn.mock.calls[0] as [string]
+    expect(message).toContain('open an interactive terminal')
+    expect(message).toContain('netlify login')
+    expect(message).toContain('in that terminal instead')
+  })
+
   test('stays quiet when plaintext storage is forced, since those tokens cannot be moved', async () => {
     const { warnAboutPlaintextAccounts } = await loadSecureStorage()
 
